@@ -28,6 +28,7 @@ Worked example — priority list Coins (base) > Cells (1/1) > Regen (1/2) > Heal
 
 ## Open Questions / In Progress
 - Accuracy of `tower-idle-toolkit`'s cost data against the current game version (package is ~3 years stale) — spot-check and correct as needed.
+- Current-level inputs are only clamped to non-negative integers today (`UpgradeLevelInput`), not to each upgrade's actual valid range — need to strictly validate entered levels stay within the real Workshop min/max once we have a reliable max-level source (blocked on the staleness issue above).
 
 ## Non-Goals (for now)
 - No backend or server component.
