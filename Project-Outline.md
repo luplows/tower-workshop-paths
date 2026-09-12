@@ -28,7 +28,7 @@ Worked example — priority list Coins (base) > Cells (1/1) > Regen (1/2) > Heal
 
 ## Open Questions / In Progress
 - Accuracy of `tower-idle-toolkit`'s cost data against the current game version (package is ~3 years stale) — spot-check and correct as needed.
-- **Task:** refresh each upgrade's `quantity` (max level) against actual in-game values. Current-level inputs are now hard-capped at `tower-idle-toolkit`'s `quantity` (`UpgradeLevelInput`, via `clampLevel`), so a stale-too-low quantity (e.g. Health is 5000 there vs. 6000 in-game) will incorrectly block valid entries until corrected.
+- **Task (in progress):** refresh each upgrade's `quantity` (max level) against actual in-game values. Current-level inputs are hard-capped at `quantity` (`UpgradeLevelInput`, via `clampLevel`), so a stale-too-low value incorrectly blocks valid entries until corrected. Corrections are applied via `WORKSHOP_QUANTITY_OVERRIDES` (`src/data/workshopQuantityOverrides.js`) rather than editing the third-party package. Confirmed so far: Rend Armor Chance (299), Health (6000), Health Regen (6000), Recovery Amount (300), Max Recovery (500). The rest of the ~40 upgrades still use `tower-idle-toolkit`'s original (possibly stale) values.
 
 ## Non-Goals (for now)
 - No backend or server component.
