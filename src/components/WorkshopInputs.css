@@ -1,0 +1,69 @@
+.workshop-inputs {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.category-panel {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.upgrade-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+}
+
+.upgrade-row__label {
+  flex: 1;
+  font-size: 15px;
+}
+
+.upgrade-row__input {
+  width: 90px;
+  font: inherit;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+}
+
+.upgrade-row__max {
+  min-width: 64px;
+  font-size: 13px;
+  color: var(--text);
+  text-align: left;
+}
+
+.bottom-tab-bar {
+  display: flex;
+  border-top: 1px solid var(--border);
+  position: sticky;
+  bottom: 0;
+  background: var(--bg);
+}
+
+.bottom-tab-bar__tab {
+  flex: 1;
+  font: inherit;
+  font-size: 14px;
+  padding: 14px 8px;
+  border: none;
+  background: none;
+  color: var(--text);
+  cursor: pointer;
+  border-top: 2px solid transparent;
+}
+
+.bottom-tab-bar__tab--active {
+  color: var(--accent);
+  border-top-color: var(--accent);
+}
