@@ -9,7 +9,7 @@ A tool to help decide how to spend coins in the **Workshop** tab of the mobile g
 
 ## Inputs
 - Current level of each Workshop upgrade, e.g. `Health: 5500 / max 6000`, `Thorn Damage: 99 / max 99`.
-- Cost-per-level data for each upgrade, looked up from a table (not computed from a formula) — sourced from the [`tower-idle-toolkit`](https://www.npmjs.com/package/tower-idle-toolkit) npm package (ISC license), added as a dependency. It provides per-level `value`/`cash`/`coins` for every upgrade (`WORKSHOP_LEVELS`) plus per-upgrade metadata (`name`, `min`, `max`, `quantity`, total `cost`). **Caveat:** the package hasn't been updated since Nov 2023, so costs may be stale relative to current game balance — using it as a starting point, to be corrected against the live game/community calculator as discrepancies are found.
+- Cost-per-level data for each upgrade, looked up from a table (not computed from a formula) — sourced from the [`tower-idle-toolkit`](https://www.npmjs.com/package/tower-idle-toolkit) npm package (ISC license), added as a dependency. It provides per-level `value`/`cash`/`coins` for every upgrade (`WORKSHOP_LEVELS`) plus per-upgrade metadata (`name`, `min`, `max`, `quantity`, total `cost`).
 
 ## Core Feature: Recommended Buy Order
 Each item in the priority list has a **ratio** relative to a base upgrade (e.g. Coins = 1, Cells = 1/1, Regen = 1/2, Health = 1/4). At each step, every not-yet-maxed upgrade gets a score:
@@ -25,10 +25,6 @@ Worked example — priority list Coins (base) > Cells (1/1) > Regen (1/2) > Heal
 ## Priorities
 - **Predefined**: ship with a community-recommended default priority order to start.
 - **User-defined**: let users define, edit, and save their own custom priority lists (longer-term goal).
-
-## Open Questions / In Progress
-- Accuracy of `tower-idle-toolkit`'s cost data against the current game version (package is ~3 years stale) — spot-check and correct as needed.
-- **Task (in progress):** refresh each upgrade's `quantity` (max level) against actual in-game values. Current-level inputs are hard-capped at `quantity` (`UpgradeLevelInput`, via `clampLevel`), so a stale-too-low value incorrectly blocks valid entries until corrected. Corrections are applied via `WORKSHOP_QUANTITY_OVERRIDES` (`src/data/workshopQuantityOverrides.js`) rather than editing the third-party package. Confirmed so far: Rend Armor Chance (299), Health (6000), Health Regen (6000), Recovery Amount (300), Max Recovery (500). The rest of the ~40 upgrades still use `tower-idle-toolkit`'s original (possibly stale) values.
 
 ## Non-Goals (for now)
 - No backend or server component.
