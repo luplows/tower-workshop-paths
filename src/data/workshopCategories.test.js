@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { WORKSHOP_CATEGORIES } from './workshopCategories'
+import { WORKSHOP_QUANTITY_OVERRIDES } from './workshopQuantityOverrides'
 
 describe('WORKSHOP_CATEGORIES', () => {
   it('has the three in-game tabs, in order', () => {
@@ -32,5 +33,16 @@ describe('WORKSHOP_CATEGORIES', () => {
     expect(namesByCategory.defense).toContain('Health')
     expect(namesByCategory.attack).not.toContain('Health')
     expect(namesByCategory.utility).not.toContain('Health')
+  })
+
+  it('applies every confirmed quantity override', () => {
+    const allUpgrades = WORKSHOP_CATEGORIES.flatMap((c) => c.upgrades)
+    for (const [name, expectedQuantity] of Object.entries(
+      WORKSHOP_QUANTITY_OVERRIDES,
+    )) {
+      const upgrade = allUpgrades.find((u) => u.name === name)
+      expect(upgrade, `expected an upgrade named "${name}"`).toBeDefined()
+      expect(upgrade.quantity).toBe(expectedQuantity)
+    }
   })
 })
