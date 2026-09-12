@@ -1,8 +1,4 @@
-const clampToNonNegativeInt = (rawValue) => {
-  const parsed = Number.parseInt(rawValue, 10)
-  if (Number.isNaN(parsed) || parsed < 0) return 0
-  return parsed
-}
+import { clampLevel } from '../utils/clampLevel'
 
 export function UpgradeLevelInput({ upgrade, level, onChange }) {
   const inputId = `upgrade-level-${upgrade.name}`
@@ -17,12 +13,15 @@ export function UpgradeLevelInput({ upgrade, level, onChange }) {
         type="number"
         inputMode="numeric"
         min={0}
+        max={upgrade.quantity}
         step={1}
         className="upgrade-row__input"
         value={level}
-        onChange={(event) => onChange(clampToNonNegativeInt(event.target.value))}
+        onChange={(event) =>
+          onChange(clampLevel(event.target.value, upgrade.quantity))
+        }
       />
-      <span className="upgrade-row__max">/ ~{upgrade.quantity}</span>
+      <span className="upgrade-row__max">/ {upgrade.quantity}</span>
     </div>
   )
 }
