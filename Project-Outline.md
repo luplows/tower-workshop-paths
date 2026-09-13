@@ -35,7 +35,7 @@ score = ratio × (base upgrade's next cost ÷ this item's next cost)
 
 Buy whichever available upgrade has the highest score. Ties are broken by priority order (the higher-priority item wins). Recompute after every purchase, since costs and availability change. Maxed-out and not-yet-unlocked upgrades drop out of consideration.
 
-The game lets you buy multiple levels of a Workshop upgrade or Enhancement in one purchase, and the buy order should be based on these batches rather than single levels: **100 levels at a time** for anything with more than 1000 max levels, **10 at a time** otherwise. Applies to both Workshop upgrades and Enhancements. Design details (batch cost lookup, partial batches near max level, exact algorithm changes) not yet worked out — see `Open-Questions.md`.
+The game lets you buy multiple levels of a Workshop upgrade in one purchase, and the buy order should be based on these batches rather than single levels: **100 levels at a time** for anything with more than 1000 max levels, **10 at a time** otherwise. This applies to Workshop upgrades only — Enhancements are always bought **1 level at a time** for the purposes of the buy algorithm. Design details (batch cost lookup, partial batches near max level, exact algorithm changes) not yet worked out — see `Open-Questions.md`.
 
 Worked example — priority list Coins (base) > Cells (1/1) > Regen (1/2) > Health (1/4), with next-level costs Coins: 1000/2000/3000, Cells: 1000/1500/2000, Regen: 250/500/750/1000, Health: 250/500/750/1000 (millions) — produces the buy order: **Regen, Coins, Cells, Regen, Health, Cells**.
 
