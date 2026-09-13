@@ -21,4 +21,23 @@ describe('UpgradeLevelInput', () => {
 
     expect(onChange).toHaveBeenLastCalledWith(99)
   })
+
+  it('renders no max bound when the upgrade has no known quantity', () => {
+    const unbounded = { name: 'Rend Armor' }
+    render(<UpgradeLevelInput upgrade={unbounded} level={0} onChange={() => {}} />)
+
+    const input = screen.getByLabelText('Rend Armor')
+    expect(input).not.toHaveAttribute('max')
+    expect(screen.queryByText(/^\//)).not.toBeInTheDocument()
+  })
+
+  it('does not clamp an entered level when there is no known max', () => {
+    const onChange = vi.fn()
+    const unbounded = { name: 'Rend Armor' }
+    render(<UpgradeLevelInput upgrade={unbounded} level={0} onChange={onChange} />)
+
+    fireEvent.change(screen.getByLabelText('Rend Armor'), { target: { value: '500' } })
+
+    expect(onChange).toHaveBeenLastCalledWith(500)
+  })
 })
