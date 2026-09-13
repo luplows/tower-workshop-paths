@@ -13,6 +13,19 @@ A tool to help decide how to spend coins in the **Workshop** tab of the mobile g
 - The user's current level (0-99) in each of the three per-category **Workshop discount Labs** (Attack/Defense/Utility), each worth 0.5%/level off that category's Workshop costs (up to 49.5% at max level). Design/implementation not yet started — see `Open-Questions.md`.
 - Which **upgrade-unlock groups** the user has already purchased in each category — some upgrades are gated behind a one-time coin cost to unlock (e.g. Utility's "Upgrade Chances" group). Design/implementation not yet started — see `Open-Questions.md`.
 
+## Workshop Enhancements
+A second, separate spend track per tree (Attack/Defense/Utility), distinct from the base Workshop upgrades above. Each tree has 6 Enhancement categories: one free from the start, and five more gated by **cumulative coins spent on that tree's own enhancements** (not a one-time unlock purchase) — the same threshold progression in every tree: 50B → 500B → 5T → 50T → 500T.
+
+| Tree | Free starter | Unlocks at 50B | 500B | 5T | 50T | 500T |
+|---|---|---|---|---|---|---|
+| Attack | Damage | Rend Armor | Critical Factor | Damage/Meter | Super Crit Mult | Attack Speed |
+| Defense | Health | Health Regen | Defense Absolute | Land Mine Damage | Wall Health | Orb Size |
+| Utility | Cash Bonus | Coin Bonus | Cells/Kill Bonus | Free Upgrades | Recovery Package | Enemy Level Skip |
+
+The whole Enhancement system is itself gated behind a one-time **"Workshop Enhancements" Lab** (binary, level 0 or 1) — until that Lab is completed, no Enhancement is purchasable at all.
+
+Data source: a community Google Sheet (a personal "IDS" working copy, shared by the user), specifically its "Workshop Enhancement Prices" tab — a full per-level cost table for all 18 categories — and its "Master Sheet" tab, which lists the per-tree unlock thresholds above. `tower-idle-toolkit` has none of this data. Two values are still unknown (see `Open-Questions.md`): the cost of the "Workshop Enhancements" Lab, and the per-level values of the parallel "Enhancements Discount" Lab.
+
 ## Core Feature: Recommended Buy Order
 Each item in the priority list has a **ratio** relative to a base upgrade (e.g. Coins = 1, Cells = 1/1, Regen = 1/2, Health = 1/4). At each step, every not-yet-maxed, unlocked upgrade gets a score, using its discount-adjusted cost:
 
