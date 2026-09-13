@@ -40,4 +40,28 @@ describe('ENHANCEMENT_CATEGORIES', () => {
     expect(namesByCategory.attack).not.toContain('Health')
     expect(namesByCategory.utility).not.toContain('Health')
   })
+
+  it('gives every category a positive integer max level', () => {
+    for (const category of ENHANCEMENT_CATEGORIES) {
+      for (const upgrade of category.upgrades) {
+        expect(upgrade.quantity).toBeGreaterThan(0)
+      }
+    }
+  })
+
+  // Change-detection tripwire, not a correctness assertion: this data is
+  // hand-transcribed from the community sheet (see the comment atop
+  // enhancementCategories.js), so a snapshot update here should always be a
+  // deliberate, reviewed choice -- confirm it reflects a real correction to
+  // the source data, not an accidental edit.
+  it('matches the known category/quantity structure (snapshot)', () => {
+    const structure = ENHANCEMENT_CATEGORIES.map((category) => ({
+      id: category.id,
+      upgrades: category.upgrades.map((u) => ({
+        name: u.name,
+        quantity: u.quantity,
+      })),
+    }))
+    expect(structure).toMatchSnapshot()
+  })
 })

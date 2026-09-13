@@ -38,6 +38,17 @@ describe('EnhancementInputs', () => {
     expect(screen.getAllByText('1.00×')).toHaveLength(5)
   })
 
+  it('hard-caps an entered level at the category max', async () => {
+    const user = userEvent.setup()
+    render(<EnhancementInputs />)
+
+    const damageInput = screen.getByLabelText('Damage')
+    await user.clear(damageInput)
+    await user.type(damageInput, '9999')
+
+    expect(damageInput).toHaveValue(600)
+  })
+
   it('persists an entered level under its own storage key, separate from Workshop levels', async () => {
     const user = userEvent.setup()
     const { unmount } = render(<EnhancementInputs />)

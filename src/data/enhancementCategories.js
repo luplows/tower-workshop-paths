@@ -7,46 +7,48 @@
  *
  * Unlike WORKSHOP_CATEGORIES, this data isn't sourced from tower-idle-toolkit
  * (which has none of it) -- it's hand-entered from the community Google
- * Sheet referenced in Project-Outline.md. Per-level costs and max levels
- * aren't in this repo yet, so `upgrades` entries have no `quantity`, and
- * `unlocksAt` is unused until the gating/discount-lab work happens -- see
- * the tracked items in Open-Questions.md.
+ * Sheet referenced in Project-Outline.md. `unlocksAt` is unused until the
+ * gating/discount-lab work happens -- see the tracked items in
+ * Open-Questions.md. `quantity` (max level) comes from the Master Sheet
+ * tab's "Max level" column (column W); the user has flagged these as "a bit
+ * inconsistent" in the source sheet and plans to spot-check them against
+ * the running app, so treat these as best-effort pending that verification.
  */
 export const ENHANCEMENT_CATEGORIES = [
   {
     id: 'attack',
     label: 'Attack',
     upgrades: [
-      { name: 'Damage', unlocksAt: null },
-      { name: 'Rend Armor', unlocksAt: 50e9 },
-      { name: 'Critical Factor', unlocksAt: 500e9 },
-      { name: 'Damage/Meter', unlocksAt: 5e12 },
-      { name: 'Super Crit Mult', unlocksAt: 50e12 },
-      { name: 'Attack Speed', unlocksAt: 500e12 },
+      { name: 'Damage', unlocksAt: null, quantity: 600 },
+      { name: 'Rend Armor', unlocksAt: 50e9, quantity: 600 },
+      { name: 'Critical Factor', unlocksAt: 500e9, quantity: 600 },
+      { name: 'Damage/Meter', unlocksAt: 5e12, quantity: 600 },
+      { name: 'Super Crit Mult', unlocksAt: 50e12, quantity: 600 },
+      { name: 'Attack Speed', unlocksAt: 500e12, quantity: 100 },
     ],
   },
   {
     id: 'defense',
     label: 'Defense',
     upgrades: [
-      { name: 'Health', unlocksAt: null },
-      { name: 'Health Regen', unlocksAt: 50e9 },
-      { name: 'Defense Absolute', unlocksAt: 500e9 },
-      { name: 'Land Mine Damage', unlocksAt: 5e12 },
-      { name: 'Wall Health', unlocksAt: 50e12 },
-      { name: 'Orb Size', unlocksAt: 500e12 },
+      { name: 'Health', unlocksAt: null, quantity: 600 },
+      { name: 'Health Regen', unlocksAt: 50e9, quantity: 600 },
+      { name: 'Defense Absolute', unlocksAt: 500e9, quantity: 600 },
+      { name: 'Land Mine Damage', unlocksAt: 5e12, quantity: 600 },
+      { name: 'Wall Health', unlocksAt: 50e12, quantity: 600 },
+      { name: 'Orb Size', unlocksAt: 500e12, quantity: 250 },
     ],
   },
   {
     id: 'utility',
     label: 'Utility',
     upgrades: [
-      { name: 'Cash Bonus', unlocksAt: null },
-      { name: 'Coin Bonus', unlocksAt: 50e9 },
-      { name: 'Cells/Kill Bonus', unlocksAt: 500e9 },
-      { name: 'Free Upgrades', unlocksAt: 5e12 },
-      { name: 'Recovery Package', unlocksAt: 50e12 },
-      { name: 'Enemy Level Skip', unlocksAt: 500e12 },
+      { name: 'Cash Bonus', unlocksAt: null, quantity: 600 },
+      { name: 'Coin Bonus', unlocksAt: 50e9, quantity: 300 },
+      { name: 'Cells/Kill Bonus', unlocksAt: 500e9, quantity: 300 },
+      { name: 'Free Upgrades', unlocksAt: 5e12, quantity: 150 },
+      { name: 'Recovery Package', unlocksAt: 50e12, quantity: 600 },
+      { name: 'Enemy Level Skip', unlocksAt: 500e12, quantity: 60 },
     ],
   },
 ]
