@@ -24,7 +24,9 @@ A second, separate spend track per tree (Attack/Defense/Utility), distinct from 
 
 The whole Enhancement system is itself gated behind a one-time **"Workshop Enhancements" Lab** (binary, level 0 or 1) — until that Lab is completed, no Enhancement is purchasable at all.
 
-Data source: a community Google Sheet (a personal "IDS" working copy, shared by the user), specifically its "Workshop Enhancement Prices" tab — a full per-level cost table for all 18 categories — and its "Master Sheet" tab, which lists the per-tree unlock thresholds above. `tower-idle-toolkit` has none of this data. Two values are still unknown (see `Open-Questions.md`): the cost of the "Workshop Enhancements" Lab, and the per-level values of the parallel "Enhancements Discount" Lab.
+Every category, in every tree, uses the same value formula: `value = (level × 0.01) + 1` — e.g. level 40 gives a 1.40× multiplier. Confirmed via the community sheet's "Value" column formula (`=SUM((level_cell*0.01)+1)`) and identical across all 18 categories. Unlike Workshop upgrades, no other in-game modifier stacks with it (as of the current patch), so the app computes and displays it directly from the entered level rather than requiring a separate value input.
+
+Data source: a community Google Sheet (a personal "IDS" working copy, shared by the user), specifically its "Workshop Enhancement Prices" tab — a full per-level cost table for all 18 categories — and its "Master Sheet" tab, which lists the per-tree unlock thresholds above, the value formula, and each category's max level (column W). `tower-idle-toolkit` has none of this data. Two values are still unknown (see `Open-Questions.md`): the cost of the "Workshop Enhancements" Lab, and the per-level values of the parallel "Enhancements Discount" Lab.
 
 ## Core Feature: Recommended Buy Order
 Each item in the priority list has a **ratio** relative to a base upgrade (e.g. Coins = 1, Cells = 1/1, Regen = 1/2, Health = 1/4). At each step, every not-yet-maxed, unlocked upgrade gets a score, using its discount-adjusted cost:

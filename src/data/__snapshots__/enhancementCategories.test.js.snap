@@ -1,0 +1,93 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ENHANCEMENT_CATEGORIES > matches the known category/quantity structure (snapshot) 1`] = `
+[
+  {
+    "id": "attack",
+    "upgrades": [
+      {
+        "name": "Damage",
+        "quantity": 600,
+      },
+      {
+        "name": "Rend Armor",
+        "quantity": 600,
+      },
+      {
+        "name": "Critical Factor",
+        "quantity": 600,
+      },
+      {
+        "name": "Damage/Meter",
+        "quantity": 600,
+      },
+      {
+        "name": "Super Crit Mult",
+        "quantity": 600,
+      },
+      {
+        "name": "Attack Speed",
+        "quantity": 100,
+      },
+    ],
+  },
+  {
+    "id": "defense",
+    "upgrades": [
+      {
+        "name": "Health",
+        "quantity": 600,
+      },
+      {
+        "name": "Health Regen",
+        "quantity": 600,
+      },
+      {
+        "name": "Defense Absolute",
+        "quantity": 600,
+      },
+      {
+        "name": "Land Mine Damage",
+        "quantity": 600,
+      },
+      {
+        "name": "Wall Health",
+        "quantity": 600,
+      },
+      {
+        "name": "Orb Size",
+        "quantity": 250,
+      },
+    ],
+  },
+  {
+    "id": "utility",
+    "upgrades": [
+      {
+        "name": "Cash Bonus",
+        "quantity": 600,
+      },
+      {
+        "name": "Coin Bonus",
+        "quantity": 300,
+      },
+      {
+        "name": "Cells/Kill Bonus",
+        "quantity": 300,
+      },
+      {
+        "name": "Free Upgrades",
+        "quantity": 150,
+      },
+      {
+        "name": "Recovery Package",
+        "quantity": 600,
+      },
+      {
+        "name": "Enemy Level Skip",
+        "quantity": 60,
+      },
+    ],
+  },
+]
+`;

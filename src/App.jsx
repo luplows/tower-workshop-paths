@@ -1,7 +1,30 @@
+import './App.css'
+import { EnhancementInputs } from './components/EnhancementInputs'
+import { ModeTabBar } from './components/ModeTabBar'
 import { WorkshopInputs } from './components/WorkshopInputs'
+import { useLocalStorageState } from './hooks/useLocalStorageState'
+
+const MODES = [
+  { id: 'upgrade', label: 'Upgrade' },
+  { id: 'enhance', label: 'Enhance' },
+]
 
 function App() {
-  return <WorkshopInputs />
+  const [modeId, setModeId] = useLocalStorageState('workshopMode', MODES[0].id)
+
+  return (
+    <div className="app">
+      <ModeTabBar modes={MODES} activeModeId={modeId} onSelect={setModeId} />
+      <div
+        role="tabpanel"
+        id={`mode-panel-${modeId}`}
+        aria-labelledby={`mode-tab-${modeId}`}
+        className="app__mode-panel"
+      >
+        {modeId === 'enhance' ? <EnhancementInputs /> : <WorkshopInputs />}
+      </div>
+    </div>
+  )
 }
 
 export default App

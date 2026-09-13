@@ -1,7 +1,8 @@
 import { clampLevel } from '../utils/clampLevel'
 
-export function UpgradeLevelInput({ upgrade, level, onChange }) {
+export function UpgradeLevelInput({ upgrade, level, onChange, formatValue }) {
   const inputId = `upgrade-level-${upgrade.name}`
+  const hasMax = Number.isFinite(upgrade.quantity)
 
   return (
     <div className="upgrade-row">
@@ -13,7 +14,7 @@ export function UpgradeLevelInput({ upgrade, level, onChange }) {
         type="number"
         inputMode="numeric"
         min={0}
-        max={upgrade.quantity}
+        max={hasMax ? upgrade.quantity : undefined}
         step={1}
         className="upgrade-row__input"
         value={level}
@@ -21,7 +22,8 @@ export function UpgradeLevelInput({ upgrade, level, onChange }) {
           onChange(clampLevel(event.target.value, upgrade.quantity))
         }
       />
-      <span className="upgrade-row__max">/ {upgrade.quantity}</span>
+      {hasMax && <span className="upgrade-row__max">/ {upgrade.quantity}</span>}
+      {formatValue && <span className="upgrade-row__value">{formatValue(level)}</span>}
     </div>
   )
 }

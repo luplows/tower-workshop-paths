@@ -22,17 +22,17 @@ const toUpgradeList = (upgrades) => Object.values(upgrades).map(applyQuantityOve
 export const WORKSHOP_CATEGORIES = [
   {
     id: 'attack',
-    label: 'Attack Upgrades',
+    label: 'Attack',
     upgrades: toUpgradeList(ATTACK_UPGRADES),
   },
   {
     id: 'defense',
-    label: 'Defense Upgrades',
+    label: 'Defense',
     upgrades: toUpgradeList(DEFENSE_UPGRADES),
   },
   {
     id: 'utility',
-    label: 'Utility Upgrades',
+    label: 'Utility',
     upgrades: toUpgradeList(UTILITY_UPGRADES),
   },
 ]

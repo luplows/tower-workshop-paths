@@ -8,10 +8,13 @@ See [Project-Outline.md](Project-Outline.md) for the full goal, scope, and the b
 
 This is early-stage and under active development. What exists today:
 
-- A phone-mimicking React UI with three tabs (Attack / Defense / Utility) for entering your current level in every Workshop upgrade, backed by per-level cost data from the [`tower-idle-toolkit`](https://www.npmjs.com/package/tower-idle-toolkit) npm package.
+- A phone-mimicking React UI, switchable via a top "Upgrade" / "Enhance" mode tab bar (matching the in-game buttons) between two screens:
+  - **Upgrade**: enter your current level in every Workshop upgrade, backed by per-level cost data from the [`tower-idle-toolkit`](https://www.npmjs.com/package/tower-idle-toolkit) npm package.
+  - **Enhance**: enter your current level in every Workshop Enhancement category, with its computed current value (e.g. `1.40×`) shown alongside — there's no in-game way to see an Enhancement's level directly, only its resulting value.
+  - Both screens share the same three-tree tab layout, labeled just Attack / Defense / Utility.
 - Entered levels persist in browser `localStorage` — nothing is sent to a server.
 
-Not built yet: the recommended buy-order algorithm itself (the tool's core feature), discount-lab and unlock-gate handling, Workshop Enhancements, and batch buying. See [Open-Questions.md](Open-Questions.md) for details on each.
+Not built yet: the recommended buy-order algorithm itself (the tool's core feature), discount-lab and unlock-gate handling, and Enhancement/unlock gating and batch buying. See [Open-Questions.md](Open-Questions.md) for details on each.
 
 ## Development
 

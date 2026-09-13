@@ -10,9 +10,9 @@ describe('WORKSHOP_CATEGORIES', () => {
       'utility',
     ])
     expect(WORKSHOP_CATEGORIES.map((c) => c.label)).toEqual([
-      'Attack Upgrades',
-      'Defense Upgrades',
-      'Utility Upgrades',
+      'Attack',
+      'Defense',
+      'Utility',
     ])
   })
 
