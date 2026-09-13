@@ -1,0 +1,213 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`WORKSHOP_CATEGORIES > matches the known upgrade/quantity structure (snapshot) 1`] = `
+[
+  {
+    "id": "attack",
+    "upgrades": [
+      {
+        "name": "Damage",
+        "quantity": 6000,
+      },
+      {
+        "name": "Attack Speed",
+        "quantity": 99,
+      },
+      {
+        "name": "Critical Chance",
+        "quantity": 79,
+      },
+      {
+        "name": "Critical Factor",
+        "quantity": 150,
+      },
+      {
+        "name": "Range",
+        "quantity": 79,
+      },
+      {
+        "name": "Damage / Meter",
+        "quantity": 200,
+      },
+      {
+        "name": "Multishot Chance",
+        "quantity": 99,
+      },
+      {
+        "name": "Multishot Targets",
+        "quantity": 7,
+      },
+      {
+        "name": "Rapid Fire Chance",
+        "quantity": 85,
+      },
+      {
+        "name": "Rapid Fire Duration",
+        "quantity": 99,
+      },
+      {
+        "name": "Bounce Shot Chance",
+        "quantity": 85,
+      },
+      {
+        "name": "Bounce Shot Targets",
+        "quantity": 7,
+      },
+      {
+        "name": "Bounce Shot Range",
+        "quantity": 60,
+      },
+      {
+        "name": "Super Crit Chance",
+        "quantity": 100,
+      },
+      {
+        "name": "Super Crit Mult",
+        "quantity": 120,
+      },
+      {
+        "name": "Rend Armor Chance",
+        "quantity": 299,
+      },
+      {
+        "name": "Rend Armor Mult",
+        "quantity": 299,
+      },
+    ],
+  },
+  {
+    "id": "defense",
+    "upgrades": [
+      {
+        "name": "Health",
+        "quantity": 6000,
+      },
+      {
+        "name": "Health Regen",
+        "quantity": 6000,
+      },
+      {
+        "name": "Defense Percent",
+        "quantity": 99,
+      },
+      {
+        "name": "Defense Absolute",
+        "quantity": 5000,
+      },
+      {
+        "name": "Thorns",
+        "quantity": 99,
+      },
+      {
+        "name": "Lifesteal",
+        "quantity": 80,
+      },
+      {
+        "name": "Knockback Chance",
+        "quantity": 80,
+      },
+      {
+        "name": "Knockback Force",
+        "quantity": 40,
+      },
+      {
+        "name": "Orb Speed",
+        "quantity": 38,
+      },
+      {
+        "name": "Orbs",
+        "quantity": 4,
+      },
+      {
+        "name": "Shockwave Size",
+        "quantity": 35,
+      },
+      {
+        "name": "Shockwave Frequency",
+        "quantity": 40,
+      },
+      {
+        "name": "Land Mine Chance",
+        "quantity": 50,
+      },
+      {
+        "name": "Land Mine Damage",
+        "quantity": 200,
+      },
+      {
+        "name": "Land Mine Radius",
+        "quantity": 50,
+      },
+      {
+        "name": "Death Defy",
+        "quantity": 75,
+      },
+      {
+        "name": "Wall Health",
+        "quantity": 1800,
+      },
+      {
+        "name": "Wall Rebuild",
+        "quantity": 300,
+      },
+    ],
+  },
+  {
+    "id": "utility",
+    "upgrades": [
+      {
+        "name": "Cash Bonus",
+        "quantity": 149,
+      },
+      {
+        "name": "Cash / Wave",
+        "quantity": 149,
+      },
+      {
+        "name": "Coins / Kill Bonus",
+        "quantity": 149,
+      },
+      {
+        "name": "Coins / Wave",
+        "quantity": 149,
+      },
+      {
+        "name": "Free Attack Upgrade",
+        "quantity": 99,
+      },
+      {
+        "name": "Free Defense Upgrade",
+        "quantity": 99,
+      },
+      {
+        "name": "Free Utility Upgrade",
+        "quantity": 99,
+      },
+      {
+        "name": "Interest / Wave",
+        "quantity": 99,
+      },
+      {
+        "name": "Recovery Amount",
+        "quantity": 300,
+      },
+      {
+        "name": "Max Recovery",
+        "quantity": 500,
+      },
+      {
+        "name": "Package Chance",
+        "quantity": 60,
+      },
+      {
+        "name": "Enemy Attack Level Skip",
+        "quantity": 699,
+      },
+      {
+        "name": "Enemy Health Level Skip",
+        "quantity": 699,
+      },
+    ],
+  },
+]
+`;

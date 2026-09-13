@@ -45,4 +45,20 @@ describe('WORKSHOP_CATEGORIES', () => {
       expect(upgrade.quantity).toBe(expectedQuantity)
     }
   })
+
+  // Change-detection tripwire, not a correctness assertion: fails if
+  // tower-idle-toolkit ever adds/removes/reorders an upgrade or changes a
+  // quantity, so an upstream update gets a reviewable diff instead of
+  // silently reshaping the Workshop. A snapshot update here should always
+  // be a deliberate, reviewed choice -- see Open-Questions.md.
+  it('matches the known upgrade/quantity structure (snapshot)', () => {
+    const structure = WORKSHOP_CATEGORIES.map((category) => ({
+      id: category.id,
+      upgrades: category.upgrades.map((u) => ({
+        name: u.name,
+        quantity: u.quantity,
+      })),
+    }))
+    expect(structure).toMatchSnapshot()
+  })
 })

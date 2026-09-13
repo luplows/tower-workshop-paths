@@ -8,4 +8,6 @@ Never commit or push directly to `main`. `main` is protected (pull requests requ
 
 Correctness of the buy-order tool is high priority. CI (`.github/workflows/ci.yml`) runs lint, tests (Vitest), and the build on every PR, and is a required status check — a PR cannot merge until it's green. Add tests alongside any new logic, especially the buy-order scoring algorithm (see `Project-Outline.md`).
 
+Coverage-percentage tooling (e.g. `@vitest/coverage-v8`) is intentionally not set up — by design, not an oversight. Test quality is judged by reviewing what's covered, not a numeric threshold.
+
 **TEMPORARY, while the test suite and UI are still being built up:** before merging any PR that touches the running tool's behavior or appearance, the user must visually inspect it (`npm run dev`) — automated tests alone aren't yet sufficient to catch UI/UX issues. Don't merge such a PR until the user confirms they've done this. Docs-only PRs (no app code changes) are exempt — merge those without waiting for approval. Remove this rule entirely once the test suite and UI have matured.
