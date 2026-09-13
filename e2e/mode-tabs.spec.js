@@ -8,16 +8,17 @@ test('defaults to Upgrade mode, showing Workshop upgrade categories', async ({ p
   await expect(
     page.getByRole('tab', { name: 'Upgrade', exact: true }),
   ).toHaveAttribute('aria-selected', 'true')
-  await expect(page.getByRole('tab', { name: 'Attack Upgrades' })).toBeVisible()
+  await expect(page.getByRole('tab', { name: 'Attack', exact: true })).toBeVisible()
+  await expect(page.getByText('1.00×')).toHaveCount(0)
 })
 
-test('switches to Enhance mode on click, showing Enhancement categories', async ({
+test('switches to Enhance mode on click, showing a computed value per enhancement', async ({
   page,
 }) => {
   await page.getByRole('tab', { name: 'Enhance', exact: true }).click()
 
-  await expect(page.getByRole('tab', { name: 'Attack Enhancements' })).toBeVisible()
-  await expect(page.getByRole('tab', { name: 'Attack Upgrades' })).not.toBeVisible()
+  await expect(page.getByRole('tab', { name: 'Attack', exact: true })).toBeVisible()
+  await expect(page.getByText('1.00×').first()).toBeVisible()
 })
 
 test('keeps Upgrade and Enhance level entries independent across a reload', async ({

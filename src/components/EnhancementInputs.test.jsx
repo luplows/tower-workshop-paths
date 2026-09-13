@@ -18,10 +18,24 @@ describe('EnhancementInputs', () => {
     const user = userEvent.setup()
     render(<EnhancementInputs />)
 
-    await user.click(screen.getByRole('tab', { name: 'Defense Enhancements' }))
+    await user.click(screen.getByRole('tab', { name: 'Defense' }))
 
     expect(screen.getByLabelText('Health')).toBeInTheDocument()
     expect(screen.queryByLabelText('Damage')).not.toBeInTheDocument()
+  })
+
+  it('shows the computed value next to the level, since level alone is never visible in-game', async () => {
+    const user = userEvent.setup()
+    render(<EnhancementInputs />)
+
+    expect(screen.getAllByText('1.00×')).toHaveLength(6)
+
+    const damageInput = screen.getByLabelText('Damage')
+    await user.clear(damageInput)
+    await user.type(damageInput, '40')
+
+    expect(screen.getByText('1.40×')).toBeInTheDocument()
+    expect(screen.getAllByText('1.00×')).toHaveLength(5)
   })
 
   it('persists an entered level under its own storage key, separate from Workshop levels', async () => {

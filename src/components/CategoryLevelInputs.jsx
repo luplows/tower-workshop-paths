@@ -9,7 +9,7 @@ import './WorkshopInputs.css'
  * the Workshop Upgrade screen and the Workshop Enhancements screen -- same
  * three trees, same per-item level input, different data and storage key.
  */
-export function CategoryLevelInputs({ categories, storageKey }) {
+export function CategoryLevelInputs({ categories, storageKey, formatValue }) {
   const [activeCategoryId, setActiveCategoryId] = useState(categories[0].id)
   const [levels, setLevels] = useLocalStorageState(storageKey, {})
 
@@ -25,6 +25,7 @@ export function CategoryLevelInputs({ categories, storageKey }) {
         category={activeCategory}
         levels={levels}
         onLevelChange={handleLevelChange}
+        formatValue={formatValue}
       />
       <BottomTabBar
         categories={categories}

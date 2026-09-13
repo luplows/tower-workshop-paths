@@ -10,7 +10,7 @@ test('shows the Attack tab by default', async ({ page }) => {
 })
 
 test('switches to another category tab on click', async ({ page }) => {
-  await page.getByRole('tab', { name: 'Defense Upgrades' }).click()
+  await page.getByRole('tab', { name: 'Defense', exact: true }).click()
 
   await expect(page.getByLabel('Health', { exact: true })).toBeVisible()
   await expect(page.getByLabel('Damage', { exact: true })).not.toBeVisible()
@@ -27,7 +27,7 @@ test('persists an entered level across a page reload', async ({ page }) => {
 })
 
 test('hard-caps an entered level at the upgrade max', async ({ page }) => {
-  await page.getByRole('tab', { name: 'Defense Upgrades' }).click()
+  await page.getByRole('tab', { name: 'Defense', exact: true }).click()
 
   const thornsInput = page.getByLabel('Thorns', { exact: true })
   await thornsInput.fill('9999')

@@ -43,6 +43,14 @@
   text-align: left;
 }
 
+.upgrade-row__value {
+  min-width: 56px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  text-align: right;
+}
+
 .bottom-tab-bar {
   display: flex;
   border-top: 1px solid var(--border);

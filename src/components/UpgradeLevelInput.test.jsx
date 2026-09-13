@@ -40,4 +40,22 @@ describe('UpgradeLevelInput', () => {
 
     expect(onChange).toHaveBeenLastCalledWith(500)
   })
+
+  it('renders no computed value when formatValue is not provided', () => {
+    render(<UpgradeLevelInput upgrade={upgrade} level={40} onChange={() => {}} />)
+    expect(screen.queryByText(/×/)).not.toBeInTheDocument()
+  })
+
+  it('renders a computed value from formatValue when provided', () => {
+    const formatValue = (level) => `${level}!`
+    render(
+      <UpgradeLevelInput
+        upgrade={upgrade}
+        level={40}
+        onChange={() => {}}
+        formatValue={formatValue}
+      />,
+    )
+    expect(screen.getByText('40!')).toBeInTheDocument()
+  })
 })

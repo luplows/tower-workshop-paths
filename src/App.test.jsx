@@ -15,17 +15,18 @@ describe('App', () => {
       'aria-selected',
       'true',
     )
-    expect(screen.getByRole('tab', { name: 'Attack Upgrades' })).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: 'Attack' })).toBeInTheDocument()
+    expect(screen.queryByText('1.00×')).not.toBeInTheDocument()
   })
 
-  it('switches to the Enhance mode, showing Enhancement categories instead', async () => {
+  it('switches to the Enhance mode, showing Enhancement categories with a computed value', async () => {
     const user = userEvent.setup()
     render(<App />)
 
     await user.click(screen.getByRole('tab', { name: 'Enhance' }))
 
-    expect(screen.getByRole('tab', { name: 'Attack Enhancements' })).toBeInTheDocument()
-    expect(screen.queryByRole('tab', { name: 'Attack Upgrades' })).not.toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: 'Attack' })).toBeInTheDocument()
+    expect(screen.getAllByText('1.00×').length).toBeGreaterThan(0)
   })
 
   it('keeps Upgrade and Enhance level entries independent when switching modes', async () => {

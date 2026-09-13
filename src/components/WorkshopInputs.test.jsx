@@ -18,7 +18,7 @@ describe('WorkshopInputs', () => {
     const user = userEvent.setup()
     render(<WorkshopInputs />)
 
-    await user.click(screen.getByRole('tab', { name: 'Defense Upgrades' }))
+    await user.click(screen.getByRole('tab', { name: 'Defense' }))
 
     expect(screen.getByLabelText('Health')).toBeInTheDocument()
     expect(screen.queryByLabelText('Damage')).not.toBeInTheDocument()
@@ -49,8 +49,8 @@ describe('WorkshopInputs', () => {
     await user.clear(damageInput)
     await user.type(damageInput, '42')
 
-    await user.click(screen.getByRole('tab', { name: 'Defense Upgrades' }))
-    await user.click(screen.getByRole('tab', { name: 'Attack Upgrades' }))
+    await user.click(screen.getByRole('tab', { name: 'Defense' }))
+    await user.click(screen.getByRole('tab', { name: 'Attack' }))
 
     expect(screen.getByLabelText('Damage')).toHaveValue(42)
   })

@@ -15,7 +15,7 @@
 export const ENHANCEMENT_CATEGORIES = [
   {
     id: 'attack',
-    label: 'Attack Enhancements',
+    label: 'Attack',
     upgrades: [
       { name: 'Damage', unlocksAt: null },
       { name: 'Rend Armor', unlocksAt: 50e9 },
@@ -27,7 +27,7 @@ export const ENHANCEMENT_CATEGORIES = [
   },
   {
     id: 'defense',
-    label: 'Defense Enhancements',
+    label: 'Defense',
     upgrades: [
       { name: 'Health', unlocksAt: null },
       { name: 'Health Regen', unlocksAt: 50e9 },
@@ -39,7 +39,7 @@ export const ENHANCEMENT_CATEGORIES = [
   },
   {
     id: 'utility',
-    label: 'Utility Enhancements',
+    label: 'Utility',
     upgrades: [
       { name: 'Cash Bonus', unlocksAt: null },
       { name: 'Coin Bonus', unlocksAt: 50e9 },

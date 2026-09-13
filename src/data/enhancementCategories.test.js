@@ -9,9 +9,9 @@ describe('ENHANCEMENT_CATEGORIES', () => {
       'utility',
     ])
     expect(ENHANCEMENT_CATEGORIES.map((c) => c.label)).toEqual([
-      'Attack Enhancements',
-      'Defense Enhancements',
-      'Utility Enhancements',
+      'Attack',
+      'Defense',
+      'Utility',
     ])
   })
 
