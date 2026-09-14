@@ -9,7 +9,7 @@ See [Project-Outline.md](Project-Outline.md) for the full goal, scope, and the b
 This is early-stage and under active development. What exists today:
 
 - A phone-mimicking React UI with two levels of navigation:
-  - A top-level "Input" / "Path" toggle in the header. "Input" is this tool's own concept; "Path" has no in-game equivalent, so it's deliberately kept off the game-mirroring toggle below.
+  - A top-level "Input" / "Path" toggle in the header. "Input" is this tool's own concept; "Path" has no in-game equivalent, so it's deliberately kept off the game-mirroring toggle below. The header (and, within "Input", the Upgrade/Enhance mode tab bar) stays visible while scrolling a long list, so switching sections/modes never requires scrolling back to the top first.
   - Within "Input", an "Upgrade" / "Enhance" mode tab bar matching the game's own buttons, switching between:
     - **Upgrade**: enter your current level in every Workshop upgrade, backed by per-level cost data from the [`tower-idle-toolkit`](https://www.npmjs.com/package/tower-idle-toolkit) npm package.
     - **Enhance**: enter your current level in every Workshop Enhancement category, shown as "{name} +" (e.g. "Damage +"), the game's own naming convention, with its computed current value (e.g. `1.40×`) shown alongside — there's no in-game way to see an Enhancement's level directly, only its resulting value. Locked behind an "Unlock (5B coins)" prompt until the one-time Workshop Enhancements Lab is bought, matching the game — the Path list's own Lab row (below) unlocks this screen too, and vice versa.

@@ -1,4 +1,10 @@
 .app {
+  /* Measured render height of .app__header (title + tabs + menu row, one
+     line, all fixed px sizing) -- .mode-tab-bar below uses this as its own
+     sticky `top` so the two stack without overlapping once both are
+     stuck. Single source of truth so there's only one place to update if
+     the header's content/sizing ever changes. */
+  --app-header-height: 62px;
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -6,8 +12,12 @@
 }
 
 .app__header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
   padding: 14px 16px 10px;
   border-bottom: 1px solid var(--border);
+  background: var(--bg);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -64,7 +74,8 @@
   display: flex;
   border-bottom: 1px solid var(--border);
   position: sticky;
-  top: 0;
+  top: var(--app-header-height);
+  z-index: 1;
   background: var(--bg);
 }
 
