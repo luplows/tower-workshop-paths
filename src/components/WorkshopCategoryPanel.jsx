@@ -1,6 +1,10 @@
 import { enhancementTreeSpend } from '../utils/enhancementTreeSpend'
 import { formatCoins } from '../utils/formatCoins'
-import { findUnlockGroup, isUnlockGroupPurchased } from '../utils/workshopUnlockGroups'
+import {
+  findUnlockGroup,
+  isWorkshopUpgradeUnlocked,
+  nextPurchasableGroup,
+} from '../utils/workshopUnlockGroups'
 import { UpgradeLevelInput } from './UpgradeLevelInput'
 
 // Two independent, unrelated gates can lock a row here, one per system:
@@ -12,10 +16,11 @@ import { UpgradeLevelInput } from './UpgradeLevelInput'
 //   ever passed by the Upgrade screen -- Enhance leaves it undefined, so
 //   this branch never runs there, guarding against a false-positive group
 //   match since category ids, and even some names, overlap between the two
-//   systems) -- a not-yet-purchased group shows an inline "Unlock" button
-//   instead of the note, since unlocking here is a distinct one-time
-//   purchase, not something that resolves itself as spend accumulates
-//   (OQ-5).
+//   systems), and a tree's paid groups unlock in order (OQ-5) -- only the
+//   one currently purchasable shows an inline "Unlock" button; a later
+//   group's upgrades show a note naming the group actually blocking
+//   progress instead, since they aren't purchasable yet regardless of
+//   their own group's cost.
 export function WorkshopCategoryPanel({
   category,
   levels,
@@ -26,6 +31,9 @@ export function WorkshopCategoryPanel({
   onUnlockGroup,
 }) {
   const treeSpend = enhancementTreeSpend(category, levels)
+  const purchasableGroup = onUnlockGroup
+    ? nextPurchasableGroup(category.id, unlockedGroups)
+    : undefined
 
   return (
     <div
@@ -52,18 +60,25 @@ export function WorkshopCategoryPanel({
           : undefined
         const groupLocked =
           unlockGroup?.cost > 0 &&
-          !isUnlockGroupPurchased(category.id, unlockGroup.name, unlockedGroups)
+          !isWorkshopUpgradeUnlocked(category.id, upgrade.name, unlockedGroups)
         if (groupLocked) {
+          const isNextUp = unlockGroup === purchasableGroup
           return (
             <div key={upgrade.name} className="upgrade-row upgrade-row--locked">
               <span className="upgrade-row__label">{`${upgrade.name}${nameSuffix}`}</span>
-              <button
-                type="button"
-                className="upgrade-row__unlock"
-                onClick={() => onUnlockGroup(category.id, unlockGroup.name)}
-              >
-                Unlock &quot;{unlockGroup.name}&quot; ({formatCoins(unlockGroup.cost)})
-              </button>
+              {isNextUp ? (
+                <button
+                  type="button"
+                  className="upgrade-row__unlock"
+                  onClick={() => onUnlockGroup(category.id, unlockGroup.name)}
+                >
+                  Unlock &quot;{unlockGroup.name}&quot; ({formatCoins(unlockGroup.cost)})
+                </button>
+              ) : (
+                <span className="upgrade-row__locked-note">
+                  Locked until &quot;{purchasableGroup.name}&quot; is unlocked
+                </span>
+              )}
             </div>
           )
         }

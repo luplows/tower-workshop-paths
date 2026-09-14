@@ -158,5 +158,60 @@ describe('WorkshopCategoryPanel', () => {
 
       expect(screen.getByLabelText('Damage')).toBeInTheDocument()
     })
+
+    describe('groups unlock in order within a tree', () => {
+      // Range is in the 1st paid group ("Range Upgrades", 50 coins),
+      // Multishot Chance in the 2nd ("Multishot Upgrades", 400 coins) --
+      // Multishot Chance can't be bought before Range Upgrades, even though
+      // they gate unrelated upgrades.
+      const treeWithTwoPaidGroups = {
+        id: 'attack',
+        label: 'Attack',
+        upgrades: [
+          { name: 'Range', quantity: 99 },
+          { name: 'Multishot Chance', quantity: 30 },
+        ],
+      }
+
+      it("shows a blocked note (no button) for a later group's upgrade, naming the group actually blocking it", () => {
+        render(
+          <WorkshopCategoryPanel
+            category={treeWithTwoPaidGroups}
+            levels={{}}
+            onLevelChange={() => {}}
+            unlockedGroups={{}}
+            onUnlockGroup={() => {}}
+          />,
+        )
+
+        expect(
+          screen.getByRole('button', { name: 'Unlock "Range Upgrades" (50 coins)' }),
+        ).toBeInTheDocument()
+        expect(
+          screen.queryByRole('button', { name: /Multishot Upgrades/ }),
+        ).not.toBeInTheDocument()
+        expect(screen.getByText('Multishot Chance')).toBeInTheDocument()
+        expect(
+          screen.getByText('Locked until "Range Upgrades" is unlocked'),
+        ).toBeInTheDocument()
+      })
+
+      it('shows the Unlock button for the next group only once the earlier one is purchased', () => {
+        render(
+          <WorkshopCategoryPanel
+            category={treeWithTwoPaidGroups}
+            levels={{}}
+            onLevelChange={() => {}}
+            unlockedGroups={{ [unlockGroupKey('attack', 'Range Upgrades')]: true }}
+            onUnlockGroup={() => {}}
+          />,
+        )
+
+        expect(screen.getByLabelText('Range')).toBeInTheDocument()
+        expect(
+          screen.getByRole('button', { name: 'Unlock "Multishot Upgrades" (400 coins)' }),
+        ).toBeInTheDocument()
+      })
+    })
   })
 })

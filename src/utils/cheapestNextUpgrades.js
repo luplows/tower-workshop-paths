@@ -2,11 +2,10 @@ import { WORKSHOP_LEVELS } from 'tower-idle-toolkit'
 import { ENHANCEMENT_CATEGORIES } from '../data/enhancementCategories'
 import { ENHANCEMENT_LEVELS } from '../data/enhancementLevels'
 import { WORKSHOP_CATEGORIES } from '../data/workshopCategories'
-import { WORKSHOP_UNLOCK_GROUPS } from '../data/workshopUnlockGroups'
 import { isEnhancementCategoryUnlocked } from './enhancementTreeSpend'
 import {
-  isUnlockGroupPurchased,
   isWorkshopUpgradeUnlocked,
+  nextPurchasableGroup,
   unlockGroupKey,
 } from './workshopUnlockGroups'
 
@@ -107,15 +106,19 @@ const enhancementLabCostAt = (name, level) => (level === 0 ? ENHANCEMENT_LAB_COS
  * `{ [categoryId:groupName]: true }` map -- see `workshopUnlockGroups.js`)
  * tracks which paid Workshop upgrade-unlock groups the player has already
  * bought (OQ-5); every tree's free "Default" group needs no entry, it's
- * always unlocked. A not-yet-purchased group's upgrades are excluded from
- * the simulation entirely, the same treatment as a locked Enhancement
- * category (see below) -- but unlike that gate, the group's own one-time
- * unlock cost competes as its own candidate instead, `source: 'unlock'`,
- * named after the group (e.g. "Multishot Upgrades"), a single-level
- * (0 -> 1), always-1-level batch, the same shape as the Lab row. Buying it
- * (the caller persisting the implied purchase) makes that group's upgrades
- * ordinary candidates from the next call on -- same once-per-call
- * simplification as everything else here.
+ * always unlocked. A tree's paid groups unlock in order -- e.g. "Thorn
+ * Upgrades" can't be bought before "Defense Upgrades" -- so only the
+ * earliest not-yet-purchased group in each tree is ever offered as a
+ * candidate at all (`nextPurchasableGroup`); every later group's upgrades
+ * stay fully excluded, the same treatment as a locked Enhancement category
+ * (see below), until their own turn comes. The offered group's one-time
+ * unlock cost competes as its own candidate, `source: 'unlock'`, named
+ * after the group (e.g. "Multishot Upgrades"), a single-level (0 -> 1),
+ * always-1-level batch, the same shape as the Lab row. Buying it (the
+ * caller persisting the implied purchase) makes that group's upgrades
+ * ordinary candidates and advances the tree to its next group from the
+ * next call on -- same once-per-call simplification as everything else
+ * here.
  *
  * `enhancementLabLevel` (0 or 1) tracks the one-time "Workshop Enhancements"
  * Lab that gates the entire Enhancement system in-game. While it's 0, no
@@ -175,19 +178,21 @@ export function getCheapestNextUpgrades(
       }
     }
 
-    for (const group of WORKSHOP_UNLOCK_GROUPS[category.id] ?? []) {
-      if (group.cost > 0 && !isUnlockGroupPurchased(category.id, group.name, unlockedGroups)) {
-        cursors.set(`unlock:${unlockGroupKey(category.id, group.name)}`, {
-          source: 'unlock',
-          name: group.name,
-          level: 0,
-          quantity: 1,
-          batchSize: SINGLE_BATCH_SIZE,
-          categoryId: category.id,
-          categoryLabel: category.label,
-          costAt: (name, level) => (level === 0 ? group.cost : undefined),
-        })
-      }
+    // A tree's paid groups unlock in order -- only the earliest not-yet-
+    // purchased one is ever offered here; every later group stays fully
+    // excluded (no candidate at all) until its turn.
+    const nextGroup = nextPurchasableGroup(category.id, unlockedGroups)
+    if (nextGroup) {
+      cursors.set(`unlock:${unlockGroupKey(category.id, nextGroup.name)}`, {
+        source: 'unlock',
+        name: nextGroup.name,
+        level: 0,
+        quantity: 1,
+        batchSize: SINGLE_BATCH_SIZE,
+        categoryId: category.id,
+        categoryLabel: category.label,
+        costAt: (name, level) => (level === 0 ? nextGroup.cost : undefined),
+      })
     }
   }
 

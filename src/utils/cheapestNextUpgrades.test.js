@@ -839,5 +839,41 @@ describe('getCheapestNextUpgrades', () => {
 
       expect(ranked.some((e) => e.source === 'unlock')).toBe(false)
     })
+
+    it("unlocks in order -- a later group isn't offered (as an upgrade or as its own unlock cost) until the earlier one is bought", () => {
+      // Defense's order: Default -> "Defense Upgrades" -> "Thorn Upgrades"
+      // (Thorns) -> ... -- Thorns can't be reached or bought before Defense
+      // Upgrades, even with every other tree's groups already purchased.
+      const workshopLevels = maxedWorkshopLevels()
+      delete workshopLevels['Defense Percent']
+      delete workshopLevels['Defense Absolute']
+      delete workshopLevels.Thorns
+      const unlockedGroups = allUnlockedGroups()
+      delete unlockedGroups[unlockGroupKey('defense', 'Defense Upgrades')]
+      delete unlockedGroups[unlockGroupKey('defense', 'Thorn Upgrades')]
+      const { ranked } = getCheapestNextUpgrades(
+        { workshopLevels, unlockedGroups },
+        { rowCap: 1 },
+      )
+
+      // "Defense Upgrades" (75 coins) is the only Defense candidate at all
+      // -- not Thorns, not "Thorn Upgrades" (500 coins).
+      expect(ranked).toEqual([
+        expect.objectContaining({ name: 'Defense Upgrades', source: 'unlock', cost: 75 }),
+      ])
+    })
+
+    it('offers exactly one unlock candidate per tree, never more', () => {
+      // Nothing purchased anywhere -- each of the 3 trees has its own
+      // single earliest paid group, never every locked group at once.
+      const { ranked } = getCheapestNextUpgrades({ workshopLevels: {} }, { rowCap: 50 })
+
+      const unlockRows = ranked.filter((e) => e.source === 'unlock')
+      const namesByCategory = new Set(unlockRows.map((e) => e.categoryId))
+      expect(namesByCategory.size).toBe(unlockRows.length) // no tree repeated
+      expect(unlockRows.map((e) => e.name).sort()).toEqual(
+        ['Cash Bonuses', 'Defense Upgrades', 'Range Upgrades'].sort(),
+      )
+    })
   })
 })
