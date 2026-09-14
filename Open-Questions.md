@@ -56,6 +56,10 @@ The game keeps a `playerInfo.dat` file (not normally player-facing) that should 
 As a player, I want to share my current Workshop/Enhancement levels with a friend (e.g. to compare progress or get buy-order advice), so that I don't have to describe my levels to them by hand.
 Client-only, per `Project-Outline.md`'s no-backend scope: likely encode `workshopLevels`/`enhancementLevels` into the URL itself (query string or fragment, probably compressed given ~48 Workshop + 18 Enhancement values) rather than a server-hosted share. Open questions: does opening a shared link overwrite the recipient's own entered levels (interacting with OQ-22's Clear/confirmation pattern) or show a separate read-only view; how large the resulting link gets and whether that's practical to share (e.g. via text message); and whether this should wait until there's more worth sharing (a priority-weighted Path from OQ-2) or is useful today with just raw levels.
 
+**OQ-36. Stop the scrollwheel from changing a focused number input's value**
+As a player scrolling through a long list of Workshop upgrades or Enhancements, I want the mouse wheel to just scroll the page, so that scrolling while the cursor happens to be over a number input doesn't silently bump its entered level up or down.
+Native browser behavior for `<input type="number">` (`UpgradeLevelInput.jsx`, shared by both the Workshop and Enhancement screens): while focused, a wheel scroll increments/decrements the value instead of scrolling the page. Easy to trigger by accident since every upgrade row is one of these inputs. Likely fix: an `onWheel` handler that blurs the input (or calls `preventDefault`) so scrolling always just scrolls, never edits.
+
 ### Lowest priority
 
 **OQ-21. Consider forking tower-idle-toolkit to contribute corrected Workshop data back**
