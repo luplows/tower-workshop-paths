@@ -1,7 +1,12 @@
 import { WORKSHOP_LEVELS } from 'tower-idle-toolkit'
 import { ENHANCEMENT_CATEGORIES } from '../data/enhancementCategories'
 import { ENHANCEMENT_LEVELS } from '../data/enhancementLevels'
-import { PRIORITY_BASE_NAME, priorityRatio, RANKED_PRIORITY_ORDER } from '../data/enhancementPriority'
+import {
+  FALLBACK_RATIO,
+  PRIORITY_BASE_NAME,
+  priorityRatio,
+  RANKED_PRIORITY_ORDER,
+} from '../data/enhancementPriority'
 import { WORKSHOP_CATEGORIES } from '../data/workshopCategories'
 import { enhancementTreeSpend, isEnhancementCategoryUnlocked } from './enhancementTreeSpend'
 import {
@@ -372,8 +377,20 @@ function resolveBaseCost(cursors, enhancementLevels, enhancementLabLevel) {
   return null
 }
 
-const rankIndex = (name) => {
-  const index = RANKED_PRIORITY_ORDER.indexOf(name)
+// The eHP set only ever ratios Enhancement categories -- a Workshop upgrade
+// always gets FALLBACK_RATIO, even one that happens to share a name with a
+// ranked Enhancement category (e.g. "Health", "Health Regen" are both a
+// Workshop upgrade and an Enhancement category -- see workshopCategories.js/
+// enhancementCategories.js). `priorityRatio`/`RANKED_PRIORITY_ORDER` know
+// nothing about which kind of item a name belongs to, so every caller here
+// must gate on `cursor.source === 'enhancement'` first rather than passing
+// `cursor.name` straight through.
+const cursorPriorityRatio = (cursor) =>
+  cursor.source === 'enhancement' ? priorityRatio(cursor.name) : FALLBACK_RATIO
+
+const cursorRankIndex = (cursor) => {
+  if (cursor.source !== 'enhancement') return RANKED_PRIORITY_ORDER.length
+  const index = RANKED_PRIORITY_ORDER.indexOf(cursor.name)
   return index === -1 ? RANKED_PRIORITY_ORDER.length : index
 }
 
@@ -390,14 +407,19 @@ const rankIndex = (name) => {
  * ```
  *
  * (`Project-Outline.md`, "Core Feature: Recommended Buy Order".) `ratio`
- * comes from `priorityRatio` -- the eHP set's own ratio for one of its 6
- * named Enhancement categories, or FALLBACK_RATIO (1/128) for everything
+ * comes from `cursorPriorityRatio` -- the eHP set's own ratio for one of its
+ * 6 named Enhancement categories, or FALLBACK_RATIO (1/128) for everything
  * else (every Workshop upgrade, the Lab, an unlock-group offer, and the 12
- * Enhancement categories the eHP set doesn't name). Ties are broken first by
- * the eHP set's own priority order (a named category beats an unranked one,
- * and among named categories the higher one wins), then alphabetically by
- * name -- the same final tie-break `getCheapestNextUpgrades` already uses,
- * for the same reason: nothing else distinguishes two fallback-ratio items.
+ * Enhancement categories the eHP set doesn't name). Gated on `cursor.source
+ * === 'enhancement'` before ever looking at `cursor.name` -- a Workshop
+ * upgrade always gets FALLBACK_RATIO even when it happens to share a name
+ * with a ranked Enhancement category (e.g. "Health", "Health Regen" name
+ * both a Workshop upgrade and an Enhancement category), since the eHP set
+ * only ever ranks Enhancements. Ties are broken first by the eHP set's own
+ * priority order (a named Enhancement category beats everything else, and
+ * among named categories the higher one wins), then alphabetically by name
+ * -- the same final tie-break `getCheapestNextUpgrades` already uses, for
+ * the same reason: nothing else distinguishes two fallback-ratio items.
  *
  * The formula's `base` is Coin Bonus (`PRIORITY_BASE_NAME`), the eHP set's
  * own anchor (ratio 1) -- but Coin Bonus is itself a gated, capped
@@ -451,9 +473,9 @@ export function getPrioritizedNextUpgrades(
         continue
       }
 
-      const ratio = priorityRatio(cursor.name)
+      const ratio = cursorPriorityRatio(cursor)
       const score = baseCost == null ? 1 / priced.cost : (ratio * baseCost) / priced.cost
-      const rank = rankIndex(cursor.name)
+      const rank = cursorRankIndex(cursor)
 
       if (
         !best ||

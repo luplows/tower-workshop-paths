@@ -86,6 +86,37 @@ describe('getPrioritizedNextUpgrades (OQ-2)', () => {
     ])
   })
 
+  it('never applies a ranked Enhancement ratio to a same-named Workshop upgrade', () => {
+    // Workshop "Health" and "Health Regen" share the exact same per-batch
+    // cost curve, but also each collide in name with a differently-ranked
+    // Enhancement category (ratio 1/16 and 1/8 respectively). If the ratio
+    // lookup weren't gated on source, Health Regen's higher (wrongly
+    // inherited) ratio would beat Health's, reversing this order outright
+    // rather than just a tie. Gated correctly, both share FALLBACK_RATIO,
+    // so equal cost + equal ratio ties, and the tie-break (alphabetical)
+    // puts Health first, as it would for any other same-cost pair.
+    const enh = maxedEnhancementLevels()
+    enh['Coin Bonus'] = 0
+    const wl = maxedWorkshopLevels()
+    delete wl.Health
+    delete wl['Health Regen']
+
+    const { ranked } = getPrioritizedNextUpgrades(
+      {
+        workshopLevels: wl,
+        unlockedGroups: allUnlockedGroups(),
+        enhancementLabLevel: 1,
+        enhancementLevels: enh,
+      },
+      { rowCap: 2 },
+    )
+
+    expect(ranked.map((e) => [e.source, e.name])).toEqual([
+      ['workshop', 'Health'],
+      ['workshop', 'Health Regen'],
+    ])
+  })
+
   describe('while Coin Bonus is locked (Utility tree under its 50B threshold)', () => {
     it('uses the coins still needed to cross the threshold as the score base, via Cash Bonus', () => {
       // Cash Bonus at level 9 has spent 49.01B of the 50B Utility needs to
