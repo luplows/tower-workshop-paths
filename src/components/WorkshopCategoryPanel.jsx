@@ -7,20 +7,24 @@ import {
 } from '../utils/workshopUnlockGroups'
 import { UpgradeLevelInput } from './UpgradeLevelInput'
 
-// Two independent, unrelated gates can lock a row here, one per system:
+// Two independent, unrelated gates can hide an upgrade here, one per
+// system:
 // - Enhancement categories carry `unlocksAt` (a plain Workshop upgrade
 //   never does) -- each later category in a tree stays locked, showing a
-//   note, until the tree's cumulative spend crosses its threshold
-//   (Project-Outline.md's "Workshop Enhancements" section, OQ-6).
+//   note in its usual place, until the tree's cumulative spend crosses its
+//   threshold (Project-Outline.md's "Workshop Enhancements" section, OQ-6).
 // - Workshop upgrades belong to an unlock group (`onUnlockGroup` is only
 //   ever passed by the Upgrade screen -- Enhance leaves it undefined, so
 //   this branch never runs there, guarding against a false-positive group
 //   match since category ids, and even some names, overlap between the two
-//   systems), and a tree's paid groups unlock in order (OQ-5) -- only the
-//   one currently purchasable shows an inline "Unlock" button; a later
-//   group's upgrades show a note naming the group actually blocking
-//   progress instead, since they aren't purchasable yet regardless of
-//   their own group's cost.
+//   systems), and a tree's paid groups unlock in order (OQ-5). Unlike the
+//   Enhancement gate, a locked Workshop upgrade isn't shown as a row at
+//   all -- with several groups' worth potentially still locked, a row (or
+//   button) per upgrade got noisy. Instead, every currently-locked upgrade
+//   is hidden entirely, and a single Unlock button for the tree's one
+//   currently-purchasable group appears once, below the visible upgrades
+//   -- the same "one button, not a row" shape as the Enhance screen's own
+//   Lab-unlock prompt.
 export function WorkshopCategoryPanel({
   category,
   levels,
@@ -61,27 +65,7 @@ export function WorkshopCategoryPanel({
         const groupLocked =
           unlockGroup?.cost > 0 &&
           !isWorkshopUpgradeUnlocked(category.id, upgrade.name, unlockedGroups)
-        if (groupLocked) {
-          const isNextUp = unlockGroup === purchasableGroup
-          return (
-            <div key={upgrade.name} className="upgrade-row upgrade-row--locked">
-              <span className="upgrade-row__label">{`${upgrade.name}${nameSuffix}`}</span>
-              {isNextUp ? (
-                <button
-                  type="button"
-                  className="upgrade-row__unlock"
-                  onClick={() => onUnlockGroup(category.id, unlockGroup.name)}
-                >
-                  Unlock &quot;{unlockGroup.name}&quot; ({formatCoins(unlockGroup.cost)})
-                </button>
-              ) : (
-                <span className="upgrade-row__locked-note">
-                  Locked until &quot;{purchasableGroup.name}&quot; is unlocked
-                </span>
-              )}
-            </div>
-          )
-        }
+        if (groupLocked) return null
 
         return (
           <UpgradeLevelInput
@@ -94,6 +78,15 @@ export function WorkshopCategoryPanel({
           />
         )
       })}
+      {purchasableGroup && (
+        <button
+          type="button"
+          className="category-panel__unlock"
+          onClick={() => onUnlockGroup(category.id, purchasableGroup.name)}
+        >
+          Unlock &quot;{purchasableGroup.name}&quot; ({formatCoins(purchasableGroup.cost)})
+        </button>
+      )}
     </div>
   )
 }

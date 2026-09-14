@@ -96,7 +96,7 @@ describe('WorkshopCategoryPanel', () => {
       expect(screen.getByLabelText('Range')).toBeInTheDocument()
     })
 
-    it("shows an inline Unlock button instead of the input for a locked group's upgrade", () => {
+    it("hides a locked group's upgrade entirely and shows a single Unlock button below the visible upgrades instead", () => {
       render(
         <WorkshopCategoryPanel
           category={attackWorkshopTree}
@@ -108,7 +108,7 @@ describe('WorkshopCategoryPanel', () => {
       )
 
       expect(screen.queryByLabelText('Range')).not.toBeInTheDocument()
-      expect(screen.getByText('Range')).toBeInTheDocument()
+      expect(screen.queryByText('Range')).not.toBeInTheDocument()
       expect(
         screen.getByRole('button', { name: 'Unlock "Range Upgrades" (50 coins)' }),
       ).toBeInTheDocument()
@@ -173,7 +173,7 @@ describe('WorkshopCategoryPanel', () => {
         ],
       }
 
-      it("shows a blocked note (no button) for a later group's upgrade, naming the group actually blocking it", () => {
+      it("hides a later group's upgrade too, showing only the one Unlock button for the group actually next", () => {
         render(
           <WorkshopCategoryPanel
             category={treeWithTwoPaidGroups}
@@ -190,10 +190,9 @@ describe('WorkshopCategoryPanel', () => {
         expect(
           screen.queryByRole('button', { name: /Multishot Upgrades/ }),
         ).not.toBeInTheDocument()
-        expect(screen.getByText('Multishot Chance')).toBeInTheDocument()
-        expect(
-          screen.getByText('Locked until "Range Upgrades" is unlocked'),
-        ).toBeInTheDocument()
+        expect(screen.queryByText('Multishot Chance')).not.toBeInTheDocument()
+        // Exactly one Unlock button total, not one per hidden upgrade.
+        expect(screen.getAllByRole('button', { name: /^Unlock/ })).toHaveLength(1)
       })
 
       it('shows the Unlock button for the next group only once the earlier one is purchased', () => {

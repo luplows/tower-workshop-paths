@@ -47,20 +47,21 @@ test('hard-caps an entered level at the upgrade max', async ({ page }) => {
   await expect(thornsInput).toHaveValue('99')
 })
 
-test('shows the first locked group as an inline Unlock button, and buying it reveals its inputs (OQ-5)', async ({
+test('hides every locked upgrade and shows a single Unlock button for the next group, revealing its inputs once bought (OQ-5)', async ({
   page,
 }) => {
   await page.getByRole('tab', { name: 'Defense', exact: true }).click()
 
+  // Every upgrade behind a not-yet-purchased group is hidden entirely --
+  // not shown as a locked row -- so only one Unlock button appears for the
+  // whole tree, for "Defense Upgrades" (the 1st paid group).
   await expect(page.getByLabel('Defense Percent', { exact: true })).not.toBeVisible()
-  await expect(page.getByText('Defense Percent', { exact: true })).toBeVisible()
-  // "Defense Upgrades" gates two upgrades (Defense Percent and Defense
-  // Absolute), so its Unlock button appears once per row -- either buys the
-  // same group.
-  const unlockButton = page
-    .getByRole('button', { name: 'Unlock "Defense Upgrades" (75 coins)' })
-    .first()
+  await expect(page.getByText('Defense Percent', { exact: true })).not.toBeVisible()
+  await expect(page.getByLabel('Thorns', { exact: true })).not.toBeVisible()
+  await expect(page.getByText('Thorns', { exact: true })).not.toBeVisible()
+  const unlockButton = page.getByRole('button', { name: 'Unlock "Defense Upgrades" (75 coins)' })
   await expect(unlockButton).toBeVisible()
+  await expect(page.getByRole('button', { name: /^Unlock/ })).toHaveCount(1)
 
   await unlockButton.click()
 
@@ -68,33 +69,15 @@ test('shows the first locked group as an inline Unlock button, and buying it rev
   await expect(page.getByLabel('Defense Absolute', { exact: true })).toBeVisible()
   await expect(unlockButton).not.toBeVisible()
 
+  // Thorns (2nd paid group) is still hidden, but now behind its own Unlock
+  // button rather than "Defense Upgrades"'s.
+  await expect(page.getByLabel('Thorns', { exact: true })).not.toBeVisible()
+  await expect(page.getByText('Thorns', { exact: true })).not.toBeVisible()
+  await expect(
+    page.getByRole('button', { name: 'Unlock "Thorn Upgrades" (500 coins)' }),
+  ).toBeVisible()
+
   await page.reload()
   await page.getByRole('tab', { name: 'Defense', exact: true }).click()
   await expect(page.getByLabel('Defense Percent', { exact: true })).toBeVisible()
-})
-
-test("blocks a later group's upgrades until every earlier group in the tree is bought first (OQ-5)", async ({
-  page,
-}) => {
-  await page.getByRole('tab', { name: 'Defense', exact: true }).click()
-
-  // Thorns (2nd paid group) shows a blocked note, not an Unlock button --
-  // "Defense Upgrades" (1st) hasn't been bought yet.
-  await expect(page.getByLabel('Thorns', { exact: true })).not.toBeVisible()
-  await expect(page.getByText('Thorns', { exact: true })).toBeVisible()
-  await expect(page.getByRole('button', { name: /Thorn Upgrades/ })).not.toBeVisible()
-  // Every later-group upgrade in the tree (not just Thorns) shows the same
-  // blocked note, since they're all waiting on the same next group.
-  await expect(
-    page.getByText('Locked until "Defense Upgrades" is unlocked').first(),
-  ).toBeVisible()
-
-  await page
-    .getByRole('button', { name: 'Unlock "Defense Upgrades" (75 coins)' })
-    .first()
-    .click()
-
-  // Now Thorns is next -- its own Unlock button appears.
-  await expect(page.getByRole('button', { name: 'Unlock "Thorn Upgrades" (500 coins)' })).toBeVisible()
-  await expect(page.getByLabel('Thorns', { exact: true })).not.toBeVisible()
 })

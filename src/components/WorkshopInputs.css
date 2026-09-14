@@ -73,20 +73,21 @@
   opacity: 0.55;
 }
 
-.upgrade-row__unlock {
+.category-panel__unlock {
+  align-self: center;
+  margin-top: 4px;
   font: inherit;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
-  padding: 6px 12px;
+  padding: 10px 20px;
   border-radius: 999px;
   border: 1px solid var(--accent-border);
   background: var(--accent-bg);
   color: var(--accent);
   cursor: pointer;
-  white-space: nowrap;
 }
 
-.upgrade-row__unlock:hover {
+.category-panel__unlock:hover {
   background: var(--accent);
   color: var(--bg);
 }
