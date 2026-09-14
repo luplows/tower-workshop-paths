@@ -14,6 +14,9 @@ function App() {
 
   return (
     <div className="app">
+      <header className="app__header">
+        <h1 className="app__title">Workshop Input</h1>
+      </header>
       <ModeTabBar modes={MODES} activeModeId={modeId} onSelect={setModeId} />
       <div
         role="tabpanel"

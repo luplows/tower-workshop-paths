@@ -6,7 +6,7 @@ export function WorkshopCategoryPanel({ category, levels, onLevelChange, formatV
       role="tabpanel"
       id={`panel-${category.id}`}
       aria-labelledby={`tab-${category.id}`}
-      className="category-panel"
+      className={`category-panel category-panel--${category.id}`}
     >
       {category.upgrades.map((upgrade) => (
         <UpgradeLevelInput

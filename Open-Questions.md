@@ -42,21 +42,25 @@ Offer two views of the same underlying purchase sequence: a granular step-by-ste
 As a player who checks this tool while actually playing on my phone, I want the phone-mimicking layout to work correctly on a real touch device, so that it's usable in the situation it's designed for.
 Only checked in a desktop browser at a fixed width so far.
 
-**OQ-10. Add a title/header to the screen**
-As a player, I want the app to show what it is, so that it doesn't open on an unlabeled screen.
-UI polish, not started.
-
-**OQ-11. Color category tabs to match their in-game trees**
-As a player familiar with the game's own color-coding, I want the Attack/Defense/Utility tabs colored the way they are in-game, so that I can navigate by color the way I already do in the game.
-Attack (blue), Defense (red), Utility (yellow). UI polish, not started.
-
 **OQ-12. Reduce production bundle size**
 As a maintainer, I want the shipped JS bundle to only include what the app uses, so that load time doesn't suffer as real usage grows.
 Currently ~2.4MB minified, mostly `tower-idle-toolkit`'s bundled game data (labs, cards, bots, etc. we don't use). Worth revisiting with code-splitting or a narrower import once the app has more real usage to justify the effort. Not currently blocking anything.
 
+**OQ-16. Persist the selected category tab across mode switches**
+As a player switching between Upgrade and Enhance, I want the app to remember which tree tab (Attack/Defense/Utility) I had open, so that I don't land back on Attack every time I switch modes.
+Currently each mode's `CategoryLevelInputs` instance keeps its own `activeCategoryId` in local component state, defaulting to the first category (`categories[0].id`) on every mount — since `App.jsx` unmounts one screen and mounts the other on a mode switch, the selected tree tab resets rather than carrying over. Contrast with the mode selection itself (OQ-14's `workshopMode` in `localStorage`), which already persists. Open design question: should the two screens share one selected tree tab, or track their own independently but remember each on return?
+
 ---
 
 ## Completed
+
+**OQ-10. Add a title/header to the screen**
+As a player, I want the app to show what it is, so that it doesn't open on an unlabeled screen.
+`App.jsx` now renders a header above the mode tab bar with the app's title, "Workshop Input" (`.app__header`/`.app__title` in `App.css`).
+
+**OQ-11. Color category tabs to match their in-game trees**
+As a player familiar with the game's own color-coding, I want the Attack/Defense/Utility tabs colored the way they are in-game, so that I can navigate by color the way I already do in the game.
+The active category tab (`BottomTabBar`, shared by both the Upgrade and Enhance screens) is colored per tree — Attack blue, Defense red, Utility a readable gold/yellow — via `--tree-attack`/`--tree-defense`/`--tree-utility` CSS variables (`index.css`) and a per-category `bottom-tab-bar__tab--<id>` class (`WorkshopInputs.css`). The active tab's screen (`category-panel--<id>`) and the active tab button itself both get a light background tint of the same color (`--tree-*-bg`), so the coloring carries from the tab down into the screen behind it. Inactive tabs stay neutral.
 
 **OQ-13. Confirm Workshop upgrade max levels for the current patch**
 As a player, I want the max level shown/enforced for each Workshop upgrade to match the current patch, so that `UpgradeLevelInput`'s hard cap never blocks a valid entry or accepts an invalid one.
