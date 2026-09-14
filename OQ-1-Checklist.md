@@ -4,162 +4,161 @@ Tracking checklist for [Open-Questions.md](Open-Questions.md)'s OQ-1 — working
 
 ## How to verify each upgrade
 
-- **Max level**: in-game, max out the upgrade (or check its listed cap) and compare against the "current data" value noted below for that upgrade. If it differs, add/update an entry in `src/data/workshopQuantityOverrides.js` (see OQ-13 — five upgrades are already corrected there) and update `WORKSHOP_QUANTITY_OVERRIDES`'s snapshot test (`workshopCategories.test.js`) with `vitest -u` after reviewing the diff.
-- **Costs**: spot-check a few levels (e.g. level 1, a mid-range level, and the level just before max) against what's shown in-game, comparing to `WORKSHOP_LEVELS[name][level].coins` from `tower-idle-toolkit` — either via `node -e "console.log(require('tower-idle-toolkit').WORKSHOP_LEVELS['<name>']['<level>'])"` or by inspecting `node_modules/tower-idle-toolkit/build/data/workshop.json` directly. There's no override mechanism yet for per-level costs (unlike max level) — if a cost is wrong, note it inline below and flag a new item in `Open-Questions.md`, since a fix will need one designed.
-- **Known gap, don't re-discover it**: Health, Health Regen, Recovery Amount, and Max Recovery have *no* cost data at all beyond `tower-idle-toolkit`'s old (lower, pre-correction) idea of max level — see OQ-1 and `src/utils/cheapestNextUpgrades.js`'s handling of it. Their "costs" checkbox here is about the *covered* range (0 up to the old ceiling), not the known-missing tail.
-- Check a box only once you've actually compared against the game, not just re-read the code.
-
-Current data quantities below reflect `WORKSHOP_QUANTITY_OVERRIDES`-corrected values (OQ-13) as of this checklist's creation — re-derive from `src/data/workshopCategories.js` if you suspect it's drifted.
+- **Max level**: in-game, max out the upgrade (or check its listed cap) and compare against the "current data max" value noted below for that upgrade. If it differs, add/update an entry in `src/data/workshopQuantityOverrides.js` (see OQ-13 — five upgrades are already corrected there) and update `WORKSHOP_QUANTITY_OVERRIDES`'s snapshot test (`workshopCategories.test.js`) with `vitest -u` after reviewing the diff.
+- **Costs**: each entry below lists three spot-check values pulled directly from `tower-idle-toolkit`'s `WORKSHOP_LEVELS[name][level].coins` — the coin cost to buy that level from the one before it — at level 1, a mid-range level, and the highest level covered by the data. Compare these against what the game actually shows at those levels. If a value's wrong, note it inline (e.g. "Lv1: data says 55, game shows 60") and flag a new item in `Open-Questions.md`, since there's no override mechanism yet for per-level costs (unlike max level).
+- **Missing cost data**: four upgrades have a `GAP` noted below — `WORKSHOP_LEVELS` has no real cost data at all past a certain level (its last entry there is a `coins: 0` sentinel, not a real cost), because their max level was corrected upward (OQ-13) without the toolkit's cost table being extended to match. Nothing to verify in the gap range; it's a known missing-data item for OQ-1, not something to re-derive here. See `src/utils/cheapestNextUpgrades.js`'s handling of it.
+- Check a box only once you've actually compared against the game, not just re-read the code or this checklist.
+- Values here were pulled once, at this checklist's creation — re-derive from `tower-idle-toolkit` (`node -e "console.log(require('tower-idle-toolkit').WORKSHOP_LEVELS['<name>']['<level>'])"`) if you suspect either it or `src/data/workshopCategories.js`'s quantities have drifted since.
 
 ## Attack
 
-- [ ] **Damage** (current data max: 6000)
+- [ ] **Damage** (current data max: 6000) — Lv1: 55 · Lv2999: 276,505,730 · Lv5999: 5,102,919,181,957
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
-- [ ] **Attack Speed** (current data max: 99)
+- [ ] **Attack Speed** (current data max: 99) — Lv1: 56 · Lv49: 23,612 · Lv98: 118,796
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
-- [ ] **Critical Chance** (current data max: 79)
+- [ ] **Critical Chance** (current data max: 79) — Lv1: 76 · Lv39: 11,987 · Lv78: 59,184
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
-- [ ] **Critical Factor** (current data max: 150)
+- [ ] **Critical Factor** (current data max: 150) — Lv1: 75 · Lv74: 40,627 · Lv149: 26,237,981,683
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
-- [ ] **Range** (current data max: 79)
+- [ ] **Range** (current data max: 79) — Lv1: 78 · Lv39: 12,459 · Lv78: 61,396
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
-- [ ] **Damage / Meter** (current data max: 200)
+- [ ] **Damage / Meter** (current data max: 200) — Lv1: 78 · Lv99: 104,252 · Lv199: 28,361,544,890,870
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
-- [ ] **Multishot Chance** (current data max: 99)
+- [ ] **Multishot Chance** (current data max: 99) — Lv1: 103 · Lv49: 27,695 · Lv98: 141,997
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
-- [ ] **Multishot Targets** (current data max: 7)
+- [ ] **Multishot Targets** (current data max: 7) — Lv1: 2,000 · Lv3: 12,500 · Lv6: 350,000
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
-- [ ] **Rapid Fire Chance** (current data max: 85)
+- [ ] **Rapid Fire Chance** (current data max: 85) — Lv1: 183 · Lv42: 21,747 · Lv84: 108,049
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
-- [ ] **Rapid Fire Duration** (current data max: 99)
+- [ ] **Rapid Fire Duration** (current data max: 99) — Lv1: 183 · Lv49: 30,339 · Lv98: 152,787
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
-- [ ] **Bounce Shot Chance** (current data max: 85)
+- [ ] **Bounce Shot Chance** (current data max: 85) — Lv1: 279 · Lv42: 25,151 · Lv84: 125,579
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
-- [ ] **Bounce Shot Targets** (current data max: 7)
+- [ ] **Bounce Shot Targets** (current data max: 7) — Lv1: 3,000 · Lv3: 25,000 · Lv6: 650,000
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
-- [ ] **Bounce Shot Range** (current data max: 60)
+- [ ] **Bounce Shot Range** (current data max: 60) — Lv1: 279 · Lv29: 11,573 · Lv59: 1,230,739,761,537
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
-- [ ] **Super Crit Chance** (current data max: 100)
+- [ ] **Super Crit Chance** (current data max: 100) — Lv1: 125,006 · Lv49: 7,372,947,656 · Lv99: 355,491,582,265
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
-- [ ] **Super Crit Mult** (current data max: 120)
+- [ ] **Super Crit Mult** (current data max: 120) — Lv1: 80,005 · Lv59: 5,538,511,397 · Lv119: 28,697,622,982,251
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
-- [ ] **Rend Armor Chance** (current data max: 299 — OQ-13 correction)
+- [ ] **Rend Armor Chance** (current data max: 299 — OQ-13 correction) — Lv1: 603,000,005 · Lv149: 2,737,713,007,833 · Lv298: 19,834,161,062,191,700
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
-- [ ] **Rend Armor Mult** (current data max: 299)
+- [ ] **Rend Armor Mult** (current data max: 299) — Lv1: 602,500,005 · Lv149: 8,209,630,478,406 · Lv298: 595,007,103,327,681,000
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
 
 ## Defense
 
-- [ ] **Health** (current data max: 6000 — OQ-13 correction; known cost-data gap past level 5000, see above)
+- [ ] **Health** (current data max: 6000 — OQ-13 correction) — Lv1: 55 · Lv2500: 170,119,377 · Lv5000: 0 (sentinel, not real) — **GAP: cost data missing for levels 5001–5999**
   - [ ] Max level confirmed
   - [ ] Costs spot-checked (covered range only)
-- [ ] **Health Regen** (current data max: 6000 — OQ-13 correction; known cost-data gap past level 5000, see above)
+- [ ] **Health Regen** (current data max: 6000 — OQ-13 correction) — Lv1: 55 · Lv2500: 170,119,377 · Lv5000: 0 (sentinel, not real) — **GAP: cost data missing for levels 5001–5999**
   - [ ] Max level confirmed
   - [ ] Costs spot-checked (covered range only)
-- [ ] **Defense Percent** (current data max: 99)
+- [ ] **Defense Percent** (current data max: 99) — Lv1: 76 · Lv49: 18,329 · Lv98: 90,728
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
-- [ ] **Defense Absolute** (current data max: 5000)
+- [ ] **Defense Absolute** (current data max: 5000) — Lv1: 75 · Lv2499: 169,967,763 · Lv4999: 797,447,804
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
-- [ ] **Thorns** (current data max: 99)
+- [ ] **Thorns** (current data max: 99) — Lv1: 85 · Lv49: 15,585 · Lv98: 75,554
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
-- [ ] **Lifesteal** (current data max: 80)
+- [ ] **Lifesteal** (current data max: 80) — Lv1: 86 · Lv39: 12,000 · Lv79: 61,323
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
-- [ ] **Knockback Chance** (current data max: 80)
+- [ ] **Knockback Chance** (current data max: 80) — Lv1: 113 · Lv39: 13,111 · Lv79: 66,335
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
-- [ ] **Knockback Force** (current data max: 40)
+- [ ] **Knockback Force** (current data max: 40) — Lv1: 113 · Lv19: 3,109 · Lv39: 14,013
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
-- [ ] **Orb Speed** (current data max: 38)
+- [ ] **Orb Speed** (current data max: 38) — Lv1: 163 · Lv18: 5,429 · Lv37: 29,733
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
-- [ ] **Orbs** (current data max: 4)
+- [ ] **Orbs** (current data max: 4) — Lv1: 20,000 · Lv3: 350,000
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
-- [ ] **Shockwave Size** (current data max: 35)
+- [ ] **Shockwave Size** (current data max: 35) — Lv1: 314 · Lv17: 10,090 · Lv34: 59,602
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
-- [ ] **Shockwave Frequency** (current data max: 40)
+- [ ] **Shockwave Frequency** (current data max: 40) — Lv1: 314 · Lv19: 13,299 · Lv39: 85,599
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
-- [ ] **Land Mine Chance** (current data max: 50)
+- [ ] **Land Mine Chance** (current data max: 50) — Lv1: 755 · Lv24: 133,095 · Lv49: 1,255,458
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
-- [ ] **Land Mine Damage** (current data max: 200)
+- [ ] **Land Mine Damage** (current data max: 200) — Lv1: 755 · Lv99: 25,571,694 · Lv199: 217,605,876,374,893
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
-- [ ] **Land Mine Radius** (current data max: 50)
+- [ ] **Land Mine Radius** (current data max: 50) — Lv1: 805 · Lv24: 194,209 · Lv49: 19,815,023,750
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
-- [ ] **Death Defy** (current data max: 75)
+- [ ] **Death Defy** (current data max: 75) — Lv1: 1,506 · Lv37: 7,203,222 · Lv74: 110,498,817
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
-- [ ] **Wall Health** (current data max: 1800)
+- [ ] **Wall Health** (current data max: 1800) — Lv1: 8,400,003 · Lv899: 127,629,117,951 · Lv1799: 108,448,766,883,393
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
-- [ ] **Wall Rebuild** (current data max: 300)
+- [ ] **Wall Rebuild** (current data max: 300) — Lv1: 16,800,005 · Lv149: 2,117,081,457 · Lv299: 923,563,988,198
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
 
 ## Utility
 
-- [ ] **Cash Bonus** (current data max: 149)
+- [ ] **Cash Bonus** (current data max: 149) — Lv1: 56 · Lv74: 57,788 · Lv148: 352,359
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
-- [ ] **Cash / Wave** (current data max: 149)
+- [ ] **Cash / Wave** (current data max: 149) — Lv1: 56 · Lv74: 57,788 · Lv148: 352,359
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
-- [ ] **Coins / Kill Bonus** (current data max: 149)
+- [ ] **Coins / Kill Bonus** (current data max: 149) — Lv1: 83 · Lv74: 74,700 · Lv148: 467,977
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
-- [ ] **Coins / Wave** (current data max: 149)
+- [ ] **Coins / Wave** (current data max: 149) — Lv1: 83 · Lv74: 74,700 · Lv148: 467,977
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
-- [ ] **Free Attack Upgrade** (current data max: 99)
+- [ ] **Free Attack Upgrade** (current data max: 99) — Lv1: 118 · Lv49: 26,529 · Lv98: 133,873
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
-- [ ] **Free Defense Upgrade** (current data max: 99)
+- [ ] **Free Defense Upgrade** (current data max: 99) — Lv1: 118 · Lv49: 26,529 · Lv98: 133,873
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
-- [ ] **Free Utility Upgrade** (current data max: 99)
+- [ ] **Free Utility Upgrade** (current data max: 99) — Lv1: 143 · Lv49: 26,554 · Lv98: 133,901
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
-- [ ] **Interest / Wave** (current data max: 99)
+- [ ] **Interest / Wave** (current data max: 99) — Lv1: 179 · Lv49: 45,852 · Lv98: 252,466
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
-- [ ] **Recovery Amount** (current data max: 300 — OQ-13 correction; known cost-data gap past level 60, see above)
+- [ ] **Recovery Amount** (current data max: 300 — OQ-13 correction) — Lv1: 1,055 · Lv30: 1,889,703 · Lv60: 0 (sentinel, not real) — **GAP: cost data missing for levels 61–299**
   - [ ] Max level confirmed
   - [ ] Costs spot-checked (covered range only)
-- [ ] **Max Recovery** (current data max: 500 — OQ-13 correction; known cost-data gap past level 50, see above)
+- [ ] **Max Recovery** (current data max: 500 — OQ-13 correction) — Lv1: 1,055 · Lv25: 946,158 · Lv50: 0 (sentinel, not real) — **GAP: cost data missing for levels 51–499**
   - [ ] Max level confirmed
   - [ ] Costs spot-checked (covered range only)
-- [ ] **Package Chance** (current data max: 60)
+- [ ] **Package Chance** (current data max: 60) — Lv1: 1,055 · Lv29: 1,661,541 · Lv59: 25,404,002
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
-- [ ] **Enemy Attack Level Skip** (current data max: 699)
+- [ ] **Enemy Attack Level Skip** (current data max: 699) — Lv1: 316,000,004 · Lv349: 7,619,015,471,279 · Lv698: 4,555,412,346,950,580,000
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
-- [ ] **Enemy Health Level Skip** (current data max: 699)
+- [ ] **Enemy Health Level Skip** (current data max: 699) — Lv1: 316,000,004 · Lv349: 7,619,015,471,279 · Lv698: 4,555,412,346,950,580,000
   - [ ] Max level confirmed
   - [ ] Costs spot-checked
