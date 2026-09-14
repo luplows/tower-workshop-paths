@@ -6,17 +6,39 @@ Each story has a permanent number (e.g. "OQ-7") for easy reference. Numbers are 
 
 ## Outstanding
 
+Roughly ordered by priority within each tier below; re-evaluate as work lands. A story's number never changes, only its position in this list.
+
+### Do next
+
+**OQ-20. Add Path test coverage for realistic, non-empty starting levels**
+As a maintainer, I want test coverage that reflects an actual player's Workshop state, so that a bug specific to mid- or late-game levels doesn't slip through tests that only ever start from empty.
+`cheapestNextUpgrades.test.js` currently only exercises two shapes: everything at level 0 (the default/tie-break tests), and single-upgrade isolation fixtures (every other upgrade maxed out) built for OQ-19's repeat/rowCap/mid-simulation-discovery tests. Nothing tests a realistic *mixed* state — many upgrades simultaneously at varied non-zero levels, the way `workshopLevels` would actually look for someone who's been playing a while. Useful scenarios: (1) a representative mid-game snapshot (a handful of upgrades noticeably ahead of the rest) confirming the ranked list stays cost-ascending and sane; (2) multiple upgrades simultaneously past their cost-data ceiling at once (today's tests only ever put one, Health, in that state) to make sure they don't interfere with each other's `unknownCost` reporting; (3) a late-game snapshot where most/all upgrades are already high-level, so remaining next-costs are all large, confirming no off-by-one or infinite-loop-style bug once the cheap early tiers are gone.
+
+**OQ-7. Implement batch buying**
+As a player, I want the recommended buy order to reflect how I actually purchase in-game (multiple levels at once), so that the steps match real button presses.
+**Not just presentation — this changes the ranking math itself.** The Path list (OQ-17/OQ-19) currently ranks by single-level cost, but for upgrades with >1000 max levels you can't actually buy just one level in-game — the real minimum purchase is a 100-level batch (10 otherwise, see `Project-Outline.md`); Enhancements are always bought 1 level at a time, not batched. That means the Path list may currently be recommending purchases cheaper than what's actually purchasable, and once batch cost (the sum of N consecutive per-level costs) replaces single-level cost, the relative ordering of what's "cheapest next" can genuinely change, not just how many levels a recommended step covers. Unresolved: how to handle a partial batch when fewer than N levels remain before max level.
+
+**OQ-18. Let the user buy directly from the Upgrade Path list**
+As a player looking at the Path screen, I want a Buy button on each row, so that buying updates my entered Workshop level without switching back to the Upgrade screen and typing it in by hand.
+Builds on OQ-17's ranked list (`UpgradePath`). Buying a row should increment that upgrade's level in the same `workshopLevels` `localStorage` state the Upgrade screen reads/writes, then the list should re-rank immediately (next cheapest becomes the new top row). Best sequenced after OQ-7 lands, so the button buys a correct batch rather than needing rework once batching changes what a valid purchase is.
+
+### Foundational correctness
+
 **OQ-1. Verify Workshop upgrade per-level cost accuracy**
 As a player, I want the coins/cash cost shown for each Workshop upgrade level to match the current patch, so that the buy-order algorithm (OQ-2) recommends real spending, not stale numbers.
-Only `quantity` (max level) has been verified so far (OQ-13) — the actual `cash`/`coins` cost figures in `WORKSHOP_LEVELS` (from `tower-idle-toolkit`) haven't been individually spot-checked. An unverified stale cost would produce a wrong recommendation even with correct quantities, and matters more than the max-level task did. **Confirmed gap (via OQ-17):** for the 4 upgrades whose `quantity` was corrected upward past `tower-idle-toolkit`'s own belief (Health, Health Regen, Recovery Amount, Max Recovery — see OQ-13), `WORKSHOP_LEVELS` simply has no cost data past the toolkit's old, lower ceiling (its last entry there is a `coins: 0` "nothing more to buy" sentinel, not a real cost). `getCheapestNextUpgrades` (`src/utils/cheapestNextUpgrades.js`) treats that as unknown rather than a real 0-coin upgrade, but the underlying data gap itself is still unresolved.
-
-**OQ-2. Implement the core, priority-weighted buy-order algorithm**
-As a player, I want the app to recommend which Workshop upgrade to buy next according to my priorities, so that I know how to spend my coins efficiently even when the cheapest option isn't what I value most.
-The full scoring formula (ratio × relative cost) is designed and hand-verified (`Project-Outline.md`, "Core Feature: Recommended Buy Order"), and current-level input UI exists for both Workshop upgrades and Enhancements, but there's no code yet that weighs cost against a priority list — this is the tool's actual core feature and still unbuilt. OQ-17 is a first, priority-free cut (cheapest cost only); OQ-3's predefined priority list and OQ-4/OQ-5/OQ-6/OQ-7 (discounts, unlock gates, Enhancement gating, batching) are all refinements on top of this one once it exists.
+Only `quantity` (max level) has been verified so far (OQ-13) — the actual `cash`/`coins` cost figures in `WORKSHOP_LEVELS` (from `tower-idle-toolkit`) haven't been individually spot-checked. An unverified stale cost would produce a wrong recommendation even with correct quantities, and matters more than the max-level task did. **Confirmed gap (via OQ-17):** for the 4 upgrades whose `quantity` was corrected upward past `tower-idle-toolkit`'s own belief (Health, Health Regen, Recovery Amount, Max Recovery — see OQ-13), `WORKSHOP_LEVELS` simply has no cost data past the toolkit's old, lower ceiling (its last entry there is a `coins: 0` "nothing more to buy" sentinel, not a real cost). `getCheapestNextUpgrades` (`src/utils/cheapestNextUpgrades.js`) treats that as unknown rather than a real 0-coin upgrade, but the underlying data gap itself is still unresolved. **Tracking checklist:** [`OQ-1-Checklist.md`](OQ-1-Checklist.md) — one entry per upgrade, to work through 1 by 1.
 
 **OQ-3. Source a predefined community-recommended priority order**
 As a new player, I want a sensible default spend-priority list, so that I don't have to build one from scratch before the tool is useful.
-Nothing researched yet; a goal noted in `Project-Outline.md`'s "Priorities" section.
+Nothing researched yet; a goal noted in `Project-Outline.md`'s "Priorities" section. OQ-2 needs this to be usable at all, but it's pure research/no code dependency, so it can happen in parallel with anything else.
+
+### Core feature
+
+**OQ-2. Implement the core, priority-weighted buy-order algorithm**
+As a player, I want the app to recommend which Workshop upgrade to buy next according to my priorities, so that I know how to spend my coins efficiently even when the cheapest option isn't what I value most.
+The full scoring formula (ratio × relative cost) is designed and hand-verified (`Project-Outline.md`, "Core Feature: Recommended Buy Order"), and current-level input UI exists for both Workshop upgrades and Enhancements, but there's no code yet that weighs cost against a priority list — this is the tool's actual core feature and still unbuilt. OQ-17 is a first, priority-free cut (cheapest cost only); OQ-4/OQ-5/OQ-6 (discounts, unlock gates, Enhancement gating) are refinements on top of this one once it exists. Makes most sense once OQ-1 (trustworthy costs) and OQ-3 (a priority list to weigh against) are in reasonable shape.
+
+### Refinements on OQ-2
 
 **OQ-4. Apply Workshop discount-lab savings to costs**
 As a player who has leveled up my Workshop discount labs, I want the buy-order algorithm (and any displayed cost) to reflect my actual discounted price, so that recommendations aren't based on full price.
@@ -30,13 +52,13 @@ Confirmed in `tower-idle-toolkit`: `ATTACK_UNLOCKS` / `DEFENSE_UNLOCKS` / `UTILI
 As a player, I want the buy-order algorithm to know which Enhancement categories I can currently afford to unlock, so that it doesn't recommend one I haven't reached yet.
 Unlike Workshop's one-time unlock purchases, an Enhancement category unlocks once *cumulative coins spent on that tree's other enhancements* crosses a threshold (50B → 500B → 5T → 50T → 500T — see `Project-Outline.md`). Needs the algorithm to track running per-tree Enhancement spend, not just current levels. The whole Enhancement system must also be treated as locked until the one-time "Workshop Enhancements" Lab is completed — there's no input for that Lab yet, and its coin cost is still unknown (along with the per-level values of the parallel "Enhancements Discount" Lab), per the community sheet.
 
-**OQ-7. Implement batch buying**
-As a player, I want the recommended buy order to reflect how I actually purchase in-game (multiple levels at once), so that the steps match real button presses.
-The buy order should recommend Workshop upgrade purchases in batches (100 levels at a time for anything with >1000 max levels, 10 otherwise — see `Project-Outline.md`); Enhancements are always bought 1 level at a time, not batched. Unresolved: how the score formula's "next cost" should be computed for a batch (sum of N consecutive per-level costs rather than a single level's cost); how to handle a partial batch when fewer than N levels remain before max level.
+### Depends on the above being mature
 
 **OQ-8. Recommend a full workshop buy-out from lifetime coins**
 As a player who doesn't want to enter every current level by hand, I want to enter my lifetime coins and coins spent on Labs and get a full recommended buy order simulated from zero, so that I can see the whole plan at once.
 Offer two views of the same underlying purchase sequence: a granular step-by-step list (e.g. 100 Health, 100 Regen, 100 Health, ...) and a simplified rollup grouping consecutive/total purchases per upgrade (e.g. 5000 Health, 5000 Regen) — the simplified view should be a group-by of the granular sequence, not a separate calculation, so the two can't drift out of sync. Blocked on OQ-2; since a from-zero simulation can't defer decisions the way manual level entry currently does, it also forces resolution of OQ-4, OQ-5, OQ-6, and OQ-7 first.
+
+### Anytime — no dependencies
 
 **OQ-9. Verify the UI on a real mobile device**
 As a player who checks this tool while actually playing on my phone, I want the phone-mimicking layout to work correctly on a real touch device, so that it's usable in the situation it's designed for.
@@ -46,13 +68,11 @@ Only checked in a desktop browser at a fixed width so far.
 As a maintainer, I want the shipped JS bundle to only include what the app uses, so that load time doesn't suffer as real usage grows.
 Currently ~2.4MB minified, mostly `tower-idle-toolkit`'s bundled game data (labs, cards, bots, etc. we don't use). Worth revisiting with code-splitting or a narrower import once the app has more real usage to justify the effort. Not currently blocking anything.
 
-**OQ-18. Let the user buy directly from the Upgrade Path list**
-As a player looking at the Path screen, I want a Buy button on each row, so that buying updates my entered Workshop level without switching back to the Upgrade screen and typing it in by hand.
-Builds on OQ-17's ranked list (`UpgradePath`). Buying a row should increment that upgrade's level in the same `workshopLevels` `localStorage` state the Upgrade screen reads/writes, then the list should re-rank immediately (next cheapest becomes the new top row).
+### Lowest priority
 
-**OQ-20. Add Path test coverage for realistic, non-empty starting levels**
-As a maintainer, I want test coverage that reflects an actual player's Workshop state, so that a bug specific to mid- or late-game levels doesn't slip through tests that only ever start from empty.
-`cheapestNextUpgrades.test.js` currently only exercises two shapes: everything at level 0 (the default/tie-break tests), and single-upgrade isolation fixtures (every other upgrade maxed out) built for OQ-19's repeat/rowCap/mid-simulation-discovery tests. Nothing tests a realistic *mixed* state — many upgrades simultaneously at varied non-zero levels, the way `workshopLevels` would actually look for someone who's been playing a while. Useful scenarios: (1) a representative mid-game snapshot (a handful of upgrades noticeably ahead of the rest) confirming the ranked list stays cost-ascending and sane; (2) multiple upgrades simultaneously past their cost-data ceiling at once (today's tests only ever put one, Health, in that state) to make sure they don't interfere with each other's `unknownCost` reporting; (3) a late-game snapshot where most/all upgrades are already high-level, so remaining next-costs are all large, confirming no off-by-one or infinite-loop-style bug once the cheap early tiers are gone.
+**OQ-21. Consider forking tower-idle-toolkit to contribute corrected Workshop data back**
+As a maintainer, I want to consider publishing our corrected/verified Workshop cost and max-level data back to `tower-idle-toolkit` (or a maintained fork), so that other tools built on the package — and the community generally — benefit from the corrections instead of them living only in this repo's overrides.
+Not urgent. Depends on OQ-1 and OQ-13's corrections actually being thorough and trustworthy first — no point publishing back data we haven't verified ourselves. Open question: fork and maintain independently, or contribute upstream via PR to the original package?
 
 ---
 
