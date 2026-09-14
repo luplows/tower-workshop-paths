@@ -27,29 +27,55 @@ describe('WorkshopCategoryPanel', () => {
   )
 
   describe('per-tree cumulative-spend gate (OQ-6)', () => {
-    // "Damage"/"Rend Armor" is real Enhancement data (see
+    // "Damage"/"Rend Armor"/"Critical Factor" is real Enhancement data (see
     // enhancementLevels.js) -- a plain fixture name wouldn't have real cost
     // data for enhancementTreeSpend to sum, since only Enhancement
     // categories are gated this way in the first place (a plain Workshop
-    // upgrade never sets `unlocksAt`).
+    // upgrade never sets `unlocksAt`). Ascending thresholds, matching the
+    // real data's own order.
     const attackTree = {
       id: 'attack',
       label: 'Attack',
       upgrades: [
         { name: 'Damage', unlocksAt: null, quantity: 600 },
         { name: 'Rend Armor', unlocksAt: 50e9, quantity: 600 },
+        { name: 'Critical Factor', unlocksAt: 500e9, quantity: 600 },
       ],
     }
 
-    it('shows a locked note instead of the normal input for a not-yet-reachable category', () => {
+    it('shows only the next category to unlock, with the coins still needed, and hides every category after it', () => {
       render(<WorkshopCategoryPanel category={attackTree} levels={{}} onLevelChange={() => {}} />)
 
       expect(screen.queryByLabelText('Rend Armor')).not.toBeInTheDocument()
       expect(screen.getByText('Rend Armor')).toBeInTheDocument()
-      expect(screen.getByText(/Locked until 50B coins spent in this tree/)).toBeInTheDocument()
+      expect(
+        screen.getByText('50B coins more spent in this tree to unlock'),
+      ).toBeInTheDocument()
+
+      // Critical Factor is next in sequence after Rend Armor -- fully
+      // hidden, not shown with its own (redundant) locked note.
+      expect(screen.queryByLabelText('Critical Factor')).not.toBeInTheDocument()
+      expect(screen.queryByText('Critical Factor')).not.toBeInTheDocument()
     })
 
-    it("shows the normal input once the tree's cumulative spend crosses the threshold", () => {
+    it('reduces the coins-needed figure as the tree accumulates spend, without unlocking early', () => {
+      // Damage at level 1 has spent 5,000,000,000 (5B) -- 45B still needed
+      // for Rend Armor's 50B threshold.
+      render(
+        <WorkshopCategoryPanel
+          category={attackTree}
+          levels={{ Damage: 1 }}
+          onLevelChange={() => {}}
+        />,
+      )
+
+      expect(screen.queryByLabelText('Rend Armor')).not.toBeInTheDocument()
+      expect(
+        screen.getByText('45B coins more spent in this tree to unlock'),
+      ).toBeInTheDocument()
+    })
+
+    it("shows the normal input once the tree's cumulative spend crosses the threshold, and moves the note to the next category", () => {
       render(
         <WorkshopCategoryPanel
           category={attackTree}
@@ -59,7 +85,9 @@ describe('WorkshopCategoryPanel', () => {
       )
 
       expect(screen.getByLabelText('Rend Armor')).toBeInTheDocument()
-      expect(screen.queryByText(/Locked/)).not.toBeInTheDocument()
+      expect(screen.queryByText(/more spent in this tree to unlock/)).toBeInTheDocument()
+      expect(screen.queryByLabelText('Critical Factor')).not.toBeInTheDocument()
+      expect(screen.getByText('Critical Factor')).toBeInTheDocument()
     })
 
     it('never locks a category with no unlocksAt threshold (every plain Workshop upgrade)', () => {

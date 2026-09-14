@@ -40,12 +40,15 @@ test.describe('with the Workshop Enhancements Lab already unlocked', () => {
     await expect(damageInput).toHaveValue('600')
   })
 
-  test("locks a later category in a tree until that tree's cumulative spend crosses its threshold (OQ-6)", async ({
+  test("shows only the next category to unlock, hiding the rest, until that tree's cumulative spend crosses its threshold (OQ-6)", async ({
     page,
   }) => {
-    await expect(page.getByText(/Rend Armor \+/)).toBeVisible()
+    await expect(page.getByText('Rend Armor +', { exact: true })).toBeVisible()
     await expect(page.getByLabel('Rend Armor +', { exact: true })).not.toBeVisible()
-    await expect(page.getByText(/Locked until 50B coins spent in this tree/)).toBeVisible()
+    await expect(page.getByText('50B coins more spent in this tree to unlock')).toBeVisible()
+    // Critical Factor (next after Rend Armor) is fully hidden -- not shown
+    // with its own redundant locked note.
+    await expect(page.getByText('Critical Factor +', { exact: true })).not.toBeVisible()
 
     // Damage at level 10 has spent ~55.5B coins, just past Rend Armor's 50B
     // threshold.
@@ -54,7 +57,11 @@ test.describe('with the Workshop Enhancements Lab already unlocked', () => {
     await damageInput.blur()
 
     await expect(page.getByLabel('Rend Armor +', { exact: true })).toBeVisible()
-    await expect(page.getByText(/Locked until 50B coins/)).not.toBeVisible()
+    await expect(page.getByText('50B coins more spent in this tree to unlock')).not.toBeVisible()
+    // Critical Factor is now the next category to unlock, in Rend Armor's
+    // place.
+    await expect(page.getByText('Critical Factor +', { exact: true })).toBeVisible()
+    await expect(page.getByLabel('Critical Factor +', { exact: true })).not.toBeVisible()
   })
 })
 
