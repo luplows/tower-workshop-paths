@@ -14,7 +14,7 @@ A tool to help decide how to spend coins in the **Workshop** tab of the mobile g
 - Which **upgrade-unlock groups** the user has already purchased in each category — some upgrades are gated behind a one-time coin cost to unlock (e.g. Utility's "Upgrade Chances" group). Design/implementation not yet started — see `Open-Questions.md`.
 
 ## Workshop Enhancements
-A second, separate spend track per tree (Attack/Defense/Utility), distinct from the base Workshop upgrades above. Each tree has 6 Enhancement categories: one free from the start, and five more gated by **cumulative coins spent on that tree's own enhancements** (not a one-time unlock purchase) — the same threshold progression in every tree: 50B → 500B → 5T → 50T → 500T.
+A second spend track per tree (Attack/Defense/Utility), distinct from the base Workshop upgrades above in mechanics (its own currency-threshold-gated unlocks — see below). The recommended buy order (OQ-2) is intended to combine both into one ranked path rather than keeping them as separate recommendations, since covering a player's progress through both systems together is a core goal of this project. Each tree has 6 Enhancement categories: one free from the start, and five more gated by **cumulative coins spent on that tree's own enhancements** (not a one-time unlock purchase) — the same threshold progression in every tree: 50B → 500B → 5T → 50T → 500T.
 
 | Tree | Free starter | Unlocks at 50B | 500B | 5T | 50T | 500T |
 |---|---|---|---|---|---|---|
