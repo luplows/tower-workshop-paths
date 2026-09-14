@@ -50,6 +50,10 @@ Currently ~2.4MB minified, mostly `tower-idle-toolkit`'s bundled game data (labs
 As a player looking at the Path screen, I want a Buy button on each row, so that buying updates my entered Workshop level without switching back to the Upgrade screen and typing it in by hand.
 Builds on OQ-17's ranked list (`UpgradePath`). Buying a row should increment that upgrade's level in the same `workshopLevels` `localStorage` state the Upgrade screen reads/writes, then the list should re-rank immediately (next cheapest becomes the new top row).
 
+**OQ-20. Add Path test coverage for realistic, non-empty starting levels**
+As a maintainer, I want test coverage that reflects an actual player's Workshop state, so that a bug specific to mid- or late-game levels doesn't slip through tests that only ever start from empty.
+`cheapestNextUpgrades.test.js` currently only exercises two shapes: everything at level 0 (the default/tie-break tests), and single-upgrade isolation fixtures (every other upgrade maxed out) built for OQ-19's repeat/rowCap/mid-simulation-discovery tests. Nothing tests a realistic *mixed* state — many upgrades simultaneously at varied non-zero levels, the way `workshopLevels` would actually look for someone who's been playing a while. Useful scenarios: (1) a representative mid-game snapshot (a handful of upgrades noticeably ahead of the rest) confirming the ranked list stays cost-ascending and sane; (2) multiple upgrades simultaneously past their cost-data ceiling at once (today's tests only ever put one, Health, in that state) to make sure they don't interfere with each other's `unknownCost` reporting; (3) a late-game snapshot where most/all upgrades are already high-level, so remaining next-costs are all large, confirming no off-by-one or infinite-loop-style bug once the cheap early tiers are gone.
+
 ---
 
 ## Completed
