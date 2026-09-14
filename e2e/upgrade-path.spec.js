@@ -33,7 +33,7 @@ test.beforeEach(async ({ page }) => {
 test('shows the cheapest not-yet-maxed upgrade first, batched (OQ-7)', async ({ page }) => {
   await page.getByRole('tab', { name: 'Path', exact: true }).click()
 
-  const list = page.getByRole('list', { name: 'Cheapest next upgrades' })
+  const list = page.getByRole('list', { name: 'Recommended buy order' })
   const firstRow = list.getByRole('listitem').first()
 
   await expect(firstRow).toContainText('Multishot Targets')
@@ -51,7 +51,7 @@ test('reflects a level entered on the Upgrade screen', async ({ page }) => {
   // Attack Speed can legitimately appear more than once (OQ-19) -- its
   // first, cheapest occurrence should start from the entered level,
   // batched 10 levels at a time since its max level is under 1000 (OQ-7).
-  const list = page.getByRole('list', { name: 'Cheapest next upgrades' })
+  const list = page.getByRole('list', { name: 'Recommended buy order' })
   const row = list.getByText('Attack Speed', { exact: true }).first().locator('xpath=..')
   await expect(row).toContainText('Lv 1 → 11')
 })
@@ -59,7 +59,7 @@ test('reflects a level entered on the Upgrade screen', async ({ page }) => {
 test('lets a cheap upgrade appear more than once (OQ-19)', async ({ page }) => {
   await page.getByRole('tab', { name: 'Path', exact: true }).click()
 
-  const list = page.getByRole('list', { name: 'Cheapest next upgrades' })
+  const list = page.getByRole('list', { name: 'Recommended buy order' })
   const rows = list.getByText('Critical Factor', { exact: true })
 
   await expect(rows).toHaveCount(2)
@@ -72,7 +72,7 @@ test('buying a row updates the entered level and the Upgrade screen (OQ-18)', as
 }) => {
   await page.getByRole('tab', { name: 'Path', exact: true }).click()
 
-  const list = page.getByRole('list', { name: 'Cheapest next upgrades' })
+  const list = page.getByRole('list', { name: 'Recommended buy order' })
   const firstRow = list.getByRole('listitem').first()
   await expect(firstRow).toContainText('Multishot Targets')
 
@@ -90,7 +90,7 @@ test('asks for confirmation before buying a later occurrence of a repeated upgra
 }) => {
   await page.getByRole('tab', { name: 'Path', exact: true }).click()
 
-  const list = page.getByRole('list', { name: 'Cheapest next upgrades' })
+  const list = page.getByRole('list', { name: 'Recommended buy order' })
   const rows = list.getByText('Multishot Targets', { exact: true })
   await expect(rows).toHaveCount(4)
 
@@ -132,7 +132,7 @@ test('shows and buys an Enhancement row as "{name} +", the game\'s own conventio
 
   await page.getByRole('tab', { name: 'Path', exact: true }).click()
 
-  const list = page.getByRole('list', { name: 'Cheapest next upgrades' })
+  const list = page.getByRole('list', { name: 'Recommended buy order' })
   const firstRow = list.getByRole('listitem').first()
   await expect(firstRow).toContainText('Recovery Package +')
   await expect(firstRow).toContainText('5B coins')
@@ -159,7 +159,7 @@ test('shows the Workshop Enhancements Lab while locked, buying it unlocks Enhanc
 
   await page.getByRole('tab', { name: 'Path', exact: true }).click()
 
-  const list = page.getByRole('list', { name: 'Cheapest next upgrades' })
+  const list = page.getByRole('list', { name: 'Recommended buy order' })
   await expect(list.getByRole('listitem')).toHaveCount(1)
   const labRow = list.getByRole('listitem').first()
   await expect(labRow).toContainText('Workshop Enhancements Lab')

@@ -64,7 +64,7 @@ describe('UpgradePath', () => {
     window.localStorage.setItem('workshopLevels', JSON.stringify({ Health: 5000 }))
     render(<UpgradePath />)
 
-    const list = screen.getByRole('list', { name: 'Cheapest next upgrades' })
+    const list = screen.getByRole('list', { name: 'Recommended buy order' })
     expect(within(list).queryByText('Health')).not.toBeInTheDocument()
     expect(screen.getByText(/Cost data unavailable/)).toBeInTheDocument()
     expect(screen.getByText('Health (Lv 5000)')).toBeInTheDocument()

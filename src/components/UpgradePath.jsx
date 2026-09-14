@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useLocalStorageState } from '../hooks/useLocalStorageState'
-import { getCheapestNextUpgrades } from '../utils/cheapestNextUpgrades'
+import { getPrioritizedNextUpgrades } from '../utils/cheapestNextUpgrades'
 import { formatCoins } from '../utils/formatCoins'
 import { unlockGroupKey } from '../utils/workshopUnlockGroups'
 import './UpgradePath.css'
@@ -32,7 +32,7 @@ export function UpgradePath() {
     {},
   )
   const [pendingBuy, setPendingBuy] = useState(null)
-  const { ranked, unknownCost } = getCheapestNextUpgrades({
+  const { ranked, unknownCost } = getPrioritizedNextUpgrades({
     workshopLevels,
     enhancementLevels,
     enhancementLabLevel,
@@ -100,7 +100,7 @@ export function UpgradePath() {
           Every Workshop upgrade and Enhancement with known cost data is maxed out.
         </p>
       ) : (
-        <ol className="upgrade-path__list" aria-label="Cheapest next upgrades">
+        <ol className="upgrade-path__list" aria-label="Recommended buy order">
           {ranked.map((entry, index) => (
             <li
               key={`${entry.source}-${entry.name}-${entry.currentLevel}`}
