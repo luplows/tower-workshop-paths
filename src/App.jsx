@@ -39,17 +39,27 @@ function App() {
 
   return (
     <div className="app">
-      <header className="app__header">
-        <h1 className="app__title">Workshop Input</h1>
-        <div className="app__header-actions">
-          <AppSectionTabs
-            sections={SECTIONS}
-            activeSectionId={sectionId}
-            onSelect={setSectionId}
-          />
-          <HeaderMenu onClearAllLevels={handleClearAllLevels} />
-        </div>
-      </header>
+      {/* Header and (on the Input section) the mode tab bar stick together as
+          one unit -- see App.css's .app__sticky-group -- rather than each
+          being sticky independently with a manually-measured offset between
+          them, which drifted by a fraction of a pixel and showed as a
+          visible shift while scrolling (OQ-33 follow-up). */}
+      <div className="app__sticky-group">
+        <header className="app__header">
+          <h1 className="app__title">Workshop Input</h1>
+          <div className="app__header-actions">
+            <AppSectionTabs
+              sections={SECTIONS}
+              activeSectionId={sectionId}
+              onSelect={setSectionId}
+            />
+            <HeaderMenu onClearAllLevels={handleClearAllLevels} />
+          </div>
+        </header>
+        {sectionId !== 'path' && (
+          <ModeTabBar modes={MODES} activeModeId={modeId} onSelect={setModeId} />
+        )}
+      </div>
 
       {sectionId === 'path' ? (
         <div
@@ -67,7 +77,6 @@ function App() {
           aria-labelledby="section-tab-input"
           className="app__mode-panel"
         >
-          <ModeTabBar modes={MODES} activeModeId={modeId} onSelect={setModeId} />
           <div
             role="tabpanel"
             id={`mode-panel-${modeId}`}
