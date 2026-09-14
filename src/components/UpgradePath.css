@@ -71,21 +71,15 @@
   white-space: nowrap;
 }
 
-.upgrade-path__cost {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--accent);
-  white-space: nowrap;
-  text-align: right;
-  min-width: 90px;
-}
-
 .upgrade-path__buy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  min-width: 68px;
   font: inherit;
-  font-size: 13px;
-  font-weight: 600;
-  padding: 6px 12px;
-  border-radius: 999px;
+  padding: 5px 10px;
+  border-radius: 10px;
   border: 1px solid var(--accent-border);
   background: var(--accent-bg);
   color: var(--accent);
@@ -93,8 +87,77 @@
   flex-shrink: 0;
 }
 
+.upgrade-path__buy-label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.upgrade-path__buy-cost {
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
 .upgrade-path__buy:hover {
   background: var(--accent);
+  color: var(--bg);
+}
+
+.upgrade-path__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 20;
+}
+
+.upgrade-path__confirm {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 18px;
+  max-width: 340px;
+  width: 100%;
+}
+
+.upgrade-path__confirm-title {
+  margin: 0 0 8px;
+  font: 600 16px/1.3 var(--heading);
+  color: var(--text-h);
+}
+
+.upgrade-path__confirm-body {
+  margin: 0 0 16px;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.upgrade-path__confirm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.upgrade-path__confirm-actions button {
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: none;
+  color: var(--text-h);
+  cursor: pointer;
+}
+
+.upgrade-path__confirm-buy-all {
+  background: var(--accent);
+  border-color: var(--accent);
   color: var(--bg);
 }
 

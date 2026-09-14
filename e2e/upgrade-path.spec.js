@@ -59,6 +59,28 @@ test('buying a row updates the entered level and the Upgrade screen (OQ-18)', as
   await expect(page.getByLabel('Multishot Targets', { exact: true })).toHaveValue('1')
 })
 
+test('asks for confirmation before buying a later occurrence of a repeated upgrade', async ({
+  page,
+}) => {
+  await page.getByRole('tab', { name: 'Path', exact: true }).click()
+
+  const list = page.getByRole('list', { name: 'Cheapest next upgrades' })
+  const rows = list.getByText('Multishot Targets', { exact: true })
+  await expect(rows).toHaveCount(4)
+
+  const secondRow = rows.nth(1).locator('xpath=..')
+  await secondRow.getByRole('button', { name: /^Buy/ }).click()
+
+  const dialog = page.getByRole('alertdialog')
+  await expect(dialog).toContainText('Multishot Targets appears earlier in this list')
+
+  await dialog.getByRole('button', { name: 'Buy all 2' }).click()
+  await expect(dialog).not.toBeVisible()
+
+  await page.getByRole('tab', { name: 'Input', exact: true }).click()
+  await expect(page.getByLabel('Multishot Targets', { exact: true })).toHaveValue('2')
+})
+
 test('keeps Path on a separate control from the Upgrade/Enhance toggle', async ({
   page,
 }) => {
