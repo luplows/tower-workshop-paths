@@ -96,8 +96,17 @@
   cursor: pointer;
 }
 
+.header-menu__confirm-actions button:hover {
+  background: var(--accent-bg);
+}
+
 .header-menu__confirm-actions .header-menu__confirm-clear {
   background: var(--danger-bg);
   border-color: var(--danger-border);
   color: var(--danger);
+}
+
+.header-menu__confirm-actions .header-menu__confirm-clear:hover {
+  background: var(--danger);
+  color: var(--bg);
 }

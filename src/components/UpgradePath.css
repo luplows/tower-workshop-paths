@@ -158,16 +158,30 @@
   cursor: pointer;
 }
 
+.upgrade-path__confirm-actions button:hover {
+  background: var(--accent-bg);
+}
+
 .upgrade-path__confirm-actions .upgrade-path__confirm-buy-all {
   background: var(--success-bg);
   border-color: var(--success-border);
   color: var(--success);
 }
 
+.upgrade-path__confirm-actions .upgrade-path__confirm-buy-all:hover {
+  background: var(--success);
+  color: var(--bg);
+}
+
 .upgrade-path__confirm-actions .upgrade-path__confirm-cancel {
   background: var(--danger-bg);
   border-color: var(--danger-border);
   color: var(--danger);
+}
+
+.upgrade-path__confirm-actions .upgrade-path__confirm-cancel:hover {
+  background: var(--danger);
+  color: var(--bg);
 }
 
 .upgrade-path__unknown {
