@@ -14,6 +14,18 @@
   gap: 10px;
 }
 
+.category-panel--attack {
+  background: var(--tree-attack-bg);
+}
+
+.category-panel--defense {
+  background: var(--tree-defense-bg);
+}
+
+.category-panel--utility {
+  background: var(--tree-utility-bg);
+}
+
 .upgrade-row {
   display: flex;
   align-items: center;
@@ -79,14 +91,17 @@
 .bottom-tab-bar__tab--attack.bottom-tab-bar__tab--active {
   color: var(--tree-attack);
   border-top-color: var(--tree-attack);
+  background: var(--tree-attack-bg);
 }
 
 .bottom-tab-bar__tab--defense.bottom-tab-bar__tab--active {
   color: var(--tree-defense);
   border-top-color: var(--tree-defense);
+  background: var(--tree-defense-bg);
 }
 
 .bottom-tab-bar__tab--utility.bottom-tab-bar__tab--active {
   color: var(--tree-utility);
   border-top-color: var(--tree-utility);
+  background: var(--tree-utility-bg);
 }
