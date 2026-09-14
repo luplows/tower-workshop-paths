@@ -3,16 +3,25 @@ import { WORKSHOP_CATEGORIES } from '../data/workshopCategories'
 
 export const DEFAULT_ROW_CAP = 50
 
-// The game only lets you buy a Workshop upgrade in batches, not one level
-// at a time: 100 levels at once for anything with more than 1000 max
-// levels, 10 otherwise (see Project-Outline.md, OQ-7). Enhancements aren't
-// batched -- out of scope here, since this ranks Workshop upgrades only.
+// The game actually lets you buy a Workshop upgrade one level at a time --
+// this isn't a hard restriction it imposes. But for this tool's purposes,
+// the Path list always recommends buying in these fixed batch sizes rather
+// than one level at a time, for practicality: 100 levels at once for an
+// upgrade with more than 1000 max levels, 10 for one with at least 10, or 1
+// for one with fewer than 10 max levels in the first place (Multishot
+// Targets, Bounce Shot Targets, Orbs) -- see Project-Outline.md, OQ-7.
+// Enhancements aren't batched -- out of scope here, since this ranks
+// Workshop upgrades only.
+const TINY_MAX_LEVEL_THRESHOLD = 10
 const LARGE_MAX_LEVEL_THRESHOLD = 1000
 const LARGE_BATCH_SIZE = 100
 const SMALL_BATCH_SIZE = 10
+const TINY_BATCH_SIZE = 1
 
-const batchSizeForQuantity = (quantity) =>
-  quantity > LARGE_MAX_LEVEL_THRESHOLD ? LARGE_BATCH_SIZE : SMALL_BATCH_SIZE
+const batchSizeForQuantity = (quantity) => {
+  if (quantity < TINY_MAX_LEVEL_THRESHOLD) return TINY_BATCH_SIZE
+  return quantity > LARGE_MAX_LEVEL_THRESHOLD ? LARGE_BATCH_SIZE : SMALL_BATCH_SIZE
+}
 
 /**
  * Simulates a cheapest-first Workshop buy order, cost only -- a placeholder

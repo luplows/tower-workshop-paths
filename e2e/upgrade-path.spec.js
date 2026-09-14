@@ -10,9 +10,9 @@ test('shows the cheapest not-yet-maxed upgrade first, batched (OQ-7)', async ({ 
   const list = page.getByRole('list', { name: 'Cheapest next upgrades' })
   const firstRow = list.getByRole('listitem').first()
 
-  await expect(firstRow).toContainText('Critical Factor')
-  await expect(firstRow).toContainText('2,645 coins')
-  await expect(firstRow).toContainText('Lv 0 → 10')
+  await expect(firstRow).toContainText('Multishot Targets')
+  await expect(firstRow).toContainText('450 coins')
+  await expect(firstRow).toContainText('Lv 0 → 1')
 })
 
 test('reflects a level entered on the Upgrade screen', async ({ page }) => {

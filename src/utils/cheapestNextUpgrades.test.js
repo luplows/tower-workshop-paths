@@ -35,11 +35,16 @@ const COST_DATA_CEILINGS = {
 describe('getCheapestNextUpgrades', () => {
   it('ranks upgrades cheapest-first at level 0 by batch cost, breaking ties by name (OQ-7)', () => {
     // Damage/Health/Health Regen have >1000 max levels (100-level batches);
-    // the rest here have <=1000 (10-level batches) -- see Project-Outline.md.
+    // most others here have 10-999 (10-level batches); Multishot Targets/
+    // Bounce Shot Targets/Orbs have fewer than 10 max levels (1-level
+    // "batches" -- see Project-Outline.md), so they lead the list here.
     const { ranked, unknownCost } = getCheapestNextUpgrades({}, { rowCap: 20 })
 
     expect(unknownCost).toEqual([])
     expect(ranked.map((e) => [e.name, e.currentLevel, e.levels, e.cost])).toEqual([
+      ['Multishot Targets', 0, 1, 450],
+      ['Bounce Shot Targets', 0, 1, 700],
+      ['Multishot Targets', 1, 1, 2000],
       ['Critical Factor', 0, 10, 2645],
       ['Thorns', 0, 10, 2722],
       ['Cash / Wave', 0, 10, 2758],
@@ -50,16 +55,13 @@ describe('getCheapestNextUpgrades', () => {
       ['Attack Speed', 0, 10, 2935],
       ['Damage / Meter', 0, 10, 2991],
       ['Range', 0, 10, 2991],
+      ['Bounce Shot Targets', 1, 1, 3000],
+      ['Orbs', 0, 1, 3000],
       ['Coins / Kill Bonus', 0, 10, 3522],
       ['Coins / Wave', 0, 10, 3522],
       ['Knockback Chance', 0, 10, 3540],
       ['Knockback Force', 0, 10, 3597],
       ['Multishot Chance', 0, 10, 4060],
-      ['Free Attack Upgrade', 0, 10, 4197],
-      ['Free Defense Upgrade', 0, 10, 4197],
-      ['Free Utility Upgrade', 0, 10, 4447],
-      ['Orb Speed', 0, 10, 5381],
-      ['Rapid Fire Chance', 0, 10, 5664],
     ])
   })
 
@@ -67,14 +69,34 @@ describe('getCheapestNextUpgrades', () => {
     const { ranked } = getCheapestNextUpgrades({})
 
     expect(ranked[0]).toMatchObject({
-      name: 'Critical Factor',
+      name: 'Multishot Targets',
       categoryId: 'attack',
       categoryLabel: 'Attack',
       currentLevel: 0,
-      nextLevel: 10,
-      levels: 10,
-      cost: 2645,
+      nextLevel: 1,
+      levels: 1,
+      cost: 450,
     })
+  })
+
+  it('uses a 1-level batch for an upgrade with fewer than 10 max levels (OQ-7)', () => {
+    // Orbs has a max level of only 4 -- too few to fill even a 10-level
+    // batch, so every "batch" is really just 1 level at a time.
+    const levels = maxedLevels()
+    levels.Orbs = 2
+    const { ranked } = getCheapestNextUpgrades(levels, { rowCap: 1 })
+
+    expect(ranked).toEqual([
+      {
+        name: 'Orbs',
+        categoryId: 'defense',
+        categoryLabel: 'Defense',
+        currentLevel: 2,
+        nextLevel: 3,
+        levels: 1,
+        cost: 120000,
+      },
+    ])
   })
 
   it('lets a cheap upgrade repeat consecutively when nothing else competes (OQ-19)', () => {
@@ -295,9 +317,12 @@ describe('getCheapestNextUpgrades', () => {
       }
       for (const entry of ranked) {
         expect(entry.currentLevel).toBeLessThan(quantityByName[entry.name])
-        // Only 3 levels remain before max, less than any batch size.
-        expect(entry.levels).toBe(3)
-        expect(entry.nextLevel).toBe(entry.currentLevel + 3)
+        // 3 levels remain before max, less than any batch size -- except an
+        // upgrade with under 10 max levels in the first place, which always
+        // uses a 1-level batch regardless of how many levels remain.
+        const expectedBatch = quantityByName[entry.name] < 10 ? 1 : 3
+        expect(entry.levels).toBe(expectedBatch)
+        expect(entry.nextLevel).toBe(entry.currentLevel + expectedBatch)
       }
 
       // The four ceiling upgrades are already well past their cost-data

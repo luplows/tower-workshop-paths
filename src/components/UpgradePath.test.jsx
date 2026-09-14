@@ -11,9 +11,9 @@ describe('UpgradePath', () => {
     render(<UpgradePath />)
 
     const rows = screen.getAllByRole('listitem')
-    expect(rows[0]).toHaveTextContent('Critical Factor')
-    expect(rows[0]).toHaveTextContent('2,645 coins')
-    expect(rows[0]).toHaveTextContent('Lv 0 → 10')
+    expect(rows[0]).toHaveTextContent('Multishot Targets')
+    expect(rows[0]).toHaveTextContent('450 coins')
+    expect(rows[0]).toHaveTextContent('Lv 0 → 1')
   })
 
   it('reflects a level entered on the Workshop screen when ranking', () => {

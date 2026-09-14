@@ -126,7 +126,7 @@ describe('App', () => {
 
     await user.click(screen.getByRole('tab', { name: 'Path' }))
 
-    expect(screen.getAllByRole('listitem')[0]).toHaveTextContent('Critical Factor')
+    expect(screen.getAllByRole('listitem')[0]).toHaveTextContent('Multishot Targets')
     expect(screen.queryByRole('tab', { name: 'Attack' })).not.toBeInTheDocument()
   })
 
