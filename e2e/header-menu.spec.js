@@ -33,7 +33,7 @@ test('clears both Upgrade and Enhance levels together', async ({ page }) => {
   await upgradeDamageInput.blur()
 
   await page.getByRole('tab', { name: 'Enhance', exact: true }).click()
-  const enhanceDamageInput = page.getByLabel('Damage', { exact: true })
+  const enhanceDamageInput = page.getByLabel('Damage +', { exact: true })
   await enhanceDamageInput.fill('3')
   await enhanceDamageInput.blur()
 

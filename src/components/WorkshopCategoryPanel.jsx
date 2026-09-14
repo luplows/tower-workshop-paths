@@ -1,6 +1,12 @@
 import { UpgradeLevelInput } from './UpgradeLevelInput'
 
-export function WorkshopCategoryPanel({ category, levels, onLevelChange, formatValue }) {
+export function WorkshopCategoryPanel({
+  category,
+  levels,
+  onLevelChange,
+  formatValue,
+  nameSuffix,
+}) {
   return (
     <div
       role="tabpanel"
@@ -15,6 +21,7 @@ export function WorkshopCategoryPanel({ category, levels, onLevelChange, formatV
           level={levels[upgrade.name] ?? 0}
           onChange={(level) => onLevelChange(upgrade.name, level)}
           formatValue={formatValue}
+          nameSuffix={nameSuffix}
         />
       ))}
     </div>

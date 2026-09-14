@@ -24,8 +24,8 @@ describe('EnhancementInputs', () => {
 
   it('shows the Attack tree by default', () => {
     render(<ControlledEnhancementInputs />)
-    expect(screen.getByLabelText('Damage')).toBeInTheDocument()
-    expect(screen.queryByLabelText('Health')).not.toBeInTheDocument()
+    expect(screen.getByLabelText('Damage +')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Health +')).not.toBeInTheDocument()
   })
 
   it('switches to another tree tab on click', async () => {
@@ -34,8 +34,15 @@ describe('EnhancementInputs', () => {
 
     await user.click(screen.getByRole('tab', { name: 'Defense' }))
 
-    expect(screen.getByLabelText('Health')).toBeInTheDocument()
-    expect(screen.queryByLabelText('Damage')).not.toBeInTheDocument()
+    expect(screen.getByLabelText('Health +')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Damage +')).not.toBeInTheDocument()
+  })
+
+  it('shows each name with a trailing "+", the game\'s own naming convention for Enhancements', () => {
+    render(<ControlledEnhancementInputs />)
+    expect(screen.getByLabelText('Damage +')).toBeInTheDocument()
+    // Exact match: would fail if the label were still plain "Damage".
+    expect(screen.queryByLabelText('Damage', { exact: true })).not.toBeInTheDocument()
   })
 
   it('shows the computed value next to the level, since level alone is never visible in-game', async () => {
@@ -44,7 +51,7 @@ describe('EnhancementInputs', () => {
 
     expect(screen.getAllByText('1.00×')).toHaveLength(6)
 
-    const damageInput = screen.getByLabelText('Damage')
+    const damageInput = screen.getByLabelText('Damage +')
     await user.clear(damageInput)
     await user.type(damageInput, '40')
 
@@ -56,7 +63,7 @@ describe('EnhancementInputs', () => {
     const user = userEvent.setup()
     render(<ControlledEnhancementInputs />)
 
-    const damageInput = screen.getByLabelText('Damage')
+    const damageInput = screen.getByLabelText('Damage +')
     await user.clear(damageInput)
     await user.type(damageInput, '9999')
 
@@ -67,7 +74,7 @@ describe('EnhancementInputs', () => {
     const user = userEvent.setup()
     const { unmount } = render(<ControlledEnhancementInputs />)
 
-    const damageInput = screen.getByLabelText('Damage')
+    const damageInput = screen.getByLabelText('Damage +')
     await user.clear(damageInput)
     await user.type(damageInput, '12')
 
@@ -78,6 +85,6 @@ describe('EnhancementInputs', () => {
 
     unmount()
     render(<ControlledEnhancementInputs />)
-    expect(screen.getByLabelText('Damage')).toHaveValue(12)
+    expect(screen.getByLabelText('Damage +')).toHaveValue(12)
   })
 })

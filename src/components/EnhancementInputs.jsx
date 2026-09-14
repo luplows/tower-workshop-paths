@@ -8,6 +8,7 @@ export function EnhancementInputs({ activeCategoryId, onCategoryChange }) {
       categories={ENHANCEMENT_CATEGORIES}
       storageKey="enhancementLevels"
       formatValue={formatEnhancementValue}
+      nameSuffix=" +"
       activeCategoryId={activeCategoryId}
       onCategoryChange={onCategoryChange}
     />
