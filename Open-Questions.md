@@ -50,10 +50,6 @@ Only checked in a desktop browser at a fixed width so far.
 As a maintainer, I want the shipped JS bundle to only include what the app uses, so that load time doesn't suffer as real usage grows.
 Currently ~2.4MB minified, mostly `tower-idle-toolkit`'s bundled game data (labs, cards, bots, etc. we don't use). Worth revisiting with code-splitting or a narrower import once the app has more real usage to justify the effort. Not currently blocking anything.
 
-**OQ-23. Verify the UI in a full-size desktop browser window**
-As a maintainer, I want to confirm the phone-mimicking layout still looks and behaves reasonably when the browser window is much wider than a phone, so that desktop visitors don't see a broken or oddly-stretched layout.
-Distinct from OQ-9 (a real touch device) — this is about viewport width on any device, checked so far only at a fixed mobile-ish width in a desktop browser during development. Open question: should the layout stay a fixed-width phone-shaped panel (likely centered, with empty space around it) on a wide window, or adapt some other way?
-
 **OQ-24. Import current levels from the game's `playerInfo.dat` file**
 As a player, I want to import my Workshop and Enhancement current levels straight from the game's own save data, so that I don't have to manually type in every level to get started.
 The game keeps a `playerInfo.dat` file (not normally player-facing) that should already contain current Workshop and Enhancement levels. Open questions: what format the file is actually in (plain JSON, a custom binary format, encrypted/obfuscated — unknown until inspected) and whether it's even parseable client-side; how the user gets the file into the browser (a file picker is the obvious client-only option, consistent with `Project-Outline.md`'s no-backend scope); and whether an import fully replaces entered levels (interacting with OQ-22's Clear) or merges with them.
