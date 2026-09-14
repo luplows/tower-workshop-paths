@@ -598,4 +598,59 @@ describe('getCheapestNextUpgrades', () => {
       expect(lockedWorkshopRows).toEqual(unlockedWorkshopRows)
     })
   })
+
+  describe('Enhancement per-tree cumulative-spend gate (OQ-6)', () => {
+    it("only offers each tree's free starter category until that tree's cumulative spend crosses a threshold", () => {
+      const { ranked, unknownCost } = getCheapestNextUpgrades(
+        { workshopLevels: maxedWorkshopLevels(), enhancementLabLevel: 1 },
+        { rowCap: 20 },
+      )
+
+      const namesSeen = new Set(ranked.map((e) => e.name))
+      expect(namesSeen).toEqual(new Set(['Damage', 'Health', 'Cash Bonus']))
+      expect(ranked.every((e) => e.source === 'enhancement')).toBe(true)
+      expect(unknownCost).toEqual([])
+    })
+
+    it("makes a later category in a tree a valid candidate once that tree's cumulative spend crosses its threshold", () => {
+      // Damage (Attack's free starter) at level 10 has spent ~55.5B coins,
+      // just past Rend Armor's 50B threshold -- everything else in Attack
+      // maxed out so Rend Armor's own first level is unambiguously the
+      // cheapest thing left in that tree once it becomes reachable.
+      const enhancementLevels = maxedEnhancementLevels()
+      enhancementLevels.Damage = 10
+      delete enhancementLevels['Rend Armor']
+      const { ranked } = getCheapestNextUpgrades(
+        {
+          workshopLevels: maxedWorkshopLevels(),
+          enhancementLevels,
+          enhancementLabLevel: 1,
+        },
+        { rowCap: 1 },
+      )
+
+      expect(ranked).toEqual([
+        {
+          name: 'Rend Armor',
+          source: 'enhancement',
+          categoryId: 'attack',
+          categoryLabel: 'Attack',
+          currentLevel: 0,
+          nextLevel: 1,
+          levels: 1,
+          cost: 5_000_000_000,
+        },
+      ])
+    })
+
+    it('leaves a not-yet-unlocked category out of unknownCost too -- absent, not reported as unpriceable', () => {
+      const { ranked, unknownCost } = getCheapestNextUpgrades(
+        { workshopLevels: maxedWorkshopLevels(), enhancementLabLevel: 1 },
+        { rowCap: 3 },
+      )
+
+      expect(ranked.some((e) => e.name === 'Attack Speed')).toBe(false)
+      expect(unknownCost.some((e) => e.name === 'Attack Speed')).toBe(false)
+    })
+  })
 })

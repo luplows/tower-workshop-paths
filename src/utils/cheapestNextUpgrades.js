@@ -2,6 +2,7 @@ import { WORKSHOP_LEVELS } from 'tower-idle-toolkit'
 import { ENHANCEMENT_CATEGORIES } from '../data/enhancementCategories'
 import { ENHANCEMENT_LEVELS } from '../data/enhancementLevels'
 import { WORKSHOP_CATEGORIES } from '../data/workshopCategories'
+import { isEnhancementCategoryUnlocked } from './enhancementTreeSpend'
 
 export const DEFAULT_ROW_CAP = 50
 
@@ -104,6 +105,17 @@ const enhancementLabCostAt = (name, level) => (level === 0 ? ENHANCEMENT_LAB_COS
  * just a UI hint: an Enhancement is never ranked or otherwise reachable
  * through this function until the Lab is actually bought.
  *
+ * Once the Lab is bought, each Enhancement category still needs its own
+ * tree's cumulative spend threshold crossed before it's reachable (the free
+ * starter category in each tree has no threshold) -- see
+ * `enhancementTreeSpend.js` and Project-Outline.md's "Workshop Enhancements"
+ * section for the 50B/500B/5T/50T/500T progression (OQ-6). This is
+ * evaluated once per call, from the caller's actual `enhancementLevels`,
+ * the same simplification already used for the Lab gate above: a category
+ * that crosses its threshold only through *this simulation's own* buying
+ * (rather than the caller's real entered levels) won't unlock until the
+ * next call, not mid-run.
+ *
  * An item drops out of the simulation (and into `unknownCost` instead of
  * `ranked`) the moment its next batch can't be fully priced, whether that's
  * immediately (its currently entered level) or only after some simulated
@@ -149,6 +161,7 @@ export function getCheapestNextUpgrades(
   } else {
     for (const category of ENHANCEMENT_CATEGORIES) {
       for (const upgrade of category.upgrades) {
+        if (!isEnhancementCategoryUnlocked(upgrade, category, enhancementLevels)) continue
         const currentLevel = enhancementLevels[upgrade.name] ?? 0
         if (currentLevel < upgrade.quantity) {
           cursors.set(`enhancement:${upgrade.name}`, {
