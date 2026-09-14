@@ -60,6 +60,10 @@ Only checked in a desktop browser at a fixed width so far.
 As a maintainer, I want the shipped JS bundle to only include what the app uses, so that load time doesn't suffer as real usage grows.
 Currently ~2.4MB minified, mostly `tower-idle-toolkit`'s bundled game data (labs, cards, bots, etc. we don't use). Worth revisiting with code-splitting or a narrower import once the app has more real usage to justify the effort. Not currently blocking anything.
 
+**OQ-22. Add a "Clear" button to zero out entered levels**
+As a player starting over (a fresh game save, or just wanting to re-enter everything cleanly), I want a way to reset my entered levels back to zero without hand-clearing every input, so that starting over isn't tedious.
+Would reset the `workshopLevels` and/or `enhancementLevels` `localStorage` state `WorkshopInputs`/`EnhancementInputs` read/write. Open design questions: one combined clear-everything control, or separate per-mode (Upgrade/Enhance) and/or per-tree (Attack/Defense/Utility) clears; where it lives (header, near the mode tabs, per-screen); and whether it needs a confirmation step, since this is destructive to entered data with no undo.
+
 ### Lowest priority
 
 **OQ-21. Consider forking tower-idle-toolkit to contribute corrected Workshop data back**
