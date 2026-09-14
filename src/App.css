@@ -8,12 +8,42 @@
 .app__header {
   padding: 14px 16px 10px;
   border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .app__title {
   margin: 0;
   font: 600 20px/1.2 var(--heading);
   color: var(--text-h);
+}
+
+.app-section-tabs {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 2px;
+}
+
+.app-section-tabs__tab {
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border: none;
+  border-radius: 999px;
+  background: none;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.app-section-tabs__tab--active {
+  background: var(--accent);
+  color: var(--bg);
 }
 
 .app__mode-panel {

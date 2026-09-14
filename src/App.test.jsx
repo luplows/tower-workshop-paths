@@ -13,6 +13,21 @@ describe('App', () => {
     expect(screen.getByRole('heading', { name: 'Workshop Input' })).toBeInTheDocument()
   })
 
+  it('keeps the Path section on a separate control from the game-mirroring Upgrade/Enhance toggle', () => {
+    render(<App />)
+
+    const pathTab = screen.getByRole('tab', { name: 'Path' })
+    const upgradeTab = screen.getByRole('tab', { name: 'Upgrade' })
+    const enhanceTab = screen.getByRole('tab', { name: 'Enhance' })
+
+    const pathTablist = pathTab.closest('[role="tablist"]')
+    expect(pathTablist).toHaveAttribute('aria-label', 'App section')
+    // Path must not share a tablist with Upgrade/Enhance -- that toggle
+    // mirrors the game's own buttons, and there's no "Path" in-game.
+    expect(upgradeTab.closest('[role="tablist"]')).not.toBe(pathTablist)
+    expect(enhanceTab.closest('[role="tablist"]')).not.toBe(pathTablist)
+  })
+
   it('defaults to the Upgrade mode, showing Workshop upgrade categories', () => {
     render(<App />)
 
