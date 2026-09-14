@@ -72,9 +72,11 @@ test('asks for confirmation before buying a later occurrence of a repeated upgra
   await secondRow.getByRole('button', { name: /^Buy/ }).click()
 
   const dialog = page.getByRole('alertdialog')
-  await expect(dialog).toContainText('Multishot Targets appears earlier in this list')
+  await expect(dialog).toContainText(
+    'Buy all Multishot Targets upgrades to reach Lv 2 (2.45k coins)?',
+  )
 
-  await dialog.getByRole('button', { name: 'Buy all 2' }).click()
+  await dialog.getByRole('button', { name: 'Buy all' }).click()
   await expect(dialog).not.toBeVisible()
 
   await page.getByRole('tab', { name: 'Input', exact: true }).click()

@@ -29,12 +29,10 @@ export function UpgradePath() {
       return
     }
 
-    const currentReal = levels[entry.name] ?? 0
     setPendingBuy({
       entry,
-      priorCount: priorSameUpgrade.length,
       priorLevels: priorSameUpgrade.reduce((sum, row) => sum + row.levels, 0),
-      justThisLevel: currentReal + entry.levels,
+      totalCost: priorSameUpgrade.reduce((sum, row) => sum + row.cost, 0) + entry.cost,
     })
   }
 
@@ -101,19 +99,12 @@ export function UpgradePath() {
           <div
             role="alertdialog"
             aria-modal="true"
-            aria-labelledby="upgrade-path-confirm-title"
+            aria-label={`Buy all ${pendingBuy.entry.name} upgrades to reach Lv ${pendingBuy.entry.nextLevel} for ${formatCoins(pendingBuy.totalCost)}?`}
             className="upgrade-path__confirm"
           >
-            <p id="upgrade-path-confirm-title" className="upgrade-path__confirm-title">
-              {pendingBuy.entry.name} appears earlier in this list
-            </p>
             <p className="upgrade-path__confirm-body">
-              Buying just this batch adds {pendingBuy.entry.levels} level
-              {pendingBuy.entry.levels === 1 ? '' : 's'}, reaching Lv{' '}
-              {pendingBuy.justThisLevel} — skipping the {pendingBuy.priorCount}{' '}
-              occurrence{pendingBuy.priorCount === 1 ? '' : 's'} of{' '}
-              {pendingBuy.entry.name} shown above it. Buy those too to reach Lv{' '}
-              {pendingBuy.entry.nextLevel} instead?
+              Buy all {pendingBuy.entry.name} upgrades to reach Lv{' '}
+              {pendingBuy.entry.nextLevel} ({formatCoins(pendingBuy.totalCost)})?
             </p>
             <div className="upgrade-path__confirm-actions">
               <button
@@ -121,7 +112,7 @@ export function UpgradePath() {
                 className="upgrade-path__confirm-buy-all"
                 onClick={handleBuyAll}
               >
-                Buy all {pendingBuy.priorCount + 1}
+                Buy all
               </button>
               <button type="button" onClick={handleBuyJustThis}>
                 Just this batch

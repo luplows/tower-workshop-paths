@@ -125,7 +125,9 @@ describe('UpgradePath', () => {
       await user.click(within(secondRow).getByRole('button', { name: /^Buy/ }))
 
       const dialog = screen.getByRole('alertdialog')
-      expect(dialog).toHaveTextContent('Multishot Targets appears earlier in this list')
+      expect(dialog).toHaveTextContent(
+        'Buy all Multishot Targets upgrades to reach Lv 2 (2.45k coins)?',
+      )
       expect(JSON.parse(window.localStorage.getItem('workshopLevels'))).toEqual({})
     })
 
@@ -149,7 +151,7 @@ describe('UpgradePath', () => {
 
       const secondRow = screen.getAllByText('Multishot Targets')[1].closest('li')
       await user.click(within(secondRow).getByRole('button', { name: /^Buy/ }))
-      await user.click(screen.getByRole('button', { name: 'Buy all 2' }))
+      await user.click(screen.getByRole('button', { name: 'Buy all' }))
 
       expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
       expect(
