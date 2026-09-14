@@ -46,6 +46,15 @@ const enhancementCostAt = (name, level) => {
   return coins > 0 ? coins : undefined
 }
 
+// The one-time "Workshop Enhancements" Lab that gates the entire Enhancement
+// system -- until it's bought, no Enhancement category is purchasable at
+// all (see Project-Outline.md). Modeled as its own single-level, 1-batch
+// item rather than a special-cased boolean, so it's ranked and bought the
+// same way as everything else in the list.
+const ENHANCEMENT_LAB_NAME = 'Workshop Enhancements Lab'
+const ENHANCEMENT_LAB_COST = 5_000_000_000
+const enhancementLabCostAt = (name, level) => (level === 0 ? ENHANCEMENT_LAB_COST : undefined)
+
 /**
  * Simulates a cheapest-first Workshop + Enhancement buy order, cost only --
  * a placeholder until priorities (see Open-Questions.md's OQ-2) are
@@ -77,19 +86,31 @@ const enhancementCostAt = (name, level) => {
  * shapes stored under the `workshopLevels`/`enhancementLevels` localStorage
  * keys by WorkshopInputs/EnhancementInputs. Several names overlap between
  * the two (e.g. "Damage", "Health"), so every returned entry (in both
- * `ranked` and `unknownCost`) carries a `source` ('workshop' or
- * 'enhancement') alongside `name` -- callers must key off both together,
- * never `name` alone, to tell which stored levels a row actually belongs to.
+ * `ranked` and `unknownCost`) carries a `source` ('workshop', 'enhancement',
+ * or 'lab' -- see below) alongside `name` -- callers must key off both
+ * together, never `name` alone, to tell which stored levels a row actually
+ * belongs to.
+ *
+ * `enhancementLabLevel` (0 or 1) tracks the one-time "Workshop Enhancements"
+ * Lab that gates the entire Enhancement system in-game. While it's 0, no
+ * Enhancement category is included in the simulation at all -- the *only*
+ * candidate representing Enhancements is the Lab itself, a single `source:
+ * 'lab'` row costing a flat 5B coins. Once bought (`enhancementLabLevel`
+ * reaches 1, by the caller persisting whatever this function's own Lab row
+ * implies), the Lab row disappears and every Enhancement category becomes a
+ * normal candidate, same as before OQ-31. This models the real gate, not
+ * just a UI hint: an Enhancement is never ranked or otherwise reachable
+ * through this function until the Lab is actually bought.
  *
  * An item drops out of the simulation (and into `unknownCost` instead of
  * `ranked`) the moment its next batch can't be fully priced, whether that's
  * immediately (its currently entered level) or only after some simulated
  * purchases -- either way it's reported once, at the level it got stuck.
  * In practice this currently only ever happens for the four gapped
- * Workshop upgrades above; ENHANCEMENT_LEVELS has no known gaps.
+ * Workshop upgrades above; ENHANCEMENT_LEVELS and the Lab have no known gaps.
  */
 export function getCheapestNextUpgrades(
-  { workshopLevels = {}, enhancementLevels = {} } = {},
+  { workshopLevels = {}, enhancementLevels = {}, enhancementLabLevel = 0 } = {},
   { rowCap = DEFAULT_ROW_CAP } = {},
 ) {
   const cursors = new Map()
@@ -112,20 +133,33 @@ export function getCheapestNextUpgrades(
     }
   }
 
-  for (const category of ENHANCEMENT_CATEGORIES) {
-    for (const upgrade of category.upgrades) {
-      const currentLevel = enhancementLevels[upgrade.name] ?? 0
-      if (currentLevel < upgrade.quantity) {
-        cursors.set(`enhancement:${upgrade.name}`, {
-          source: 'enhancement',
-          name: upgrade.name,
-          level: currentLevel,
-          quantity: upgrade.quantity,
-          batchSize: SINGLE_BATCH_SIZE,
-          categoryId: category.id,
-          categoryLabel: category.label,
-          costAt: enhancementCostAt,
-        })
+  if (enhancementLabLevel < 1) {
+    cursors.set('lab:Workshop Enhancements Lab', {
+      source: 'lab',
+      name: ENHANCEMENT_LAB_NAME,
+      level: 0,
+      quantity: 1,
+      batchSize: SINGLE_BATCH_SIZE,
+      categoryId: 'lab',
+      categoryLabel: 'Lab',
+      costAt: enhancementLabCostAt,
+    })
+  } else {
+    for (const category of ENHANCEMENT_CATEGORIES) {
+      for (const upgrade of category.upgrades) {
+        const currentLevel = enhancementLevels[upgrade.name] ?? 0
+        if (currentLevel < upgrade.quantity) {
+          cursors.set(`enhancement:${upgrade.name}`, {
+            source: 'enhancement',
+            name: upgrade.name,
+            level: currentLevel,
+            quantity: upgrade.quantity,
+            batchSize: SINGLE_BATCH_SIZE,
+            categoryId: category.id,
+            categoryLabel: category.label,
+            costAt: enhancementCostAt,
+          })
+        }
       }
     }
   }

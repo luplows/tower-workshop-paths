@@ -173,4 +173,16 @@ describe('App', () => {
     await user.click(screen.getByRole('tab', { name: 'Upgrade' }))
     expect(screen.getByLabelText('Damage')).toHaveValue(0)
   })
+
+  it('also re-locks the Workshop Enhancements Lab when clearing (OQ-31)', async () => {
+    window.localStorage.setItem('enhancementLabLevel', JSON.stringify(1))
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.click(screen.getByRole('button', { name: 'More actions' }))
+    await user.click(screen.getByText('Clear all levels'))
+    await user.click(screen.getByRole('button', { name: 'Clear' }))
+
+    expect(window.localStorage.getItem('enhancementLabLevel')).toBeNull()
+  })
 })

@@ -125,6 +125,7 @@ describe('UpgradePath', () => {
       delete enhancementLevels['Recovery Package']
       window.localStorage.setItem('workshopLevels', JSON.stringify(maxedWorkshopLevels()))
       window.localStorage.setItem('enhancementLevels', JSON.stringify(enhancementLevels))
+      window.localStorage.setItem('enhancementLabLevel', JSON.stringify(1))
       const user = userEvent.setup()
       render(<UpgradePath />)
 
@@ -156,12 +157,54 @@ describe('UpgradePath', () => {
       delete workshopLevels.Damage
       window.localStorage.setItem('workshopLevels', JSON.stringify(workshopLevels))
       window.localStorage.setItem('enhancementLevels', JSON.stringify(maxedEnhancementLevels()))
+      window.localStorage.setItem('enhancementLabLevel', JSON.stringify(1))
       render(<UpgradePath />)
 
       const rows = screen.getAllByRole('listitem')
       // Exact match: this fails if the name were actually rendered as
       // "Damage +" instead of plain "Damage".
       expect(within(rows[0]).getByText('Damage', { exact: true })).toBeInTheDocument()
+    })
+  })
+
+  describe('Workshop Enhancements Lab gate (OQ-31)', () => {
+    it('shows the Lab as the only remaining row while locked, and buying it unlocks Enhancements', async () => {
+      // Workshop maxed out so the Lab (locked default) is the only thing
+      // left to show at all -- Enhancement levels entered here would be
+      // ignored anyway while locked, so this also implicitly covers that.
+      window.localStorage.setItem('workshopLevels', JSON.stringify(maxedWorkshopLevels()))
+      const user = userEvent.setup()
+      render(<UpgradePath />)
+
+      const rows = screen.getAllByRole('listitem')
+      expect(rows).toHaveLength(1)
+      expect(rows[0]).toHaveTextContent('Workshop Enhancements Lab')
+      expect(rows[0]).toHaveTextContent('5B coins')
+      expect(rows[0]).toHaveTextContent('Lv 0 → 1')
+
+      await user.click(
+        within(rows[0]).getByRole('button', {
+          name: 'Buy 1 level of Workshop Enhancements Lab for 5B coins',
+        }),
+      )
+
+      expect(JSON.parse(window.localStorage.getItem('enhancementLabLevel'))).toBe(1)
+
+      // Once unlocked, the Lab is gone and real Enhancement categories
+      // (shown as "{name} +") take its place.
+      const rowsAfter = screen.getAllByRole('listitem')
+      expect(screen.queryByText('Workshop Enhancements Lab')).not.toBeInTheDocument()
+      expect(rowsAfter[0]).toHaveTextContent('+')
+    })
+
+    it('ignores entered Enhancement levels while the Lab is still locked', () => {
+      window.localStorage.setItem('workshopLevels', JSON.stringify(maxedWorkshopLevels()))
+      window.localStorage.setItem('enhancementLevels', JSON.stringify({ Damage: 5 }))
+      render(<UpgradePath />)
+
+      const rows = screen.getAllByRole('listitem')
+      expect(rows).toHaveLength(1)
+      expect(rows[0]).toHaveTextContent('Workshop Enhancements Lab')
     })
   })
 

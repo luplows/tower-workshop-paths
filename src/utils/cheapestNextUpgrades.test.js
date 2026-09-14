@@ -253,7 +253,11 @@ describe('getCheapestNextUpgrades', () => {
       const workshopLevels = maxedWorkshopLevels()
       workshopLevels.Health = 4999
       const { ranked, unknownCost } = getCheapestNextUpgrades(
-        { workshopLevels, enhancementLevels: maxedEnhancementLevels() },
+        {
+          workshopLevels,
+          enhancementLevels: maxedEnhancementLevels(),
+          enhancementLabLevel: 1,
+        },
         { rowCap: 5 },
       )
 
@@ -321,7 +325,11 @@ describe('getCheapestNextUpgrades', () => {
           workshopLevels[name] = ceiling
         }
         const { ranked, unknownCost } = getCheapestNextUpgrades(
-          { workshopLevels, enhancementLevels: maxedEnhancementLevels() },
+          {
+            workshopLevels,
+            enhancementLevels: maxedEnhancementLevels(),
+            enhancementLabLevel: 1,
+          },
           { rowCap: 10 },
         )
 
@@ -419,7 +427,7 @@ describe('getCheapestNextUpgrades', () => {
       const enhancementLevels = maxedEnhancementLevels()
       delete enhancementLevels.Damage
       const { ranked } = getCheapestNextUpgrades(
-        { workshopLevels: maxedWorkshopLevels(), enhancementLevels },
+        { workshopLevels: maxedWorkshopLevels(), enhancementLevels, enhancementLabLevel: 1 },
         { rowCap: 3 },
       )
 
@@ -464,7 +472,7 @@ describe('getCheapestNextUpgrades', () => {
       const enhancementLevels = maxedEnhancementLevels()
       delete enhancementLevels['Recovery Package']
       const { ranked } = getCheapestNextUpgrades(
-        { workshopLevels: maxedWorkshopLevels(), enhancementLevels },
+        { workshopLevels: maxedWorkshopLevels(), enhancementLevels, enhancementLabLevel: 1 },
         { rowCap: 1 },
       )
 
@@ -493,7 +501,7 @@ describe('getCheapestNextUpgrades', () => {
       const enhancementLevels = maxedEnhancementLevels()
       delete enhancementLevels['Recovery Package']
       const { ranked } = getCheapestNextUpgrades(
-        { workshopLevels, enhancementLevels },
+        { workshopLevels, enhancementLevels, enhancementLabLevel: 1 },
         { rowCap: 12 },
       )
 
@@ -511,7 +519,7 @@ describe('getCheapestNextUpgrades', () => {
       const workshopLevels = { Damage: 200, 'Attack Speed': 20 }
       const enhancementLevels = { Damage: 5, 'Cash Bonus': 3 }
       const { ranked } = getCheapestNextUpgrades(
-        { workshopLevels, enhancementLevels },
+        { workshopLevels, enhancementLevels, enhancementLabLevel: 1 },
         { rowCap: 45 },
       )
 
@@ -522,6 +530,72 @@ describe('getCheapestNextUpgrades', () => {
       for (const entry of ranked) {
         expect(['workshop', 'enhancement']).toContain(entry.source)
       }
+    })
+  })
+
+  describe('Workshop Enhancements Lab gate (OQ-31)', () => {
+    it('shows the Lab as the only Enhancement-related candidate while locked, regardless of entered Enhancement levels', () => {
+      // Enhancement levels entered here should be completely ignored while
+      // locked -- in-game, none of this is purchasable until the Lab is
+      // bought, so the simulation must not offer it either.
+      const { ranked, unknownCost } = getCheapestNextUpgrades(
+        {
+          workshopLevels: maxedWorkshopLevels(),
+          enhancementLevels: { Damage: 5, 'Cash Bonus': 3 },
+          enhancementLabLevel: 0,
+        },
+        { rowCap: 10 },
+      )
+
+      expect(ranked).toEqual([
+        {
+          name: 'Workshop Enhancements Lab',
+          source: 'lab',
+          categoryId: 'lab',
+          categoryLabel: 'Lab',
+          currentLevel: 0,
+          nextLevel: 1,
+          levels: 1,
+          cost: 5_000_000_000,
+        },
+      ])
+      expect(unknownCost).toEqual([])
+    })
+
+    it('defaults to locked when enhancementLabLevel is omitted', () => {
+      const { ranked } = getCheapestNextUpgrades(
+        { workshopLevels: maxedWorkshopLevels() },
+        { rowCap: 1 },
+      )
+
+      expect(ranked).toEqual([
+        expect.objectContaining({ name: 'Workshop Enhancements Lab', source: 'lab' }),
+      ])
+    })
+
+    it('excludes the Lab and includes every Enhancement normally once bought', () => {
+      const { ranked } = getCheapestNextUpgrades(
+        { workshopLevels: maxedWorkshopLevels(), enhancementLabLevel: 1 },
+        { rowCap: 5 },
+      )
+
+      expect(ranked.some((e) => e.source === 'lab')).toBe(false)
+      expect(ranked.every((e) => e.source === 'enhancement')).toBe(true)
+    })
+
+    it("doesn't let the Lab gate affect Workshop upgrades either way", () => {
+      const fixture = (enhancementLabLevel) =>
+        getCheapestNextUpgrades(
+          { workshopLevels: {}, enhancementLevels: maxedEnhancementLevels(), enhancementLabLevel },
+          { rowCap: 5 },
+        ).ranked
+
+      // With every Enhancement maxed out, only Workshop upgrades (and,
+      // while locked, the Lab) can compete -- Workshop's own top rows
+      // should be identical regardless of Lab status.
+      const lockedWorkshopRows = fixture(0).filter((e) => e.source === 'workshop')
+      const unlockedWorkshopRows = fixture(1)
+      expect(lockedWorkshopRows).toEqual(unlockedWorkshopRows)
     })
   })
 })
