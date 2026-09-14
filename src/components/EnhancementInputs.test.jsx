@@ -95,12 +95,19 @@ describe('EnhancementInputs', () => {
   })
 
   describe('per-tree cumulative-spend gate (OQ-6)', () => {
-    it('shows a locked note instead of an input for a category until its tree crosses that spend threshold', () => {
+    it('shows only the next category to unlock, with the coins still needed to unlock it', () => {
       render(<ControlledEnhancementInputs />)
 
       expect(screen.queryByLabelText('Rend Armor +')).not.toBeInTheDocument()
       expect(screen.getByText('Rend Armor +')).toBeInTheDocument()
-      expect(screen.getByText(/Locked until 50B coins spent in this tree/)).toBeInTheDocument()
+      expect(
+        screen.getByText('50B coins more spent in this tree to unlock'),
+      ).toBeInTheDocument()
+
+      // Critical Factor (next after Rend Armor) is fully hidden, not shown
+      // with its own redundant locked note.
+      expect(screen.queryByLabelText('Critical Factor +')).not.toBeInTheDocument()
+      expect(screen.queryByText('Critical Factor +')).not.toBeInTheDocument()
     })
 
     it("unlocks a category once its tree's cumulative spend crosses the threshold", () => {
@@ -110,7 +117,11 @@ describe('EnhancementInputs', () => {
       render(<ControlledEnhancementInputs />)
 
       expect(screen.getByLabelText('Rend Armor +')).toBeInTheDocument()
-      expect(screen.queryByText(/Locked until 50B coins/)).not.toBeInTheDocument()
+      expect(screen.queryByText(/more spent in this tree to unlock/)).toBeInTheDocument()
+      // Critical Factor is now the next category to unlock, in Rend
+      // Armor's place.
+      expect(screen.getByText('Critical Factor +')).toBeInTheDocument()
+      expect(screen.queryByLabelText('Critical Factor +')).not.toBeInTheDocument()
     })
   })
 
