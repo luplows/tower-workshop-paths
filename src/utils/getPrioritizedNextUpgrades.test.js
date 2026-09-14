@@ -39,25 +39,59 @@ const allUnlockedGroups = () => {
 }
 
 describe('getPrioritizedNextUpgrades (OQ-2)', () => {
-  it('ranks purely by cost before the Enhancement Lab is bought, since nothing ranked is reachable yet', () => {
-    // No valid score base exists pre-Lab (resolveBaseCost returns null) --
-    // every remaining candidate is a Workshop upgrade, sharing FALLBACK_RATIO,
-    // so falling back to plain cheapest-cost ranking is exactly equivalent
-    // to real scoring here. Matches getCheapestNextUpgrades' own top rows
-    // for this same fixture (see that file's "ranks upgrades cheapest-first"
-    // test) -- confirms the fallback path, not a coincidence.
-    const { ranked } = getPrioritizedNextUpgrades(
-      { workshopLevels: {}, unlockedGroups: allUnlockedGroups(), enhancementLabLevel: 0 },
-      { rowCap: 5 },
-    )
+  describe('before the Enhancement Lab is bought', () => {
+    it('still prefers a cheap Workshop upgrade over the Lab, since the Lab is only worth as much as the Coin Bonus chain behind it', () => {
+      // The Lab is on the critical path toward Coin Bonus (see below), so it
+      // scores exactly 1 here -- but a Workshop upgrade this cheap still
+      // easily beats that (its own FALLBACK_RATIO-weighted score is far
+      // above 1 at these costs). Matches getCheapestNextUpgrades' own top
+      // rows for this same fixture (see that file's "ranks upgrades
+      // cheapest-first" test) -- not a coincidence, just confirms cheap
+      // Workshop upgrades keep winning regardless of the Lab's presence.
+      const { ranked } = getPrioritizedNextUpgrades(
+        { workshopLevels: {}, unlockedGroups: allUnlockedGroups(), enhancementLabLevel: 0 },
+        { rowCap: 5 },
+      )
 
-    expect(ranked.map((e) => [e.source, e.name, e.cost])).toEqual([
-      ['workshop', 'Multishot Targets', 450],
-      ['workshop', 'Bounce Shot Targets', 700],
-      ['workshop', 'Multishot Targets', 2000],
-      ['workshop', 'Critical Factor', 2645],
-      ['workshop', 'Thorns', 2722],
-    ])
+      expect(ranked.map((e) => [e.source, e.name, e.cost])).toEqual([
+        ['workshop', 'Multishot Targets', 450],
+        ['workshop', 'Bounce Shot Targets', 700],
+        ['workshop', 'Multishot Targets', 2000],
+        ['workshop', 'Critical Factor', 2645],
+        ['workshop', 'Thorns', 2722],
+      ])
+    })
+
+    it('overtakes once nothing cheaper than the effective cost of reaching Coin Bonus remains', () => {
+      // From a fresh state, the effective cost of reaching Coin Bonus's own
+      // first level is the Lab (5B) + all 10 Cash Bonus levels needed to
+      // cross the 50B Utility threshold (~55.54B) + Coin Bonus's own real
+      // level-1 cost (5B) = ~65.54B -- FALLBACK_RATIO of that is ~512M, so
+      // the Lab (scored as 1) should overtake a Workshop row right around
+      // there. Verified empirically rather than reproducing the batching
+      // math for all 46 upgrades by hand.
+      const { ranked } = getPrioritizedNextUpgrades({}, { rowCap: 50 })
+
+      const labIndex = ranked.findIndex((entry) => entry.source === 'lab')
+      expect(labIndex).toBeGreaterThan(0)
+      expect(ranked[labIndex]).toMatchObject({ name: 'Workshop Enhancements Lab', cost: 5_000_000_000 })
+      // The Lab's reported cost/position is real (5B), not the inflated
+      // effective cost used only for scoring -- it wins the moment nothing
+      // remaining costs less than ~512M, and loses to anything that does.
+      expect(ranked[labIndex - 1].cost).toBeLessThan(512_000_000)
+      expect(ranked[labIndex + 1].cost).toBeGreaterThan(512_000_000)
+    })
+
+    it('is the only row once every Workshop upgrade is maxed, reporting its own real cost', () => {
+      const { ranked } = getPrioritizedNextUpgrades(
+        { workshopLevels: maxedWorkshopLevels(), unlockedGroups: allUnlockedGroups() },
+        { rowCap: 5 },
+      )
+
+      expect(ranked).toEqual([
+        expect.objectContaining({ source: 'lab', name: 'Workshop Enhancements Lab', cost: 5_000_000_000 }),
+      ])
+    })
   })
 
   it('ranks a ranked eHP category ahead of a cheaper fallback-ratio one (normal base: Coin Bonus itself)', () => {
@@ -117,17 +151,84 @@ describe('getPrioritizedNextUpgrades (OQ-2)', () => {
     ])
   })
 
-  describe('while Coin Bonus is locked (Utility tree under its 50B threshold)', () => {
-    it('uses the coins still needed to cross the threshold as the score base, via Cash Bonus', () => {
-      // Cash Bonus at level 9 has spent 49.01B of the 50B Utility needs to
-      // unlock Coin Bonus -- 0.99B (990,000,000) still needed. Health maxed
-      // out so it can't itself compete (it's also a ranked category, Defense's
-      // free starter) -- isolates Health Regen (Defense's own 50B-gated
-      // category, ratio 1/8) as the only other ranked item in play, so a win
-      // here is attributable to the locked-base mechanism, not coincidence.
+  describe('while Coin Bonus is locked (Lab bought, Utility tree under its 50B threshold)', () => {
+    it("treats Cash Bonus as the critical path toward Coin Bonus, outranking a ranked category it wouldn't otherwise beat", () => {
+      // Every OTHER Utility category reset to 0 (not maxedEnhancementLevels'
+      // default) so the tree's spend genuinely comes from Cash Bonus alone --
+      // otherwise those categories' own huge spend would cross the 50B
+      // threshold regardless, landing in the maxed/re-anchor branch instead
+      // (see the "once Coin Bonus is maxed" tests below, and the "while
+      // Coin Bonus is locked" comment that used to mislabel this same
+      // mistake). Cash Bonus at level 9 has spent 49.01B of the 50B needed --
+      // effective cost of reaching Coin Bonus is 0 (Lab already bought) +
+      // 6.53B (the one more Cash Bonus level needed) + 5B (Coin Bonus's own
+      // level-1 cost) = 11.53B. Health Regen (Defense, ratio 1/8, 5B at
+      // level 0) would score (1/8 x 11.53B) / 5B = 0.288 -- Cash Bonus's
+      // forced score of 1 beats it outright, not just a coincidence of cost.
       const enh = maxedEnhancementLevels()
       enh['Cash Bonus'] = 9
+      enh['Coin Bonus'] = 0
+      enh['Cells/Kill Bonus'] = 0
+      enh['Free Upgrades'] = 0
+      enh['Recovery Package'] = 0
+      enh['Enemy Level Skip'] = 0
       enh['Health'] = 600
+      enh['Health Regen'] = 0
+
+      const { ranked, unknownCost } = getPrioritizedNextUpgrades(
+        {
+          workshopLevels: maxedWorkshopLevels(),
+          unlockedGroups: allUnlockedGroups(),
+          enhancementLabLevel: 1,
+          enhancementLevels: enh,
+        },
+        { rowCap: 1 },
+      )
+
+      expect(unknownCost).toEqual([])
+      expect(ranked).toEqual([
+        expect.objectContaining({ source: 'enhancement', name: 'Cash Bonus', cost: 6_530_000_000 }),
+      ])
+    })
+
+    it('lets a cheap-enough Workshop upgrade still win over completing the Cash Bonus chain', () => {
+      // Same locked setup as above (effective cost ~11.53B, so the crossover
+      // is ~90M), but Range (a real, cheap Workshop upgrade) is left
+      // unmaxed instead of maxing every Workshop upgrade out.
+      const enh = maxedEnhancementLevels()
+      enh['Cash Bonus'] = 9
+      enh['Coin Bonus'] = 0
+      enh['Cells/Kill Bonus'] = 0
+      enh['Free Upgrades'] = 0
+      enh['Recovery Package'] = 0
+      enh['Enemy Level Skip'] = 0
+      enh['Health'] = 600
+      enh['Health Regen'] = 0
+      const wl = maxedWorkshopLevels()
+      delete wl.Range
+
+      const { ranked } = getPrioritizedNextUpgrades(
+        {
+          workshopLevels: wl,
+          unlockedGroups: allUnlockedGroups(),
+          enhancementLabLevel: 1,
+          enhancementLevels: enh,
+        },
+        { rowCap: 1 },
+      )
+
+      expect(ranked).toEqual([expect.objectContaining({ source: 'workshop', name: 'Range' })])
+    })
+  })
+
+  describe('once Coin Bonus is maxed (level 300)', () => {
+    it('re-anchors to the next ranked category currently purchasable, skipping every other maxed ranked category first (Health Regen)', () => {
+      // Every ranked category except Health Regen left at its
+      // maxedEnhancementLevels() default (maxed) -- so Coin Bonus is
+      // unlocked (the tree's overall spend is enormous) but has no cursor
+      // (maxed), and the re-anchor scan must skip Enemy Level Skip and
+      // Cells/Kill Bonus (also maxed) before landing on Health Regen.
+      const enh = maxedEnhancementLevels()
       enh['Health Regen'] = 0
 
       const { ranked, unknownCost } = getPrioritizedNextUpgrades(
@@ -146,9 +247,7 @@ describe('getPrioritizedNextUpgrades (OQ-2)', () => {
         5_000_000_000, 5_040_000_000, 5_110_000_000, 5_200_000_000, 5_330_000_000,
       ])
     })
-  })
 
-  describe('once Coin Bonus is maxed (level 300)', () => {
     it('re-anchors to the next ranked category currently purchasable (Enemy Level Skip)', () => {
       const enh = maxedEnhancementLevels()
       enh['Coin Bonus'] = 300
