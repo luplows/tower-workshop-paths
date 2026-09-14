@@ -11,7 +11,7 @@ export function BottomTabBar({ categories, activeCategoryId, onSelect }) {
             id={`tab-${category.id}`}
             aria-selected={isActive}
             aria-controls={`panel-${category.id}`}
-            className={`bottom-tab-bar__tab${isActive ? ' bottom-tab-bar__tab--active' : ''}`}
+            className={`bottom-tab-bar__tab bottom-tab-bar__tab--${category.id}${isActive ? ' bottom-tab-bar__tab--active' : ''}`}
             onClick={() => onSelect(category.id)}
           >
             {category.label}

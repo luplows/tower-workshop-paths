@@ -75,3 +75,18 @@
   color: var(--accent);
   border-top-color: var(--accent);
 }
+
+.bottom-tab-bar__tab--attack.bottom-tab-bar__tab--active {
+  color: var(--tree-attack);
+  border-top-color: var(--tree-attack);
+}
+
+.bottom-tab-bar__tab--defense.bottom-tab-bar__tab--active {
+  color: var(--tree-defense);
+  border-top-color: var(--tree-defense);
+}
+
+.bottom-tab-bar__tab--utility.bottom-tab-bar__tab--active {
+  color: var(--tree-utility);
+  border-top-color: var(--tree-utility);
+}
