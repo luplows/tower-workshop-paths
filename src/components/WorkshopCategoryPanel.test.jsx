@@ -2,18 +2,25 @@ import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { WorkshopCategoryPanel } from './WorkshopCategoryPanel'
 
-const CATEGORY = {
-  id: 'attack',
-  label: 'Attack',
+const categoryWith = (id) => ({
+  id,
+  label: id,
   upgrades: [{ name: 'Damage', quantity: 6000 }],
-}
+})
 
 describe('WorkshopCategoryPanel', () => {
-  it('gives the panel a per-tree class, matching the tab bar\'s tree coloring', () => {
-    render(
-      <WorkshopCategoryPanel category={CATEGORY} levels={{}} onLevelChange={() => {}} />,
-    )
+  it.each(['attack', 'defense', 'utility'])(
+    'gives the %s panel its own tree class, matching the tab bar\'s tree coloring',
+    (id) => {
+      render(
+        <WorkshopCategoryPanel
+          category={categoryWith(id)}
+          levels={{}}
+          onLevelChange={() => {}}
+        />,
+      )
 
-    expect(screen.getByRole('tabpanel')).toHaveClass('category-panel--attack')
-  })
+      expect(screen.getByRole('tabpanel')).toHaveClass(`category-panel--${id}`)
+    },
+  )
 })
