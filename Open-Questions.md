@@ -8,11 +8,11 @@ Each story has a permanent number (e.g. "OQ-7") for easy reference. Numbers are 
 
 **OQ-1. Verify Workshop upgrade per-level cost accuracy**
 As a player, I want the coins/cash cost shown for each Workshop upgrade level to match the current patch, so that the buy-order algorithm (OQ-2) recommends real spending, not stale numbers.
-Only `quantity` (max level) has been verified so far (OQ-13) — the actual `cash`/`coins` cost figures in `WORKSHOP_LEVELS` (from `tower-idle-toolkit`) haven't been individually spot-checked. An unverified stale cost would produce a wrong recommendation even with correct quantities, and matters more than the max-level task did.
+Only `quantity` (max level) has been verified so far (OQ-13) — the actual `cash`/`coins` cost figures in `WORKSHOP_LEVELS` (from `tower-idle-toolkit`) haven't been individually spot-checked. An unverified stale cost would produce a wrong recommendation even with correct quantities, and matters more than the max-level task did. **Confirmed gap (via OQ-17):** for the 4 upgrades whose `quantity` was corrected upward past `tower-idle-toolkit`'s own belief (Health, Health Regen, Recovery Amount, Max Recovery — see OQ-13), `WORKSHOP_LEVELS` simply has no cost data past the toolkit's old, lower ceiling (its last entry there is a `coins: 0` "nothing more to buy" sentinel, not a real cost). `getCheapestNextUpgrades` (`src/utils/cheapestNextUpgrades.js`) treats that as unknown rather than a real 0-coin upgrade, but the underlying data gap itself is still unresolved.
 
-**OQ-2. Implement the core buy-order algorithm**
-As a player, I want the app to recommend which Workshop upgrade to buy next, so that I know how to spend my coins efficiently.
-The scoring formula is designed and hand-verified (`Project-Outline.md`, "Core Feature: Recommended Buy Order"), and current-level input UI exists for both Workshop upgrades and Enhancements, but there's no code yet that actually computes a recommended buy order from those levels + costs + priorities. This is the tool's core feature and still unbuilt — OQ-4, OQ-5, OQ-6, and OQ-7 are really refinements of this one.
+**OQ-2. Implement the core, priority-weighted buy-order algorithm**
+As a player, I want the app to recommend which Workshop upgrade to buy next according to my priorities, so that I know how to spend my coins efficiently even when the cheapest option isn't what I value most.
+The full scoring formula (ratio × relative cost) is designed and hand-verified (`Project-Outline.md`, "Core Feature: Recommended Buy Order"), and current-level input UI exists for both Workshop upgrades and Enhancements, but there's no code yet that weighs cost against a priority list — this is the tool's actual core feature and still unbuilt. OQ-17 is a first, priority-free cut (cheapest cost only); OQ-3's predefined priority list and OQ-4/OQ-5/OQ-6/OQ-7 (discounts, unlock gates, Enhancement gating, batching) are all refinements on top of this one once it exists.
 
 **OQ-3. Source a predefined community-recommended priority order**
 As a new player, I want a sensible default spend-priority list, so that I don't have to build one from scratch before the tool is useful.
@@ -46,6 +46,14 @@ Only checked in a desktop browser at a fixed width so far.
 As a maintainer, I want the shipped JS bundle to only include what the app uses, so that load time doesn't suffer as real usage grows.
 Currently ~2.4MB minified, mostly `tower-idle-toolkit`'s bundled game data (labs, cards, bots, etc. we don't use). Worth revisiting with code-splitting or a narrower import once the app has more real usage to justify the effort. Not currently blocking anything.
 
+**OQ-18. Let the user buy directly from the Upgrade Path list**
+As a player looking at the Path screen, I want a Buy button on each row, so that buying updates my entered Workshop level without switching back to the Upgrade screen and typing it in by hand.
+Builds on OQ-17's ranked list (`UpgradePath`). Buying a row should increment that upgrade's level in the same `workshopLevels` `localStorage` state the Upgrade screen reads/writes, then the list should re-rank immediately (next cheapest becomes the new top row).
+
+**OQ-19. Let the Path list include the same upgrade multiple times**
+As a player, I want the Path list to show an upgrade's 2nd, 3rd, etc. next levels too when they're still cheaper than other upgrades' first next level, so that the ranking reflects the true cheapest sequence of purchases, not just each upgrade's single next step.
+Not important for OQ-17/OQ-18 — a future item. Currently `getCheapestNextUpgrades` (OQ-17) only considers each upgrade's immediate next level once; a cheap upgrade whose next 5 levels are all cheaper than everything else should show up 5 times in a row, not once. Since simulating every remaining level for every upgrade would produce an enormous (and mostly useless) list, cap the total rows shown at an arbitrary 50. Closely related to OQ-7 (batch buying — 100 levels at a time for anything with >1000 max levels, 10 otherwise, per `Project-Outline.md`): once batches exist, these repeated single-level rows for the same upgrade should likely collapse into a single "buy N at once" row rather than N separate one-level rows, so this is probably worth resolving together with OQ-7 rather than building throwaway single-level-repeat logic first.
+
 ---
 
 ## Completed
@@ -73,3 +81,7 @@ As a maintainer, I want `git status` to only show real changes, so that a false 
 **OQ-16. Persist the selected category tab across mode switches**
 As a player switching between Upgrade and Enhance, I want the app to remember which tree tab (Attack/Defense/Utility) I had open, so that I don't land back on Attack every time I switch modes.
 Resolved as shared: one tree tab app-wide, not tracked independently per screen. `activeCategoryId` moved out of `CategoryLevelInputs`'s own state and up into `App.jsx`, persisted via `localStorage` (`activeCategoryId` key) the same way `workshopMode` already was, and passed down as a controlled prop through `WorkshopInputs`/`EnhancementInputs` to `CategoryLevelInputs`. Switching Upgrade → Enhance (or back) now keeps the same tree selected, and it survives a reload too.
+
+**OQ-17. Show the cheapest next Workshop upgrade as a ranked list (Upgrade Path page)**
+As a player, I want a page that tells me the single cheapest thing to buy next, so that I have a starting recommendation before the full priority-weighted algorithm (OQ-2) exists.
+A new "Path" section renders `UpgradePath`, which ranks every not-yet-maxed Workshop upgrade purely by the coin cost of its next single level, cheapest first — no priority ratios, per the user's explicit "for now, just focus on lowest cost" scope. Deliberately **not** a third entry in `ModeTabBar` alongside Upgrade/Enhance: that toggle mirrors the game's own buttons, and there's no "Path" screen in-game, so Path lives behind its own top-level `AppSectionTabs` control ("Input" vs "Path") in the header, and `ModeTabBar`'s Upgrade/Enhance toggle only renders within the "Input" section. The pure ranking logic (`getCheapestNextUpgrades`, `src/utils/cheapestNextUpgrades.js`) reads current levels from the same `workshopLevels` `localStorage` key the Upgrade screen uses, and is unit-tested independently of the UI. Upgrades whose current level has no valid cost data (see OQ-1's new finding) are listed separately as "cost data unavailable" rather than silently omitted or mis-ranked. Enhancements are out of scope for this page — it's specifically the *Upgrade* path. Next per the user: OQ-18 (buy directly from this list), OQ-19 (let an upgrade repeat in the list), then folding in priorities (OQ-2).
