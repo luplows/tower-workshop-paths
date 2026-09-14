@@ -5,27 +5,39 @@ import { formatCoins } from '../utils/formatCoins'
 import './UpgradePath.css'
 
 export function UpgradePath() {
-  const [levels, setLevels] = useLocalStorageState('workshopLevels', {})
+  const [workshopLevels, setWorkshopLevels] = useLocalStorageState('workshopLevels', {})
+  const [enhancementLevels, setEnhancementLevels] = useLocalStorageState(
+    'enhancementLevels',
+    {},
+  )
   const [pendingBuy, setPendingBuy] = useState(null)
-  const { ranked, unknownCost } = getCheapestNextUpgrades(levels)
+  const { ranked, unknownCost } = getCheapestNextUpgrades({
+    workshopLevels,
+    enhancementLevels,
+  })
 
-  const applyBuy = (name, levelsToAdd) => {
+  // Workshop and Enhancement names overlap (e.g. "Damage", "Health"), so a
+  // buy must be routed by source, not just name, to the matching
+  // localStorage-backed state.
+  const applyBuy = (entry, levelsToAdd) => {
+    const setLevels = entry.source === 'workshop' ? setWorkshopLevels : setEnhancementLevels
     setLevels((previous) => ({
       ...previous,
-      [name]: (previous[name] ?? 0) + levelsToAdd,
+      [entry.name]: (previous[entry.name] ?? 0) + levelsToAdd,
     }))
   }
 
   const handleBuyClick = (entry, index) => {
-    // If this upgrade also appears earlier in the list (OQ-19 repeats),
-    // buying just this row's batch would skip those -- ask which the
-    // player actually wants rather than silently under-buying.
+    // If this same item (same name AND source) also appears earlier in the
+    // list (OQ-19 repeats), buying just this row's batch would skip those
+    // -- ask which the player actually wants rather than silently
+    // under-buying.
     const priorSameUpgrade = ranked
       .slice(0, index)
-      .filter((row) => row.name === entry.name)
+      .filter((row) => row.name === entry.name && row.source === entry.source)
 
     if (priorSameUpgrade.length === 0) {
-      applyBuy(entry.name, entry.levels)
+      applyBuy(entry, entry.levels)
       return
     }
 
@@ -37,7 +49,7 @@ export function UpgradePath() {
   }
 
   const handleBuyAll = () => {
-    applyBuy(pendingBuy.entry.name, pendingBuy.priorLevels + pendingBuy.entry.levels)
+    applyBuy(pendingBuy.entry, pendingBuy.priorLevels + pendingBuy.entry.levels)
     setPendingBuy(null)
   }
 
@@ -45,24 +57,33 @@ export function UpgradePath() {
     <div className="upgrade-path">
       {ranked.length === 0 ? (
         <p className="upgrade-path__empty">
-          Every Workshop upgrade with known cost data is maxed out.
+          Every Workshop upgrade and Enhancement with known cost data is maxed out.
         </p>
       ) : (
         <ol className="upgrade-path__list" aria-label="Cheapest next upgrades">
           {ranked.map((entry, index) => (
             <li
-              key={`${entry.name}-${entry.currentLevel}`}
+              key={`${entry.source}-${entry.name}-${entry.currentLevel}`}
               className={`upgrade-path__row upgrade-path__row--${entry.categoryId}`}
             >
               <span className="upgrade-path__rank">{index + 1}</span>
-              <span className="upgrade-path__name">{entry.name}</span>
+              <span className="upgrade-path__name">
+                {entry.name}
+                {/* Workshop and Enhancement names overlap (e.g. "Damage"),
+                    so an Enhancement row needs a visible tag to tell them
+                    apart -- Workshop rows stay untagged since they're the
+                    game-mirroring default. */}
+                {entry.source === 'enhancement' && (
+                  <span className="upgrade-path__source-tag">Enh</span>
+                )}
+              </span>
               <span className="upgrade-path__level">
                 Lv {entry.currentLevel} → {entry.nextLevel}
               </span>
               <button
                 type="button"
                 className="upgrade-path__buy"
-                aria-label={`Buy ${entry.levels} level${entry.levels === 1 ? '' : 's'} of ${entry.name} for ${formatCoins(entry.cost)}`}
+                aria-label={`Buy ${entry.levels} level${entry.levels === 1 ? '' : 's'} of ${entry.name}${entry.source === 'enhancement' ? ' (Enhancement)' : ''} for ${formatCoins(entry.cost)}`}
                 onClick={() => handleBuyClick(entry, index)}
               >
                 <span className="upgrade-path__buy-label">Buy</span>
@@ -77,12 +98,13 @@ export function UpgradePath() {
         <div className="upgrade-path__unknown">
           <p className="upgrade-path__unknown-heading">
             Cost data unavailable at your current level for {unknownCost.length}{' '}
-            upgrade{unknownCost.length === 1 ? '' : 's'} (see OQ-1):
+            item{unknownCost.length === 1 ? '' : 's'} (see OQ-1):
           </p>
           <ul className="upgrade-path__unknown-list" aria-label="Upgrades with unknown cost">
             {unknownCost.map((entry) => (
-              <li key={entry.name}>
-                {entry.name} (Lv {entry.currentLevel})
+              <li key={`${entry.source}-${entry.name}`}>
+                {entry.name}
+                {entry.source === 'enhancement' ? ' (Enhancement)' : ''} (Lv {entry.currentLevel})
               </li>
             ))}
           </ul>
@@ -94,12 +116,13 @@ export function UpgradePath() {
           <div
             role="alertdialog"
             aria-modal="true"
-            aria-label={`Buy all ${pendingBuy.entry.name} upgrades to reach Lv ${pendingBuy.entry.nextLevel} for ${formatCoins(pendingBuy.totalCost)}?`}
+            aria-label={`Buy all ${pendingBuy.entry.name}${pendingBuy.entry.source === 'enhancement' ? ' (Enhancement)' : ''} upgrades to reach Lv ${pendingBuy.entry.nextLevel} for ${formatCoins(pendingBuy.totalCost)}?`}
             className="upgrade-path__confirm"
           >
             <p className="upgrade-path__confirm-body">
-              Buy all {pendingBuy.entry.name} upgrades to reach Lv{' '}
-              {pendingBuy.entry.nextLevel} ({formatCoins(pendingBuy.totalCost)})?
+              Buy all {pendingBuy.entry.name}
+              {pendingBuy.entry.source === 'enhancement' ? ' (Enhancement)' : ''} upgrades to
+              reach Lv {pendingBuy.entry.nextLevel} ({formatCoins(pendingBuy.totalCost)})?
             </p>
             <div className="upgrade-path__confirm-actions">
               <button

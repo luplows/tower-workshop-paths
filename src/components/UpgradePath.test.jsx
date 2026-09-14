@@ -1,8 +1,25 @@
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it } from 'vitest'
+import { ENHANCEMENT_CATEGORIES } from '../data/enhancementCategories'
 import { WORKSHOP_CATEGORIES } from '../data/workshopCategories'
 import { UpgradePath } from './UpgradePath'
+
+const maxedWorkshopLevels = () => {
+  const levels = {}
+  for (const category of WORKSHOP_CATEGORIES) {
+    for (const upgrade of category.upgrades) levels[upgrade.name] = upgrade.quantity
+  }
+  return levels
+}
+
+const maxedEnhancementLevels = () => {
+  const levels = {}
+  for (const category of ENHANCEMENT_CATEGORIES) {
+    for (const upgrade of category.upgrades) levels[upgrade.name] = upgrade.quantity
+  }
+  return levels
+}
 
 describe('UpgradePath', () => {
   beforeEach(() => {
@@ -98,6 +115,53 @@ describe('UpgradePath', () => {
     const rows = screen.getAllByRole('listitem')
     expect(rows[0]).toHaveTextContent('Damage')
     expect(rows[0]).toHaveTextContent('2.49M coins')
+  })
+
+  describe('Workshop Enhancements in the path (OQ-29)', () => {
+    it('shows an Enhancement row tagged "Enh", and buying it updates enhancementLevels (not workshopLevels)', async () => {
+      // Every Workshop upgrade maxed, every Enhancement maxed except one,
+      // so that lone Enhancement is unambiguously the only, first row.
+      const enhancementLevels = maxedEnhancementLevels()
+      delete enhancementLevels['Recovery Package']
+      window.localStorage.setItem('workshopLevels', JSON.stringify(maxedWorkshopLevels()))
+      window.localStorage.setItem('enhancementLevels', JSON.stringify(enhancementLevels))
+      const user = userEvent.setup()
+      render(<UpgradePath />)
+
+      const rows = screen.getAllByRole('listitem')
+      expect(rows[0]).toHaveTextContent('Recovery Package')
+      expect(rows[0]).toHaveTextContent('Enh')
+      expect(rows[0]).toHaveTextContent('5B coins')
+      expect(rows[0]).toHaveTextContent('Lv 0 → 1')
+
+      await user.click(
+        within(rows[0]).getByRole('button', {
+          name: 'Buy 1 level of Recovery Package (Enhancement) for 5B coins',
+        }),
+      )
+
+      expect(
+        JSON.parse(window.localStorage.getItem('enhancementLevels'))['Recovery Package'],
+      ).toBe(1)
+      expect(
+        JSON.parse(window.localStorage.getItem('workshopLevels'))['Recovery Package'],
+      ).toBeUndefined()
+    })
+
+    it("doesn't tag or mislabel a Workshop row even when an Enhancement shares its name", () => {
+      // Isolate the Workshop "Damage" upgrade (an Enhancement category is
+      // also named "Damage") -- its row must stay untagged, since it's the
+      // game-mirroring Workshop entry, not the Enhancement one.
+      const workshopLevels = maxedWorkshopLevels()
+      delete workshopLevels.Damage
+      window.localStorage.setItem('workshopLevels', JSON.stringify(workshopLevels))
+      window.localStorage.setItem('enhancementLevels', JSON.stringify(maxedEnhancementLevels()))
+      render(<UpgradePath />)
+
+      const rows = screen.getAllByRole('listitem')
+      expect(rows[0]).toHaveTextContent('Damage')
+      expect(within(rows[0]).queryByText('Enh')).not.toBeInTheDocument()
+    })
   })
 
   describe('buying a later occurrence of a repeated upgrade (OQ-19 + confirmation)', () => {
