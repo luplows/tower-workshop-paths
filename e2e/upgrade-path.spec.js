@@ -106,6 +106,9 @@ test('shows and buys an Enhancement row as "{name} +", the game\'s own conventio
     ([workshop, enhancement]) => {
       window.localStorage.setItem('workshopLevels', JSON.stringify(workshop))
       window.localStorage.setItem('enhancementLevels', JSON.stringify(enhancement))
+      // Lab already bought -- this test is about ranking Enhancements
+      // themselves, not the Lab gate (see OQ-31).
+      window.localStorage.setItem('enhancementLabLevel', JSON.stringify(1))
     },
     [workshopLevels, enhancementLevels],
   )
@@ -126,6 +129,35 @@ test('shows and buys an Enhancement row as "{name} +", the game\'s own conventio
   await page.getByRole('tab', { name: 'Enhance', exact: true }).click()
   await page.getByRole('tab', { name: 'Utility', exact: true }).click()
   await expect(page.getByLabel('Recovery Package +', { exact: true })).toHaveValue('1')
+})
+
+test('shows the Workshop Enhancements Lab while locked, buying it unlocks Enhancements (OQ-31)', async ({
+  page,
+}) => {
+  // Workshop maxed out so the Lab (locked by default) is the only thing
+  // left to show at all.
+  await page.addInitScript((workshop) => {
+    window.localStorage.setItem('workshopLevels', JSON.stringify(workshop))
+  }, maxedLevels(WORKSHOP_CATEGORIES))
+  await page.goto('/')
+
+  await page.getByRole('tab', { name: 'Path', exact: true }).click()
+
+  const list = page.getByRole('list', { name: 'Cheapest next upgrades' })
+  await expect(list.getByRole('listitem')).toHaveCount(1)
+  const labRow = list.getByRole('listitem').first()
+  await expect(labRow).toContainText('Workshop Enhancements Lab')
+  await expect(labRow).toContainText('5B coins')
+
+  await labRow
+    .getByRole('button', { name: 'Buy 1 level of Workshop Enhancements Lab for 5B coins' })
+    .click()
+
+  await expect(page.getByText('Workshop Enhancements Lab')).not.toBeVisible()
+  // Real Enhancement categories are reachable now -- every row here should
+  // be one, shown as "{name} +".
+  const firstRow = list.getByRole('listitem').first()
+  await expect(firstRow).toContainText('+')
 })
 
 test('keeps Path on a separate control from the Upgrade/Enhance toggle', async ({

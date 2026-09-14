@@ -33,6 +33,7 @@ function App() {
   const handleClearAllLevels = () => {
     window.localStorage.removeItem('workshopLevels')
     window.localStorage.removeItem('enhancementLevels')
+    window.localStorage.removeItem('enhancementLabLevel')
     setResetNonce((n) => n + 1)
   }
 

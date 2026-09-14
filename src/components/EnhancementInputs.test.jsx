@@ -20,6 +20,9 @@ function ControlledEnhancementInputs() {
 describe('EnhancementInputs', () => {
   beforeEach(() => {
     window.localStorage.clear()
+    // Unlocked by default -- most of these tests are about the tree
+    // tabs/inputs themselves, not the Lab gate (see its own describe below).
+    window.localStorage.setItem('enhancementLabLevel', JSON.stringify(1))
   })
 
   it('shows the Attack tree by default', () => {
@@ -86,5 +89,35 @@ describe('EnhancementInputs', () => {
     unmount()
     render(<ControlledEnhancementInputs />)
     expect(screen.getByLabelText('Damage +')).toHaveValue(12)
+  })
+
+  describe('while the Workshop Enhancements Lab is locked (OQ-32)', () => {
+    beforeEach(() => {
+      // Overrides the outer beforeEach's default-unlocked seed.
+      window.localStorage.removeItem('enhancementLabLevel')
+    })
+
+    it('shows a lock prompt instead of the tree tabs and inputs', () => {
+      render(<ControlledEnhancementInputs />)
+
+      expect(
+        screen.getByText('Workshop Enhancements are locked'),
+      ).toBeInTheDocument()
+      expect(screen.queryByRole('tab', { name: 'Attack' })).not.toBeInTheDocument()
+      expect(screen.queryByLabelText('Damage +')).not.toBeInTheDocument()
+    })
+
+    it('unlocks and shows the normal screen once the unlock button is clicked', async () => {
+      const user = userEvent.setup()
+      render(<ControlledEnhancementInputs />)
+
+      await user.click(screen.getByRole('button', { name: 'Unlock (5B coins)' }))
+
+      expect(JSON.parse(window.localStorage.getItem('enhancementLabLevel'))).toBe(1)
+      expect(screen.getByLabelText('Damage +')).toBeInTheDocument()
+      expect(
+        screen.queryByText('Workshop Enhancements are locked'),
+      ).not.toBeInTheDocument()
+    })
   })
 })

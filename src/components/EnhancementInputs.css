@@ -1,0 +1,40 @@
+.enhancement-lock {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 32px 20px;
+  text-align: center;
+}
+
+.enhancement-lock__title {
+  margin: 0;
+  font: 600 17px/1.3 var(--heading);
+  color: var(--text-h);
+}
+
+.enhancement-lock__body {
+  margin: 0;
+  max-width: 320px;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.enhancement-lock__unlock {
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 999px;
+  border: 1px solid var(--accent-border);
+  background: var(--accent-bg);
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.enhancement-lock__unlock:hover {
+  background: var(--accent);
+  color: var(--bg);
+}

@@ -15,16 +15,26 @@ export function UpgradePath() {
     'enhancementLevels',
     {},
   )
+  const [enhancementLabLevel, setEnhancementLabLevel] = useLocalStorageState(
+    'enhancementLabLevel',
+    0,
+  )
   const [pendingBuy, setPendingBuy] = useState(null)
   const { ranked, unknownCost } = getCheapestNextUpgrades({
     workshopLevels,
     enhancementLevels,
+    enhancementLabLevel,
   })
 
   // Workshop and Enhancement names overlap (e.g. "Damage", "Health"), so a
   // buy must be routed by source, not just name, to the matching
-  // localStorage-backed state.
+  // localStorage-backed state. The Lab isn't per-name at all -- just one
+  // flat 0-or-1 value gating every Enhancement (OQ-31).
   const applyBuy = (entry, levelsToAdd) => {
+    if (entry.source === 'lab') {
+      setEnhancementLabLevel((previous) => previous + levelsToAdd)
+      return
+    }
     const setLevels = entry.source === 'workshop' ? setWorkshopLevels : setEnhancementLevels
     setLevels((previous) => ({
       ...previous,
