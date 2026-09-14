@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useLocalStorageState } from '../hooks/useLocalStorageState'
 import { BottomTabBar } from './BottomTabBar'
 import { WorkshopCategoryPanel } from './WorkshopCategoryPanel'
@@ -8,12 +7,21 @@ import './WorkshopInputs.css'
  * Category tabs + level-input panel + localStorage persistence, shared by
  * the Workshop Upgrade screen and the Workshop Enhancements screen -- same
  * three trees, same per-item level input, different data and storage key.
+ * Which tree tab is active is owned by the caller (App), not here, so it
+ * stays the same tree when switching between the Upgrade and Enhance
+ * screens -- see Open-Questions.md's OQ-16.
  */
-export function CategoryLevelInputs({ categories, storageKey, formatValue }) {
-  const [activeCategoryId, setActiveCategoryId] = useState(categories[0].id)
+export function CategoryLevelInputs({
+  categories,
+  storageKey,
+  formatValue,
+  activeCategoryId,
+  onCategoryChange,
+}) {
   const [levels, setLevels] = useLocalStorageState(storageKey, {})
 
-  const activeCategory = categories.find((c) => c.id === activeCategoryId)
+  const activeCategory =
+    categories.find((c) => c.id === activeCategoryId) ?? categories[0]
 
   const handleLevelChange = (upgradeName, level) => {
     setLevels((previous) => ({ ...previous, [upgradeName]: level }))
@@ -29,8 +37,8 @@ export function CategoryLevelInputs({ categories, storageKey, formatValue }) {
       />
       <BottomTabBar
         categories={categories}
-        activeCategoryId={activeCategoryId}
-        onSelect={setActiveCategoryId}
+        activeCategoryId={activeCategory.id}
+        onSelect={onCategoryChange}
       />
     </div>
   )

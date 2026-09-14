@@ -1,7 +1,21 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { useState } from 'react'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { EnhancementInputs } from './EnhancementInputs'
+
+// EnhancementInputs' active category tab is now a controlled prop, owned by
+// App (see Open-Questions.md's OQ-16) -- this wrapper stands in for that,
+// the same way App does, so these tests can exercise tab switching.
+function ControlledEnhancementInputs() {
+  const [activeCategoryId, setActiveCategoryId] = useState('attack')
+  return (
+    <EnhancementInputs
+      activeCategoryId={activeCategoryId}
+      onCategoryChange={setActiveCategoryId}
+    />
+  )
+}
 
 describe('EnhancementInputs', () => {
   beforeEach(() => {
@@ -9,14 +23,14 @@ describe('EnhancementInputs', () => {
   })
 
   it('shows the Attack tree by default', () => {
-    render(<EnhancementInputs />)
+    render(<ControlledEnhancementInputs />)
     expect(screen.getByLabelText('Damage')).toBeInTheDocument()
     expect(screen.queryByLabelText('Health')).not.toBeInTheDocument()
   })
 
   it('switches to another tree tab on click', async () => {
     const user = userEvent.setup()
-    render(<EnhancementInputs />)
+    render(<ControlledEnhancementInputs />)
 
     await user.click(screen.getByRole('tab', { name: 'Defense' }))
 
@@ -26,7 +40,7 @@ describe('EnhancementInputs', () => {
 
   it('shows the computed value next to the level, since level alone is never visible in-game', async () => {
     const user = userEvent.setup()
-    render(<EnhancementInputs />)
+    render(<ControlledEnhancementInputs />)
 
     expect(screen.getAllByText('1.00×')).toHaveLength(6)
 
@@ -40,7 +54,7 @@ describe('EnhancementInputs', () => {
 
   it('hard-caps an entered level at the category max', async () => {
     const user = userEvent.setup()
-    render(<EnhancementInputs />)
+    render(<ControlledEnhancementInputs />)
 
     const damageInput = screen.getByLabelText('Damage')
     await user.clear(damageInput)
@@ -51,7 +65,7 @@ describe('EnhancementInputs', () => {
 
   it('persists an entered level under its own storage key, separate from Workshop levels', async () => {
     const user = userEvent.setup()
-    const { unmount } = render(<EnhancementInputs />)
+    const { unmount } = render(<ControlledEnhancementInputs />)
 
     const damageInput = screen.getByLabelText('Damage')
     await user.clear(damageInput)
@@ -63,7 +77,7 @@ describe('EnhancementInputs', () => {
     expect(window.localStorage.getItem('workshopLevels')).toBeNull()
 
     unmount()
-    render(<EnhancementInputs />)
+    render(<ControlledEnhancementInputs />)
     expect(screen.getByLabelText('Damage')).toHaveValue(12)
   })
 })

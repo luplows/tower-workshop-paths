@@ -11,6 +11,10 @@ const MODES = [
 
 function App() {
   const [modeId, setModeId] = useLocalStorageState('workshopMode', MODES[0].id)
+  const [activeCategoryId, setActiveCategoryId] = useLocalStorageState(
+    'activeCategoryId',
+    'attack',
+  )
 
   return (
     <div className="app">
@@ -24,7 +28,17 @@ function App() {
         aria-labelledby={`mode-tab-${modeId}`}
         className="app__mode-panel"
       >
-        {modeId === 'enhance' ? <EnhancementInputs /> : <WorkshopInputs />}
+        {modeId === 'enhance' ? (
+          <EnhancementInputs
+            activeCategoryId={activeCategoryId}
+            onCategoryChange={setActiveCategoryId}
+          />
+        ) : (
+          <WorkshopInputs
+            activeCategoryId={activeCategoryId}
+            onCategoryChange={setActiveCategoryId}
+          />
+        )}
       </div>
     </div>
   )

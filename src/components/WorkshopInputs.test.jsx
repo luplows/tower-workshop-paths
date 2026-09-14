@@ -1,7 +1,21 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { useState } from 'react'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { WorkshopInputs } from './WorkshopInputs'
+
+// WorkshopInputs' active category tab is now a controlled prop, owned by
+// App (see Open-Questions.md's OQ-16) -- this wrapper stands in for that,
+// the same way App does, so these tests can exercise tab switching.
+function ControlledWorkshopInputs() {
+  const [activeCategoryId, setActiveCategoryId] = useState('attack')
+  return (
+    <WorkshopInputs
+      activeCategoryId={activeCategoryId}
+      onCategoryChange={setActiveCategoryId}
+    />
+  )
+}
 
 describe('WorkshopInputs', () => {
   beforeEach(() => {
@@ -9,14 +23,14 @@ describe('WorkshopInputs', () => {
   })
 
   it('shows the Attack tab by default', () => {
-    render(<WorkshopInputs />)
+    render(<ControlledWorkshopInputs />)
     expect(screen.getByLabelText('Damage')).toBeInTheDocument()
     expect(screen.queryByLabelText('Health')).not.toBeInTheDocument()
   })
 
   it('switches to another category tab on click', async () => {
     const user = userEvent.setup()
-    render(<WorkshopInputs />)
+    render(<ControlledWorkshopInputs />)
 
     await user.click(screen.getByRole('tab', { name: 'Defense' }))
 
@@ -26,7 +40,7 @@ describe('WorkshopInputs', () => {
 
   it('persists an entered level to localStorage and restores it after remount', async () => {
     const user = userEvent.setup()
-    const { unmount } = render(<WorkshopInputs />)
+    const { unmount } = render(<ControlledWorkshopInputs />)
 
     const damageInput = screen.getByLabelText('Damage')
     await user.clear(damageInput)
@@ -37,13 +51,13 @@ describe('WorkshopInputs', () => {
     })
 
     unmount()
-    render(<WorkshopInputs />)
+    render(<ControlledWorkshopInputs />)
     expect(screen.getByLabelText('Damage')).toHaveValue(250)
   })
 
   it('keeps a level entered on one tab after switching away and back', async () => {
     const user = userEvent.setup()
-    render(<WorkshopInputs />)
+    render(<ControlledWorkshopInputs />)
 
     const damageInput = screen.getByLabelText('Damage')
     await user.clear(damageInput)
