@@ -116,18 +116,22 @@ export function UpgradePath() {
               {pendingBuy.entry.nextLevel} instead?
             </p>
             <div className="upgrade-path__confirm-actions">
-              <button type="button" onClick={() => setPendingBuy(null)}>
-                Cancel
-              </button>
-              <button type="button" onClick={handleBuyJustThis}>
-                Just this batch
-              </button>
               <button
                 type="button"
                 className="upgrade-path__confirm-buy-all"
                 onClick={handleBuyAll}
               >
                 Buy all {pendingBuy.priorCount + 1}
+              </button>
+              <button type="button" onClick={handleBuyJustThis}>
+                Just this batch
+              </button>
+              <button
+                type="button"
+                className="upgrade-path__confirm-cancel"
+                onClick={() => setPendingBuy(null)}
+              >
+                Cancel
               </button>
             </div>
           </div>
