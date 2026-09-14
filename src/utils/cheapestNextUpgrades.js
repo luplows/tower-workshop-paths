@@ -50,9 +50,11 @@ const enhancementCostAt = (name, level) => {
 // system -- until it's bought, no Enhancement category is purchasable at
 // all (see Project-Outline.md). Modeled as its own single-level, 1-batch
 // item rather than a special-cased boolean, so it's ranked and bought the
-// same way as everything else in the list.
-const ENHANCEMENT_LAB_NAME = 'Workshop Enhancements Lab'
-const ENHANCEMENT_LAB_COST = 5_000_000_000
+// same way as everything else in the list. Exported so other UI (the
+// Enhance input screen's own lock/unlock prompt -- see EnhancementInputs)
+// can show the same name/cost without duplicating them.
+export const ENHANCEMENT_LAB_NAME = 'Workshop Enhancements Lab'
+export const ENHANCEMENT_LAB_COST = 5_000_000_000
 const enhancementLabCostAt = (name, level) => (level === 0 ? ENHANCEMENT_LAB_COST : undefined)
 
 /**

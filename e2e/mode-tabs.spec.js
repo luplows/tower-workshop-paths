@@ -1,6 +1,12 @@
 import { expect, test } from '@playwright/test'
 
 test.beforeEach(async ({ page }) => {
+  // Unlocked by default -- these tests are about the mode/tree tabs
+  // themselves, not the Workshop Enhancements Lab gate (see
+  // enhancement-inputs.spec.js for that).
+  await page.addInitScript(() => {
+    window.localStorage.setItem('enhancementLabLevel', JSON.stringify(1))
+  })
   await page.goto('/')
 })
 

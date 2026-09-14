@@ -22,7 +22,7 @@ A second spend track per tree (Attack/Defense/Utility), mechanically distinct fr
 | Defense | Health | Health Regen | Defense Absolute | Land Mine Damage | Wall Health | Orb Size |
 | Utility | Cash Bonus | Coin Bonus | Cells/Kill Bonus | Free Upgrades | Recovery Package | Enemy Level Skip |
 
-The whole Enhancement system is itself gated behind a one-time **"Workshop Enhancements" Lab** (binary, level 0 or 1, costing a flat **5B coins**) — until that Lab is completed, no Enhancement is purchasable at all. Modeled in the cost-only Path list as its own candidate (OQ-31); the per-tree threshold gate above is not yet implemented anywhere (`Open-Questions.md` OQ-6).
+The whole Enhancement system is itself gated behind a one-time **"Workshop Enhancements" Lab** (binary, level 0 or 1, costing a flat **5B coins**) — until that Lab is completed, no Enhancement is purchasable at all. Modeled in the cost-only Path list as its own candidate (OQ-31) and enforced on the Enhance input screen itself as an unlock prompt in place of the usual tree tabs/inputs (OQ-32); the per-tree threshold gate above is not yet implemented anywhere (`Open-Questions.md` OQ-6).
 
 Every category, in every tree, uses the same value formula: `value = (level × 0.01) + 1` — e.g. level 40 gives a 1.40× multiplier. Confirmed via the community sheet's "Value" column formula (`=SUM((level_cell*0.01)+1)`) and identical across all 18 categories. Unlike Workshop upgrades, no other in-game modifier stacks with it (as of the current patch), so the app computes and displays it directly from the entered level rather than requiring a separate value input.
 

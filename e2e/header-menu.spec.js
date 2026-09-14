@@ -1,6 +1,11 @@
 import { expect, test } from '@playwright/test'
 
 test.beforeEach(async ({ page }) => {
+  // Unlocked by default -- these tests are about Clear itself, not the
+  // Workshop Enhancements Lab gate (see enhancement-inputs.spec.js).
+  await page.addInitScript(() => {
+    window.localStorage.setItem('enhancementLabLevel', JSON.stringify(1))
+  })
   await page.goto('/')
 })
 
@@ -41,7 +46,9 @@ test('clears both Upgrade and Enhance levels together', async ({ page }) => {
   await page.getByText('Clear all levels', { exact: true }).click()
   await page.getByRole('alertdialog').getByRole('button', { name: 'Clear' }).click()
 
-  await expect(enhanceDamageInput).toHaveValue('0')
+  // The Lab is re-locked too (OQ-32), so the Enhance screen now shows its
+  // lock prompt in place of a zeroed-out input.
+  await expect(page.getByText('Workshop Enhancements are locked')).toBeVisible()
 
   await page.getByRole('tab', { name: 'Upgrade', exact: true }).click()
   await expect(page.getByLabel('Damage', { exact: true })).toHaveValue('0')

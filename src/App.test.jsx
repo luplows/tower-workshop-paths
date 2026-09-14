@@ -40,6 +40,7 @@ describe('App', () => {
   })
 
   it('switches to the Enhance mode, showing Enhancement categories with a computed value', async () => {
+    window.localStorage.setItem('enhancementLabLevel', JSON.stringify(1))
     const user = userEvent.setup()
     render(<App />)
 
@@ -50,6 +51,7 @@ describe('App', () => {
   })
 
   it('keeps Upgrade and Enhance level entries independent when switching modes', async () => {
+    window.localStorage.setItem('enhancementLabLevel', JSON.stringify(1))
     const user = userEvent.setup()
     render(<App />)
 
@@ -84,6 +86,7 @@ describe('App', () => {
   })
 
   it('keeps the same tree tab selected when switching between Upgrade and Enhance (OQ-16)', async () => {
+    window.localStorage.setItem('enhancementLabLevel', JSON.stringify(1))
     const user = userEvent.setup()
     render(<App />)
 
@@ -147,6 +150,7 @@ describe('App', () => {
   })
 
   it('clears both Upgrade and Enhance levels after confirming, and leaves them if cancelled (OQ-22)', async () => {
+    window.localStorage.setItem('enhancementLabLevel', JSON.stringify(1))
     const user = userEvent.setup()
     render(<App />)
 
@@ -168,7 +172,9 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: 'More actions' }))
     await user.click(screen.getByText('Clear all levels'))
     await user.click(screen.getByRole('button', { name: 'Clear' }))
-    expect(screen.getByLabelText('Damage +')).toHaveValue(0)
+    // The Lab is re-locked too (OQ-32), so the Enhance screen now shows its
+    // lock prompt in place of a zeroed-out input.
+    expect(screen.getByText('Workshop Enhancements are locked')).toBeInTheDocument()
 
     await user.click(screen.getByRole('tab', { name: 'Upgrade' }))
     expect(screen.getByLabelText('Damage')).toHaveValue(0)
@@ -184,5 +190,18 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: 'Clear' }))
 
     expect(window.localStorage.getItem('enhancementLabLevel')).toBeNull()
+  })
+
+  it('unlocking on the Enhance screen also removes the Lab from the Path list (OQ-32)', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.click(screen.getByRole('tab', { name: 'Enhance' }))
+    expect(screen.getByText('Workshop Enhancements are locked')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Unlock (5B coins)' }))
+    expect(screen.getByLabelText('Damage +')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('tab', { name: 'Path' }))
+    expect(screen.queryByText('Workshop Enhancements Lab')).not.toBeInTheDocument()
   })
 })
