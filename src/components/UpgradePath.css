@@ -65,18 +65,6 @@
   white-space: nowrap;
 }
 
-.upgrade-path__source-tag {
-  margin-left: 6px;
-  padding: 1px 6px;
-  border-radius: 999px;
-  background: var(--accent-bg);
-  color: var(--accent);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  vertical-align: middle;
-}
-
 .upgrade-path__level {
   font-size: 13px;
   color: var(--text);

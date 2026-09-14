@@ -4,6 +4,11 @@ import { getCheapestNextUpgrades } from '../utils/cheapestNextUpgrades'
 import { formatCoins } from '../utils/formatCoins'
 import './UpgradePath.css'
 
+// Workshop and Enhancement names overlap (e.g. "Damage", "Health"). Rather
+// than a separate badge, this matches the game's own convention for
+// telling them apart: an Enhancement is always shown as "{name} +".
+const displayName = (entry) => (entry.source === 'enhancement' ? `${entry.name} +` : entry.name)
+
 export function UpgradePath() {
   const [workshopLevels, setWorkshopLevels] = useLocalStorageState('workshopLevels', {})
   const [enhancementLevels, setEnhancementLevels] = useLocalStorageState(
@@ -67,23 +72,14 @@ export function UpgradePath() {
               className={`upgrade-path__row upgrade-path__row--${entry.categoryId}`}
             >
               <span className="upgrade-path__rank">{index + 1}</span>
-              <span className="upgrade-path__name">
-                {entry.name}
-                {/* Workshop and Enhancement names overlap (e.g. "Damage"),
-                    so an Enhancement row needs a visible tag to tell them
-                    apart -- Workshop rows stay untagged since they're the
-                    game-mirroring default. */}
-                {entry.source === 'enhancement' && (
-                  <span className="upgrade-path__source-tag">Enh</span>
-                )}
-              </span>
+              <span className="upgrade-path__name">{displayName(entry)}</span>
               <span className="upgrade-path__level">
                 Lv {entry.currentLevel} → {entry.nextLevel}
               </span>
               <button
                 type="button"
                 className="upgrade-path__buy"
-                aria-label={`Buy ${entry.levels} level${entry.levels === 1 ? '' : 's'} of ${entry.name}${entry.source === 'enhancement' ? ' (Enhancement)' : ''} for ${formatCoins(entry.cost)}`}
+                aria-label={`Buy ${entry.levels} level${entry.levels === 1 ? '' : 's'} of ${displayName(entry)} for ${formatCoins(entry.cost)}`}
                 onClick={() => handleBuyClick(entry, index)}
               >
                 <span className="upgrade-path__buy-label">Buy</span>
@@ -103,8 +99,7 @@ export function UpgradePath() {
           <ul className="upgrade-path__unknown-list" aria-label="Upgrades with unknown cost">
             {unknownCost.map((entry) => (
               <li key={`${entry.source}-${entry.name}`}>
-                {entry.name}
-                {entry.source === 'enhancement' ? ' (Enhancement)' : ''} (Lv {entry.currentLevel})
+                {displayName(entry)} (Lv {entry.currentLevel})
               </li>
             ))}
           </ul>
@@ -116,13 +111,12 @@ export function UpgradePath() {
           <div
             role="alertdialog"
             aria-modal="true"
-            aria-label={`Buy all ${pendingBuy.entry.name}${pendingBuy.entry.source === 'enhancement' ? ' (Enhancement)' : ''} upgrades to reach Lv ${pendingBuy.entry.nextLevel} for ${formatCoins(pendingBuy.totalCost)}?`}
+            aria-label={`Buy all ${displayName(pendingBuy.entry)} upgrades to reach Lv ${pendingBuy.entry.nextLevel} for ${formatCoins(pendingBuy.totalCost)}?`}
             className="upgrade-path__confirm"
           >
             <p className="upgrade-path__confirm-body">
-              Buy all {pendingBuy.entry.name}
-              {pendingBuy.entry.source === 'enhancement' ? ' (Enhancement)' : ''} upgrades to
-              reach Lv {pendingBuy.entry.nextLevel} ({formatCoins(pendingBuy.totalCost)})?
+              Buy all {displayName(pendingBuy.entry)} upgrades to reach Lv{' '}
+              {pendingBuy.entry.nextLevel} ({formatCoins(pendingBuy.totalCost)})?
             </p>
             <div className="upgrade-path__confirm-actions">
               <button

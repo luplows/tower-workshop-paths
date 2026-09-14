@@ -93,7 +93,7 @@ test('asks for confirmation before buying a later occurrence of a repeated upgra
   await expect(page.getByLabel('Multishot Targets', { exact: true })).toHaveValue('2')
 })
 
-test('shows and buys an Enhancement row, tagged separately from Workshop (OQ-29)', async ({
+test('shows and buys an Enhancement row as "{name} +", the game\'s own convention (OQ-29)', async ({
   page,
 }) => {
   // Every Workshop upgrade maxed, every Enhancement maxed except one, so
@@ -115,12 +115,11 @@ test('shows and buys an Enhancement row, tagged separately from Workshop (OQ-29)
 
   const list = page.getByRole('list', { name: 'Cheapest next upgrades' })
   const firstRow = list.getByRole('listitem').first()
-  await expect(firstRow).toContainText('Recovery Package')
-  await expect(firstRow).toContainText('Enh')
+  await expect(firstRow).toContainText('Recovery Package +')
   await expect(firstRow).toContainText('5B coins')
 
   await firstRow
-    .getByRole('button', { name: 'Buy 1 level of Recovery Package (Enhancement) for 5B coins' })
+    .getByRole('button', { name: 'Buy 1 level of Recovery Package + for 5B coins' })
     .click()
 
   await page.getByRole('tab', { name: 'Input', exact: true }).click()

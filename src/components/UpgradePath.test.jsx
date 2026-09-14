@@ -118,7 +118,7 @@ describe('UpgradePath', () => {
   })
 
   describe('Workshop Enhancements in the path (OQ-29)', () => {
-    it('shows an Enhancement row tagged "Enh", and buying it updates enhancementLevels (not workshopLevels)', async () => {
+    it('shows an Enhancement row as "{name} +" (the game\'s own convention), and buying it updates enhancementLevels (not workshopLevels)', async () => {
       // Every Workshop upgrade maxed, every Enhancement maxed except one,
       // so that lone Enhancement is unambiguously the only, first row.
       const enhancementLevels = maxedEnhancementLevels()
@@ -129,14 +129,13 @@ describe('UpgradePath', () => {
       render(<UpgradePath />)
 
       const rows = screen.getAllByRole('listitem')
-      expect(rows[0]).toHaveTextContent('Recovery Package')
-      expect(rows[0]).toHaveTextContent('Enh')
+      expect(rows[0]).toHaveTextContent('Recovery Package +')
       expect(rows[0]).toHaveTextContent('5B coins')
       expect(rows[0]).toHaveTextContent('Lv 0 → 1')
 
       await user.click(
         within(rows[0]).getByRole('button', {
-          name: 'Buy 1 level of Recovery Package (Enhancement) for 5B coins',
+          name: 'Buy 1 level of Recovery Package + for 5B coins',
         }),
       )
 
@@ -148,10 +147,11 @@ describe('UpgradePath', () => {
       ).toBeUndefined()
     })
 
-    it("doesn't tag or mislabel a Workshop row even when an Enhancement shares its name", () => {
+    it("doesn't mislabel a Workshop row even when an Enhancement shares its name", () => {
       // Isolate the Workshop "Damage" upgrade (an Enhancement category is
-      // also named "Damage") -- its row must stay untagged, since it's the
-      // game-mirroring Workshop entry, not the Enhancement one.
+      // also named "Damage") -- its row must show plain "Damage", not
+      // "Damage +", since it's the game-mirroring Workshop entry, not the
+      // Enhancement one.
       const workshopLevels = maxedWorkshopLevels()
       delete workshopLevels.Damage
       window.localStorage.setItem('workshopLevels', JSON.stringify(workshopLevels))
@@ -159,8 +159,9 @@ describe('UpgradePath', () => {
       render(<UpgradePath />)
 
       const rows = screen.getAllByRole('listitem')
-      expect(rows[0]).toHaveTextContent('Damage')
-      expect(within(rows[0]).queryByText('Enh')).not.toBeInTheDocument()
+      // Exact match: this fails if the name were actually rendered as
+      // "Damage +" instead of plain "Damage".
+      expect(within(rows[0]).getByText('Damage', { exact: true })).toBeInTheDocument()
     })
   })
 
