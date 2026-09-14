@@ -8,11 +8,10 @@
  * Unlike WORKSHOP_CATEGORIES, this data isn't sourced from tower-idle-toolkit
  * (which has none of it) -- it's hand-entered from the community Google
  * Sheet referenced in Project-Outline.md. `unlocksAt` is unused until the
- * gating/discount-lab work happens -- see the tracked items in
- * Open-Questions.md. `quantity` (max level) comes from the Master Sheet
- * tab's "Max level" column (column W); the user has flagged these as "a bit
- * inconsistent" in the source sheet and plans to spot-check them against
- * the running app, so treat these as best-effort pending that verification.
+ * gating/discount-lab work happens -- see Open-Questions.md's OQ-6.
+ * `quantity` (max level) comes from the Master Sheet tab's "Max level"
+ * column (column W) and is accepted as correct for the current patch --
+ * see OQ-14.
  */
 export const ENHANCEMENT_CATEGORIES = [
   {
