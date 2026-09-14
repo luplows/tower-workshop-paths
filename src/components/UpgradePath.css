@@ -159,15 +159,15 @@
 }
 
 .upgrade-path__confirm-actions .upgrade-path__confirm-buy-all {
-  background: #16a34a;
-  border-color: #16a34a;
-  color: #fff;
+  background: var(--success-bg);
+  border-color: var(--success-border);
+  color: var(--success);
 }
 
 .upgrade-path__confirm-actions .upgrade-path__confirm-cancel {
-  background: #dc2626;
-  border-color: #dc2626;
-  color: #fff;
+  background: var(--danger-bg);
+  border-color: var(--danger-border);
+  color: var(--danger);
 }
 
 .upgrade-path__unknown {
