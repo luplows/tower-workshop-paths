@@ -5,9 +5,23 @@
   min-height: 0;
 }
 
+/* Header and (on the Input section) the mode tab bar below it stick
+   together as a single unit while scrolling, rather than each being
+   sticky independently with a `top` offset measured to match the other's
+   height -- two sticky elements pinned edge-to-edge like that drift by a
+   fraction of a pixel (subpixel layout rounding) and show as a visible
+   shift while scrolling. */
+.app__sticky-group {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--bg);
+}
+
 .app__header {
   padding: 14px 16px 10px;
   border-bottom: 1px solid var(--border);
+  background: var(--bg);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -63,8 +77,6 @@
 .mode-tab-bar {
   display: flex;
   border-bottom: 1px solid var(--border);
-  position: sticky;
-  top: 0;
   background: var(--bg);
 }
 
