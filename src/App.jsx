@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './App.css'
 import { AppSectionTabs } from './components/AppSectionTabs'
 import { EnhancementInputs } from './components/EnhancementInputs'
@@ -25,10 +25,24 @@ function App() {
     'activeCategoryId',
     'attack',
   )
+  // 'auto' (the default) follows the OS's prefers-color-scheme, same as
+  // before this setting existed; 'light'/'dark' force that theme regardless
+  // of OS preference, via a data-theme attribute on <html> (index.css picks
+  // it up) -- not on the React #root div, since CSS's :root selector always
+  // means the document root element (<html>), never #root.
+  const [themePreference, setThemePreference] = useLocalStorageState('themePreference', 'auto')
   // Bumped to force WorkshopInputs/EnhancementInputs to remount and re-read
   // localStorage after a Clear (OQ-22) -- not persisted, just an in-memory
   // signal, since it only needs to matter for the lifetime of this page.
   const [resetNonce, setResetNonce] = useState(0)
+
+  useEffect(() => {
+    if (themePreference === 'auto') {
+      delete document.documentElement.dataset.theme
+    } else {
+      document.documentElement.dataset.theme = themePreference
+    }
+  }, [themePreference])
 
   const handleClearAllLevels = () => {
     window.localStorage.removeItem('workshopLevels')
@@ -54,7 +68,11 @@ function App() {
               activeSectionId={sectionId}
               onSelect={setSectionId}
             />
-            <HeaderMenu onClearAllLevels={handleClearAllLevels} />
+            <HeaderMenu
+              onClearAllLevels={handleClearAllLevels}
+              themePreference={themePreference}
+              onThemeChange={setThemePreference}
+            />
           </div>
         </header>
         {sectionId !== 'path' && (

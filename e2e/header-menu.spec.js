@@ -53,3 +53,24 @@ test('clears both Upgrade and Enhance levels together', async ({ page }) => {
   await page.getByRole('tab', { name: 'Upgrade', exact: true }).click()
   await expect(page.getByLabel('Damage', { exact: true })).toHaveValue('0')
 })
+
+test('switches the theme via the Auto/Light/Dark toggle, persisting across a reload', async ({
+  page,
+}) => {
+  const html = page.locator('html')
+  await expect(html).not.toHaveAttribute('data-theme')
+
+  await page.getByRole('button', { name: 'More actions' }).click()
+  await page.getByRole('radio', { name: 'Dark' }).click()
+  await expect(html).toHaveAttribute('data-theme', 'dark')
+
+  await page.getByRole('radio', { name: 'Light' }).click()
+  await expect(html).toHaveAttribute('data-theme', 'light')
+
+  await page.reload()
+  await expect(html).toHaveAttribute('data-theme', 'light')
+
+  await page.getByRole('button', { name: 'More actions' }).click()
+  await page.getByRole('radio', { name: 'Auto' }).click()
+  await expect(html).not.toHaveAttribute('data-theme')
+})

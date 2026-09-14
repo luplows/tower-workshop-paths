@@ -16,6 +16,7 @@ const allUnlockedGroups = () => {
 describe('App', () => {
   beforeEach(() => {
     window.localStorage.clear()
+    delete document.documentElement.dataset.theme
   })
 
   it('shows a title/header identifying the app', () => {
@@ -222,5 +223,65 @@ describe('App', () => {
 
     await user.click(screen.getByRole('tab', { name: 'Path' }))
     expect(screen.queryByText('Workshop Enhancements Lab')).not.toBeInTheDocument()
+  })
+
+  describe('theme toggle', () => {
+    it('defaults to Auto, leaving <html> without a data-theme override', () => {
+      render(<App />)
+
+      expect(document.documentElement.dataset.theme).toBeUndefined()
+    })
+
+    it('sets data-theme on <html> (not the #root div) when Light or Dark is chosen', async () => {
+      const user = userEvent.setup()
+      render(<App />)
+
+      await user.click(screen.getByRole('button', { name: 'More actions' }))
+      await user.click(screen.getByRole('radio', { name: 'Dark' }))
+
+      expect(document.documentElement.dataset.theme).toBe('dark')
+
+      await user.click(screen.getByRole('radio', { name: 'Light' }))
+      expect(document.documentElement.dataset.theme).toBe('light')
+    })
+
+    it('clears data-theme when switching back to Auto', async () => {
+      const user = userEvent.setup()
+      render(<App />)
+
+      await user.click(screen.getByRole('button', { name: 'More actions' }))
+      await user.click(screen.getByRole('radio', { name: 'Dark' }))
+      expect(document.documentElement.dataset.theme).toBe('dark')
+
+      await user.click(screen.getByRole('radio', { name: 'Auto' }))
+      expect(document.documentElement.dataset.theme).toBeUndefined()
+    })
+
+    it('persists the chosen theme under its own localStorage key, across remount', async () => {
+      const user = userEvent.setup()
+      const { unmount } = render(<App />)
+
+      await user.click(screen.getByRole('button', { name: 'More actions' }))
+      await user.click(screen.getByRole('radio', { name: 'Dark' }))
+      expect(JSON.parse(window.localStorage.getItem('themePreference'))).toBe('dark')
+
+      unmount()
+      render(<App />)
+      expect(document.documentElement.dataset.theme).toBe('dark')
+    })
+
+    it("isn't reset by Clear all levels -- it's a display preference, not entered game data", async () => {
+      const user = userEvent.setup()
+      render(<App />)
+
+      await user.click(screen.getByRole('button', { name: 'More actions' }))
+      await user.click(screen.getByRole('radio', { name: 'Dark' }))
+      // The menu stays open after picking a theme (see HeaderMenu) -- no
+      // need to reopen it before clicking Clear all levels.
+      await user.click(screen.getByText('Clear all levels'))
+      await user.click(screen.getByRole('button', { name: 'Clear' }))
+
+      expect(document.documentElement.dataset.theme).toBe('dark')
+    })
   })
 })

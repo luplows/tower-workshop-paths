@@ -69,4 +69,65 @@ describe('HeaderMenu', () => {
     await user.click(screen.getByRole('button', { name: 'Outside' }))
     expect(screen.queryByText('Clear all levels')).not.toBeInTheDocument()
   })
+
+  describe('theme toggle', () => {
+    it('shows Auto/Light/Dark, with the current preference checked', async () => {
+      const user = userEvent.setup()
+      render(
+        <HeaderMenu
+          onClearAllLevels={vi.fn()}
+          themePreference="dark"
+          onThemeChange={vi.fn()}
+        />,
+      )
+
+      await user.click(screen.getByRole('button', { name: 'More actions' }))
+
+      expect(screen.getByRole('radio', { name: 'Auto' })).toHaveAttribute(
+        'aria-checked',
+        'false',
+      )
+      expect(screen.getByRole('radio', { name: 'Light' })).toHaveAttribute(
+        'aria-checked',
+        'false',
+      )
+      expect(screen.getByRole('radio', { name: 'Dark' })).toHaveAttribute(
+        'aria-checked',
+        'true',
+      )
+    })
+
+    it('calls onThemeChange with the chosen option', async () => {
+      const onThemeChange = vi.fn()
+      const user = userEvent.setup()
+      render(
+        <HeaderMenu
+          onClearAllLevels={vi.fn()}
+          themePreference="auto"
+          onThemeChange={onThemeChange}
+        />,
+      )
+
+      await user.click(screen.getByRole('button', { name: 'More actions' }))
+      await user.click(screen.getByRole('radio', { name: 'Light' }))
+
+      expect(onThemeChange).toHaveBeenCalledWith('light')
+    })
+
+    it("doesn't close the dropdown when a theme is picked, unlike Clear all levels", async () => {
+      const user = userEvent.setup()
+      render(
+        <HeaderMenu
+          onClearAllLevels={vi.fn()}
+          themePreference="auto"
+          onThemeChange={vi.fn()}
+        />,
+      )
+
+      await user.click(screen.getByRole('button', { name: 'More actions' }))
+      await user.click(screen.getByRole('radio', { name: 'Dark' }))
+
+      expect(screen.getByText('Clear all levels')).toBeInTheDocument()
+    })
+  })
 })

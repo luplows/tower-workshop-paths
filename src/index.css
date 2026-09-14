@@ -42,8 +42,19 @@
   }
 }
 
+/*
+ * Dark palette -- normally follows the OS preference (`prefers-color-scheme`),
+ * matching the "Auto" theme setting most players will stay on. HeaderMenu's
+ * theme toggle can override that by setting `data-theme="light"` or
+ * `data-theme="dark"` on <html> (see App.jsx); `:not([data-theme="light"])`
+ * lets an explicit "Light" choice suppress the OS's dark preference, and the
+ * `:root[data-theme="dark"]` rule below forces dark regardless of OS
+ * preference. The two dark-palette rules can't share one selector (a plain
+ * selector list can't span in and out of a @media block), so the values are
+ * duplicated -- keep them in sync if either changes.
+ */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme='light']) {
     --text: #9ca3af;
     --text-h: #f3f4f6;
     --bg: #16171d;
@@ -62,7 +73,36 @@
     --shadow:
       rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
   }
+}
 
+:root[data-theme='dark'] {
+  --text: #9ca3af;
+  --text-h: #f3f4f6;
+  --bg: #16171d;
+  --border: #2e303a;
+  --code-bg: #1f2028;
+  --accent: #c084fc;
+  --accent-bg: rgba(192, 132, 252, 0.15);
+  --accent-border: rgba(192, 132, 252, 0.5);
+  --success: #4ade80;
+  --success-bg: rgba(74, 222, 128, 0.15);
+  --success-border: rgba(74, 222, 128, 0.5);
+  --danger: #f87171;
+  --danger-bg: rgba(248, 113, 113, 0.15);
+  --danger-border: rgba(248, 113, 113, 0.5);
+  --social-bg: rgba(47, 48, 58, 0.5);
+  --shadow:
+    rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+}
+
+/* Matches native form-control rendering (scrollbars, number-input spinners)
+   to the effective theme -- "Auto" leaves both supported so the OS decides. */
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
 }
 
 body {
