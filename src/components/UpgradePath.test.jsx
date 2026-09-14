@@ -17,11 +17,13 @@ describe('UpgradePath', () => {
   })
 
   it('reflects a level entered on the Workshop screen when ranking', () => {
-    window.localStorage.setItem('workshopLevels', JSON.stringify({ Damage: 5 }))
+    window.localStorage.setItem('workshopLevels', JSON.stringify({ Damage: 1 }))
     render(<UpgradePath />)
 
-    const damageRow = screen.getByText('Damage').closest('li')
-    expect(damageRow).toHaveTextContent('Lv 5 → 6')
+    // Damage can legitimately appear more than once (OQ-19) -- its first,
+    // cheapest occurrence should start from the entered level.
+    const damageRow = screen.getAllByText('Damage')[0].closest('li')
+    expect(damageRow).toHaveTextContent('Lv 1 → 2')
   })
 
   it('lists an upgrade with unavailable cost data separately, not in the ranked list', () => {

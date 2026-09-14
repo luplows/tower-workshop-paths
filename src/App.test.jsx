@@ -136,10 +136,12 @@ describe('App', () => {
 
     const damageInput = screen.getByLabelText('Damage')
     await user.clear(damageInput)
-    await user.type(damageInput, '5')
+    await user.type(damageInput, '1')
 
     await user.click(screen.getByRole('tab', { name: 'Path' }))
 
-    expect(screen.getByText('Damage').closest('li')).toHaveTextContent('Lv 5 → 6')
+    // Damage can legitimately appear more than once (OQ-19) -- its first,
+    // cheapest occurrence should start from the entered level.
+    expect(screen.getAllByText('Damage')[0].closest('li')).toHaveTextContent('Lv 1 → 2')
   })
 })

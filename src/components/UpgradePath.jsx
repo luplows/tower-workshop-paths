@@ -18,7 +18,7 @@ export function UpgradePath() {
         <ol className="upgrade-path__list" aria-label="Cheapest next upgrades">
           {ranked.map((entry, index) => (
             <li
-              key={entry.name}
+              key={`${entry.name}-${entry.currentLevel}`}
               className={`upgrade-path__row upgrade-path__row--${entry.categoryId}`}
             >
               <span className="upgrade-path__rank">{index + 1}</span>
