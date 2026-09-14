@@ -131,20 +131,6 @@ describe('UpgradePath', () => {
       expect(JSON.parse(window.localStorage.getItem('workshopLevels'))).toEqual({})
     })
 
-    it('buys only this batch when that option is chosen', async () => {
-      const user = userEvent.setup()
-      render(<UpgradePath />)
-
-      const secondRow = screen.getAllByText('Multishot Targets')[1].closest('li')
-      await user.click(within(secondRow).getByRole('button', { name: /^Buy/ }))
-      await user.click(screen.getByRole('button', { name: 'Just this batch' }))
-
-      expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
-      expect(
-        JSON.parse(window.localStorage.getItem('workshopLevels'))['Multishot Targets'],
-      ).toBe(1)
-    })
-
     it('buys every occurrence up to and including this row when "Buy all" is chosen', async () => {
       const user = userEvent.setup()
       render(<UpgradePath />)

@@ -36,11 +36,6 @@ export function UpgradePath() {
     })
   }
 
-  const handleBuyJustThis = () => {
-    applyBuy(pendingBuy.entry.name, pendingBuy.entry.levels)
-    setPendingBuy(null)
-  }
-
   const handleBuyAll = () => {
     applyBuy(pendingBuy.entry.name, pendingBuy.priorLevels + pendingBuy.entry.levels)
     setPendingBuy(null)
@@ -113,9 +108,6 @@ export function UpgradePath() {
                 onClick={handleBuyAll}
               >
                 Buy all
-              </button>
-              <button type="button" onClick={handleBuyJustThis}>
-                Just this batch
               </button>
               <button
                 type="button"
