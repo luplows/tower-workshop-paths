@@ -58,7 +58,7 @@ describe('App', () => {
     await user.type(upgradeDamageInput, '10')
 
     await user.click(screen.getByRole('tab', { name: 'Enhance' }))
-    const enhanceDamageInput = screen.getByLabelText('Damage')
+    const enhanceDamageInput = screen.getByLabelText('Damage +')
     await user.clear(enhanceDamageInput)
     await user.type(enhanceDamageInput, '3')
 
@@ -66,7 +66,7 @@ describe('App', () => {
     expect(screen.getByLabelText('Damage')).toHaveValue(10)
 
     await user.click(screen.getByRole('tab', { name: 'Enhance' }))
-    expect(screen.getByLabelText('Damage')).toHaveValue(3)
+    expect(screen.getByLabelText('Damage +')).toHaveValue(3)
   })
 
   it('persists the selected mode across remount', async () => {
@@ -95,7 +95,7 @@ describe('App', () => {
       'aria-selected',
       'true',
     )
-    expect(screen.getByLabelText('Cash Bonus')).toBeInTheDocument()
+    expect(screen.getByLabelText('Cash Bonus +')).toBeInTheDocument()
 
     await user.click(screen.getByRole('tab', { name: 'Upgrade' }))
     expect(screen.getByRole('tab', { name: 'Utility' })).toHaveAttribute(
@@ -155,7 +155,7 @@ describe('App', () => {
     await user.type(upgradeDamageInput, '10')
 
     await user.click(screen.getByRole('tab', { name: 'Enhance' }))
-    const enhanceDamageInput = screen.getByLabelText('Damage')
+    const enhanceDamageInput = screen.getByLabelText('Damage +')
     await user.clear(enhanceDamageInput)
     await user.type(enhanceDamageInput, '3')
 
@@ -163,12 +163,12 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: 'More actions' }))
     await user.click(screen.getByText('Clear all levels'))
     await user.click(screen.getByRole('button', { name: 'Cancel' }))
-    expect(screen.getByLabelText('Damage')).toHaveValue(3)
+    expect(screen.getByLabelText('Damage +')).toHaveValue(3)
 
     await user.click(screen.getByRole('button', { name: 'More actions' }))
     await user.click(screen.getByText('Clear all levels'))
     await user.click(screen.getByRole('button', { name: 'Clear' }))
-    expect(screen.getByLabelText('Damage')).toHaveValue(0)
+    expect(screen.getByLabelText('Damage +')).toHaveValue(0)
 
     await user.click(screen.getByRole('tab', { name: 'Upgrade' }))
     expect(screen.getByLabelText('Damage')).toHaveValue(0)

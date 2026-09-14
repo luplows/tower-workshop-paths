@@ -1,13 +1,13 @@
 import { clampLevel } from '../utils/clampLevel'
 
-export function UpgradeLevelInput({ upgrade, level, onChange, formatValue }) {
+export function UpgradeLevelInput({ upgrade, level, onChange, formatValue, nameSuffix = '' }) {
   const inputId = `upgrade-level-${upgrade.name}`
   const hasMax = Number.isFinite(upgrade.quantity)
 
   return (
     <div className="upgrade-row">
       <label htmlFor={inputId} className="upgrade-row__label">
-        {upgrade.name}
+        {`${upgrade.name}${nameSuffix}`}
       </label>
       <input
         id={inputId}

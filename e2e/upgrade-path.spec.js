@@ -125,7 +125,7 @@ test('shows and buys an Enhancement row as "{name} +", the game\'s own conventio
   await page.getByRole('tab', { name: 'Input', exact: true }).click()
   await page.getByRole('tab', { name: 'Enhance', exact: true }).click()
   await page.getByRole('tab', { name: 'Utility', exact: true }).click()
-  await expect(page.getByLabel('Recovery Package', { exact: true })).toHaveValue('1')
+  await expect(page.getByLabel('Recovery Package +', { exact: true })).toHaveValue('1')
 })
 
 test('keeps Path on a separate control from the Upgrade/Enhance toggle', async ({
