@@ -145,4 +145,32 @@ describe('App', () => {
     // batched 10 levels at a time since its max level is under 1000 (OQ-7).
     expect(screen.getAllByText('Attack Speed')[0].closest('li')).toHaveTextContent('Lv 1 → 11')
   })
+
+  it('clears both Upgrade and Enhance levels after confirming, and leaves them if cancelled (OQ-22)', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    const upgradeDamageInput = screen.getByLabelText('Damage')
+    await user.clear(upgradeDamageInput)
+    await user.type(upgradeDamageInput, '10')
+
+    await user.click(screen.getByRole('tab', { name: 'Enhance' }))
+    const enhanceDamageInput = screen.getByLabelText('Damage')
+    await user.clear(enhanceDamageInput)
+    await user.type(enhanceDamageInput, '3')
+
+    // Cancelling the confirmation leaves both levels untouched.
+    await user.click(screen.getByRole('button', { name: 'More actions' }))
+    await user.click(screen.getByText('Clear all levels'))
+    await user.click(screen.getByRole('button', { name: 'Cancel' }))
+    expect(screen.getByLabelText('Damage')).toHaveValue(3)
+
+    await user.click(screen.getByRole('button', { name: 'More actions' }))
+    await user.click(screen.getByText('Clear all levels'))
+    await user.click(screen.getByRole('button', { name: 'Clear' }))
+    expect(screen.getByLabelText('Damage')).toHaveValue(0)
+
+    await user.click(screen.getByRole('tab', { name: 'Upgrade' }))
+    expect(screen.getByLabelText('Damage')).toHaveValue(0)
+  })
 })

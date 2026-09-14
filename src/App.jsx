@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import './App.css'
 import { AppSectionTabs } from './components/AppSectionTabs'
 import { EnhancementInputs } from './components/EnhancementInputs'
+import { HeaderMenu } from './components/HeaderMenu'
 import { ModeTabBar } from './components/ModeTabBar'
 import { UpgradePath } from './components/UpgradePath'
 import { WorkshopInputs } from './components/WorkshopInputs'
@@ -23,16 +25,29 @@ function App() {
     'activeCategoryId',
     'attack',
   )
+  // Bumped to force WorkshopInputs/EnhancementInputs to remount and re-read
+  // localStorage after a Clear (OQ-22) -- not persisted, just an in-memory
+  // signal, since it only needs to matter for the lifetime of this page.
+  const [resetNonce, setResetNonce] = useState(0)
+
+  const handleClearAllLevels = () => {
+    window.localStorage.removeItem('workshopLevels')
+    window.localStorage.removeItem('enhancementLevels')
+    setResetNonce((n) => n + 1)
+  }
 
   return (
     <div className="app">
       <header className="app__header">
         <h1 className="app__title">Workshop Input</h1>
-        <AppSectionTabs
-          sections={SECTIONS}
-          activeSectionId={sectionId}
-          onSelect={setSectionId}
-        />
+        <div className="app__header-actions">
+          <AppSectionTabs
+            sections={SECTIONS}
+            activeSectionId={sectionId}
+            onSelect={setSectionId}
+          />
+          <HeaderMenu onClearAllLevels={handleClearAllLevels} />
+        </div>
       </header>
 
       {sectionId === 'path' ? (
@@ -42,7 +57,7 @@ function App() {
           aria-labelledby="section-tab-path"
           className="app__mode-panel"
         >
-          <UpgradePath />
+          <UpgradePath key={resetNonce} />
         </div>
       ) : (
         <div
@@ -60,11 +75,13 @@ function App() {
           >
             {modeId === 'enhance' ? (
               <EnhancementInputs
+                key={resetNonce}
                 activeCategoryId={activeCategoryId}
                 onCategoryChange={setActiveCategoryId}
               />
             ) : (
               <WorkshopInputs
+                key={resetNonce}
                 activeCategoryId={activeCategoryId}
                 onCategoryChange={setActiveCategoryId}
               />

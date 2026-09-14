@@ -20,6 +20,13 @@
   color: var(--text-h);
 }
 
+.app__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 .app-section-tabs {
   display: flex;
   gap: 2px;

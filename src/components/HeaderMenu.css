@@ -1,0 +1,103 @@
+.header-menu {
+  position: relative;
+}
+
+.header-menu__toggle {
+  font: inherit;
+  font-size: 18px;
+  line-height: 1;
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: none;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.header-menu__dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  min-width: 170px;
+  padding: 4px;
+  z-index: 10;
+}
+
+.header-menu__item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  font-size: 14px;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  color: var(--text-h);
+  cursor: pointer;
+}
+
+.header-menu__item:hover {
+  background: var(--accent-bg);
+}
+
+.header-menu__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 20;
+}
+
+.header-menu__confirm {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 18px;
+  max-width: 320px;
+  width: 100%;
+}
+
+.header-menu__confirm-title {
+  margin: 0 0 8px;
+  font: 600 16px/1.3 var(--heading);
+  color: var(--text-h);
+}
+
+.header-menu__confirm-body {
+  margin: 0 0 16px;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.header-menu__confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.header-menu__confirm-actions button {
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: none;
+  color: var(--text-h);
+  cursor: pointer;
+}
+
+.header-menu__confirm-clear {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #fff;
+}
