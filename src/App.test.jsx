@@ -10,7 +10,7 @@ describe('App', () => {
 
   it('shows a title/header identifying the app', () => {
     render(<App />)
-    expect(screen.getByRole('heading', { name: 'Workshop Paths' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Workshop Input' })).toBeInTheDocument()
   })
 
   it('defaults to the Upgrade mode, showing Workshop upgrade categories', () => {
