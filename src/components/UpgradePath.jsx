@@ -5,8 +5,15 @@ import './UpgradePath.css'
 const formatCoins = (coins) => `${coins.toLocaleString()} coins`
 
 export function UpgradePath() {
-  const [levels] = useLocalStorageState('workshopLevels', {})
+  const [levels, setLevels] = useLocalStorageState('workshopLevels', {})
   const { ranked, unknownCost } = getCheapestNextUpgrades(levels)
+
+  const handleBuy = (entry) => {
+    setLevels((previous) => ({
+      ...previous,
+      [entry.name]: (previous[entry.name] ?? 0) + entry.levels,
+    }))
+  }
 
   return (
     <div className="upgrade-path">
@@ -27,6 +34,14 @@ export function UpgradePath() {
                 Lv {entry.currentLevel} → {entry.nextLevel}
               </span>
               <span className="upgrade-path__cost">{formatCoins(entry.cost)}</span>
+              <button
+                type="button"
+                className="upgrade-path__buy"
+                aria-label={`Buy ${entry.levels} level${entry.levels === 1 ? '' : 's'} of ${entry.name}`}
+                onClick={() => handleBuy(entry)}
+              >
+                Buy
+              </button>
             </li>
           ))}
         </ol>

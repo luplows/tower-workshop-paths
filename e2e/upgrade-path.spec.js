@@ -41,6 +41,24 @@ test('lets a cheap upgrade appear more than once (OQ-19)', async ({ page }) => {
   await expect(rows.nth(1).locator('xpath=..')).toContainText('Lv 10 → 20')
 })
 
+test('buying a row updates the entered level and the Upgrade screen (OQ-18)', async ({
+  page,
+}) => {
+  await page.getByRole('tab', { name: 'Path', exact: true }).click()
+
+  const list = page.getByRole('list', { name: 'Cheapest next upgrades' })
+  const firstRow = list.getByRole('listitem').first()
+  await expect(firstRow).toContainText('Multishot Targets')
+
+  await firstRow.getByRole('button', { name: 'Buy 1 level of Multishot Targets' }).click()
+
+  // Re-ranks immediately: the next-cheapest row is now first.
+  await expect(list.getByRole('listitem').first()).toContainText('Bounce Shot Targets')
+
+  await page.getByRole('tab', { name: 'Input', exact: true }).click()
+  await expect(page.getByLabel('Multishot Targets', { exact: true })).toHaveValue('1')
+})
+
 test('keeps Path on a separate control from the Upgrade/Enhance toggle', async ({
   page,
 }) => {

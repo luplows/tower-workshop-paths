@@ -58,7 +58,11 @@
 
 .upgrade-path__name {
   flex: 1;
+  min-width: 0;
   font-size: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .upgrade-path__level {
@@ -74,6 +78,24 @@
   white-space: nowrap;
   text-align: right;
   min-width: 90px;
+}
+
+.upgrade-path__buy {
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--accent-border);
+  background: var(--accent-bg);
+  color: var(--accent);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.upgrade-path__buy:hover {
+  background: var(--accent);
+  color: var(--bg);
 }
 
 .upgrade-path__unknown {
