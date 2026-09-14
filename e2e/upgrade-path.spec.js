@@ -17,14 +17,28 @@ test('shows the cheapest not-yet-maxed upgrade first', async ({ page }) => {
 
 test('reflects a level entered on the Upgrade screen', async ({ page }) => {
   const damageInput = page.getByLabel('Damage', { exact: true })
-  await damageInput.fill('5')
+  await damageInput.fill('1')
   await damageInput.blur()
 
   await page.getByRole('tab', { name: 'Path', exact: true }).click()
 
+  // Damage can legitimately appear more than once (OQ-19) -- its first,
+  // cheapest occurrence should start from the entered level.
   const list = page.getByRole('list', { name: 'Cheapest next upgrades' })
-  const damageRow = list.getByText('Damage', { exact: true }).locator('xpath=..')
-  await expect(damageRow).toContainText('Lv 5 → 6')
+  const damageRow = list.getByText('Damage', { exact: true }).first().locator('xpath=..')
+  await expect(damageRow).toContainText('Lv 1 → 2')
+})
+
+test('lets a cheap upgrade appear more than once (OQ-19)', async ({ page }) => {
+  await page.getByRole('tab', { name: 'Path', exact: true }).click()
+
+  const list = page.getByRole('list', { name: 'Cheapest next upgrades' })
+  const damageRows = list.getByText('Damage', { exact: true })
+
+  await expect(damageRows).toHaveCount(3)
+  await expect(damageRows.nth(0).locator('xpath=..')).toContainText('Lv 0 → 1')
+  await expect(damageRows.nth(1).locator('xpath=..')).toContainText('Lv 1 → 2')
+  await expect(damageRows.nth(2).locator('xpath=..')).toContainText('Lv 2 → 3')
 })
 
 test('keeps Path on a separate control from the Upgrade/Enhance toggle', async ({
