@@ -46,10 +46,6 @@ Only checked in a desktop browser at a fixed width so far.
 As a maintainer, I want the shipped JS bundle to only include what the app uses, so that load time doesn't suffer as real usage grows.
 Currently ~2.4MB minified, mostly `tower-idle-toolkit`'s bundled game data (labs, cards, bots, etc. we don't use). Worth revisiting with code-splitting or a narrower import once the app has more real usage to justify the effort. Not currently blocking anything.
 
-**OQ-16. Persist the selected category tab across mode switches**
-As a player switching between Upgrade and Enhance, I want the app to remember which tree tab (Attack/Defense/Utility) I had open, so that I don't land back on Attack every time I switch modes.
-Currently each mode's `CategoryLevelInputs` instance keeps its own `activeCategoryId` in local component state, defaulting to the first category (`categories[0].id`) on every mount — since `App.jsx` unmounts one screen and mounts the other on a mode switch, the selected tree tab resets rather than carrying over. Contrast with the mode selection itself (OQ-14's `workshopMode` in `localStorage`), which already persists. Open design question: should the two screens share one selected tree tab, or track their own independently but remember each on return?
-
 ---
 
 ## Completed
@@ -73,3 +69,7 @@ A top-of-screen "Upgrade"/"Enhance" mode tab bar (matching the in-game button la
 **OQ-15. Fix spurious `.snap` file "modified" status on Windows**
 As a maintainer, I want `git status` to only show real changes, so that a false positive doesn't get mistaken for actual snapshot drift or mask a real one.
 `core.autocrlf=true` with no `.gitattributes` previously let `src/data/__snapshots__/workshopCategories.test.js.snap` show up as locally modified with zero actual content difference — a Windows line-ending stat-cache quirk. Fixed with a repo-root `.gitattributes` (`* text=auto eol=lf`), pinning line endings for all text files regardless of platform/`core.autocrlf`; confirmed via `git add --renormalize .` producing no changes and the snapshot file no longer showing as modified.
+
+**OQ-16. Persist the selected category tab across mode switches**
+As a player switching between Upgrade and Enhance, I want the app to remember which tree tab (Attack/Defense/Utility) I had open, so that I don't land back on Attack every time I switch modes.
+Resolved as shared: one tree tab app-wide, not tracked independently per screen. `activeCategoryId` moved out of `CategoryLevelInputs`'s own state and up into `App.jsx`, persisted via `localStorage` (`activeCategoryId` key) the same way `workshopMode` already was, and passed down as a controlled prop through `WorkshopInputs`/`EnhancementInputs` to `CategoryLevelInputs`. Switching Upgrade → Enhance (or back) now keeps the same tree selected, and it survives a reload too.

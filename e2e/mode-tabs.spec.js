@@ -43,3 +43,25 @@ test('keeps Upgrade and Enhance level entries independent across a reload', asyn
   await page.getByRole('tab', { name: 'Upgrade', exact: true }).click()
   await expect(page.getByLabel('Damage', { exact: true })).toHaveValue('10')
 })
+
+test('keeps the same tree tab selected across mode switches and a reload (OQ-16)', async ({
+  page,
+}) => {
+  await page.getByRole('tab', { name: 'Utility', exact: true }).click()
+
+  await page.getByRole('tab', { name: 'Enhance', exact: true }).click()
+  await expect(
+    page.getByRole('tab', { name: 'Utility', exact: true }),
+  ).toHaveAttribute('aria-selected', 'true')
+  await expect(page.getByLabel('Cash Bonus', { exact: true })).toBeVisible()
+
+  await page.reload()
+  await expect(
+    page.getByRole('tab', { name: 'Utility', exact: true }),
+  ).toHaveAttribute('aria-selected', 'true')
+
+  await page.getByRole('tab', { name: 'Upgrade', exact: true }).click()
+  await expect(
+    page.getByRole('tab', { name: 'Utility', exact: true }),
+  ).toHaveAttribute('aria-selected', 'true')
+})

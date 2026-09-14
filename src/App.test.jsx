@@ -67,4 +67,41 @@ describe('App', () => {
       'true',
     )
   })
+
+  it('keeps the same tree tab selected when switching between Upgrade and Enhance (OQ-16)', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.click(screen.getByRole('tab', { name: 'Utility' }))
+    expect(screen.getByLabelText('Cash Bonus')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('tab', { name: 'Enhance' }))
+    expect(screen.getByRole('tab', { name: 'Utility' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    )
+    expect(screen.getByLabelText('Cash Bonus')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('tab', { name: 'Upgrade' }))
+    expect(screen.getByRole('tab', { name: 'Utility' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    )
+    expect(screen.getByLabelText('Cash Bonus')).toBeInTheDocument()
+  })
+
+  it('persists the selected tree tab across remount (OQ-16)', async () => {
+    const user = userEvent.setup()
+    const { unmount } = render(<App />)
+
+    await user.click(screen.getByRole('tab', { name: 'Defense' }))
+    unmount()
+
+    render(<App />)
+    expect(screen.getByRole('tab', { name: 'Defense' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    )
+    expect(screen.getByLabelText('Health')).toBeInTheDocument()
+  })
 })
