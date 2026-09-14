@@ -15,6 +15,23 @@ const maxedLevels = () => {
   return levels
 }
 
+// name -> quantity (max level), for assertions that need to know how close
+// an entered level is to max without hardcoding every upgrade's cap.
+const quantityByName = Object.fromEntries(
+  WORKSHOP_CATEGORIES.flatMap((category) => category.upgrades.map((u) => [u.name, u.quantity])),
+)
+
+// The upgrades whose entered `quantity` was corrected upward (OQ-13) beyond
+// tower-idle-toolkit's own WORKSHOP_LEVELS cost-data ceiling (OQ-1) -- the
+// only upgrades that can land in `unknownCost`, and the exact level each
+// gets stuck at.
+const COST_DATA_CEILINGS = {
+  Health: 5000,
+  'Health Regen': 5000,
+  'Recovery Amount': 60,
+  'Max Recovery': 50,
+}
+
 describe('getCheapestNextUpgrades', () => {
   it('ranks upgrades cheapest-first at level 0, breaking ties by name', () => {
     const { ranked, unknownCost } = getCheapestNextUpgrades({}, { rowCap: 20 })
@@ -151,5 +168,119 @@ describe('getCheapestNextUpgrades', () => {
         nextLevel: 5001,
       },
     ])
+  })
+
+  // OQ-20: realistic, non-empty starting levels -- everything above this
+  // point starts from either an all-zero or a single-upgrade-isolated
+  // fixture, neither of which resembles an actual player's mixed Workshop
+  // state.
+  describe('realistic, non-empty starting levels (OQ-20)', () => {
+    it('stays cost-ascending and sane for a mid-game mixed snapshot', () => {
+      // A handful of upgrades noticeably ahead of the rest, everything else
+      // untouched (still level 0) -- the shape of a real in-progress save.
+      const levels = {
+        Damage: 200,
+        Health: 150,
+        'Attack Speed': 20,
+        'Coins / Wave': 10,
+        'Wall Health': 300,
+      }
+      const { ranked, unknownCost } = getCheapestNextUpgrades(levels, { rowCap: 40 })
+
+      expect(ranked).toHaveLength(40)
+      expect(unknownCost).toEqual([])
+
+      // Cost-ascending: a greedy cheapest-first walk can never produce a
+      // step cheaper than the one before it.
+      for (let i = 1; i < ranked.length; i++) {
+        expect(ranked[i].cost).toBeGreaterThanOrEqual(ranked[i - 1].cost)
+      }
+
+      // Sane: never recommends an already-maxed upgrade, and each
+      // upgrade's own rows climb one level at a time in the order seen.
+      const lastSeenLevel = {}
+      for (const entry of ranked) {
+        expect(entry.currentLevel).toBeLessThan(quantityByName[entry.name])
+        expect(entry.nextLevel).toBe(entry.currentLevel + 1)
+        const expectedStart = lastSeenLevel[entry.name] ?? (levels[entry.name] ?? 0)
+        expect(entry.currentLevel).toBe(expectedStart)
+        lastSeenLevel[entry.name] = entry.currentLevel + 1
+      }
+    })
+
+    it("doesn't let multiple upgrades past their cost-data ceiling interfere with each other's reporting", () => {
+      // All four ceiling upgrades stuck at once, everything else maxed out
+      // so nothing else competes -- isolates unknownCost reporting itself.
+      const levels = maxedLevels()
+      for (const [name, ceiling] of Object.entries(COST_DATA_CEILINGS)) {
+        levels[name] = ceiling
+      }
+      const { ranked, unknownCost } = getCheapestNextUpgrades(levels, { rowCap: 10 })
+
+      expect(ranked).toEqual([])
+      expect(unknownCost).toEqual([
+        {
+          name: 'Health',
+          categoryId: 'defense',
+          categoryLabel: 'Defense',
+          currentLevel: 5000,
+          nextLevel: 5001,
+        },
+        {
+          name: 'Health Regen',
+          categoryId: 'defense',
+          categoryLabel: 'Defense',
+          currentLevel: 5000,
+          nextLevel: 5001,
+        },
+        {
+          name: 'Max Recovery',
+          categoryId: 'utility',
+          categoryLabel: 'Utility',
+          currentLevel: 50,
+          nextLevel: 51,
+        },
+        {
+          name: 'Recovery Amount',
+          categoryId: 'utility',
+          categoryLabel: 'Utility',
+          currentLevel: 60,
+          nextLevel: 61,
+        },
+      ])
+    })
+
+    it('stays cost-ascending with no off-by-one or infinite-loop once cheap early tiers are gone (late-game)', () => {
+      // Every upgrade three levels from its own max -- including the four
+      // ceiling upgrades, which land past their cost-data coverage this
+      // close to (their corrected) max, the way a genuine late-game save
+      // would.
+      const levels = {}
+      for (const category of WORKSHOP_CATEGORIES) {
+        for (const upgrade of category.upgrades) {
+          levels[upgrade.name] = upgrade.quantity - 3
+        }
+      }
+      const { ranked, unknownCost } = getCheapestNextUpgrades(levels, { rowCap: 30 })
+
+      expect(ranked.length).toBeGreaterThan(0)
+      expect(ranked.length).toBeLessThanOrEqual(30)
+
+      for (let i = 1; i < ranked.length; i++) {
+        expect(ranked[i].cost).toBeGreaterThanOrEqual(ranked[i - 1].cost)
+      }
+      for (const entry of ranked) {
+        expect(entry.currentLevel).toBeLessThan(quantityByName[entry.name])
+      }
+
+      // The four ceiling upgrades are already well past their cost-data
+      // ceiling at "three levels from (corrected) max" here, so they get
+      // stuck immediately, at the level this fixture entered for them.
+      const unknownNames = unknownCost.map((e) => e.name).sort()
+      expect(unknownNames).toEqual(Object.keys(COST_DATA_CEILINGS).sort())
+      for (const entry of unknownCost) {
+        expect(entry.currentLevel).toBe(quantityByName[entry.name] - 3)
+      }
+    })
   })
 })
