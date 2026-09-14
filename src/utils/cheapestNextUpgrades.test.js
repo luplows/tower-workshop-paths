@@ -33,44 +33,47 @@ const COST_DATA_CEILINGS = {
 }
 
 describe('getCheapestNextUpgrades', () => {
-  it('ranks upgrades cheapest-first at level 0, breaking ties by name', () => {
+  it('ranks upgrades cheapest-first at level 0 by batch cost, breaking ties by name (OQ-7)', () => {
+    // Damage/Health/Health Regen have >1000 max levels (100-level batches);
+    // the rest here have <=1000 (10-level batches) -- see Project-Outline.md.
     const { ranked, unknownCost } = getCheapestNextUpgrades({}, { rowCap: 20 })
 
     expect(unknownCost).toEqual([])
-    expect(ranked.map((e) => [e.name, e.currentLevel, e.cost])).toEqual([
-      ['Attack Speed', 0, 30],
-      ['Cash / Wave', 0, 30],
-      ['Cash Bonus', 0, 30],
-      ['Damage', 0, 30],
-      ['Health', 0, 30],
-      ['Health Regen', 0, 30],
-      ['Coins / Kill Bonus', 0, 50],
-      ['Coins / Wave', 0, 50],
-      ['Critical Chance', 0, 50],
-      ['Critical Factor', 0, 50],
-      ['Damage / Meter', 0, 50],
-      ['Defense Absolute', 0, 50],
-      ['Defense Percent', 0, 50],
-      ['Range', 0, 50],
-      ['Damage', 1, 55],
-      ['Health', 1, 55],
-      ['Health Regen', 1, 55],
-      ['Attack Speed', 1, 56],
-      ['Cash / Wave', 1, 56],
-      ['Cash Bonus', 1, 56],
+    expect(ranked.map((e) => [e.name, e.currentLevel, e.levels, e.cost])).toEqual([
+      ['Critical Factor', 0, 10, 2645],
+      ['Thorns', 0, 10, 2722],
+      ['Cash / Wave', 0, 10, 2758],
+      ['Cash Bonus', 0, 10, 2758],
+      ['Defense Percent', 0, 10, 2782],
+      ['Critical Chance', 0, 10, 2854],
+      ['Lifesteal', 0, 10, 2932],
+      ['Attack Speed', 0, 10, 2935],
+      ['Damage / Meter', 0, 10, 2991],
+      ['Range', 0, 10, 2991],
+      ['Coins / Kill Bonus', 0, 10, 3522],
+      ['Coins / Wave', 0, 10, 3522],
+      ['Knockback Chance', 0, 10, 3540],
+      ['Knockback Force', 0, 10, 3597],
+      ['Multishot Chance', 0, 10, 4060],
+      ['Free Attack Upgrade', 0, 10, 4197],
+      ['Free Defense Upgrade', 0, 10, 4197],
+      ['Free Utility Upgrade', 0, 10, 4447],
+      ['Orb Speed', 0, 10, 5381],
+      ['Rapid Fire Chance', 0, 10, 5664],
     ])
   })
 
-  it('reports currentLevel/nextLevel/category on the first entry', () => {
+  it('reports currentLevel/nextLevel/levels/category on the first entry', () => {
     const { ranked } = getCheapestNextUpgrades({})
 
     expect(ranked[0]).toMatchObject({
-      name: 'Attack Speed',
+      name: 'Critical Factor',
       categoryId: 'attack',
       categoryLabel: 'Attack',
       currentLevel: 0,
-      nextLevel: 1,
-      cost: 30,
+      nextLevel: 10,
+      levels: 10,
+      cost: 2645,
     })
   })
 
@@ -79,11 +82,12 @@ describe('getCheapestNextUpgrades', () => {
     delete levels.Damage
     const { ranked } = getCheapestNextUpgrades(levels, { rowCap: 4 })
 
-    expect(ranked.map((e) => [e.currentLevel, e.nextLevel, e.cost])).toEqual([
-      [0, 1, 30],
-      [1, 2, 55],
-      [2, 3, 88],
-      [3, 4, 128],
+    // Damage has >1000 max levels, so each step is a 100-level batch.
+    expect(ranked.map((e) => [e.currentLevel, e.nextLevel, e.levels, e.cost])).toEqual([
+      [0, 100, 100, 2499617.5557601233],
+      [100, 200, 100, 30363353.437774427],
+      [200, 300, 100, 108337577.2629618],
+      [300, 400, 100, 227682082.7876627],
     ])
     expect(ranked.every((e) => e.name === 'Damage')).toBe(true)
   })
@@ -99,8 +103,9 @@ describe('getCheapestNextUpgrades', () => {
         categoryId: 'attack',
         categoryLabel: 'Attack',
         currentLevel: 5,
-        nextLevel: 6,
-        cost: 235,
+        nextLevel: 105,
+        levels: 100,
+        cost: 2964837.2903208775,
       },
     ])
   })
@@ -127,6 +132,27 @@ describe('getCheapestNextUpgrades', () => {
     expect(unknownCost.find((e) => e.name === 'Thorns')).toBeUndefined()
   })
 
+  it('trims a batch to whatever remains when fewer than a full batch is left before max level (OQ-7)', () => {
+    // Attack Speed's max is 99 (<=1000, so a 10-level batch), and 95 is
+    // only 4 levels short of that -- the batch should shrink to 4, not
+    // fail or overshoot past max.
+    const levels = maxedLevels()
+    levels['Attack Speed'] = 95
+    const { ranked } = getCheapestNextUpgrades(levels, { rowCap: 1 })
+
+    expect(ranked).toEqual([
+      {
+        name: 'Attack Speed',
+        categoryId: 'attack',
+        categoryLabel: 'Attack',
+        currentLevel: 95,
+        nextLevel: 99,
+        levels: 4,
+        cost: 459181.07339254196,
+      },
+    ])
+  })
+
   it('treats an upgrade already past its cost-data ceiling as unknown, immediately', () => {
     // Health's quantity was corrected to 6000 (WORKSHOP_QUANTITY_OVERRIDES),
     // but tower-idle-toolkit's own cost table only covers levels 0-5000.
@@ -142,30 +168,25 @@ describe('getCheapestNextUpgrades', () => {
     })
   })
 
-  it('discovers an upgrade hitting its cost-data ceiling mid-simulation (OQ-19)', () => {
+  it('refuses a batch instead of pricing a partial one when cost data runs out mid-batch (OQ-7)', () => {
+    // Health's 100-level batch starting at 4999 would span 4999-5098, but
+    // cost data only covers a valid transition through level 4999 -> 5000;
+    // level 5000 -> 5001 (index 5000) is a "nothing more to buy" sentinel
+    // from before the OQ-13 correction. Rather than silently buying a
+    // priced 1-level "batch", the whole batch is refused and Health lands
+    // in unknownCost immediately, at its currently entered level.
     const levels = maxedLevels()
     levels.Health = 4999
     const { ranked, unknownCost } = getCheapestNextUpgrades(levels, { rowCap: 5 })
 
-    // One valid row (4999 -> 5000), then it gets stuck -- nothing else is
-    // available in this fixture, so the simulation stops short of rowCap.
-    expect(ranked).toEqual([
+    expect(ranked).toEqual([])
+    expect(unknownCost).toEqual([
       {
         name: 'Health',
         categoryId: 'defense',
         categoryLabel: 'Defense',
         currentLevel: 4999,
         nextLevel: 5000,
-        cost: 797447767.117206,
-      },
-    ])
-    expect(unknownCost).toEqual([
-      {
-        name: 'Health',
-        categoryId: 'defense',
-        categoryLabel: 'Defense',
-        currentLevel: 5000,
-        nextLevel: 5001,
       },
     ])
   })
@@ -197,14 +218,15 @@ describe('getCheapestNextUpgrades', () => {
       }
 
       // Sane: never recommends an already-maxed upgrade, and each
-      // upgrade's own rows climb one level at a time in the order seen.
+      // upgrade's own rows climb by one batch at a time, continuing from
+      // wherever its previous row (or its entered level) left off.
       const lastSeenLevel = {}
       for (const entry of ranked) {
         expect(entry.currentLevel).toBeLessThan(quantityByName[entry.name])
-        expect(entry.nextLevel).toBe(entry.currentLevel + 1)
+        expect(entry.nextLevel).toBe(entry.currentLevel + entry.levels)
         const expectedStart = lastSeenLevel[entry.name] ?? (levels[entry.name] ?? 0)
         expect(entry.currentLevel).toBe(expectedStart)
-        lastSeenLevel[entry.name] = entry.currentLevel + 1
+        lastSeenLevel[entry.name] = entry.nextLevel
       }
     })
 
@@ -254,7 +276,9 @@ describe('getCheapestNextUpgrades', () => {
       // Every upgrade three levels from its own max -- including the four
       // ceiling upgrades, which land past their cost-data coverage this
       // close to (their corrected) max, the way a genuine late-game save
-      // would.
+      // would. Three levels remaining is also less than every upgrade's
+      // batch size (10 or 100), so this doubles as a realistic exercise of
+      // partial-batch trimming across the whole roster at once.
       const levels = {}
       for (const category of WORKSHOP_CATEGORIES) {
         for (const upgrade of category.upgrades) {
@@ -271,6 +295,9 @@ describe('getCheapestNextUpgrades', () => {
       }
       for (const entry of ranked) {
         expect(entry.currentLevel).toBeLessThan(quantityByName[entry.name])
+        // Only 3 levels remain before max, less than any batch size.
+        expect(entry.levels).toBe(3)
+        expect(entry.nextLevel).toBe(entry.currentLevel + 3)
       }
 
       // The four ceiling upgrades are already well past their cost-data
