@@ -45,6 +45,52 @@
   background: var(--accent-bg);
 }
 
+.header-menu__divider {
+  height: 1px;
+  margin: 4px 6px;
+  background: var(--border);
+}
+
+.header-menu__section {
+  padding: 4px 6px 6px;
+}
+
+.header-menu__section-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.header-menu__theme-tabs {
+  display: flex;
+  gap: 2px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 2px;
+}
+
+.header-menu__theme-tab {
+  flex: 1;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 0;
+  border: none;
+  border-radius: 999px;
+  background: none;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.header-menu__theme-tab--active {
+  background: var(--accent);
+  color: var(--bg);
+}
+
 .header-menu__overlay {
   position: fixed;
   inset: 0;
