@@ -4,41 +4,41 @@ test.beforeEach(async ({ page }) => {
   await page.goto('/')
 })
 
-test('shows the cheapest not-yet-maxed upgrade first', async ({ page }) => {
+test('shows the cheapest not-yet-maxed upgrade first, batched (OQ-7)', async ({ page }) => {
   await page.getByRole('tab', { name: 'Path', exact: true }).click()
 
   const list = page.getByRole('list', { name: 'Cheapest next upgrades' })
   const firstRow = list.getByRole('listitem').first()
 
-  await expect(firstRow).toContainText('Attack Speed')
-  await expect(firstRow).toContainText('30 coins')
+  await expect(firstRow).toContainText('Multishot Targets')
+  await expect(firstRow).toContainText('450 coins')
   await expect(firstRow).toContainText('Lv 0 → 1')
 })
 
 test('reflects a level entered on the Upgrade screen', async ({ page }) => {
-  const damageInput = page.getByLabel('Damage', { exact: true })
-  await damageInput.fill('1')
-  await damageInput.blur()
+  const attackSpeedInput = page.getByLabel('Attack Speed', { exact: true })
+  await attackSpeedInput.fill('1')
+  await attackSpeedInput.blur()
 
   await page.getByRole('tab', { name: 'Path', exact: true }).click()
 
-  // Damage can legitimately appear more than once (OQ-19) -- its first,
-  // cheapest occurrence should start from the entered level.
+  // Attack Speed can legitimately appear more than once (OQ-19) -- its
+  // first, cheapest occurrence should start from the entered level,
+  // batched 10 levels at a time since its max level is under 1000 (OQ-7).
   const list = page.getByRole('list', { name: 'Cheapest next upgrades' })
-  const damageRow = list.getByText('Damage', { exact: true }).first().locator('xpath=..')
-  await expect(damageRow).toContainText('Lv 1 → 2')
+  const row = list.getByText('Attack Speed', { exact: true }).first().locator('xpath=..')
+  await expect(row).toContainText('Lv 1 → 11')
 })
 
 test('lets a cheap upgrade appear more than once (OQ-19)', async ({ page }) => {
   await page.getByRole('tab', { name: 'Path', exact: true }).click()
 
   const list = page.getByRole('list', { name: 'Cheapest next upgrades' })
-  const damageRows = list.getByText('Damage', { exact: true })
+  const rows = list.getByText('Critical Factor', { exact: true })
 
-  await expect(damageRows).toHaveCount(3)
-  await expect(damageRows.nth(0).locator('xpath=..')).toContainText('Lv 0 → 1')
-  await expect(damageRows.nth(1).locator('xpath=..')).toContainText('Lv 1 → 2')
-  await expect(damageRows.nth(2).locator('xpath=..')).toContainText('Lv 2 → 3')
+  await expect(rows).toHaveCount(2)
+  await expect(rows.nth(0).locator('xpath=..')).toContainText('Lv 0 → 10')
+  await expect(rows.nth(1).locator('xpath=..')).toContainText('Lv 10 → 20')
 })
 
 test('keeps Path on a separate control from the Upgrade/Enhance toggle', async ({

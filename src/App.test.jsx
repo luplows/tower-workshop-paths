@@ -126,7 +126,7 @@ describe('App', () => {
 
     await user.click(screen.getByRole('tab', { name: 'Path' }))
 
-    expect(screen.getAllByRole('listitem')[0]).toHaveTextContent('Attack Speed')
+    expect(screen.getAllByRole('listitem')[0]).toHaveTextContent('Multishot Targets')
     expect(screen.queryByRole('tab', { name: 'Attack' })).not.toBeInTheDocument()
   })
 
@@ -134,14 +134,15 @@ describe('App', () => {
     const user = userEvent.setup()
     render(<App />)
 
-    const damageInput = screen.getByLabelText('Damage')
-    await user.clear(damageInput)
-    await user.type(damageInput, '1')
+    const attackSpeedInput = screen.getByLabelText('Attack Speed')
+    await user.clear(attackSpeedInput)
+    await user.type(attackSpeedInput, '1')
 
     await user.click(screen.getByRole('tab', { name: 'Path' }))
 
-    // Damage can legitimately appear more than once (OQ-19) -- its first,
-    // cheapest occurrence should start from the entered level.
-    expect(screen.getAllByText('Damage')[0].closest('li')).toHaveTextContent('Lv 1 → 2')
+    // Attack Speed can legitimately appear more than once (OQ-19) -- its
+    // first, cheapest occurrence should start from the entered level,
+    // batched 10 levels at a time since its max level is under 1000 (OQ-7).
+    expect(screen.getAllByText('Attack Speed')[0].closest('li')).toHaveTextContent('Lv 1 → 11')
   })
 })

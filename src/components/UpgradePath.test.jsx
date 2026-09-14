@@ -7,23 +7,24 @@ describe('UpgradePath', () => {
     window.localStorage.clear()
   })
 
-  it('shows the cheapest not-yet-maxed upgrade first, with its cost and level jump', () => {
+  it('shows the cheapest not-yet-maxed upgrade first, with its batch cost and level jump (OQ-7)', () => {
     render(<UpgradePath />)
 
     const rows = screen.getAllByRole('listitem')
-    expect(rows[0]).toHaveTextContent('Attack Speed')
-    expect(rows[0]).toHaveTextContent('30 coins')
+    expect(rows[0]).toHaveTextContent('Multishot Targets')
+    expect(rows[0]).toHaveTextContent('450 coins')
     expect(rows[0]).toHaveTextContent('Lv 0 → 1')
   })
 
   it('reflects a level entered on the Workshop screen when ranking', () => {
-    window.localStorage.setItem('workshopLevels', JSON.stringify({ Damage: 1 }))
+    window.localStorage.setItem('workshopLevels', JSON.stringify({ 'Attack Speed': 1 }))
     render(<UpgradePath />)
 
-    // Damage can legitimately appear more than once (OQ-19) -- its first,
-    // cheapest occurrence should start from the entered level.
-    const damageRow = screen.getAllByText('Damage')[0].closest('li')
-    expect(damageRow).toHaveTextContent('Lv 1 → 2')
+    // Attack Speed can legitimately appear more than once (OQ-19) -- its
+    // first, cheapest occurrence should start from the entered level,
+    // batched 10 levels at a time since its max level is under 1000 (OQ-7).
+    const row = screen.getAllByText('Attack Speed')[0].closest('li')
+    expect(row).toHaveTextContent('Lv 1 → 11')
   })
 
   it('lists an upgrade with unavailable cost data separately, not in the ranked list', () => {
