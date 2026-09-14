@@ -62,7 +62,11 @@ Currently ~2.4MB minified, mostly `tower-idle-toolkit`'s bundled game data (labs
 
 **OQ-22. Add a "Clear" button to zero out entered levels**
 As a player starting over (a fresh game save, or just wanting to re-enter everything cleanly), I want a way to reset my entered levels back to zero without hand-clearing every input, so that starting over isn't tedious.
-Would reset the `workshopLevels` and/or `enhancementLevels` `localStorage` state `WorkshopInputs`/`EnhancementInputs` read/write. Open design questions: one combined clear-everything control, or separate per-mode (Upgrade/Enhance) and/or per-tree (Attack/Defense/Utility) clears; where it lives (header, near the mode tabs, per-screen); and whether it needs a confirmation step, since this is destructive to entered data with no undo.
+Would reset the `workshopLevels` and `enhancementLevels` `localStorage` state `WorkshopInputs`/`EnhancementInputs` read/write. **Decided:** one combined clear-everything control (not split per-mode/per-tree), gated behind a confirmation step since it's destructive with no undo. **Placement decided:** a small overflow ("⋯") menu in the header, next to the Input/Path toggle — keeps that toggle as the visible, frequently-used primary navigation, while Clear (and room for future secondary actions) lives in the menu rather than competing for header space or being mistaken for another primary tab.
+
+**OQ-23. Verify the UI in a full-size desktop browser window**
+As a maintainer, I want to confirm the phone-mimicking layout still looks and behaves reasonably when the browser window is much wider than a phone, so that desktop visitors don't see a broken or oddly-stretched layout.
+Distinct from OQ-9 (a real touch device) — this is about viewport width on any device, checked so far only at a fixed mobile-ish width in a desktop browser during development. Open question: should the layout stay a fixed-width phone-shaped panel (likely centered, with empty space around it) on a wide window, or adapt some other way?
 
 ### Lowest priority
 
