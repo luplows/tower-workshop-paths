@@ -1,6 +1,7 @@
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it } from 'vitest'
+import { WORKSHOP_CATEGORIES } from '../data/workshopCategories'
 import { UpgradePath } from './UpgradePath'
 
 describe('UpgradePath', () => {
@@ -76,5 +77,24 @@ describe('UpgradePath', () => {
     expect(
       JSON.parse(window.localStorage.getItem('workshopLevels'))['Attack Speed'],
     ).toBe(11)
+  })
+
+  it('condenses and truncates a large fractional cost (OQ-7 batching data is often fractional)', () => {
+    // Isolate Damage so its own (fractional) batch cost leads the list --
+    // 2,499,617.5557601233 truncates to 2.49M, not the 2.50M a round would
+    // give.
+    const levels = {}
+    for (const category of WORKSHOP_CATEGORIES) {
+      for (const upgrade of category.upgrades) {
+        levels[upgrade.name] = upgrade.quantity
+      }
+    }
+    delete levels.Damage
+    window.localStorage.setItem('workshopLevels', JSON.stringify(levels))
+    render(<UpgradePath />)
+
+    const rows = screen.getAllByRole('listitem')
+    expect(rows[0]).toHaveTextContent('Damage')
+    expect(rows[0]).toHaveTextContent('2.49M coins')
   })
 })

@@ -1,8 +1,7 @@
 import { useLocalStorageState } from '../hooks/useLocalStorageState'
 import { getCheapestNextUpgrades } from '../utils/cheapestNextUpgrades'
+import { formatCoins } from '../utils/formatCoins'
 import './UpgradePath.css'
-
-const formatCoins = (coins) => `${coins.toLocaleString()} coins`
 
 export function UpgradePath() {
   const [levels, setLevels] = useLocalStorageState('workshopLevels', {})
