@@ -136,7 +136,7 @@
 .upgrade-path__confirm-actions {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 8px;
 }
 
