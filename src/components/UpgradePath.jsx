@@ -1,12 +1,45 @@
+import { useState } from 'react'
 import { useLocalStorageState } from '../hooks/useLocalStorageState'
 import { getCheapestNextUpgrades } from '../utils/cheapestNextUpgrades'
+import { formatCoins } from '../utils/formatCoins'
 import './UpgradePath.css'
 
-const formatCoins = (coins) => `${coins.toLocaleString()} coins`
-
 export function UpgradePath() {
-  const [levels] = useLocalStorageState('workshopLevels', {})
+  const [levels, setLevels] = useLocalStorageState('workshopLevels', {})
+  const [pendingBuy, setPendingBuy] = useState(null)
   const { ranked, unknownCost } = getCheapestNextUpgrades(levels)
+
+  const applyBuy = (name, levelsToAdd) => {
+    setLevels((previous) => ({
+      ...previous,
+      [name]: (previous[name] ?? 0) + levelsToAdd,
+    }))
+  }
+
+  const handleBuyClick = (entry, index) => {
+    // If this upgrade also appears earlier in the list (OQ-19 repeats),
+    // buying just this row's batch would skip those -- ask which the
+    // player actually wants rather than silently under-buying.
+    const priorSameUpgrade = ranked
+      .slice(0, index)
+      .filter((row) => row.name === entry.name)
+
+    if (priorSameUpgrade.length === 0) {
+      applyBuy(entry.name, entry.levels)
+      return
+    }
+
+    setPendingBuy({
+      entry,
+      priorLevels: priorSameUpgrade.reduce((sum, row) => sum + row.levels, 0),
+      totalCost: priorSameUpgrade.reduce((sum, row) => sum + row.cost, 0) + entry.cost,
+    })
+  }
+
+  const handleBuyAll = () => {
+    applyBuy(pendingBuy.entry.name, pendingBuy.priorLevels + pendingBuy.entry.levels)
+    setPendingBuy(null)
+  }
 
   return (
     <div className="upgrade-path">
@@ -26,7 +59,15 @@ export function UpgradePath() {
               <span className="upgrade-path__level">
                 Lv {entry.currentLevel} → {entry.nextLevel}
               </span>
-              <span className="upgrade-path__cost">{formatCoins(entry.cost)}</span>
+              <button
+                type="button"
+                className="upgrade-path__buy"
+                aria-label={`Buy ${entry.levels} level${entry.levels === 1 ? '' : 's'} of ${entry.name} for ${formatCoins(entry.cost)}`}
+                onClick={() => handleBuyClick(entry, index)}
+              >
+                <span className="upgrade-path__buy-label">Buy</span>
+                <span className="upgrade-path__buy-cost">{formatCoins(entry.cost)}</span>
+              </button>
             </li>
           ))}
         </ol>
@@ -45,6 +86,38 @@ export function UpgradePath() {
               </li>
             ))}
           </ul>
+        </div>
+      )}
+
+      {pendingBuy && (
+        <div className="upgrade-path__overlay">
+          <div
+            role="alertdialog"
+            aria-modal="true"
+            aria-label={`Buy all ${pendingBuy.entry.name} upgrades to reach Lv ${pendingBuy.entry.nextLevel} for ${formatCoins(pendingBuy.totalCost)}?`}
+            className="upgrade-path__confirm"
+          >
+            <p className="upgrade-path__confirm-body">
+              Buy all {pendingBuy.entry.name} upgrades to reach Lv{' '}
+              {pendingBuy.entry.nextLevel} ({formatCoins(pendingBuy.totalCost)})?
+            </p>
+            <div className="upgrade-path__confirm-actions">
+              <button
+                type="button"
+                className="upgrade-path__confirm-buy-all"
+                onClick={handleBuyAll}
+              >
+                Buy all
+              </button>
+              <button
+                type="button"
+                className="upgrade-path__confirm-cancel"
+                onClick={() => setPendingBuy(null)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -8,12 +8,6 @@ Each story has a permanent number (e.g. "OQ-7") for easy reference. Numbers are 
 
 Roughly ordered by priority within each tier below; re-evaluate as work lands. A story's number never changes, only its position in this list.
 
-### Do next
-
-**OQ-18. Let the user buy directly from the Upgrade Path list**
-As a player looking at the Path screen, I want a Buy button on each row, so that buying updates my entered Workshop level without switching back to the Upgrade screen and typing it in by hand.
-Builds on OQ-17's ranked list (`UpgradePath`) and OQ-7's batching. Buying a row should add that row's `levels` (the batch size, already trimmed for a near-max partial batch) to the upgrade's level in the same `workshopLevels` `localStorage` state the Upgrade screen reads/writes, then the list should re-rank immediately (next cheapest becomes the new top row).
-
 ### Foundational correctness
 
 **OQ-1. Verify Workshop upgrade per-level cost accuracy**
