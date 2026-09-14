@@ -52,14 +52,17 @@ describe('EnhancementInputs', () => {
     const user = userEvent.setup()
     render(<ControlledEnhancementInputs />)
 
-    expect(screen.getAllByText('1.00×')).toHaveLength(6)
+    // Only Damage (Attack's free starter -- see the per-tree gate describe
+    // block below) is unlocked from a fresh state, so it's the only value
+    // shown at all.
+    expect(screen.getAllByText('1.00×')).toHaveLength(1)
 
     const damageInput = screen.getByLabelText('Damage +')
     await user.clear(damageInput)
-    await user.type(damageInput, '40')
+    await user.type(damageInput, '5')
 
-    expect(screen.getByText('1.40×')).toBeInTheDocument()
-    expect(screen.getAllByText('1.00×')).toHaveLength(5)
+    expect(screen.getByText('1.05×')).toBeInTheDocument()
+    expect(screen.queryByText('1.00×')).not.toBeInTheDocument()
   })
 
   it('hard-caps an entered level at the category max', async () => {
@@ -89,6 +92,26 @@ describe('EnhancementInputs', () => {
     unmount()
     render(<ControlledEnhancementInputs />)
     expect(screen.getByLabelText('Damage +')).toHaveValue(12)
+  })
+
+  describe('per-tree cumulative-spend gate (OQ-6)', () => {
+    it('shows a locked note instead of an input for a category until its tree crosses that spend threshold', () => {
+      render(<ControlledEnhancementInputs />)
+
+      expect(screen.queryByLabelText('Rend Armor +')).not.toBeInTheDocument()
+      expect(screen.getByText('Rend Armor +')).toBeInTheDocument()
+      expect(screen.getByText(/Locked until 50B coins spent in this tree/)).toBeInTheDocument()
+    })
+
+    it("unlocks a category once its tree's cumulative spend crosses the threshold", () => {
+      // Damage (Attack's free starter) at level 10 has spent ~55.5B coins,
+      // just past Rend Armor's 50B threshold.
+      window.localStorage.setItem('enhancementLevels', JSON.stringify({ Damage: 10 }))
+      render(<ControlledEnhancementInputs />)
+
+      expect(screen.getByLabelText('Rend Armor +')).toBeInTheDocument()
+      expect(screen.queryByText(/Locked until 50B coins/)).not.toBeInTheDocument()
+    })
   })
 
   describe('while the Workshop Enhancements Lab is locked (OQ-32)', () => {

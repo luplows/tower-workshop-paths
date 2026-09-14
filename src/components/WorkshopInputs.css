@@ -63,6 +63,15 @@
   text-align: right;
 }
 
+.upgrade-row--locked {
+  opacity: 0.55;
+}
+
+.upgrade-row__locked-note {
+  font-size: 12px;
+  text-align: right;
+}
+
 .bottom-tab-bar {
   display: flex;
   border-top: 1px solid var(--border);
