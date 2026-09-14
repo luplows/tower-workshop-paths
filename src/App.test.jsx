@@ -104,4 +104,27 @@ describe('App', () => {
     )
     expect(screen.getByLabelText('Health')).toBeInTheDocument()
   })
+
+  it('switches to the Path mode, showing the cheapest not-yet-maxed upgrade first (OQ-17)', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.click(screen.getByRole('tab', { name: 'Path' }))
+
+    expect(screen.getAllByRole('listitem')[0]).toHaveTextContent('Attack Speed')
+    expect(screen.queryByRole('tab', { name: 'Attack' })).not.toBeInTheDocument()
+  })
+
+  it('reflects a level entered on the Upgrade screen in the Path ranking (OQ-17)', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    const damageInput = screen.getByLabelText('Damage')
+    await user.clear(damageInput)
+    await user.type(damageInput, '5')
+
+    await user.click(screen.getByRole('tab', { name: 'Path' }))
+
+    expect(screen.getByText('Damage').closest('li')).toHaveTextContent('Lv 5 → 6')
+  })
 })

@@ -1,12 +1,14 @@
 import './App.css'
 import { EnhancementInputs } from './components/EnhancementInputs'
 import { ModeTabBar } from './components/ModeTabBar'
+import { UpgradePath } from './components/UpgradePath'
 import { WorkshopInputs } from './components/WorkshopInputs'
 import { useLocalStorageState } from './hooks/useLocalStorageState'
 
 const MODES = [
   { id: 'upgrade', label: 'Upgrade' },
   { id: 'enhance', label: 'Enhance' },
+  { id: 'path', label: 'Path' },
 ]
 
 function App() {
@@ -33,6 +35,8 @@ function App() {
             activeCategoryId={activeCategoryId}
             onCategoryChange={setActiveCategoryId}
           />
+        ) : modeId === 'path' ? (
+          <UpgradePath />
         ) : (
           <WorkshopInputs
             activeCategoryId={activeCategoryId}
