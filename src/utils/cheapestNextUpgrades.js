@@ -3,6 +3,11 @@ import { ENHANCEMENT_CATEGORIES } from '../data/enhancementCategories'
 import { ENHANCEMENT_LEVELS } from '../data/enhancementLevels'
 import { WORKSHOP_CATEGORIES } from '../data/workshopCategories'
 import { isEnhancementCategoryUnlocked } from './enhancementTreeSpend'
+import {
+  isWorkshopUpgradeUnlocked,
+  nextPurchasableGroup,
+  unlockGroupKey,
+} from './workshopUnlockGroups'
 
 export const DEFAULT_ROW_CAP = 50
 
@@ -88,11 +93,32 @@ const enhancementLabCostAt = (name, level) => (level === 0 ? ENHANCEMENT_LAB_COS
  * `workshopLevels`/`enhancementLevels` are the same `{ [name]: level }`
  * shapes stored under the `workshopLevels`/`enhancementLevels` localStorage
  * keys by WorkshopInputs/EnhancementInputs. Several names overlap between
- * the two (e.g. "Damage", "Health"), so every returned entry (in both
- * `ranked` and `unknownCost`) carries a `source` ('workshop', 'enhancement',
- * or 'lab' -- see below) alongside `name` -- callers must key off both
- * together, never `name` alone, to tell which stored levels a row actually
- * belongs to.
+ * the two (e.g. "Damage", "Health") -- and a Workshop upgrade-unlock
+ * group's own name can collide with a plain upgrade name too (e.g. "Death
+ * Defy" is both), since some groups gate only a single upgrade -- so every
+ * returned entry (in both `ranked` and `unknownCost`) carries a `source`
+ * ('workshop', 'enhancement', 'lab', or 'unlock' -- see below) alongside
+ * `name` -- callers must key off both together, never `name` alone, to
+ * tell which stored levels (or which unlock group) a row actually belongs
+ * to.
+ *
+ * `unlockedGroups` (the `workshopUnlockedGroups` localStorage shape, a flat
+ * `{ [categoryId:groupName]: true }` map -- see `workshopUnlockGroups.js`)
+ * tracks which paid Workshop upgrade-unlock groups the player has already
+ * bought (OQ-5); every tree's free "Default" group needs no entry, it's
+ * always unlocked. A tree's paid groups unlock in order -- e.g. "Thorn
+ * Upgrades" can't be bought before "Defense Upgrades" -- so only the
+ * earliest not-yet-purchased group in each tree is ever offered as a
+ * candidate at all (`nextPurchasableGroup`); every later group's upgrades
+ * stay fully excluded, the same treatment as a locked Enhancement category
+ * (see below), until their own turn comes. The offered group's one-time
+ * unlock cost competes as its own candidate, `source: 'unlock'`, named
+ * after the group (e.g. "Multishot Upgrades"), a single-level (0 -> 1),
+ * always-1-level batch, the same shape as the Lab row. Buying it (the
+ * caller persisting the implied purchase) makes that group's upgrades
+ * ordinary candidates and advances the tree to its next group from the
+ * next call on -- same once-per-call simplification as everything else
+ * here.
  *
  * `enhancementLabLevel` (0 or 1) tracks the one-time "Workshop Enhancements"
  * Lab that gates the entire Enhancement system in-game. While it's 0, no
@@ -124,13 +150,19 @@ const enhancementLabCostAt = (name, level) => (level === 0 ? ENHANCEMENT_LAB_COS
  * Workshop upgrades above; ENHANCEMENT_LEVELS and the Lab have no known gaps.
  */
 export function getCheapestNextUpgrades(
-  { workshopLevels = {}, enhancementLevels = {}, enhancementLabLevel = 0 } = {},
+  {
+    workshopLevels = {},
+    enhancementLevels = {},
+    enhancementLabLevel = 0,
+    unlockedGroups = {},
+  } = {},
   { rowCap = DEFAULT_ROW_CAP } = {},
 ) {
   const cursors = new Map()
 
   for (const category of WORKSHOP_CATEGORIES) {
     for (const upgrade of category.upgrades) {
+      if (!isWorkshopUpgradeUnlocked(category.id, upgrade.name, unlockedGroups)) continue
       const currentLevel = workshopLevels[upgrade.name] ?? 0
       if (currentLevel < upgrade.quantity) {
         cursors.set(`workshop:${upgrade.name}`, {
@@ -144,6 +176,23 @@ export function getCheapestNextUpgrades(
           costAt: workshopCostAt,
         })
       }
+    }
+
+    // A tree's paid groups unlock in order -- only the earliest not-yet-
+    // purchased one is ever offered here; every later group stays fully
+    // excluded (no candidate at all) until its turn.
+    const nextGroup = nextPurchasableGroup(category.id, unlockedGroups)
+    if (nextGroup) {
+      cursors.set(`unlock:${unlockGroupKey(category.id, nextGroup.name)}`, {
+        source: 'unlock',
+        name: nextGroup.name,
+        level: 0,
+        quantity: 1,
+        batchSize: SINGLE_BATCH_SIZE,
+        categoryId: category.id,
+        categoryLabel: category.label,
+        costAt: (name, level) => (level === 0 ? nextGroup.cost : undefined),
+      })
     }
   }
 

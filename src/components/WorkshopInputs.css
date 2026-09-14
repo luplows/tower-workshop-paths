@@ -63,13 +63,33 @@
   text-align: right;
 }
 
-.upgrade-row--locked {
+.upgrade-row--locked .upgrade-row__label {
   opacity: 0.55;
 }
 
 .upgrade-row__locked-note {
   font-size: 12px;
   text-align: right;
+  opacity: 0.55;
+}
+
+.category-panel__unlock {
+  align-self: center;
+  margin-top: 4px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 999px;
+  border: 1px solid var(--accent-border);
+  background: var(--accent-bg);
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.category-panel__unlock:hover {
+  background: var(--accent);
+  color: var(--bg);
 }
 
 .bottom-tab-bar {

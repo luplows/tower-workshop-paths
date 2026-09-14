@@ -3,6 +3,8 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { ENHANCEMENT_CATEGORIES } from '../data/enhancementCategories'
 import { WORKSHOP_CATEGORIES } from '../data/workshopCategories'
+import { WORKSHOP_UNLOCK_GROUPS } from '../data/workshopUnlockGroups'
+import { unlockGroupKey } from '../utils/workshopUnlockGroups'
 import { UpgradePath } from './UpgradePath'
 
 const maxedWorkshopLevels = () => {
@@ -21,9 +23,21 @@ const maxedEnhancementLevels = () => {
   return levels
 }
 
+const allUnlockedGroups = () => {
+  const unlocked = {}
+  for (const [categoryId, groups] of Object.entries(WORKSHOP_UNLOCK_GROUPS)) {
+    for (const group of groups) unlocked[unlockGroupKey(categoryId, group.name)] = true
+  }
+  return unlocked
+}
+
 describe('UpgradePath', () => {
   beforeEach(() => {
     window.localStorage.clear()
+    // Every Workshop upgrade-unlock group already purchased (OQ-5) --
+    // most of these tests are about ranking/buying itself, not the unlock
+    // gate (see its own describe block below).
+    window.localStorage.setItem('workshopUnlockedGroups', JSON.stringify(allUnlockedGroups()))
   })
 
   it('shows the cheapest not-yet-maxed upgrade first, with its batch cost and level jump (OQ-7)', () => {
@@ -263,6 +277,55 @@ describe('UpgradePath', () => {
 
       expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
       expect(JSON.parse(window.localStorage.getItem('workshopLevels'))).toEqual({})
+    })
+  })
+
+  describe('Workshop upgrade-unlock groups (OQ-5)', () => {
+    beforeEach(() => {
+      // Overrides the outer beforeEach's default-unlocked seed.
+      window.localStorage.removeItem('workshopUnlockedGroups')
+    })
+
+    it("shows a locked group's own unlock cost as a row, and buying it marks the group purchased", async () => {
+      // Everything else maxed and pre-unlocked except Attack's "Multishot
+      // Upgrades" group, so its own unlock cost is unambiguously the only
+      // row.
+      const workshopLevels = maxedWorkshopLevels()
+      delete workshopLevels['Multishot Targets']
+      delete workshopLevels['Multishot Chance']
+      const unlockedGroups = allUnlockedGroups()
+      delete unlockedGroups[unlockGroupKey('attack', 'Multishot Upgrades')]
+      window.localStorage.setItem('workshopLevels', JSON.stringify(workshopLevels))
+      window.localStorage.setItem('workshopUnlockedGroups', JSON.stringify(unlockedGroups))
+      // Also unlocked and maxed out, so neither the Lab (otherwise always
+      // present while locked) nor any Enhancement category adds an extra
+      // row here.
+      window.localStorage.setItem('enhancementLabLevel', JSON.stringify(1))
+      window.localStorage.setItem('enhancementLevels', JSON.stringify(maxedEnhancementLevels()))
+      const user = userEvent.setup()
+      render(<UpgradePath />)
+
+      const rows = screen.getAllByRole('listitem')
+      expect(rows).toHaveLength(1)
+      expect(rows[0]).toHaveTextContent('Unlock: Multishot Upgrades')
+      expect(rows[0]).toHaveTextContent('400 coins')
+
+      await user.click(
+        within(rows[0]).getByRole('button', {
+          name: 'Buy 1 level of Unlock: Multishot Upgrades for 400 coins',
+        }),
+      )
+
+      expect(
+        JSON.parse(window.localStorage.getItem('workshopUnlockedGroups'))[
+          unlockGroupKey('attack', 'Multishot Upgrades')
+        ],
+      ).toBe(true)
+
+      // Once purchased, the group's own upgrades take its place.
+      const rowsAfter = screen.getAllByRole('listitem')
+      expect(screen.queryByText('Unlock: Multishot Upgrades')).not.toBeInTheDocument()
+      expect(rowsAfter.some((row) => row.textContent.includes('Multishot'))).toBe(true)
     })
   })
 })

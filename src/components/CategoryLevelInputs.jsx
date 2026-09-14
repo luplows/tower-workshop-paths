@@ -12,6 +12,11 @@ import './WorkshopInputs.css'
  * Which tree tab is active is owned by the caller (App), not here, so it
  * stays the same tree when switching between the Upgrade and Enhance
  * screens -- see Open-Questions.md's OQ-16.
+ *
+ * `unlockedGroups`/`onUnlockGroup` are Workshop-only (OQ-5) -- WorkshopInputs
+ * passes them through, EnhancementInputs leaves them undefined, since
+ * Enhancement categories have no unlock groups at all (just the per-tree
+ * spend gate, handled separately -- see WorkshopCategoryPanel).
  */
 export function CategoryLevelInputs({
   categories,
@@ -20,6 +25,8 @@ export function CategoryLevelInputs({
   nameSuffix,
   activeCategoryId,
   onCategoryChange,
+  unlockedGroups,
+  onUnlockGroup,
 }) {
   const [levels, setLevels] = useLocalStorageState(storageKey, {})
 
@@ -38,6 +45,8 @@ export function CategoryLevelInputs({
         onLevelChange={handleLevelChange}
         formatValue={formatValue}
         nameSuffix={nameSuffix}
+        unlockedGroups={unlockedGroups}
+        onUnlockGroup={onUnlockGroup}
       />
       <BottomTabBar
         categories={categories}
