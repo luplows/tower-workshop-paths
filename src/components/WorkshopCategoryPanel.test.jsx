@@ -1,5 +1,7 @@
 import { render, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import userEvent from '@testing-library/user-event'
+import { describe, expect, it, vi } from 'vitest'
+import { unlockGroupKey } from '../utils/workshopUnlockGroups'
 import { WorkshopCategoryPanel } from './WorkshopCategoryPanel'
 
 const categoryWith = (id) => ({
@@ -66,6 +68,91 @@ describe('WorkshopCategoryPanel', () => {
           category={categoryWith('attack')}
           levels={{}}
           onLevelChange={() => {}}
+        />,
+      )
+
+      expect(screen.getByLabelText('Damage')).toBeInTheDocument()
+    })
+  })
+
+  describe('Workshop upgrade-unlock groups (OQ-5)', () => {
+    // Real Workshop upgrade names/groups (see workshopUnlockGroups.js) --
+    // Damage is in Attack's free "Default" group, Range is in the paid
+    // "Range Upgrades" group (50 coins).
+    const attackWorkshopTree = {
+      id: 'attack',
+      label: 'Attack',
+      upgrades: [
+        { name: 'Damage', quantity: 6000 },
+        { name: 'Range', quantity: 99 },
+      ],
+    }
+
+    it('shows the normal input when onUnlockGroup is not passed at all (the Enhance screen has no unlock groups)', () => {
+      render(
+        <WorkshopCategoryPanel category={attackWorkshopTree} levels={{}} onLevelChange={() => {}} />,
+      )
+
+      expect(screen.getByLabelText('Range')).toBeInTheDocument()
+    })
+
+    it("shows an inline Unlock button instead of the input for a locked group's upgrade", () => {
+      render(
+        <WorkshopCategoryPanel
+          category={attackWorkshopTree}
+          levels={{}}
+          onLevelChange={() => {}}
+          unlockedGroups={{}}
+          onUnlockGroup={() => {}}
+        />,
+      )
+
+      expect(screen.queryByLabelText('Range')).not.toBeInTheDocument()
+      expect(screen.getByText('Range')).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: 'Unlock "Range Upgrades" (50 coins)' }),
+      ).toBeInTheDocument()
+    })
+
+    it('calls onUnlockGroup with the category id and group name when clicked', async () => {
+      const user = userEvent.setup()
+      const handleUnlock = vi.fn()
+      render(
+        <WorkshopCategoryPanel
+          category={attackWorkshopTree}
+          levels={{}}
+          onLevelChange={() => {}}
+          unlockedGroups={{}}
+          onUnlockGroup={handleUnlock}
+        />,
+      )
+
+      await user.click(screen.getByRole('button', { name: /Unlock/ }))
+      expect(handleUnlock).toHaveBeenCalledWith('attack', 'Range Upgrades')
+    })
+
+    it('shows the normal input once the group is marked purchased', () => {
+      render(
+        <WorkshopCategoryPanel
+          category={attackWorkshopTree}
+          levels={{}}
+          onLevelChange={() => {}}
+          unlockedGroups={{ [unlockGroupKey('attack', 'Range Upgrades')]: true }}
+          onUnlockGroup={() => {}}
+        />,
+      )
+
+      expect(screen.getByLabelText('Range')).toBeInTheDocument()
+    })
+
+    it("never locks Damage, Attack's free Default-group upgrade", () => {
+      render(
+        <WorkshopCategoryPanel
+          category={attackWorkshopTree}
+          levels={{}}
+          onLevelChange={() => {}}
+          unlockedGroups={{}}
+          onUnlockGroup={() => {}}
         />,
       )
 

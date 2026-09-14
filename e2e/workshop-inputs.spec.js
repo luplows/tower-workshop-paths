@@ -4,6 +4,11 @@ test.beforeEach(async ({ page }) => {
   await page.goto('/')
 })
 
+const unlockGroup = (page, key) =>
+  page.addInitScript((k) => {
+    window.localStorage.setItem('workshopUnlockedGroups', JSON.stringify({ [k]: true }))
+  }, key)
+
 test('shows the Attack tab by default', async ({ page }) => {
   await expect(page.getByLabel('Damage', { exact: true })).toBeVisible()
   await expect(page.getByLabel('Health', { exact: true })).not.toBeVisible()
@@ -27,6 +32,10 @@ test('persists an entered level across a page reload', async ({ page }) => {
 })
 
 test('hard-caps an entered level at the upgrade max', async ({ page }) => {
+  // Thorns belongs to Defense's paid "Thorn Upgrades" unlock group (OQ-5) --
+  // unlock it so its input is reachable at all.
+  await unlockGroup(page, 'defense:Thorn Upgrades')
+  await page.goto('/')
   await page.getByRole('tab', { name: 'Defense', exact: true }).click()
 
   const thornsInput = page.getByLabel('Thorns', { exact: true })
@@ -34,4 +43,24 @@ test('hard-caps an entered level at the upgrade max', async ({ page }) => {
   await thornsInput.blur()
 
   await expect(thornsInput).toHaveValue('99')
+})
+
+test('shows a locked group as an inline Unlock button, and buying it reveals the normal input (OQ-5)', async ({
+  page,
+}) => {
+  await page.getByRole('tab', { name: 'Defense', exact: true }).click()
+
+  await expect(page.getByLabel('Thorns', { exact: true })).not.toBeVisible()
+  await expect(page.getByText('Thorns', { exact: true })).toBeVisible()
+  const unlockButton = page.getByRole('button', { name: 'Unlock "Thorn Upgrades" (500 coins)' })
+  await expect(unlockButton).toBeVisible()
+
+  await unlockButton.click()
+
+  await expect(page.getByLabel('Thorns', { exact: true })).toBeVisible()
+  await expect(unlockButton).not.toBeVisible()
+
+  await page.reload()
+  await page.getByRole('tab', { name: 'Defense', exact: true }).click()
+  await expect(page.getByLabel('Thorns', { exact: true })).toBeVisible()
 })

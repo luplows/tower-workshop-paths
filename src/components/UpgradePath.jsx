@@ -2,12 +2,20 @@ import { useState } from 'react'
 import { useLocalStorageState } from '../hooks/useLocalStorageState'
 import { getCheapestNextUpgrades } from '../utils/cheapestNextUpgrades'
 import { formatCoins } from '../utils/formatCoins'
+import { unlockGroupKey } from '../utils/workshopUnlockGroups'
 import './UpgradePath.css'
 
-// Workshop and Enhancement names overlap (e.g. "Damage", "Health"). Rather
-// than a separate badge, this matches the game's own convention for
-// telling them apart: an Enhancement is always shown as "{name} +".
-const displayName = (entry) => (entry.source === 'enhancement' ? `${entry.name} +` : entry.name)
+// Workshop and Enhancement names overlap (e.g. "Damage", "Health"), and an
+// unlock group's name can collide with a plain Workshop upgrade name too
+// (e.g. "Death Defy" is both -- see cheapestNextUpgrades.js). Rather than a
+// separate badge, this matches the game's own convention for Enhancements
+// ("{name} +") and adds an "Unlock: " prefix for a group purchase, which
+// isn't itself an in-game label but reads unambiguously either way.
+const displayName = (entry) => {
+  if (entry.source === 'enhancement') return `${entry.name} +`
+  if (entry.source === 'unlock') return `Unlock: ${entry.name}`
+  return entry.name
+}
 
 export function UpgradePath() {
   const [workshopLevels, setWorkshopLevels] = useLocalStorageState('workshopLevels', {})
@@ -19,20 +27,37 @@ export function UpgradePath() {
     'enhancementLabLevel',
     0,
   )
+  const [unlockedGroups, setUnlockedGroups] = useLocalStorageState(
+    'workshopUnlockedGroups',
+    {},
+  )
   const [pendingBuy, setPendingBuy] = useState(null)
   const { ranked, unknownCost } = getCheapestNextUpgrades({
     workshopLevels,
     enhancementLevels,
     enhancementLabLevel,
+    unlockedGroups,
   })
 
   // Workshop and Enhancement names overlap (e.g. "Damage", "Health"), so a
   // buy must be routed by source, not just name, to the matching
   // localStorage-backed state. The Lab isn't per-name at all -- just one
-  // flat 0-or-1 value gating every Enhancement (OQ-31).
+  // flat 0-or-1 value gating every Enhancement (OQ-31). An unlock-group
+  // purchase (OQ-5) similarly isn't a level -- it just flips that group's
+  // entry in `unlockedGroups` on, keyed by category + group name since
+  // group names aren't unique on their own (every tree has its own
+  // "Default", and some collide with each other or an Enhancement category
+  // -- see workshopUnlockGroups.js).
   const applyBuy = (entry, levelsToAdd) => {
     if (entry.source === 'lab') {
       setEnhancementLabLevel((previous) => previous + levelsToAdd)
+      return
+    }
+    if (entry.source === 'unlock') {
+      setUnlockedGroups((previous) => ({
+        ...previous,
+        [unlockGroupKey(entry.categoryId, entry.name)]: true,
+      }))
       return
     }
     const setLevels = entry.source === 'workshop' ? setWorkshopLevels : setEnhancementLevels

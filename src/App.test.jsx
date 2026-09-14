@@ -2,6 +2,16 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it } from 'vitest'
 import App from './App'
+import { WORKSHOP_UNLOCK_GROUPS } from './data/workshopUnlockGroups'
+import { unlockGroupKey } from './utils/workshopUnlockGroups'
+
+const allUnlockedGroups = () => {
+  const unlocked = {}
+  for (const [categoryId, groups] of Object.entries(WORKSHOP_UNLOCK_GROUPS)) {
+    for (const group of groups) unlocked[unlockGroupKey(categoryId, group.name)] = true
+  }
+  return unlocked
+}
 
 describe('App', () => {
   beforeEach(() => {
@@ -87,6 +97,12 @@ describe('App', () => {
 
   it('keeps the same tree tab selected when switching between Upgrade and Enhance (OQ-16)', async () => {
     window.localStorage.setItem('enhancementLabLevel', JSON.stringify(1))
+    // "Cash Bonus" belongs to Utility's paid "Cash Bonuses" unlock group
+    // (OQ-5), not its free starter -- unlock it so the input is reachable.
+    window.localStorage.setItem(
+      'workshopUnlockedGroups',
+      JSON.stringify({ [unlockGroupKey('utility', 'Cash Bonuses')]: true }),
+    )
     const user = userEvent.setup()
     render(<App />)
 
@@ -124,6 +140,9 @@ describe('App', () => {
   })
 
   it('switches to the Path mode, showing the cheapest not-yet-maxed upgrade first (OQ-17)', async () => {
+    // Every unlock group already purchased (OQ-5) -- this test is about
+    // Path ranking/navigation itself, not the unlock gate.
+    window.localStorage.setItem('workshopUnlockedGroups', JSON.stringify(allUnlockedGroups()))
     const user = userEvent.setup()
     render(<App />)
 

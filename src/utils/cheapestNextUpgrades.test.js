@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { ENHANCEMENT_CATEGORIES } from '../data/enhancementCategories'
 import { WORKSHOP_CATEGORIES } from '../data/workshopCategories'
+import { WORKSHOP_UNLOCK_GROUPS } from '../data/workshopUnlockGroups'
 import { DEFAULT_ROW_CAP, getCheapestNextUpgrades } from './cheapestNextUpgrades'
+import { unlockGroupKey } from './workshopUnlockGroups'
 
 // Every Workshop upgrade maxed out, so the caller can un-max just the
 // one(s) they want to isolate -- lets a test see a single upgrade repeat
@@ -30,6 +32,21 @@ const maxedEnhancementLevels = () => {
     }
   }
   return levels
+}
+
+// Every paid Workshop upgrade-unlock group already purchased (OQ-5) -- most
+// Workshop-focused tests below pair this with maxedWorkshopLevels() to
+// isolate a single upgrade the same way that helper already does; without
+// it, every unpurchased group's own one-time unlock cost (as low as 40
+// coins) would crowd out whatever this test is actually isolating.
+const allUnlockedGroups = () => {
+  const unlocked = {}
+  for (const [categoryId, groups] of Object.entries(WORKSHOP_UNLOCK_GROUPS)) {
+    for (const group of groups) {
+      unlocked[unlockGroupKey(categoryId, group.name)] = true
+    }
+  }
+  return unlocked
 }
 
 // name -> quantity (max level), for assertions that need to know how close
@@ -61,8 +78,14 @@ describe('getCheapestNextUpgrades', () => {
       // "batches" -- see Project-Outline.md), so they lead the list here.
       // Enhancements maxed out -- their cheapest cost (~5B) never competes
       // this early anyway, but isolating keeps this test's intent explicit.
+      // Every unlock group already purchased (OQ-5) -- otherwise several of
+      // these upgrades wouldn't even have a cursor yet.
       const { ranked, unknownCost } = getCheapestNextUpgrades(
-        { workshopLevels: {}, enhancementLevels: maxedEnhancementLevels() },
+        {
+          workshopLevels: {},
+          enhancementLevels: maxedEnhancementLevels(),
+          unlockedGroups: allUnlockedGroups(),
+        },
         { rowCap: 20 },
       )
 
@@ -95,6 +118,7 @@ describe('getCheapestNextUpgrades', () => {
       const { ranked } = getCheapestNextUpgrades({
         workshopLevels: {},
         enhancementLevels: maxedEnhancementLevels(),
+        unlockedGroups: allUnlockedGroups(),
       })
 
       expect(ranked[0]).toMatchObject({
@@ -115,7 +139,11 @@ describe('getCheapestNextUpgrades', () => {
       const workshopLevels = maxedWorkshopLevels()
       workshopLevels.Orbs = 2
       const { ranked } = getCheapestNextUpgrades(
-        { workshopLevels, enhancementLevels: maxedEnhancementLevels() },
+        {
+          workshopLevels,
+          enhancementLevels: maxedEnhancementLevels(),
+          unlockedGroups: allUnlockedGroups(),
+        },
         { rowCap: 1 },
       )
 
@@ -137,7 +165,11 @@ describe('getCheapestNextUpgrades', () => {
       const workshopLevels = maxedWorkshopLevels()
       delete workshopLevels.Damage
       const { ranked } = getCheapestNextUpgrades(
-        { workshopLevels, enhancementLevels: maxedEnhancementLevels() },
+        {
+          workshopLevels,
+          enhancementLevels: maxedEnhancementLevels(),
+          unlockedGroups: allUnlockedGroups(),
+        },
         { rowCap: 4 },
       )
 
@@ -155,7 +187,11 @@ describe('getCheapestNextUpgrades', () => {
       const workshopLevels = maxedWorkshopLevels()
       workshopLevels.Damage = 5
       const { ranked } = getCheapestNextUpgrades(
-        { workshopLevels, enhancementLevels: maxedEnhancementLevels() },
+        {
+          workshopLevels,
+          enhancementLevels: maxedEnhancementLevels(),
+          unlockedGroups: allUnlockedGroups(),
+        },
         { rowCap: 1 },
       )
 
@@ -177,7 +213,11 @@ describe('getCheapestNextUpgrades', () => {
       const workshopLevels = maxedWorkshopLevels()
       delete workshopLevels.Damage
       const { ranked } = getCheapestNextUpgrades(
-        { workshopLevels, enhancementLevels: maxedEnhancementLevels() },
+        {
+          workshopLevels,
+          enhancementLevels: maxedEnhancementLevels(),
+          unlockedGroups: allUnlockedGroups(),
+        },
         { rowCap: 2 },
       )
 
@@ -194,6 +234,7 @@ describe('getCheapestNextUpgrades', () => {
     it('excludes a maxed-out upgrade from the list entirely', () => {
       const { ranked, unknownCost } = getCheapestNextUpgrades({
         workshopLevels: { Thorns: 99 },
+        unlockedGroups: allUnlockedGroups(),
       })
 
       expect(ranked.find((e) => e.name === 'Thorns')).toBeUndefined()
@@ -207,7 +248,11 @@ describe('getCheapestNextUpgrades', () => {
       const workshopLevels = maxedWorkshopLevels()
       workshopLevels['Attack Speed'] = 95
       const { ranked } = getCheapestNextUpgrades(
-        { workshopLevels, enhancementLevels: maxedEnhancementLevels() },
+        {
+          workshopLevels,
+          enhancementLevels: maxedEnhancementLevels(),
+          unlockedGroups: allUnlockedGroups(),
+        },
         { rowCap: 1 },
       )
 
@@ -228,6 +273,7 @@ describe('getCheapestNextUpgrades', () => {
     it('treats an upgrade already past its cost-data ceiling as unknown, immediately', () => {
       // Health's quantity was corrected to 6000 (WORKSHOP_QUANTITY_OVERRIDES),
       // but tower-idle-toolkit's own cost table only covers levels 0-5000.
+      // Health is in Defense's free "Default" group, so no unlock needed.
       const { ranked, unknownCost } = getCheapestNextUpgrades({
         workshopLevels: { Health: 5000 },
       })
@@ -257,6 +303,7 @@ describe('getCheapestNextUpgrades', () => {
           workshopLevels,
           enhancementLevels: maxedEnhancementLevels(),
           enhancementLabLevel: 1,
+          unlockedGroups: allUnlockedGroups(),
         },
         { rowCap: 5 },
       )
@@ -282,6 +329,9 @@ describe('getCheapestNextUpgrades', () => {
       it('stays cost-ascending and sane for a mid-game mixed snapshot', () => {
         // A handful of upgrades noticeably ahead of the rest, everything else
         // untouched (still level 0) -- the shape of a real in-progress save.
+        // Every unlock group already purchased (OQ-5) -- this fixture is
+        // about batch/cost simulation sanity, not gating, which has its own
+        // describe block below.
         const workshopLevels = {
           Damage: 200,
           Health: 150,
@@ -290,7 +340,11 @@ describe('getCheapestNextUpgrades', () => {
           'Wall Health': 300,
         }
         const { ranked, unknownCost } = getCheapestNextUpgrades(
-          { workshopLevels, enhancementLevels: maxedEnhancementLevels() },
+          {
+            workshopLevels,
+            enhancementLevels: maxedEnhancementLevels(),
+            unlockedGroups: allUnlockedGroups(),
+          },
           { rowCap: 40 },
         )
 
@@ -329,6 +383,7 @@ describe('getCheapestNextUpgrades', () => {
             workshopLevels,
             enhancementLevels: maxedEnhancementLevels(),
             enhancementLabLevel: 1,
+            unlockedGroups: allUnlockedGroups(),
           },
           { rowCap: 10 },
         )
@@ -376,7 +431,9 @@ describe('getCheapestNextUpgrades', () => {
         // close to (their corrected) max, the way a genuine late-game save
         // would. Three levels remaining is also less than every upgrade's
         // batch size (10 or 100), so this doubles as a realistic exercise of
-        // partial-batch trimming across the whole roster at once.
+        // partial-batch trimming across the whole roster at once. Every
+        // unlock group already purchased (OQ-5) -- a genuine late-game save
+        // would have them all bought by now anyway.
         const workshopLevels = {}
         for (const category of WORKSHOP_CATEGORIES) {
           for (const upgrade of category.upgrades) {
@@ -384,7 +441,11 @@ describe('getCheapestNextUpgrades', () => {
           }
         }
         const { ranked, unknownCost } = getCheapestNextUpgrades(
-          { workshopLevels, enhancementLevels: maxedEnhancementLevels() },
+          {
+            workshopLevels,
+            enhancementLevels: maxedEnhancementLevels(),
+            unlockedGroups: allUnlockedGroups(),
+          },
           { rowCap: 30 },
         )
 
@@ -421,13 +482,20 @@ describe('getCheapestNextUpgrades', () => {
   describe('Workshop Enhancements (OQ-29)', () => {
     it("ranks an Enhancement using ENHANCEMENT_LEVELS's own cost data, tagged source: enhancement", () => {
       // Every Workshop upgrade maxed out (including the same-named "Damage"
-      // Workshop upgrade) so only Enhancements can appear -- also proves
-      // the same-named Workshop Damage being maxed doesn't wrongly affect
-      // this one, which it would if entries were ever keyed by name alone.
+      // Workshop upgrade) and every unlock group already purchased (OQ-5,
+      // otherwise a cheap unlock candidate would outrank a 5B Enhancement)
+      // so only Enhancements can appear -- also proves the same-named
+      // Workshop Damage being maxed doesn't wrongly affect this one, which
+      // it would if entries were ever keyed by name alone.
       const enhancementLevels = maxedEnhancementLevels()
       delete enhancementLevels.Damage
       const { ranked } = getCheapestNextUpgrades(
-        { workshopLevels: maxedWorkshopLevels(), enhancementLevels, enhancementLabLevel: 1 },
+        {
+          workshopLevels: maxedWorkshopLevels(),
+          enhancementLevels,
+          enhancementLabLevel: 1,
+          unlockedGroups: allUnlockedGroups(),
+        },
         { rowCap: 3 },
       )
 
@@ -472,7 +540,12 @@ describe('getCheapestNextUpgrades', () => {
       const enhancementLevels = maxedEnhancementLevels()
       delete enhancementLevels['Recovery Package']
       const { ranked } = getCheapestNextUpgrades(
-        { workshopLevels: maxedWorkshopLevels(), enhancementLevels, enhancementLabLevel: 1 },
+        {
+          workshopLevels: maxedWorkshopLevels(),
+          enhancementLevels,
+          enhancementLabLevel: 1,
+          unlockedGroups: allUnlockedGroups(),
+        },
         { rowCap: 1 },
       )
 
@@ -495,13 +568,19 @@ describe('getCheapestNextUpgrades', () => {
       // Enhancement at first, but it maxes out at level 99 after 10
       // batches (the last one trimmed to 9 levels) -- once it's gone, the
       // cheapest remaining option in this fixture is Recovery Package
-      // (Enhancement, isolated), which then takes over.
+      // (Enhancement, isolated), which then takes over. Every unlock group
+      // already purchased (OQ-5), same isolation reasoning as above.
       const workshopLevels = maxedWorkshopLevels()
       delete workshopLevels['Attack Speed']
       const enhancementLevels = maxedEnhancementLevels()
       delete enhancementLevels['Recovery Package']
       const { ranked } = getCheapestNextUpgrades(
-        { workshopLevels, enhancementLevels, enhancementLabLevel: 1 },
+        {
+          workshopLevels,
+          enhancementLevels,
+          enhancementLabLevel: 1,
+          unlockedGroups: allUnlockedGroups(),
+        },
         { rowCap: 12 },
       )
 
@@ -519,7 +598,12 @@ describe('getCheapestNextUpgrades', () => {
       const workshopLevels = { Damage: 200, 'Attack Speed': 20 }
       const enhancementLevels = { Damage: 5, 'Cash Bonus': 3 }
       const { ranked } = getCheapestNextUpgrades(
-        { workshopLevels, enhancementLevels, enhancementLabLevel: 1 },
+        {
+          workshopLevels,
+          enhancementLevels,
+          enhancementLabLevel: 1,
+          unlockedGroups: allUnlockedGroups(),
+        },
         { rowCap: 45 },
       )
 
@@ -537,12 +621,15 @@ describe('getCheapestNextUpgrades', () => {
     it('shows the Lab as the only Enhancement-related candidate while locked, regardless of entered Enhancement levels', () => {
       // Enhancement levels entered here should be completely ignored while
       // locked -- in-game, none of this is purchasable until the Lab is
-      // bought, so the simulation must not offer it either.
+      // bought, so the simulation must not offer it either. Every Workshop
+      // unlock group already purchased (OQ-5) isolates this to just the
+      // Lab-vs-Enhancement interaction.
       const { ranked, unknownCost } = getCheapestNextUpgrades(
         {
           workshopLevels: maxedWorkshopLevels(),
           enhancementLevels: { Damage: 5, 'Cash Bonus': 3 },
           enhancementLabLevel: 0,
+          unlockedGroups: allUnlockedGroups(),
         },
         { rowCap: 10 },
       )
@@ -564,7 +651,7 @@ describe('getCheapestNextUpgrades', () => {
 
     it('defaults to locked when enhancementLabLevel is omitted', () => {
       const { ranked } = getCheapestNextUpgrades(
-        { workshopLevels: maxedWorkshopLevels() },
+        { workshopLevels: maxedWorkshopLevels(), unlockedGroups: allUnlockedGroups() },
         { rowCap: 1 },
       )
 
@@ -575,7 +662,11 @@ describe('getCheapestNextUpgrades', () => {
 
     it('excludes the Lab and includes every Enhancement normally once bought', () => {
       const { ranked } = getCheapestNextUpgrades(
-        { workshopLevels: maxedWorkshopLevels(), enhancementLabLevel: 1 },
+        {
+          workshopLevels: maxedWorkshopLevels(),
+          enhancementLabLevel: 1,
+          unlockedGroups: allUnlockedGroups(),
+        },
         { rowCap: 5 },
       )
 
@@ -586,13 +677,19 @@ describe('getCheapestNextUpgrades', () => {
     it("doesn't let the Lab gate affect Workshop upgrades either way", () => {
       const fixture = (enhancementLabLevel) =>
         getCheapestNextUpgrades(
-          { workshopLevels: {}, enhancementLevels: maxedEnhancementLevels(), enhancementLabLevel },
+          {
+            workshopLevels: {},
+            enhancementLevels: maxedEnhancementLevels(),
+            enhancementLabLevel,
+            unlockedGroups: allUnlockedGroups(),
+          },
           { rowCap: 5 },
         ).ranked
 
-      // With every Enhancement maxed out, only Workshop upgrades (and,
-      // while locked, the Lab) can compete -- Workshop's own top rows
-      // should be identical regardless of Lab status.
+      // With every Enhancement maxed out and every unlock group already
+      // purchased, only Workshop upgrades (and, while locked, the Lab) can
+      // compete -- Workshop's own top rows should be identical regardless
+      // of Lab status.
       const lockedWorkshopRows = fixture(0).filter((e) => e.source === 'workshop')
       const unlockedWorkshopRows = fixture(1)
       expect(lockedWorkshopRows).toEqual(unlockedWorkshopRows)
@@ -602,7 +699,11 @@ describe('getCheapestNextUpgrades', () => {
   describe('Enhancement per-tree cumulative-spend gate (OQ-6)', () => {
     it("only offers each tree's free starter category until that tree's cumulative spend crosses a threshold", () => {
       const { ranked, unknownCost } = getCheapestNextUpgrades(
-        { workshopLevels: maxedWorkshopLevels(), enhancementLabLevel: 1 },
+        {
+          workshopLevels: maxedWorkshopLevels(),
+          enhancementLabLevel: 1,
+          unlockedGroups: allUnlockedGroups(),
+        },
         { rowCap: 20 },
       )
 
@@ -625,6 +726,7 @@ describe('getCheapestNextUpgrades', () => {
           workshopLevels: maxedWorkshopLevels(),
           enhancementLevels,
           enhancementLabLevel: 1,
+          unlockedGroups: allUnlockedGroups(),
         },
         { rowCap: 1 },
       )
@@ -645,12 +747,97 @@ describe('getCheapestNextUpgrades', () => {
 
     it('leaves a not-yet-unlocked category out of unknownCost too -- absent, not reported as unpriceable', () => {
       const { ranked, unknownCost } = getCheapestNextUpgrades(
-        { workshopLevels: maxedWorkshopLevels(), enhancementLabLevel: 1 },
+        {
+          workshopLevels: maxedWorkshopLevels(),
+          enhancementLabLevel: 1,
+          unlockedGroups: allUnlockedGroups(),
+        },
         { rowCap: 3 },
       )
 
       expect(ranked.some((e) => e.name === 'Attack Speed')).toBe(false)
       expect(unknownCost.some((e) => e.name === 'Attack Speed')).toBe(false)
+    })
+  })
+
+  describe('Workshop upgrade-unlock groups (OQ-5)', () => {
+    it("excludes a locked group's upgrades entirely, offering the group's own unlock cost as a candidate instead", () => {
+      // Multishot Targets/Multishot Chance belong to Attack's "Multishot
+      // Upgrades" group (400 coins) -- everything else maxed out and every
+      // other group pre-unlocked isolates this to just that one group.
+      const workshopLevels = maxedWorkshopLevels()
+      delete workshopLevels['Multishot Targets']
+      delete workshopLevels['Multishot Chance']
+      const unlockedGroups = allUnlockedGroups()
+      delete unlockedGroups[unlockGroupKey('attack', 'Multishot Upgrades')]
+      const { ranked, unknownCost } = getCheapestNextUpgrades(
+        { workshopLevels, unlockedGroups },
+        { rowCap: 1 },
+      )
+
+      expect(ranked).toEqual([
+        {
+          name: 'Multishot Upgrades',
+          source: 'unlock',
+          categoryId: 'attack',
+          categoryLabel: 'Attack',
+          currentLevel: 0,
+          nextLevel: 1,
+          levels: 1,
+          cost: 400,
+        },
+      ])
+      expect(unknownCost).toEqual([])
+    })
+
+    it('makes a group\'s upgrades ordinary candidates once purchased', () => {
+      const workshopLevels = maxedWorkshopLevels()
+      delete workshopLevels['Multishot Targets']
+      const unlockedGroups = allUnlockedGroups() // "Multishot Upgrades" included
+      const { ranked } = getCheapestNextUpgrades(
+        { workshopLevels, unlockedGroups },
+        { rowCap: 1 },
+      )
+
+      expect(ranked).toEqual([
+        expect.objectContaining({ name: 'Multishot Targets', source: 'workshop' }),
+      ])
+    })
+
+    it("never gates a tree's free \"Default\" group -- its upgrades need no unlock at all", () => {
+      // Damage is in Attack's Default group (cost 0, no unlock needed), but
+      // its own first batch (~2.5M, a 100-level batch) is far pricier than
+      // the cheapest unlock groups -- reachable, just not the very
+      // cheapest, with no unlock groups purchased at all.
+      const { ranked } = getCheapestNextUpgrades({ workshopLevels: {} }, { rowCap: 50 })
+
+      expect(ranked.some((e) => e.name === 'Damage' && e.source === 'workshop')).toBe(true)
+      expect(ranked.some((e) => e.name === 'Damage' && e.source === 'unlock')).toBe(false)
+    })
+
+    it('leaves a locked group out of unknownCost too -- absent, not reported as unpriceable', () => {
+      const workshopLevels = maxedWorkshopLevels()
+      delete workshopLevels['Multishot Targets']
+      delete workshopLevels['Multishot Chance']
+      const unlockedGroups = allUnlockedGroups()
+      delete unlockedGroups[unlockGroupKey('attack', 'Multishot Upgrades')]
+      const { unknownCost } = getCheapestNextUpgrades(
+        { workshopLevels, unlockedGroups },
+        { rowCap: 5 },
+      )
+
+      expect(unknownCost.some((e) => e.name === 'Multishot Targets')).toBe(false)
+      expect(unknownCost.some((e) => e.name === 'Multishot Chance')).toBe(false)
+    })
+
+    it("doesn't offer an already-purchased group's unlock cost again", () => {
+      const unlockedGroups = allUnlockedGroups()
+      const { ranked } = getCheapestNextUpgrades(
+        { workshopLevels: maxedWorkshopLevels(), unlockedGroups },
+        { rowCap: 50 },
+      )
+
+      expect(ranked.some((e) => e.source === 'unlock')).toBe(false)
     })
   })
 })

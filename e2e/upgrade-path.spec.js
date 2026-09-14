@@ -1,10 +1,8 @@
 import { expect, test } from '@playwright/test'
 import { ENHANCEMENT_CATEGORIES } from '../src/data/enhancementCategories.js'
 import { WORKSHOP_CATEGORIES } from '../src/data/workshopCategories.js'
-
-test.beforeEach(async ({ page }) => {
-  await page.goto('/')
-})
+import { WORKSHOP_UNLOCK_GROUPS } from '../src/data/workshopUnlockGroups.js'
+import { unlockGroupKey } from '../src/utils/workshopUnlockGroups.js'
 
 const maxedLevels = (categories) => {
   const levels = {}
@@ -13,6 +11,24 @@ const maxedLevels = (categories) => {
   }
   return levels
 }
+
+const allUnlockedGroups = () => {
+  const unlocked = {}
+  for (const [categoryId, groups] of Object.entries(WORKSHOP_UNLOCK_GROUPS)) {
+    for (const group of groups) unlocked[unlockGroupKey(categoryId, group.name)] = true
+  }
+  return unlocked
+}
+
+test.beforeEach(async ({ page }) => {
+  // Every Workshop upgrade-unlock group already purchased (OQ-5) -- these
+  // tests are about ranking/buying itself, not the unlock gate (see
+  // e2e/workshop-inputs.spec.js for a dedicated OQ-5 test).
+  await page.addInitScript((unlocked) => {
+    window.localStorage.setItem('workshopUnlockedGroups', JSON.stringify(unlocked))
+  }, allUnlockedGroups())
+  await page.goto('/')
+})
 
 test('shows the cheapest not-yet-maxed upgrade first, batched (OQ-7)', async ({ page }) => {
   await page.getByRole('tab', { name: 'Path', exact: true }).click()

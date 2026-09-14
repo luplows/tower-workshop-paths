@@ -1,0 +1,203 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`WORKSHOP_UNLOCK_GROUPS > matches the known group structure (snapshot) 1`] = `
+{
+  "attack": [
+    {
+      "cost": 0,
+      "name": "Default",
+      "upgrades": [
+        "Damage",
+        "Attack Speed",
+        "Critical Chance",
+        "Critical Factor",
+      ],
+    },
+    {
+      "cost": 50,
+      "name": "Range Upgrades",
+      "upgrades": [
+        "Range",
+        "Damage / Meter",
+      ],
+    },
+    {
+      "cost": 400,
+      "name": "Multishot Upgrades",
+      "upgrades": [
+        "Multishot Chance",
+        "Multishot Targets",
+      ],
+    },
+    {
+      "cost": 1500,
+      "name": "Rapid Fire Upgrades",
+      "upgrades": [
+        "Rapid Fire Chance",
+        "Rapid Fire Duration",
+      ],
+    },
+    {
+      "cost": 10000,
+      "name": "Bounce Shot Upgrades",
+      "upgrades": [
+        "Bounce Shot Chance",
+        "Bounce Shot Targets",
+        "Bounce Shot Range",
+      ],
+    },
+    {
+      "cost": 100000000,
+      "name": "Super Critical Hits",
+      "upgrades": [
+        "Super Crit Chance",
+        "Super Crit Mult",
+      ],
+    },
+    {
+      "cost": 500000000000,
+      "name": "Rend Armor",
+      "upgrades": [
+        "Rend Armor Chance",
+        "Rend Armor Mult",
+      ],
+    },
+  ],
+  "defense": [
+    {
+      "cost": 0,
+      "name": "Default",
+      "upgrades": [
+        "Health",
+        "Health Regen",
+      ],
+    },
+    {
+      "cost": 75,
+      "name": "Defense Upgrades",
+      "upgrades": [
+        "Defense Percent",
+        "Defense Absolute",
+      ],
+    },
+    {
+      "cost": 500,
+      "name": "Thorn Upgrades",
+      "upgrades": [
+        "Thorns",
+      ],
+    },
+    {
+      "cost": 2000,
+      "name": "Lifesteal Upgrades",
+      "upgrades": [
+        "Lifesteal",
+      ],
+    },
+    {
+      "cost": 5000,
+      "name": "Knockback Upgrades",
+      "upgrades": [
+        "Knockback Chance",
+        "Knockback Force",
+      ],
+    },
+    {
+      "cost": 15000,
+      "name": "Orbs Upgrades",
+      "upgrades": [
+        "Orb Speed",
+        "Orbs",
+      ],
+    },
+    {
+      "cost": 100000,
+      "name": "Shockwave Upgrades",
+      "upgrades": [
+        "Shockwave Size",
+        "Shockwave Frequency",
+      ],
+    },
+    {
+      "cost": 400000,
+      "name": "Land Mine Upgrades",
+      "upgrades": [
+        "Land Mine Damage",
+        "Land Mine Chance",
+        "Land Mine Radius",
+      ],
+    },
+    {
+      "cost": 1500000,
+      "name": "Death Defy",
+      "upgrades": [
+        "Death Defy",
+      ],
+    },
+    {
+      "cost": 500000000,
+      "name": "The Wall",
+      "upgrades": [
+        "Wall Health",
+        "Wall Rebuild",
+      ],
+    },
+  ],
+  "utility": [
+    {
+      "cost": 0,
+      "name": "Default",
+      "upgrades": [],
+    },
+    {
+      "cost": 40,
+      "name": "Cash Bonuses",
+      "upgrades": [
+        "Cash Bonus",
+        "Cash / Wave",
+      ],
+    },
+    {
+      "cost": 100,
+      "name": "Coin Bonuses",
+      "upgrades": [
+        "Coins / Kill Bonus",
+        "Coins / Wave",
+      ],
+    },
+    {
+      "cost": 800,
+      "name": "Upgrade Chances",
+      "upgrades": [
+        "Free Attack Upgrade",
+        "Free Defense Upgrade",
+        "Free Utility Upgrade",
+      ],
+    },
+    {
+      "cost": 5000,
+      "name": "Interest / Wave",
+      "upgrades": [
+        "Interest / Wave",
+      ],
+    },
+    {
+      "cost": 1500000,
+      "name": "Recovery Package",
+      "upgrades": [
+        "Recovery Amount",
+        "Max Recovery",
+        "Package Chance",
+      ],
+    },
+    {
+      "cost": 1000000000,
+      "name": "Enemy Level Skips",
+      "upgrades": [
+        "Enemy Attack Level Skip",
+        "Enemy Health Level Skip",
+      ],
+    },
+  ],
+}
+`;
