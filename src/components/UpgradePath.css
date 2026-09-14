@@ -158,13 +158,13 @@
   cursor: pointer;
 }
 
-.upgrade-path__confirm-buy-all {
+.upgrade-path__confirm-actions .upgrade-path__confirm-buy-all {
   background: #16a34a;
   border-color: #16a34a;
   color: #fff;
 }
 
-.upgrade-path__confirm-cancel {
+.upgrade-path__confirm-actions .upgrade-path__confirm-cancel {
   background: #dc2626;
   border-color: #dc2626;
   color: #fff;

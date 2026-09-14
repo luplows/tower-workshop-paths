@@ -96,7 +96,7 @@
   cursor: pointer;
 }
 
-.header-menu__confirm-clear {
+.header-menu__confirm-actions .header-menu__confirm-clear {
   background: #dc2626;
   border-color: #dc2626;
   color: #fff;
