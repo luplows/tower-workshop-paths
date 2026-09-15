@@ -1,6 +1,6 @@
 // Registers a loader hook so plain `node` can resolve this project's own
 // extensionless relative imports (e.g. workshopCategories.js importing
-// `./workshopQuantityOverrides` with no extension) -- Vite resolves these
+// `./workshopUpgradeList` with no extension) -- Vite resolves these
 // fine, but plain Node ESM doesn't, and scripts/ deliberately imports real
 // app source modules (rather than duplicating their data) to stay accurate
 // as that source changes. Preload this via `node --import` *before* the

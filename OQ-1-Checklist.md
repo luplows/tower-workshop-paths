@@ -1,16 +1,15 @@
 # OQ-1 Checklist: Verify Workshop Upgrade Data
 
-Tracking checklist for [Open-Questions.md](Open-Questions.md)'s OQ-1 — working through every Workshop upgrade one by one to confirm its max level and per-level coin costs are correct for the current patch, rather than just trusted from `tower-idle-toolkit`.
+Tracking checklist for [Open-Questions.md](Open-Questions.md)'s OQ-1 — working through every Workshop upgrade one by one to confirm its max level and per-level coin costs are correct for the current patch.
 
-**Costs are now cross-checked automatically where possible**, via `scripts/verify-workshop-costs.mjs` — it compares this project's own cost data against mytower.app's independently-hosted per-level cost tables at the same 3 spot-check levels documented below, and checks the "Costs spot-checked" box on a clean match. This is a genuinely useful cross-reference (it already caught a real discrepancy — see Wall Health below) but not a full substitute for "Max level confirmed," which still needs real in-game confirmation: mytower.app's own max level isn't necessarily independently sourced either, and both tools may ultimately share some upstream data lineage (mytower.app credits "Tower Data Collection" by CrisRody as its own foundation) — agreement between the two is corroborating, not proof against the actual current patch.
+**Superseded for costs by OQ-39's Phase 1 migration** ([`OQ-39-Data-Source-Migration.md`](OQ-39-Data-Source-Migration.md)): this project's Workshop cost data now comes *from* mytower.app directly (`src/data/workshopLevels.js`), not from `tower-idle-toolkit` cross-checked against it. The "Costs spot-checked" boxes below are a historical record of that migration's own validation pass (all 47 clean matches + the 1 real discrepancy it found, Wall Health — now Completed-Questions.md OQ-38) rather than an ongoing task; re-running `scripts/verify-workshop-costs.mjs` now checks for *drift* between this project's shipped data and mytower.app's current live data (e.g. after a future patch), not independent cross-validation, since both come from the same place today.
+**Still genuinely open:** "Max level confirmed" — no upgrade's max level has been checked against the real, current-patch game directly. mytower.app's own max level matched this project's existing value for all 48 upgrades exactly, which is reassuring but not proof against the actual game: mytower.app's own max level isn't necessarily independently sourced either, and it may share some upstream data lineage with what this project already had (mytower.app credits "Tower Data Collection" by CrisRody as its own foundation).
 
 ## How to verify each upgrade
 
-- **Max level**: in-game, max out the upgrade (or check its listed cap) and compare against the "current data max" value noted below for that upgrade. If it differs, add/update an entry in `src/data/workshopQuantityOverrides.js` (see OQ-13 — five upgrades are already corrected there) and update `WORKSHOP_QUANTITY_OVERRIDES`'s snapshot test (`workshopCategories.test.js`) with `vitest -u` after reviewing the diff.
-- **Costs**: each entry below lists three spot-check levels — Lv1, a mid-range level, and the highest level covered by the data — as `Lv{level}: {raw} → {display}`. `{raw}` is the exact, un-rounded value straight from `tower-idle-toolkit`'s `WORKSHOP_LEVELS[name][level].coins` (the coin cost to buy that level from the one before it), decimal places and all — Workshop costs are frequently fractional (OQ-26), not a typo. `{display}` is that same value the way the game itself would show it: condensed with a suffix past the thousands and truncated to 2 decimals (`src/utils/formatCoins.js`). Compare `{display}` against what the game actually shows at that level — that's the number you'll actually see in-game, not the raw one. If a value's wrong, note it inline (e.g. "Lv1: data says 55 → 55, game shows 60") and flag a new item in `Open-Questions.md`, since there's no override mechanism yet for per-level costs (unlike max level).
-- **Missing cost data**: four upgrades have a `GAP` noted below — `WORKSHOP_LEVELS` has no real cost data at all past a certain level (its last entry there is a `coins: 0` sentinel, not a real cost), because their max level was corrected upward (OQ-13) without the toolkit's cost table being extended to match. Nothing to verify in the gap range; it's a known missing-data item for OQ-1, not something to re-derive here. See `src/utils/cheapestNextUpgrades.js`'s handling of it.
+- **Max level**: in-game, max out the upgrade (or check its listed cap) and compare against the "current data max" value noted below for that upgrade. If it differs, update `src/data/workshopUpgradeList.js` (re-run `scripts/extract-workshop-data.mjs` + `scripts/generate-workshop-data-files.mjs` for that upgrade, or hand-edit if a quick fix is more practical) and update `workshopCategories.test.js`'s snapshot (`vitest -u`) after reviewing the diff.
+- **Costs**: each entry below lists three spot-check levels — Lv1, a mid-range level, and the highest level covered by the data — as `Lv{level}: {raw} → {display}`, from when this checklist was first built against `tower-idle-toolkit`'s data (kept as historical record, see above) — `{raw}` was the exact, un-rounded value from `tower-idle-toolkit`'s `WORKSHOP_LEVELS[name][level].coins` at the time; `{display}` is that same value the way the game itself would show it (`src/utils/formatCoins.js`). Current values now live in `src/data/workshopLevels.js` instead, sourced from mytower.app's own (already-rounded) display.
 - Check a box only once you've actually compared against the game, not just re-read the code or this checklist.
-- Values here were pulled once, at this checklist's creation — re-derive from `tower-idle-toolkit` (`node -e "console.log(require('tower-idle-toolkit').WORKSHOP_LEVELS['<name>']['<level>'])"`) if you suspect either it or `src/data/workshopCategories.js`'s quantities have drifted since.
 
 ## Attack
 
@@ -68,12 +67,12 @@ Tracking checklist for [Open-Questions.md](Open-Questions.md)'s OQ-1 — working
 
 ## Defense
 
-- [ ] **Health** (current data max: 6000 — OQ-13 correction) — Lv1: 55 → 55 · Lv2500: 170,119,376.775304 → 170.11M · Lv5000: 0 (sentinel, not real) — **GAP: cost data missing for levels 5001–5999**
+- [ ] **Health** (current data max: 6000) — Lv1: 55 → 55 · Lv2500: 170,119,376.775304 → 170.11M · Lv5999: 4,680,000,000,000 → 4.68T (historical `tower-idle-toolkit` values above through Lv2500; the old gap past Lv5000 is fully closed — **Resolved via OQ-39 Phase 1:** `src/data/workshopLevels.js` now has real mytower.app-sourced data for every level 0-5999, no gap left at all)
   - [ ] Max level confirmed
-  - [x] Costs spot-checked (covered range only) — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`). **Gap update: mytower.app's own max here is also 6000 and it has real cost data through Lv5999 (≈4.68T) — the gap isn't a missing-data dead end, it's just missing from `tower-idle-toolkit`.** Not yet pulled into this project's own data — see Open-Questions.md.
-- [ ] **Health Regen** (current data max: 6000 — OQ-13 correction) — Lv1: 55 → 55 · Lv2500: 170,119,376.775304 → 170.11M · Lv5000: 0 (sentinel, not real) — **GAP: cost data missing for levels 5001–5999**
+  - [x] Costs spot-checked — sourced from mytower.app (OQ-39 Phase 1), not just cross-checked
+- [ ] **Health Regen** (current data max: 6000) — Lv1: 55 → 55 · Lv2500: 170,119,376.775304 → 170.11M · Lv5999: 388,000,000,000 → 388.00B (historical `tower-idle-toolkit` values above through Lv2500; the old gap past Lv5000 is fully closed — **Resolved via OQ-39 Phase 1:** `src/data/workshopLevels.js` now has real mytower.app-sourced data for every level 0-5999, no gap left at all)
   - [ ] Max level confirmed
-  - [x] Costs spot-checked (covered range only) — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`). **Gap update: mytower.app's own max here is also 6000 and it has real cost data through Lv5999 (≈388.00B) — the gap isn't a missing-data dead end, it's just missing from `tower-idle-toolkit`.** Not yet pulled into this project's own data — see Open-Questions.md.
+  - [x] Costs spot-checked — sourced from mytower.app (OQ-39 Phase 1), not just cross-checked
 - [ ] **Defense Percent** (current data max: 99) — Lv1: 76 → 76 · Lv49: 18,329 → 18.32k · Lv98: 90,728.1098596107 → 90.72k
   - [ ] Max level confirmed
   - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
@@ -116,9 +115,9 @@ Tracking checklist for [Open-Questions.md](Open-Questions.md)'s OQ-1 — working
 - [ ] **Death Defy** (current data max: 75) — Lv1: 1,506 → 1.5k · Lv37: 7,203,222 → 7.2M · Lv74: 110,498,817.170683 → 110.49M
   - [ ] Max level confirmed
   - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
-- [ ] **Wall Health** (current data max: 1800) — Lv1: 8,400,003 → 8.4M · Lv899: 127,629,117,950.932 → 127.62B · Lv1799: 108,448,766,883,393 → 108.44T
+- [ ] **Wall Health** (current data max: 1800) — Lv1: 8,400,003 → 8.4M · Lv899: 127,629,117,950.932 → 127.62B · Lv1799: 108,448,766,883,393 → 108.44T (historical `tower-idle-toolkit` values, confirmed **wrong** — see below)
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked — **real discrepancy found via `scripts/verify-workshop-costs.mjs`, not yet resolved:** mytower.app shows a noticeably different (and slower-growing) cost curve at the same levels — Lv1: 8.20M (not 8.4M), Lv899: 33.73B (not 127.62B, ~3.8× off), Lv1799: 23.48T (not 108.44T, ~4.6× off). The growing ratio rules out a display-rounding artifact. Needs a real in-game check to determine which source (if either) is current — don't trust either blindly until then.
+  - [x] Costs spot-checked — **resolved, see Completed-Questions.md OQ-38:** the discrepancy `scripts/verify-workshop-costs.mjs` found here (mytower.app's noticeably slower-growing curve vs. the `tower-idle-toolkit` values above) was confirmed real using the user's own real in-game purchase (defense discount Lab level 21, Wall Health Lv700, real cost 82.29B) — mytower.app matched almost exactly, `tower-idle-toolkit` was ~3.46× too high. Fixed via OQ-39 Phase 1: `src/data/workshopLevels.js` now has mytower.app's correct curve — Lv1: 8.2M, Lv899: 33.73B, Lv1799: 23.48T.
 - [ ] **Wall Rebuild** (current data max: 300) — Lv1: 16,800,005 → 16.8M · Lv149: 2,117,081,457.28082 → 2.11B · Lv299: 923,563,988,197.91 → 923.56B
   - [ ] Max level confirmed
   - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
@@ -149,12 +148,12 @@ Tracking checklist for [Open-Questions.md](Open-Questions.md)'s OQ-1 — working
 - [ ] **Interest / Wave** (current data max: 99) — Lv1: 179 → 179 · Lv49: 45,852 → 45.85k · Lv98: 252,466.423021985 → 252.46k
   - [ ] Max level confirmed
   - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
-- [ ] **Recovery Amount** (current data max: 300 — OQ-13 correction) — Lv1: 1,055 → 1.05k · Lv30: 1,889,703 → 1.88M · Lv60: 0 (sentinel, not real) — **GAP: cost data missing for levels 61–299**
+- [ ] **Recovery Amount** (current data max: 300) — Lv1: 1,055 → 1.05k · Lv30: 1,889,703 → 1.88M · Lv299: 21,590,000,000 → 21.59B (historical `tower-idle-toolkit` values above through Lv30; the old gap past Lv60 is fully closed — **Resolved via OQ-39 Phase 1:** `src/data/workshopLevels.js` now has real mytower.app-sourced data for every level 0-299, no gap left at all)
   - [ ] Max level confirmed
-  - [x] Costs spot-checked (covered range only) — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`). **Gap update: mytower.app's own max here is also 300 and it has real cost data through Lv299 (≈21.59B) — the gap isn't a missing-data dead end, it's just missing from `tower-idle-toolkit`.** Not yet pulled into this project's own data — see Open-Questions.md.
-- [ ] **Max Recovery** (current data max: 500 — OQ-13 correction) — Lv1: 1,055 → 1.05k · Lv25: 946,158 → 946.15k · Lv50: 0 (sentinel, not real) — **GAP: cost data missing for levels 51–499**
+  - [x] Costs spot-checked — sourced from mytower.app (OQ-39 Phase 1), not just cross-checked
+- [ ] **Max Recovery** (current data max: 500) — Lv1: 1,055 → 1.05k · Lv25: 946,158 → 946.15k · Lv499: 151,170,000,000 → 151.17B (historical `tower-idle-toolkit` values above through Lv25; the old gap past Lv50 is fully closed — **Resolved via OQ-39 Phase 1:** `src/data/workshopLevels.js` now has real mytower.app-sourced data for every level 0-499, no gap left at all)
   - [ ] Max level confirmed
-  - [x] Costs spot-checked (covered range only) — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`). **Gap update: mytower.app's own max here is also 500 and it has real cost data through Lv499 (≈151.17B) — the gap isn't a missing-data dead end, it's just missing from `tower-idle-toolkit`.** Not yet pulled into this project's own data — see Open-Questions.md.
+  - [x] Costs spot-checked — sourced from mytower.app (OQ-39 Phase 1), not just cross-checked
 - [ ] **Package Chance** (current data max: 60) — Lv1: 1,055 → 1.05k · Lv29: 1,661,541 → 1.66M · Lv59: 25,404,001.694355 → 25.4M
   - [ ] Max level confirmed
   - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)

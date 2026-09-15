@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest'
 import { WORKSHOP_CATEGORIES } from './workshopCategories'
-import { WORKSHOP_QUANTITY_OVERRIDES } from './workshopQuantityOverrides'
 
 describe('WORKSHOP_CATEGORIES', () => {
   it('has the three in-game tabs, in order', () => {
@@ -35,22 +34,12 @@ describe('WORKSHOP_CATEGORIES', () => {
     expect(namesByCategory.utility).not.toContain('Health')
   })
 
-  it('applies every confirmed quantity override', () => {
-    const allUpgrades = WORKSHOP_CATEGORIES.flatMap((c) => c.upgrades)
-    for (const [name, expectedQuantity] of Object.entries(
-      WORKSHOP_QUANTITY_OVERRIDES,
-    )) {
-      const upgrade = allUpgrades.find((u) => u.name === name)
-      expect(upgrade, `expected an upgrade named "${name}"`).toBeDefined()
-      expect(upgrade.quantity).toBe(expectedQuantity)
-    }
-  })
-
-  // Change-detection tripwire, not a correctness assertion: fails if
-  // tower-idle-toolkit ever adds/removes/reorders an upgrade or changes a
-  // quantity, so an upstream update gets a reviewable diff instead of
-  // silently reshaping the Workshop. A snapshot update here should always
-  // be a deliberate, reviewed choice -- see Open-Questions.md.
+  // Change-detection tripwire, not a correctness assertion: fails if a
+  // re-run of scripts/extract-workshop-data.mjs ever adds/removes/
+  // reorders an upgrade or changes a quantity, so an upstream game patch
+  // gets a reviewable diff instead of silently reshaping the Workshop. A
+  // snapshot update here should always be a deliberate, reviewed choice
+  // -- see Open-Questions.md's OQ-39.
   it('matches the known upgrade/quantity structure (snapshot)', () => {
     const structure = WORKSHOP_CATEGORIES.map((category) => ({
       id: category.id,

@@ -1,4 +1,3 @@
-import { WORKSHOP_LEVELS } from 'tower-idle-toolkit'
 import { ENHANCEMENT_CATEGORIES } from '../data/enhancementCategories'
 import { ENHANCEMENT_LEVELS } from '../data/enhancementLevels'
 import {
@@ -8,6 +7,7 @@ import {
   RANKED_PRIORITY_ORDER,
 } from '../data/enhancementPriority'
 import { WORKSHOP_CATEGORIES } from '../data/workshopCategories'
+import { WORKSHOP_LEVELS } from '../data/workshopLevels'
 import { enhancementDiscountMultiplier } from './enhancementDiscount'
 import { enhancementTreeSpend, isEnhancementCategoryUnlocked } from './enhancementTreeSpend'
 import { workshopDiscountMultiplier } from './workshopDiscount'
@@ -39,16 +39,13 @@ const workshopBatchSize = (quantity) => {
   return quantity > LARGE_MAX_LEVEL_THRESHOLD ? LARGE_BATCH_SIZE : SMALL_BATCH_SIZE
 }
 
-// Some Workshop upgrades' `quantity` (max level) was corrected upward via
-// WORKSHOP_QUANTITY_OVERRIDES (OQ-13), but tower-idle-toolkit's
-// WORKSHOP_LEVELS cost table wasn't extended to match, so it has no real
-// cost for levels beyond its own (lower) idea of max -- currently Health,
-// Health Regen, Recovery Amount, and Max Recovery (see OQ-1). The entry at
-// that old ceiling itself has `coins: 0` (its own "nothing more to buy"
-// sentinel, from before the correction) rather than being absent, so a
-// present-but-non-positive cost is treated the same as a missing one.
+// WORKSHOP_LEVELS is mytower.app-sourced (OQ-39) -- a plain array per
+// upgrade, every index 0..quantity-1 populated, the same shape
+// ENHANCEMENT_LEVELS already uses. Unlike the old tower-idle-toolkit
+// source, there's no gap/sentinel case to guard against here; the `> 0`
+// check is just a defensive guard against a missing or malformed entry.
 const workshopCostAt = (name, level) => {
-  const coins = WORKSHOP_LEVELS[name]?.[String(level)]?.coins
+  const coins = WORKSHOP_LEVELS[name]?.[level]
   return coins > 0 ? coins : undefined
 }
 
@@ -287,8 +284,9 @@ function nextBatchCost(cursor) {
  * `ranked`) the moment its next batch can't be fully priced, whether that's
  * immediately (its currently entered level) or only after some simulated
  * purchases -- either way it's reported once, at the level it got stuck.
- * In practice this currently only ever happens for the four gapped
- * Workshop upgrades above; ENHANCEMENT_LEVELS and the Lab have no known gaps.
+ * Since the OQ-39 migration, WORKSHOP_LEVELS has no known gaps either (it
+ * never did for ENHANCEMENT_LEVELS or the Lab) -- `unknownCost` in
+ * practice should now stay empty outside a real future data gap.
  */
 export function getCheapestNextUpgrades(
   {

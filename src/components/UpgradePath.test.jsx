@@ -60,15 +60,14 @@ describe('UpgradePath', () => {
     expect(row).toHaveTextContent('Lv 1 → 11')
   })
 
-  it('lists an upgrade with unavailable cost data separately, not in the ranked list', () => {
-    window.localStorage.setItem('workshopLevels', JSON.stringify({ Health: 5000 }))
-    render(<UpgradePath />)
-
-    const list = screen.getByRole('list', { name: 'Recommended buy order' })
-    expect(within(list).queryByText('Health')).not.toBeInTheDocument()
-    expect(screen.getByText(/Cost data unavailable/)).toBeInTheDocument()
-    expect(screen.getByText('Health (Lv 5000)')).toBeInTheDocument()
-  })
+  // Health used to run past tower-idle-toolkit's cost-data ceiling at
+  // level 5000, giving this "unavailable cost data" branch (the
+  // .upgrade-path__unknown section) easy real-data coverage. The OQ-39
+  // migration to mytower.app-sourced data resolved that gap -- every
+  // Workshop upgrade now has real cost data all the way to its own max --
+  // so this exact scenario can no longer be reproduced through the
+  // component's real data path. See cheapestNextUpgrades.test.js for the
+  // equivalent removal on the util side.
 
   it("buying a row adds its batch size to the upgrade's entered level and re-ranks (OQ-18)", async () => {
     const user = userEvent.setup()

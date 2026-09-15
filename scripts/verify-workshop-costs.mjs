@@ -1,19 +1,21 @@
 #!/usr/bin/env node
 /**
- * Cross-checks this project's Workshop upgrade cost data (WORKSHOP_LEVELS,
- * from tower-idle-toolkit) against mytower.app's independently-hosted
- * per-level cost tables -- see Open-Questions.md's OQ-1 and
- * OQ-1-Checklist.md, which this script is built to help work through.
+ * Cross-checks this project's own shipped Workshop upgrade cost data
+ * (src/data/workshopLevels.js) against mytower.app's live, independently-
+ * hosted per-level cost tables -- a lightweight drift detector, not the
+ * full re-sync tool (see extract-workshop-data.mjs for that). Both are
+ * ultimately sourced from mytower.app (Open-Questions.md's OQ-39), so
+ * this now answers "has mytower.app's own data moved since we last
+ * pulled it" (e.g. after a game patch), not "does our data match an
+ * independent source" -- that comparison is what originally caught the
+ * OQ-38 Wall Health bug, back when this data still came from
+ * tower-idle-toolkit.
  *
- * For every upgrade in workshopCategories.js, checks the exact 3 spot-check
- * levels the checklist already defines (Lv1, a mid-range level, and the
- * highest level covered by our own data) by computing our own
- * formatCoins(WORKSHOP_LEVELS[name][level].coins) and comparing it against
- * the same level's displayed cost on mytower.app. Also probes the 4 known
- * GAP upgrades (Health, Health Regen, Recovery Amount, Max Recovery) at
- * their corrected, higher max level, to check whether mytower.app has real
- * cost data where tower-idle-toolkit's own table runs out (a `coins: 0`
- * sentinel past the old ceiling -- see cheapestNextUpgrades.js).
+ * For every upgrade in workshopCategories.js, checks the exact 3
+ * spot-check levels OQ-1-Checklist.md defines (Lv1, a mid-range level,
+ * and the max level) by computing our own
+ * formatCoins(WORKSHOP_LEVELS[name][level]) and comparing it against the
+ * same level's displayed cost on mytower.app right now.
  *
  * Both mytower.app's displayed values and the real in-game display are
  * rounded/truncated to ~3 significant digits with a suffix (never raw
@@ -28,33 +30,19 @@
  * upgrades.
  *
  * Usage (the --import preload lets plain Node resolve this project's own
- * extensionless relative imports, e.g. `./workshopQuantityOverrides`, the
- * same way Vite already does -- see scripts/lib/resolve-extensionless.mjs):
+ * extensionless relative imports the way Vite already does -- see
+ * scripts/lib/resolve-extensionless.mjs):
  *   npm run verify:workshop-costs                      # every upgrade
  *   npm run verify:workshop-costs -- Damage "Rend Armor Chance"  # a subset, by name
  */
 import { chromium } from 'playwright'
-import { WORKSHOP_LEVELS } from 'tower-idle-toolkit'
 import { fileURLToPath } from 'node:url'
 import { WORKSHOP_CATEGORIES } from '../src/data/workshopCategories.js'
+import { WORKSHOP_LEVELS } from '../src/data/workshopLevels.js'
 import { formatCoins } from '../src/utils/formatCoins.js'
 
 const BASE_URL = 'https://mytower.app'
 const NAV_DELAY_MS = 350
-
-// The 4 upgrades whose corrected quantity (OQ-13) runs past
-// tower-idle-toolkit's own cost-table ceiling -- WORKSHOP_LEVELS has no
-// real cost data beyond `oldCeiling` for these (a `coins: 0` sentinel
-// sits at that index instead). The checklist's own Lv1/mid/max spot-check
-// levels for these 4 are chosen from the *old* ceiling, not the corrected
-// quantity -- matched here so this script checks the same levels the
-// checklist already documents.
-const GAP_CEILINGS = {
-  Health: 5000,
-  'Health Regen': 5000,
-  'Recovery Amount': 60,
-  'Max Recovery': 50,
-}
 
 const filterNames = process.argv.slice(2)
 
@@ -120,7 +108,7 @@ async function dismissConsent(page) {
 }
 
 // mytower's "Level N" row shows the cost of buying from N-1 to N -- the
-// same value as our own WORKSHOP_LEVELS[name][N-1].coins. So checking our
+// same value as our own WORKSHOP_LEVELS[name][N-1]. So checking our
 // index L means reading mytower's row "Level L+1". The grid is virtualized
 // (only ~17 rows ever exist in the DOM), reachable by setting `scrollTop`
 // proportionally -- confirmed exact against a known value (Damage, index
@@ -165,10 +153,17 @@ async function main() {
       continue
     }
 
-    const gapCeiling = GAP_CEILINGS[upgrade.name]
-    const ceiling = gapCeiling ?? upgrade.quantity
-    for (const ourIndex of checklistLevels(ceiling)) {
-      const ours = formatCoins(WORKSHOP_LEVELS[upgrade.name]?.[String(ourIndex)]?.coins ?? 0).replace(' coins', '')
+    if (maxLevelOnPage !== upgrade.quantity) {
+      results.push({
+        name: upgrade.name,
+        level: 'M',
+        status: 'MAX LEVEL DRIFT',
+        detail: `ours=${upgrade.quantity} mytower=${maxLevelOnPage}`,
+      })
+    }
+
+    for (const ourIndex of checklistLevels(upgrade.quantity)) {
+      const ours = formatCoins(WORKSHOP_LEVELS[upgrade.name]?.[ourIndex] ?? 0).replace(' coins', '')
       const mytowerLevel = ourIndex + 1
       const theirs = await readMytowerCost(page, mytowerLevel, maxLevelOnPage)
       if (theirs === null) {
@@ -176,23 +171,6 @@ async function main() {
         continue
       }
       results.push({ name: upgrade.name, level: ourIndex, status: classify(ours, theirs), detail: `ours=${ours} theirs=${theirs}` })
-    }
-
-    // GAP probe: our own quantity (post-OQ-13 correction) is higher than
-    // the ceiling WORKSHOP_LEVELS actually has cost data for -- check
-    // whether mytower.app's own max level agrees with our corrected
-    // quantity, and if so, whether it has real cost data at our own
-    // corrected max-1 index, which we currently have none for at all.
-    if (gapCeiling !== undefined) {
-      const correctedIndex = upgrade.quantity - 1
-      const mytowerLevel = correctedIndex + 1
-      const theirs = maxLevelOnPage >= mytowerLevel ? await readMytowerCost(page, mytowerLevel, maxLevelOnPage) : null
-      results.push({
-        name: upgrade.name,
-        level: `${correctedIndex} (GAP)`,
-        status: theirs ? 'GAP DATA FOUND' : 'still no data',
-        detail: `mytower max=${maxLevelOnPage}, our quantity=${upgrade.quantity}${theirs ? `, mytower cost at Lv${correctedIndex}=${theirs}` : ''}`,
-      })
     }
 
     await page.waitForTimeout(NAV_DELAY_MS)
@@ -213,7 +191,8 @@ async function main() {
   console.log('\n=== Summary (per upgrade) ===')
   for (const [name, rows] of byUpgrade) {
     const spotCheckRows = rows.filter((r) => r.status === 'MATCH' || r.status === 'NEAR (rounding)' || r.status === 'MISMATCH')
-    const clean = spotCheckRows.length > 0 && spotCheckRows.every((r) => r.status === 'MATCH' || r.status === 'NEAR (rounding)')
+    const noDrift = rows.every((r) => r.status !== 'MAX LEVEL DRIFT')
+    const clean = noDrift && spotCheckRows.length > 0 && spotCheckRows.every((r) => r.status === 'MATCH' || r.status === 'NEAR (rounding)')
     console.log(`${clean ? 'CLEAN' : 'REVIEW'.padEnd(6)} ${name}`)
   }
 }
