@@ -21,6 +21,7 @@ export function UpgradeLevelInput({ upgrade, level, onChange, formatValue, nameS
         onChange={(event) =>
           onChange(clampLevel(event.target.value, upgrade.quantity))
         }
+        onWheel={(event) => event.target.blur()}
       />
       {hasMax && <span className="upgrade-row__max">/ {upgrade.quantity}</span>}
       {formatValue && <span className="upgrade-row__value">{formatValue(level)}</span>}

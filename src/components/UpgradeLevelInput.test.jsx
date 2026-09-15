@@ -58,4 +58,15 @@ describe('UpgradeLevelInput', () => {
     )
     expect(screen.getByText('40!')).toBeInTheDocument()
   })
+
+  it('blurs the input on scroll, so the wheel scrolls the page instead of changing the value (OQ-36)', () => {
+    render(<UpgradeLevelInput upgrade={upgrade} level={0} onChange={() => {}} />)
+    const input = screen.getByLabelText('Thorns')
+
+    input.focus()
+    expect(input).toHaveFocus()
+
+    fireEvent.wheel(input)
+    expect(input).not.toHaveFocus()
+  })
 })
