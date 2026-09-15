@@ -12,7 +12,9 @@
     "test:e2e": "playwright test",
     "verify:workshop-costs": "node --import ./scripts/lib/resolve-extensionless.mjs scripts/verify-workshop-costs.mjs",
     "extract:workshop-data": "node --import ./scripts/lib/resolve-extensionless.mjs scripts/extract-workshop-data.mjs",
-    "generate:workshop-data-files": "node --import ./scripts/lib/resolve-extensionless.mjs scripts/generate-workshop-data-files.mjs"
+    "generate:workshop-data-files": "node --import ./scripts/lib/resolve-extensionless.mjs scripts/generate-workshop-data-files.mjs",
+    "extract:enhancement-data": "node --import ./scripts/lib/resolve-extensionless.mjs scripts/extract-enhancement-data.mjs",
+    "generate:enhancement-data-files": "node --import ./scripts/lib/resolve-extensionless.mjs scripts/generate-enhancement-data-files.mjs"
   },
   "dependencies": {
     "react": "^19.2.8",

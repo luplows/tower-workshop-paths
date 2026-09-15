@@ -1,6 +1,6 @@
 # OQ-39 Plan: Source Workshop, Enhancement, and Lab data from mytower.app instead of `tower-idle-toolkit`
 
-Companion plan for [Open-Questions.md](Open-Questions.md)'s OQ-39 — mirrors how [`OQ-1-Checklist.md`](OQ-1-Checklist.md) tracks OQ-1's own work. **Status: Phase 1 (Workshop) done. Phase 2 (Enhancement) not started.**
+Companion plan for [Completed-Questions.md](Completed-Questions.md)'s OQ-39 — mirrors how [`OQ-1-Checklist.md`](OQ-1-Checklist.md) tracks OQ-1's own work. **Status: done — both phases complete.** Kept as a reference for *how* to re-run the migration (e.g. after a suspected game patch), not as an open task list anymore.
 
 ## Why
 
@@ -14,7 +14,7 @@ Only 4 files import it, across 4 distinct data categories:
 |---|---|---|---|
 | Workshop upgrade list, order, max level | `ATTACK_UPGRADES`/`DEFENSE_UPGRADES`/`UTILITY_UPGRADES` | `workshopCategories.js` | `/workshop` (name/order per tree) + each upgrade's own page (`M {max}`) |
 | Workshop per-level costs | `WORKSHOP_LEVELS` | `cheapestNextUpgrades.js` | `/workshop/upgrade/{tree}/{name}` |
-| Workshop discount Lab % | `LabValues` (`Workshop {Tree} Discount`) | `workshopDiscount.js` | `/labs/Workshop {Tree} Discount` (same page shape already used for Enhancement discount Labs, OQ-37 — not yet individually confirmed to exist for all 3 Workshop ones, but expected given the identical URL pattern) |
+| Workshop discount Lab % | `LabValues` (`Workshop {Tree} Discount`) | `workshopDiscount.js` | `/labs/Workshop {Tree} Discount` (confirmed to exist for all 3 trees during Phase 1, same page shape as the Enhancement discount Labs, OQ-37) |
 | Workshop upgrade-unlock groups (group names, one-time costs, upgrade membership — OQ-5) | `ATTACK_UNLOCKS`/`DEFENSE_UNLOCKS`/`UTILITY_UNLOCKS` | `workshopUnlockGroups.js` | **None found** — checked the upgrade pages, the Workshop input hub, and network requests for a hidden API; mytower.app's own calculator doesn't appear to model this mechanic at all |
 
 Enhancement data (`enhancementCategories.js`/`enhancementLevels.js`) is already independent of `tower-idle-toolkit` — hand-transcribed from the community Google Sheet (OQ-14). This migration re-sources it to mytower.app too, for one consistent, re-verifiable source instead of two.
@@ -53,18 +53,22 @@ The user found two candidate replacement sources for the Workshop upgrade-unlock
 - `scripts/verify-workshop-costs.mjs` updated to import from this project's own new `workshopLevels.js` instead of `tower-idle-toolkit` — its role shifted from "does our data match mytower.app" (the original OQ-1/OQ-38 cross-check) to "does our *shipped* data still match mytower.app's *live* data" (a drift detector for after a future patch), since both now come from the same place. Also gained a `MAX LEVEL DRIFT` check (comparing our stored `quantity` against mytower's live `M` field) as a natural side effect of no longer needing the old gap-specific logic.
 - **Bundle size increased** (2,526.55 kB → 2,755.90 kB minified) rather than decreased — carrying both the new generated data and the still-needed `tower-idle-toolkit` (for unlock groups) adds up to more than `tower-idle-toolkit` alone did. OQ-12's bundle-size goal stays unmet until/unless the unlock-groups dependency is ever fully dropped.
 
-### Phase 2: Enhancement costs
+### Phase 2: Enhancement costs — ✅ done
 
-- Same extraction approach against `/workshop/enhancement/{tree}/{name}`, all 18 categories.
-- Replaces `enhancementLevels.js`'s Google-Sheet-sourced cost arrays. `enhancementCategories.js`'s `unlocksAt` thresholds (OQ-6, the 50B/500B/5T/50T/500T progression) and `quantity` (max level) values are community-sheet-specific constructs not obviously present on mytower.app in the same shape — needs checking whether mytower.app's own Enhancement pages expose an equivalent threshold/max, or whether these stay sourced from the Google Sheet even after Phase 2 (a partial migration, not a full one, for this file specifically).
-- Test impact: `enhancementLevels.test.js`'s snapshot, plus any test fixture using specific real Enhancement costs (e.g. `getPrioritizedNextUpgrades.test.js`'s Coin Bonus/Cash Bonus values used throughout the eHP scoring tests) — same re-verification need as Phase 1.
+- Confirmed first, before building anything: mytower.app's Enhancement pages (`/workshop/enhancement/{tree}/{name}`) have real per-level cost data (spot-checked against Rend Armor's existing values — exact match) and their own `M` (max level) field, but — like Workshop's unlock groups in Phase 1 — no concept of the OQ-6 cumulative-spend threshold-gating mechanic anywhere (checked the pages directly for any lock/unlock/threshold language; found none). So `enhancementCategories.js` (names, `quantity`, `unlocksAt`) is **untouched** — only `enhancementLevels.js`'s cost arrays moved.
+- `scripts/lib/mytower-scrape.mjs` (new): the scroll-and-read scrape technique factored out of `extract-workshop-data.mjs` (unchanged behavior, just no longer duplicated) so Phase 2 could reuse it directly rather than re-implementing it.
+- `scripts/extract-enhancement-data.mjs` (new): full per-level extraction for all 18 Enhancement categories (~8,360 data points). mytower.app's own category names don't match this project's 1:1 (most add a trailing " +", but not all -- `Rend Armor` → `Rend Armor Max`, `Orb Size` stays as-is, `Cells/Kill Bonus` → `Cells / Kill Bonus`) -- `ENHANCEMENT_NAME_ALIASES` in the script has the full, verified mapping, confirmed against mytower.app's own `/workshop` hub page listing rather than guessed from the "+" pattern. Full run: all 18 categories, zero missing levels, zero errors, well under 3 minutes (much smaller volume than Phase 1's Workshop upgrades).
+- `scripts/generate-enhancement-data-files.mjs` (new): turns that cache into `enhancementLevels.js` alone (no separate "category list" file needed, since `enhancementCategories.js` isn't touched) -- keeps this project's own category names as keys throughout, so **no consuming code needed to change at all** (`cheapestNextUpgrades.js`, `enhancementTreeSpend.js` untouched), only the data itself. A much more contained change than Phase 1. The generator also hard-fails if a category's mytower.app max level doesn't match `enhancementCategories.js`'s `quantity` -- it didn't, for any of the 18.
+- Test fallout: only the `enhancementLevels.test.js` snapshot needed updating (`vitest -u`) -- every other test, including several with hardcoded real Enhancement costs (e.g. Coin Bonus's 5B/6.25B/12.46B/... sequence), passed unchanged. The snapshot diff itself was almost entirely cosmetic floating-point-representation noise at magnitudes (1e21+) far beyond any real precision -- no evidence the underlying data actually changed at any level that matters.
 
-### Phase 1.5 / future: fully remove `tower-idle-toolkit`
+### Future (not planned, not blocking anything): fully remove `tower-idle-toolkit`
 
 - Only possible if the Workshop upgrade-unlock group data (group names, one-time costs, upgrade membership) ever gets a real replacement source — two candidates were already investigated and rejected (see "Alternative sources considered" above). Not actively pursued; `tower-idle-toolkit` staying as a small, single-purpose dependency is the accepted long-term state, not a stopgap.
 - If a source does turn up later: replace `workshopUnlockGroups.js`'s import, remove `tower-idle-toolkit` from `package.json`, and get the real bundle-size win noted in OQ-12.
 
-## Open items before Phase 2 starts
+## Re-running this after a suspected game patch
 
-- Whether `enhancementCategories.js`'s `unlocksAt` thresholds (OQ-6) and `quantity` values are re-sourceable from mytower.app at all, or need to stay Google-Sheet-sourced even after Phase 2 (a partial migration for that one file) — not yet checked.
-- Decide the Enhancement data files' exact shape/location, following the same conventions Phase 1 landed on (`workshopUpgradeList.js` + `workshopLevels.js`).
+1. `npm run extract:workshop-data` (~9 min) then `npm run generate:workshop-data-files`, or `npm run extract:enhancement-data` (~3 min) then `npm run generate:enhancement-data-files` — either independently, as needed.
+2. Review the diff in the regenerated `src/data/*.js` files like any other data change.
+3. Run `npm test -- -u` if `workshopCategories.test.js` or `enhancementLevels.test.js`'s snapshots need updating, and review that diff too — a snapshot update should always be a deliberate, reviewed choice, not a rubber stamp.
+4. `enhancementCategories.js` (names, `quantity`, OQ-6 `unlocksAt` thresholds) and `workshopUnlockGroups.js` (`tower-idle-toolkit`-sourced) aren't touched by either extraction — they'd need their own separate re-verification if ever suspected stale.

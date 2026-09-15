@@ -51,14 +51,14 @@ describe('ENHANCEMENT_LEVELS', () => {
   })
 
   // Change-detection tripwire, not a correctness assertion: this data is
-  // hand-transcribed from the community sheet's own condensed display
-  // values (see the comment atop enhancementLevels.js), so there's no
-  // independent source to verify it against here -- this only catches an
-  // *accidental* future edit (a stray keystroke, a dropped/duplicated row),
-  // the same role workshopCategories.test.js's and
-  // enhancementCategories.test.js's snapshots play for their own data. A
-  // snapshot update should always be a deliberate, reviewed choice -- see
-  // Open-Questions.md.
+  // generated from mytower.app (see the comment atop enhancementLevels.js,
+  // Completed-Questions.md's OQ-39) via extract-enhancement-data.mjs +
+  // generate-enhancement-data-files.mjs, not hand-typed -- a snapshot diff
+  // here should only ever come from deliberately re-running those scripts
+  // (e.g. after a suspected game patch), never a stray hand-edit. The same
+  // role workshopCategories.test.js's and enhancementCategories.test.js's
+  // snapshots play for their own data. A snapshot update should always be
+  // a deliberate, reviewed choice.
   it('matches the known per-level cost data (snapshot)', () => {
     expect(ENHANCEMENT_LEVELS).toMatchSnapshot()
   })

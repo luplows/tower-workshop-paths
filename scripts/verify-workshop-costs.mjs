@@ -4,7 +4,7 @@
  * (src/data/workshopLevels.js) against mytower.app's live, independently-
  * hosted per-level cost tables -- a lightweight drift detector, not the
  * full re-sync tool (see extract-workshop-data.mjs for that). Both are
- * ultimately sourced from mytower.app (Open-Questions.md's OQ-39), so
+ * ultimately sourced from mytower.app (Completed-Questions.md's OQ-39), so
  * this now answers "has mytower.app's own data moved since we last
  * pulled it" (e.g. after a game patch), not "does our data match an
  * independent source" -- that comparison is what originally caught the

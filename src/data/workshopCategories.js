@@ -3,7 +3,7 @@ import { WORKSHOP_UPGRADE_LIST } from './workshopUpgradeList'
 /**
  * The Workshop tab's categories, in the same order and grouping shown
  * in-game. Each upgrade's `quantity` (max level) comes from mytower.app
- * (see workshopUpgradeList.js, Open-Questions.md's OQ-39), replacing
+ * (see workshopUpgradeList.js, Completed-Questions.md's OQ-39), replacing
  * tower-idle-toolkit -- it's enforced as a hard input limit (see
  * UpgradeLevelInput), so a stale value would incorrectly reject a valid
  * entry -- see Project-Outline.md.

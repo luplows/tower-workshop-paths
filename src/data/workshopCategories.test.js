@@ -39,7 +39,7 @@ describe('WORKSHOP_CATEGORIES', () => {
   // reorders an upgrade or changes a quantity, so an upstream game patch
   // gets a reviewable diff instead of silently reshaping the Workshop. A
   // snapshot update here should always be a deliberate, reviewed choice
-  // -- see Open-Questions.md's OQ-39.
+  // -- see Completed-Questions.md's OQ-39.
   it('matches the known upgrade/quantity structure (snapshot)', () => {
     const structure = WORKSHOP_CATEGORIES.map((category) => ({
       id: category.id,
