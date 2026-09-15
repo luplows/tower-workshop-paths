@@ -255,6 +255,22 @@ describe('App', () => {
     expect(screen.queryByText('Workshop Enhancements Lab')).not.toBeInTheDocument()
   })
 
+  it('unlocking Workshop Enhancements from the Labs page is reflected on the Enhance screen and the Path list too', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.click(screen.getByRole('tab', { name: 'Labs' }))
+    await user.type(screen.getByLabelText('Workshop Enhancements Lab'), '1')
+
+    await user.click(screen.getByRole('tab', { name: 'Input' }))
+    await user.click(screen.getByRole('tab', { name: 'Enhance' }))
+    expect(screen.getByLabelText('Damage +')).toBeInTheDocument()
+    expect(screen.queryByText('Workshop Enhancements are locked')).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('tab', { name: 'Path' }))
+    expect(screen.queryByText('Workshop Enhancements Lab')).not.toBeInTheDocument()
+  })
+
   describe('theme toggle', () => {
     it('defaults to Auto, leaving <html> without a data-theme override', () => {
       render(<App />)

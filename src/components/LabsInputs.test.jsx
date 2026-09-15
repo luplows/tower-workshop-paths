@@ -67,4 +67,48 @@ describe('LabsInputs', () => {
 
     expect(screen.getByLabelText('Defense Discount Lab')).toHaveValue(99)
   })
+
+  describe('Workshop Enhancements unlock (OQ-31)', () => {
+    it('shows the unlock as a plain 0/1 Lab, matching the discount Labs\' own shape -- Locked at level 0', () => {
+      render(<LabsInputs />)
+
+      const unlockInput = screen.getByLabelText('Workshop Enhancements Lab')
+      expect(unlockInput).toHaveValue(0)
+      expect(unlockInput).toHaveAttribute('max', '1')
+      expect(screen.getByText('Locked')).toBeInTheDocument()
+    })
+
+    it('reflects an already-unlocked state from localStorage as Unlocked', () => {
+      window.localStorage.setItem('enhancementLabLevel', JSON.stringify(1))
+      render(<LabsInputs />)
+
+      expect(screen.getByLabelText('Workshop Enhancements Lab')).toHaveValue(1)
+      expect(screen.getByText('Unlocked')).toBeInTheDocument()
+    })
+
+    it('persists an entered value under enhancementLabLevel, independent of the discount Labs', async () => {
+      const user = userEvent.setup()
+      const { unmount } = render(<LabsInputs />)
+
+      const unlockInput = screen.getByLabelText('Workshop Enhancements Lab')
+      await user.clear(unlockInput)
+      await user.type(unlockInput, '1')
+
+      expect(JSON.parse(window.localStorage.getItem('enhancementLabLevel'))).toBe(1)
+      expect(JSON.parse(window.localStorage.getItem('workshopDiscountLabs'))).toEqual({})
+
+      unmount()
+      render(<LabsInputs />)
+      expect(screen.getByLabelText('Workshop Enhancements Lab')).toHaveValue(1)
+      expect(screen.getByText('Unlocked')).toBeInTheDocument()
+    })
+
+    it('hard-caps the entered value at 1, its own max', () => {
+      render(<LabsInputs />)
+
+      fireEvent.change(screen.getByLabelText('Workshop Enhancements Lab'), { target: { value: '99' } })
+
+      expect(screen.getByLabelText('Workshop Enhancements Lab')).toHaveValue(1)
+    })
+  })
 })

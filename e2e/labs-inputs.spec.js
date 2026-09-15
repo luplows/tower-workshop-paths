@@ -59,3 +59,23 @@ test('reflects an entered discount Lab level in the Path list (OQ-4)', async ({ 
   await expect(firstRow).toContainText('Multishot Targets')
   await expect(firstRow).toContainText('405 coins')
 })
+
+test('unlocking Workshop Enhancements here shows up on the Enhance screen and the Path list too (OQ-31)', async ({
+  page,
+}) => {
+  const unlockInput = page.getByLabel('Workshop Enhancements Lab', { exact: true })
+  await expect(unlockInput).toHaveValue('0')
+  await expect(page.getByText('Locked', { exact: true })).toBeVisible()
+
+  await unlockInput.fill('1')
+  await unlockInput.blur()
+  await expect(page.getByText('Unlocked', { exact: true })).toBeVisible()
+
+  await page.getByRole('tab', { name: 'Input', exact: true }).click()
+  await page.getByRole('tab', { name: 'Enhance', exact: true }).click()
+  await expect(page.getByLabel('Damage +', { exact: true })).toBeVisible()
+  await expect(page.getByText('Workshop Enhancements are locked')).not.toBeVisible()
+
+  await page.getByRole('tab', { name: 'Path', exact: true }).click()
+  await expect(page.getByText('Workshop Enhancements Lab')).not.toBeVisible()
+})
