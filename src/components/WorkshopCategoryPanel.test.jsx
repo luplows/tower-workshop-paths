@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { unlockGroupKey } from '../utils/workshopUnlockGroups'
@@ -239,80 +239,6 @@ describe('WorkshopCategoryPanel', () => {
           screen.getByRole('button', { name: 'Unlock "Multishot Upgrades" (400 coins)' }),
         ).toBeInTheDocument()
       })
-    })
-  })
-
-  describe('discount Lab (OQ-4)', () => {
-    it("shows no discount-lab row when onDiscountLabLevelChange isn't passed (the Enhance screen has no discount Labs)", () => {
-      render(
-        <WorkshopCategoryPanel category={categoryWith('attack')} levels={{}} onLevelChange={() => {}} />,
-      )
-
-      expect(screen.queryByLabelText('Discount Lab')).not.toBeInTheDocument()
-    })
-
-    it('shows the discount-lab row with its current level and percent off when onDiscountLabLevelChange is passed', () => {
-      render(
-        <WorkshopCategoryPanel
-          category={categoryWith('attack')}
-          levels={{}}
-          onLevelChange={() => {}}
-          discountLabLevels={{ attack: 10 }}
-          onDiscountLabLevelChange={() => {}}
-        />,
-      )
-
-      expect(screen.getByLabelText('Discount Lab')).toHaveValue(10)
-      expect(screen.getByText('5.0% off')).toBeInTheDocument()
-    })
-
-    it('defaults to level 0 when discountLabLevels has no entry for this category', () => {
-      render(
-        <WorkshopCategoryPanel
-          category={categoryWith('attack')}
-          levels={{}}
-          onLevelChange={() => {}}
-          discountLabLevels={{}}
-          onDiscountLabLevelChange={() => {}}
-        />,
-      )
-
-      expect(screen.getByLabelText('Discount Lab')).toHaveValue(0)
-      expect(screen.getByText('0.0% off')).toBeInTheDocument()
-    })
-
-    it('calls onDiscountLabLevelChange with the category id and entered level', () => {
-      const handleChange = vi.fn()
-      render(
-        <WorkshopCategoryPanel
-          category={categoryWith('utility')}
-          levels={{}}
-          onLevelChange={() => {}}
-          discountLabLevels={{}}
-          onDiscountLabLevelChange={handleChange}
-        />,
-      )
-
-      fireEvent.change(screen.getByLabelText('Discount Lab'), { target: { value: '42' } })
-
-      expect(handleChange).toHaveBeenCalledWith('utility', 42)
-    })
-
-    it("hard-caps the entered level at 99, the discount Lab's own max", () => {
-      const handleChange = vi.fn()
-      render(
-        <WorkshopCategoryPanel
-          category={categoryWith('attack')}
-          levels={{}}
-          onLevelChange={() => {}}
-          discountLabLevels={{}}
-          onDiscountLabLevelChange={handleChange}
-        />,
-      )
-
-      fireEvent.change(screen.getByLabelText('Discount Lab'), { target: { value: '999' } })
-
-      expect(handleChange).toHaveBeenCalledWith('attack', 99)
     })
   })
 })

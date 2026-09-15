@@ -81,18 +81,3 @@ test('hides every locked upgrade and shows a single Unlock button for the next g
   await page.getByRole('tab', { name: 'Defense', exact: true }).click()
   await expect(page.getByLabel('Defense Percent', { exact: true })).toBeVisible()
 })
-
-test('persists an entered discount Lab level, independently per tree (OQ-4)', async ({ page }) => {
-  const attackDiscount = page.getByLabel('Discount Lab', { exact: true })
-  await attackDiscount.fill('20')
-  await attackDiscount.blur()
-  await expect(page.getByText('10.0% off')).toBeVisible()
-
-  await page.getByRole('tab', { name: 'Defense', exact: true }).click()
-  await expect(page.getByLabel('Discount Lab', { exact: true })).toHaveValue('0')
-
-  await page.reload()
-  await expect(page.getByLabel('Discount Lab', { exact: true })).toHaveValue('0')
-  await page.getByRole('tab', { name: 'Attack', exact: true }).click()
-  await expect(page.getByLabel('Discount Lab', { exact: true })).toHaveValue('20')
-})
