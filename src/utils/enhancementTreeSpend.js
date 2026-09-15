@@ -3,7 +3,7 @@ import { ENHANCEMENT_LEVELS } from '../data/enhancementLevels'
 // Coins already spent on a single Enhancement category, i.e. the cost of
 // every level bought so far (levels 0 through currentLevel-1) -- used to
 // gate later categories in the same tree behind cumulative tree spend (see
-// Project-Outline.md's "Workshop Enhancements" section, OQ-6). A category
+// Completed-Questions.md's OQ-6). A category
 // with no cost data (e.g. a plain Workshop upgrade, which shares this same
 // category shape but isn't in ENHANCEMENT_LEVELS at all) contributes 0,
 // which is harmless -- it just means this function is a no-op for callers
