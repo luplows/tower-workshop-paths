@@ -402,4 +402,99 @@ describe('getPrioritizedNextUpgrades (OQ-2)', () => {
       ])
     })
   })
+
+  describe('Enhancement discount Labs (OQ-37)', () => {
+    it("applies a tree's discount to that tree's own Enhancement category costs", () => {
+      // Rend Armor (Attack) costs 5,000,000,000 at level 0 undiscounted --
+      // level 10 in the Attack Enhancement discount Lab is 3% off.
+      const enh = maxedEnhancementLevels()
+      enh['Rend Armor'] = 0
+
+      const { ranked } = getPrioritizedNextUpgrades(
+        {
+          workshopLevels: maxedWorkshopLevels(),
+          unlockedGroups: allUnlockedGroups(),
+          enhancementLabLevel: 1,
+          enhancementLevels: enh,
+          enhancementDiscountLabLevels: { attack: 10 },
+        },
+        { rowCap: 1 },
+      )
+
+      expect(ranked).toEqual([
+        expect.objectContaining({ name: 'Rend Armor', cost: 5_000_000_000 * 0.97 }),
+      ])
+    })
+
+    it("doesn't apply one tree's Enhancement discount to a different tree's Enhancement costs", () => {
+      const enh = maxedEnhancementLevels()
+      enh['Rend Armor'] = 0
+
+      const { ranked } = getPrioritizedNextUpgrades(
+        {
+          workshopLevels: maxedWorkshopLevels(),
+          unlockedGroups: allUnlockedGroups(),
+          enhancementLabLevel: 1,
+          enhancementLevels: enh,
+          enhancementDiscountLabLevels: { defense: 100, utility: 100 },
+        },
+        { rowCap: 1 },
+      )
+
+      expect(ranked).toEqual([expect.objectContaining({ name: 'Rend Armor', cost: 5_000_000_000 })])
+    })
+
+    it("doesn't apply an Enhancement discount to Workshop costs, even for the matching tree id", () => {
+      const workshopLevels = maxedWorkshopLevels()
+      workshopLevels.Orbs = 0
+
+      const { ranked } = getPrioritizedNextUpgrades(
+        {
+          workshopLevels,
+          unlockedGroups: allUnlockedGroups(),
+          enhancementDiscountLabLevels: { defense: 100 },
+        },
+        { rowCap: 1 },
+      )
+
+      expect(ranked).toEqual([expect.objectContaining({ name: 'Orbs', cost: 3000 })])
+    })
+
+    it("doesn't apply an Enhancement discount to the Enhancement Lab's flat cost", () => {
+      const { ranked } = getPrioritizedNextUpgrades(
+        {
+          workshopLevels: maxedWorkshopLevels(),
+          unlockedGroups: allUnlockedGroups(),
+          enhancementDiscountLabLevels: { attack: 100, defense: 100, utility: 100 },
+        },
+        { rowCap: 1 },
+      )
+
+      expect(ranked).toEqual([
+        expect.objectContaining({ source: 'lab', name: 'Workshop Enhancements Lab', cost: 5_000_000_000 }),
+      ])
+    })
+
+    it("discounts Cash Bonus/Coin Bonus's cost in the locked-base critical-path calculation, lowering the point the Lab overtakes a cheap Workshop upgrade", () => {
+      // Same fixture/reasoning as "overtakes once nothing cheaper..." above,
+      // but with a maxed Utility Enhancement discount Lab (30% off): the
+      // effective cost of reaching Coin Bonus drops from ~65.54B to exactly
+      // 47.378B -- the Lab's own 5B (never discounted, not an Enhancement
+      // cost) + the 10 needed Cash Bonus levels' real 55.54B discounted 30%
+      // (38.878B) + Coin Bonus's own real level-1 cost (5B) discounted 30%
+      // (3.5B) -- so FALLBACK_RATIO of that (÷128) is exactly 370,140,625,
+      // not ~512M. The 10-level count itself is unchanged (OQ-6's threshold
+      // check stays undiscounted), only what those levels actually cost.
+      const { ranked } = getPrioritizedNextUpgrades(
+        { enhancementDiscountLabLevels: { utility: 100 } },
+        { rowCap: 50 },
+      )
+
+      const labIndex = ranked.findIndex((entry) => entry.source === 'lab')
+      expect(labIndex).toBeGreaterThan(0)
+      expect(ranked[labIndex]).toMatchObject({ name: 'Workshop Enhancements Lab', cost: 5_000_000_000 })
+      expect(ranked[labIndex - 1].cost).toBeLessThan(370_140_625)
+      expect(ranked[labIndex + 1].cost).toBeGreaterThan(370_140_625)
+    })
+  })
 })

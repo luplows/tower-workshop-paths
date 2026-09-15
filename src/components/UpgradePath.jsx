@@ -32,9 +32,10 @@ export function UpgradePath() {
     {},
   )
   // Read-only here -- discount Lab levels are only ever entered on the
-  // Upgrade screen (WorkshopInputs, OQ-4), same independent-read pattern as
+  // Labs page (LabsInputs, OQ-4/OQ-37), same independent-read pattern as
   // `unlockedGroups`/`enhancementLabLevel` above.
   const [discountLabLevels] = useLocalStorageState('workshopDiscountLabs', {})
+  const [enhancementDiscountLabLevels] = useLocalStorageState('enhancementDiscountLabs', {})
   const [pendingBuy, setPendingBuy] = useState(null)
   const { ranked, unknownCost } = getPrioritizedNextUpgrades({
     workshopLevels,
@@ -42,6 +43,7 @@ export function UpgradePath() {
     enhancementLabLevel,
     unlockedGroups,
     discountLabLevels,
+    enhancementDiscountLabLevels,
   })
 
   // Workshop and Enhancement names overlap (e.g. "Damage", "Health"), so a

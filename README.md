@@ -50,6 +50,7 @@ npm run test:e2e   # end-to-end tests (Playwright)
 
 - [x] Priority-weighted buy-order algorithm spanning Workshop upgrades and Enhancements
 - [x] Apply Workshop discount-lab savings to costs
+- [x] Apply Enhancement discount-lab savings to costs
 - [ ] Verify Workshop upgrade cost data against the current patch (OQ-1)
 - [ ] Full buy-out simulation from lifetime coins (OQ-8)
 - [ ] Verify the UI on a real mobile device (OQ-9)
@@ -71,5 +72,6 @@ Project Link: [https://github.com/luplows/tower-workshop-paths](https://github.c
 - [tower-idle-toolkit](https://www.npmjs.com/package/tower-idle-toolkit) for Workshop upgrade data
 - Discord user **@Mattew** and contributors to the community *The Tower - Idle Tower Defense* Workshop Google Sheet, the source for all Workshop Enhancement data (category list, thresholds, per-level costs)
 - Discord user **@QuietFanta** for the eHP priority ratios (shipped as this tool's default) and the reserved-for-later GC ratios, from the same sheet's "Desired Ratios" tab
+- [mytower.app](https://mytower.app) for the Enhancement discount Lab per-level values (linkback per [their terms](https://mytower.app))
 
 This project claims no credit for any of that data or those ratios — only for using them.
