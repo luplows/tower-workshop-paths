@@ -9,6 +9,7 @@ import {
 } from '../data/enhancementPriority'
 import { WORKSHOP_CATEGORIES } from '../data/workshopCategories'
 import { enhancementTreeSpend, isEnhancementCategoryUnlocked } from './enhancementTreeSpend'
+import { workshopDiscountMultiplier } from './workshopDiscount'
 import {
   isWorkshopUpgradeUnlocked,
   nextPurchasableGroup,
@@ -77,11 +78,30 @@ const enhancementLabCostAt = (name, level) => (level === 0 ? ENHANCEMENT_LAB_COS
  * module docstring below). Shared by both `getCheapestNextUpgrades` and
  * `getPrioritizedNextUpgrades` so the two selection strategies simulate
  * from the exact same starting candidate set.
+ *
+ * `discountLabLevels` (`{ attack, defense, utility }`, each 0-99, OQ-4) is
+ * applied only to a tree's own per-level Workshop upgrade costs -- not the
+ * same tree's unlock-group cost (a one-time fee, not an "upgrade" the
+ * discount Lab reduces -- see Open-Questions.md), not Enhancement costs
+ * (no discount Lab exists for those at all -- see OQ-37), and not the
+ * Enhancement Lab's flat cost.
  */
-function buildCandidateCursors({ workshopLevels, enhancementLevels, enhancementLabLevel, unlockedGroups }) {
+function buildCandidateCursors({
+  workshopLevels,
+  enhancementLevels,
+  enhancementLabLevel,
+  unlockedGroups,
+  discountLabLevels = {},
+}) {
   const cursors = new Map()
 
   for (const category of WORKSHOP_CATEGORIES) {
+    const discountMultiplier = workshopDiscountMultiplier(category.id, discountLabLevels[category.id] ?? 0)
+    const discountedWorkshopCostAt = (name, level) => {
+      const coins = workshopCostAt(name, level)
+      return coins === undefined ? undefined : coins * discountMultiplier
+    }
+
     for (const upgrade of category.upgrades) {
       if (!isWorkshopUpgradeUnlocked(category.id, upgrade.name, unlockedGroups)) continue
       const currentLevel = workshopLevels[upgrade.name] ?? 0
@@ -94,7 +114,7 @@ function buildCandidateCursors({ workshopLevels, enhancementLevels, enhancementL
           batchSize: workshopBatchSize(upgrade.quantity),
           categoryId: category.id,
           categoryLabel: category.label,
-          costAt: workshopCostAt,
+          costAt: discountedWorkshopCostAt,
         })
       }
     }
@@ -259,10 +279,17 @@ export function getCheapestNextUpgrades(
     enhancementLevels = {},
     enhancementLabLevel = 0,
     unlockedGroups = {},
+    discountLabLevels = {},
   } = {},
   { rowCap = DEFAULT_ROW_CAP } = {},
 ) {
-  const cursors = buildCandidateCursors({ workshopLevels, enhancementLevels, enhancementLabLevel, unlockedGroups })
+  const cursors = buildCandidateCursors({
+    workshopLevels,
+    enhancementLevels,
+    enhancementLabLevel,
+    unlockedGroups,
+    discountLabLevels,
+  })
 
   const ranked = []
   const unknownCost = []
@@ -509,10 +536,17 @@ export function getPrioritizedNextUpgrades(
     enhancementLevels = {},
     enhancementLabLevel = 0,
     unlockedGroups = {},
+    discountLabLevels = {},
   } = {},
   { rowCap = DEFAULT_ROW_CAP } = {},
 ) {
-  const cursors = buildCandidateCursors({ workshopLevels, enhancementLevels, enhancementLabLevel, unlockedGroups })
+  const cursors = buildCandidateCursors({
+    workshopLevels,
+    enhancementLevels,
+    enhancementLabLevel,
+    unlockedGroups,
+    discountLabLevels,
+  })
 
   const ranked = []
   const unknownCost = []

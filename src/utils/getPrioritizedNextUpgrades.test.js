@@ -311,4 +311,95 @@ describe('getPrioritizedNextUpgrades (OQ-2)', () => {
       expect(ranked.map((e) => e.cost)).toEqual([5_000_000_000, 6_250_000_000, 12_460_000_000])
     })
   })
+
+  describe('Workshop discount Labs (OQ-4)', () => {
+    it("applies a tree's discount to that tree's own Workshop upgrade costs", () => {
+      // Multishot Targets (Attack) costs 450 at level 0 undiscounted --
+      // level 10 in the Attack discount Lab is 5% off (450 x 0.95).
+      const workshopLevels = maxedWorkshopLevels()
+      delete workshopLevels['Multishot Targets']
+
+      const { ranked } = getPrioritizedNextUpgrades(
+        {
+          workshopLevels,
+          unlockedGroups: allUnlockedGroups(),
+          discountLabLevels: { attack: 10 },
+        },
+        { rowCap: 1 },
+      )
+
+      expect(ranked).toEqual([expect.objectContaining({ name: 'Multishot Targets', cost: 427.5 })])
+    })
+
+    it("doesn't apply one tree's discount to a different tree's Workshop upgrades", () => {
+      // Same fixture, but Defense's own free "Orbs" upgrade (cost 3000 at
+      // level 0) is the one left unmaxed -- an Attack-only discount should
+      // leave it at full price.
+      const workshopLevels = maxedWorkshopLevels()
+      workshopLevels.Orbs = 0
+
+      const { ranked } = getPrioritizedNextUpgrades(
+        {
+          workshopLevels,
+          unlockedGroups: allUnlockedGroups(),
+          discountLabLevels: { attack: 99 },
+        },
+        { rowCap: 1 },
+      )
+
+      expect(ranked).toEqual([expect.objectContaining({ name: 'Orbs', cost: 3000 })])
+    })
+
+    it("doesn't discount a tree's own one-time unlock-group cost, only its per-level upgrade costs", () => {
+      // Attack's "Multishot Upgrades" group costs 400 coins flat -- even at
+      // the max Attack discount, it should stay exactly 400, not 202.
+      const workshopLevels = maxedWorkshopLevels()
+      delete workshopLevels['Multishot Targets']
+      delete workshopLevels['Multishot Chance']
+      const unlockedGroups = allUnlockedGroups()
+      delete unlockedGroups[unlockGroupKey('attack', 'Multishot Upgrades')]
+
+      const { ranked } = getPrioritizedNextUpgrades(
+        { workshopLevels, unlockedGroups, discountLabLevels: { attack: 99 } },
+        { rowCap: 1 },
+      )
+
+      expect(ranked).toEqual([
+        expect.objectContaining({ source: 'unlock', name: 'Multishot Upgrades', cost: 400 }),
+      ])
+    })
+
+    it("doesn't apply a Workshop discount to Enhancement costs, even for the matching tree id", () => {
+      const enh = maxedEnhancementLevels()
+      enh['Coin Bonus'] = 0
+
+      const { ranked } = getPrioritizedNextUpgrades(
+        {
+          workshopLevels: maxedWorkshopLevels(),
+          unlockedGroups: allUnlockedGroups(),
+          enhancementLabLevel: 1,
+          enhancementLevels: enh,
+          discountLabLevels: { utility: 99 },
+        },
+        { rowCap: 1 },
+      )
+
+      expect(ranked).toEqual([expect.objectContaining({ name: 'Coin Bonus', cost: 5_000_000_000 })])
+    })
+
+    it("doesn't apply a Workshop discount to the Enhancement Lab's flat cost", () => {
+      const { ranked } = getPrioritizedNextUpgrades(
+        {
+          workshopLevels: maxedWorkshopLevels(),
+          unlockedGroups: allUnlockedGroups(),
+          discountLabLevels: { attack: 99, defense: 99, utility: 99 },
+        },
+        { rowCap: 1 },
+      )
+
+      expect(ranked).toEqual([
+        expect.objectContaining({ source: 'lab', name: 'Workshop Enhancements Lab', cost: 5_000_000_000 }),
+      ])
+    })
+  })
 })
