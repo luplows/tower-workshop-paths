@@ -3,7 +3,7 @@
  * level, value = coins to go from that level to the next (the same
  * convention enhancementLevels.js already uses). Sourced from
  * mytower.app (/workshop/upgrade/{tree}/{name}), replacing
- * tower-idle-toolkit's WORKSHOP_LEVELS -- see Open-Questions.md's OQ-39
+ * tower-idle-toolkit's WORKSHOP_LEVELS -- see Completed-Questions.md's OQ-39
  * and OQ-39-Data-Source-Migration.md.
  *
  * Carries mytower.app's own display precision (~3 significant figures,
