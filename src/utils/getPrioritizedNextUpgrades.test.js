@@ -219,6 +219,30 @@ describe('getPrioritizedNextUpgrades (OQ-2)', () => {
 
       expect(ranked).toEqual([expect.objectContaining({ source: 'workshop', name: 'Range' })])
     })
+
+    it('stops treating Cash Bonus as the critical path the moment simulated purchases cross the threshold, rather than for the rest of the run', () => {
+      // Fresh state (fully maxed Workshop, so nothing else can win the
+      // critical-path override on cost alone): Cash Bonus needs exactly 10
+      // simulated levels to cross the 50B threshold. Before the fix, the
+      // "is Coin Bonus still locked" check only ever looked at the caller's
+      // real entered levels (never updated by this run's own simulated
+      // purchases), so Cash Bonus's score-1 override never turned off --
+      // the reported bug was 50 straight rows of "Cash Bonus +". It should
+      // be exactly 10, then something else (here, Health -- Defense's own
+      // free starter, the next ranked category with a live cursor) takes
+      // over, the same re-anchor mechanism the "once maxed" tests below use.
+      const { ranked } = getPrioritizedNextUpgrades(
+        {
+          workshopLevels: maxedWorkshopLevels(),
+          unlockedGroups: allUnlockedGroups(),
+          enhancementLabLevel: 1,
+        },
+        { rowCap: 11 },
+      )
+
+      expect(ranked.slice(0, 10).every((e) => e.source === 'enhancement' && e.name === 'Cash Bonus')).toBe(true)
+      expect(ranked[10]).toMatchObject({ source: 'enhancement', name: 'Health' })
+    })
   })
 
   describe('once Coin Bonus is maxed (level 300)', () => {
