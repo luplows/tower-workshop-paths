@@ -1,13 +1,12 @@
 /**
  * The Workshop Enhancements screen's categories -- one free starter category
  * per tree plus five more, each gated behind cumulative coins spent on that
- * tree's own enhancements (see Project-Outline.md's "Workshop Enhancements"
- * section for the full mechanic and the shared 50B/500B/5T/50T/500T
- * threshold progression).
+ * tree's own enhancements (see Completed-Questions.md's OQ-6 for the full
+ * mechanic and the shared 50B/500B/5T/50T/500T threshold progression).
  *
  * Unlike WORKSHOP_CATEGORIES, this data isn't sourced from tower-idle-toolkit
  * (which has none of it) -- it's hand-entered from the community Google
- * Sheet referenced in Project-Outline.md. `unlocksAt` is unused until the
+ * Sheet credited in README.md. `unlocksAt` is unused until the
  * gating/discount-lab work happens -- see Open-Questions.md's OQ-6.
  * `quantity` (max level) comes from the Master Sheet tab's "Max level"
  * column (column W) and is accepted as correct for the current patch --
