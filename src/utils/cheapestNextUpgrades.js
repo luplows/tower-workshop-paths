@@ -1,8 +1,14 @@
 import { WORKSHOP_LEVELS } from 'tower-idle-toolkit'
 import { ENHANCEMENT_CATEGORIES } from '../data/enhancementCategories'
 import { ENHANCEMENT_LEVELS } from '../data/enhancementLevels'
+import {
+  FALLBACK_RATIO,
+  PRIORITY_BASE_NAME,
+  priorityRatio,
+  RANKED_PRIORITY_ORDER,
+} from '../data/enhancementPriority'
 import { WORKSHOP_CATEGORIES } from '../data/workshopCategories'
-import { isEnhancementCategoryUnlocked } from './enhancementTreeSpend'
+import { enhancementTreeSpend, isEnhancementCategoryUnlocked } from './enhancementTreeSpend'
 import {
   isWorkshopUpgradeUnlocked,
   nextPurchasableGroup,
@@ -62,6 +68,104 @@ const enhancementCostAt = (name, level) => {
 export const ENHANCEMENT_LAB_NAME = 'Workshop Enhancements Lab'
 export const ENHANCEMENT_LAB_COST = 5_000_000_000
 const enhancementLabCostAt = (name, level) => (level === 0 ? ENHANCEMENT_LAB_COST : undefined)
+
+/**
+ * Builds one cursor per not-yet-maxed, currently-unlocked candidate --
+ * Workshop upgrades, the one Workshop unlock-group offer per tree, the
+ * Enhancement Lab (while unbought), and Enhancement categories (once it's
+ * bought) -- keyed the same way `ranked`/`unknownCost` rows are (see the
+ * module docstring below). Shared by both `getCheapestNextUpgrades` and
+ * `getPrioritizedNextUpgrades` so the two selection strategies simulate
+ * from the exact same starting candidate set.
+ */
+function buildCandidateCursors({ workshopLevels, enhancementLevels, enhancementLabLevel, unlockedGroups }) {
+  const cursors = new Map()
+
+  for (const category of WORKSHOP_CATEGORIES) {
+    for (const upgrade of category.upgrades) {
+      if (!isWorkshopUpgradeUnlocked(category.id, upgrade.name, unlockedGroups)) continue
+      const currentLevel = workshopLevels[upgrade.name] ?? 0
+      if (currentLevel < upgrade.quantity) {
+        cursors.set(`workshop:${upgrade.name}`, {
+          source: 'workshop',
+          name: upgrade.name,
+          level: currentLevel,
+          quantity: upgrade.quantity,
+          batchSize: workshopBatchSize(upgrade.quantity),
+          categoryId: category.id,
+          categoryLabel: category.label,
+          costAt: workshopCostAt,
+        })
+      }
+    }
+
+    // A tree's paid groups unlock in order -- only the earliest not-yet-
+    // purchased one is ever offered here; every later group stays fully
+    // excluded (no candidate at all) until its turn.
+    const nextGroup = nextPurchasableGroup(category.id, unlockedGroups)
+    if (nextGroup) {
+      cursors.set(`unlock:${unlockGroupKey(category.id, nextGroup.name)}`, {
+        source: 'unlock',
+        name: nextGroup.name,
+        level: 0,
+        quantity: 1,
+        batchSize: SINGLE_BATCH_SIZE,
+        categoryId: category.id,
+        categoryLabel: category.label,
+        costAt: (name, level) => (level === 0 ? nextGroup.cost : undefined),
+      })
+    }
+  }
+
+  if (enhancementLabLevel < 1) {
+    cursors.set('lab:Workshop Enhancements Lab', {
+      source: 'lab',
+      name: ENHANCEMENT_LAB_NAME,
+      level: 0,
+      quantity: 1,
+      batchSize: SINGLE_BATCH_SIZE,
+      categoryId: 'lab',
+      categoryLabel: 'Lab',
+      costAt: enhancementLabCostAt,
+    })
+  } else {
+    for (const category of ENHANCEMENT_CATEGORIES) {
+      for (const upgrade of category.upgrades) {
+        if (!isEnhancementCategoryUnlocked(upgrade, category, enhancementLevels)) continue
+        const currentLevel = enhancementLevels[upgrade.name] ?? 0
+        if (currentLevel < upgrade.quantity) {
+          cursors.set(`enhancement:${upgrade.name}`, {
+            source: 'enhancement',
+            name: upgrade.name,
+            level: currentLevel,
+            quantity: upgrade.quantity,
+            batchSize: SINGLE_BATCH_SIZE,
+            categoryId: category.id,
+            categoryLabel: category.label,
+            costAt: enhancementCostAt,
+          })
+        }
+      }
+    }
+  }
+
+  return cursors
+}
+
+// A cursor's next batch, priced level by level -- `priceable: false` the
+// moment any level within it has no cost data (see the module docstring's
+// "partial batch" note for why the whole batch is refused rather than
+// priced partially).
+function nextBatchCost(cursor) {
+  const batchLevels = Math.min(cursor.batchSize, cursor.quantity - cursor.level)
+  let cost = 0
+  for (let offset = 0; offset < batchLevels; offset++) {
+    const levelCost = cursor.costAt(cursor.name, cursor.level + offset)
+    if (levelCost === undefined) return { priceable: false }
+    cost += levelCost
+  }
+  return { priceable: true, cost, batchLevels }
+}
 
 /**
  * Simulates a cheapest-first Workshop + Enhancement buy order, cost only --
@@ -158,75 +262,7 @@ export function getCheapestNextUpgrades(
   } = {},
   { rowCap = DEFAULT_ROW_CAP } = {},
 ) {
-  const cursors = new Map()
-
-  for (const category of WORKSHOP_CATEGORIES) {
-    for (const upgrade of category.upgrades) {
-      if (!isWorkshopUpgradeUnlocked(category.id, upgrade.name, unlockedGroups)) continue
-      const currentLevel = workshopLevels[upgrade.name] ?? 0
-      if (currentLevel < upgrade.quantity) {
-        cursors.set(`workshop:${upgrade.name}`, {
-          source: 'workshop',
-          name: upgrade.name,
-          level: currentLevel,
-          quantity: upgrade.quantity,
-          batchSize: workshopBatchSize(upgrade.quantity),
-          categoryId: category.id,
-          categoryLabel: category.label,
-          costAt: workshopCostAt,
-        })
-      }
-    }
-
-    // A tree's paid groups unlock in order -- only the earliest not-yet-
-    // purchased one is ever offered here; every later group stays fully
-    // excluded (no candidate at all) until its turn.
-    const nextGroup = nextPurchasableGroup(category.id, unlockedGroups)
-    if (nextGroup) {
-      cursors.set(`unlock:${unlockGroupKey(category.id, nextGroup.name)}`, {
-        source: 'unlock',
-        name: nextGroup.name,
-        level: 0,
-        quantity: 1,
-        batchSize: SINGLE_BATCH_SIZE,
-        categoryId: category.id,
-        categoryLabel: category.label,
-        costAt: (name, level) => (level === 0 ? nextGroup.cost : undefined),
-      })
-    }
-  }
-
-  if (enhancementLabLevel < 1) {
-    cursors.set('lab:Workshop Enhancements Lab', {
-      source: 'lab',
-      name: ENHANCEMENT_LAB_NAME,
-      level: 0,
-      quantity: 1,
-      batchSize: SINGLE_BATCH_SIZE,
-      categoryId: 'lab',
-      categoryLabel: 'Lab',
-      costAt: enhancementLabCostAt,
-    })
-  } else {
-    for (const category of ENHANCEMENT_CATEGORIES) {
-      for (const upgrade of category.upgrades) {
-        if (!isEnhancementCategoryUnlocked(upgrade, category, enhancementLevels)) continue
-        const currentLevel = enhancementLevels[upgrade.name] ?? 0
-        if (currentLevel < upgrade.quantity) {
-          cursors.set(`enhancement:${upgrade.name}`, {
-            source: 'enhancement',
-            name: upgrade.name,
-            level: currentLevel,
-            quantity: upgrade.quantity,
-            batchSize: SINGLE_BATCH_SIZE,
-            categoryId: category.id,
-            categoryLabel: category.label,
-            costAt: enhancementCostAt,
-          })
-        }
-      }
-    }
-  }
+  const cursors = buildCandidateCursors({ workshopLevels, enhancementLevels, enhancementLabLevel, unlockedGroups })
 
   const ranked = []
   const unknownCost = []
@@ -238,19 +274,8 @@ export function getCheapestNextUpgrades(
     for (const [key, cursor] of cursors) {
       if (stuck.has(key)) continue
 
-      const batchLevels = Math.min(cursor.batchSize, cursor.quantity - cursor.level)
-      let cost = 0
-      let priceable = true
-      for (let offset = 0; offset < batchLevels; offset++) {
-        const levelCost = cursor.costAt(cursor.name, cursor.level + offset)
-        if (levelCost === undefined) {
-          priceable = false
-          break
-        }
-        cost += levelCost
-      }
-
-      if (!priceable) {
+      const priced = nextBatchCost(cursor)
+      if (!priced.priceable) {
         stuck.add(key)
         unknownCost.push({
           name: cursor.name,
@@ -265,10 +290,257 @@ export function getCheapestNextUpgrades(
 
       if (
         !best ||
-        cost < best.cost ||
-        (cost === best.cost && cursor.name.localeCompare(best.cursor.name) < 0)
+        priced.cost < best.cost ||
+        (priced.cost === best.cost && cursor.name.localeCompare(best.cursor.name) < 0)
       ) {
-        best = { key, cursor, cost, batchLevels }
+        best = { key, cursor, cost: priced.cost, batchLevels: priced.batchLevels }
+      }
+    }
+
+    if (!best) break
+
+    ranked.push({
+      name: best.cursor.name,
+      source: best.cursor.source,
+      categoryId: best.cursor.categoryId,
+      categoryLabel: best.cursor.categoryLabel,
+      currentLevel: best.cursor.level,
+      nextLevel: best.cursor.level + best.batchLevels,
+      levels: best.batchLevels,
+      cost: best.cost,
+    })
+
+    best.cursor.level += best.batchLevels
+    if (best.cursor.level >= best.cursor.quantity) {
+      cursors.delete(best.key)
+    }
+  }
+
+  unknownCost.sort((a, b) => a.name.localeCompare(b.name))
+
+  return { ranked, unknownCost }
+}
+
+const UTILITY_CATEGORY_ID = 'utility'
+const LAB_CURSOR_KEY = 'lab:Workshop Enhancements Lab'
+
+/**
+ * The live "ratio-1-equivalent" cost every candidate's score is measured
+ * against this pass, plus (while Coin Bonus is locked) which cursor key is
+ * currently "the next step toward Coin Bonus" and should score exactly 1
+ * regardless of its own ratio/cost -- see `getPrioritizedNextUpgrades`'s
+ * docstring for the cases this resolves between. `baseCost` is `null` when
+ * no valid anchor exists at all (the vanishingly unlikely case every ranked
+ * item, and every prerequisite toward Coin Bonus, is simultaneously
+ * unreachable) -- safe to treat as "compare by cost alone" in that case,
+ * since every candidate still in play at that point shares FALLBACK_RATIO
+ * anyway, so the actual anchor value can't affect their relative order.
+ */
+function resolveBaseCost(cursors, enhancementLevels, enhancementLabLevel) {
+  const coinBonusCursor = cursors.get(`enhancement:${PRIORITY_BASE_NAME}`)
+  if (coinBonusCursor) {
+    const priced = nextBatchCost(coinBonusCursor)
+    return { baseCost: priced.priceable ? priced.cost : null, criticalPathKey: null }
+  }
+
+  const utilityCategory = ENHANCEMENT_CATEGORIES.find((category) => category.id === UTILITY_CATEGORY_ID)
+  const coinBonusUpgrade = utilityCategory.upgrades.find((upgrade) => upgrade.name === PRIORITY_BASE_NAME)
+  const utilitySpend = enhancementTreeSpend(utilityCategory, enhancementLevels)
+
+  // Locked (covers "before the Lab is bought" too, not just "Lab bought but
+  // Utility tree under its 50B threshold" -- both are just different points
+  // along the same prerequisite chain). Rather than a stand-in item priced
+  // at the coins still missing, the base becomes the *effective cost of
+  // reaching Coin Bonus's own first level*: whatever's left of the Lab (5B,
+  // 0 once bought) + every Cash Bonus level still needed to cross the
+  // threshold (Utility's free starter -- the only thing that can currently
+  // advance that tree's spend) + Coin Bonus's own real level-1 cost. Fixed
+  // for this whole call, from the caller's real `enhancementLevels`/
+  // `enhancementLabLevel`, the same "evaluated once per call" simplification
+  // the Lab/threshold gates elsewhere in this file already use.
+  //
+  // Whichever prerequisite is next in that chain -- the Lab while unbought,
+  // else Cash Bonus -- is returned as `criticalPathKey`: the caller scores
+  // that one cursor as exactly 1 (the same self-referential score Coin
+  // Bonus always gets against itself once normal), rather than via its own
+  // ratio/cost, since it's not really competing on its own merits -- it's a
+  // required step toward the ratio-1 item. Every other candidate (Workshop
+  // upgrades, unranked Enhancements) still scores normally against this
+  // `baseCost`, so a cheap-enough Workshop upgrade keeps winning until its
+  // own cost exceeds baseCost / (1/FALLBACK_RATIO) -- past that point the
+  // chain toward Coin Bonus starts winning instead.
+  if (utilitySpend < coinBonusUpgrade.unlocksAt) {
+    const cashBonusUpgrade = utilityCategory.upgrades.find((upgrade) => upgrade.unlocksAt == null)
+    const cashBonusLevels = ENHANCEMENT_LEVELS[cashBonusUpgrade.name] ?? []
+    let cashBonusLevel = enhancementLevels[cashBonusUpgrade.name] ?? 0
+    let cashBonusRemaining = 0
+    let treeSpend = utilitySpend
+    while (treeSpend < coinBonusUpgrade.unlocksAt) {
+      const levelCost = cashBonusLevels[cashBonusLevel]
+      // Cash Bonus itself ran out (maxed) before crossing the threshold --
+      // no way to reach Coin Bonus at all right now.
+      if (levelCost === undefined) return { baseCost: null, criticalPathKey: null }
+      cashBonusRemaining += levelCost
+      treeSpend += levelCost
+      cashBonusLevel += 1
+    }
+
+    const coinBonusLevel1Cost = ENHANCEMENT_LEVELS[PRIORITY_BASE_NAME]?.[enhancementLevels[PRIORITY_BASE_NAME] ?? 0]
+    if (coinBonusLevel1Cost === undefined) return { baseCost: null, criticalPathKey: null }
+
+    const labRemaining = enhancementLabLevel < 1 ? ENHANCEMENT_LAB_COST : 0
+    const criticalPathKey =
+      enhancementLabLevel < 1 ? LAB_CURSOR_KEY : `enhancement:${cashBonusUpgrade.name}`
+
+    return { baseCost: labRemaining + cashBonusRemaining + coinBonusLevel1Cost, criticalPathKey }
+  }
+
+  // Maxed: Coin Bonus is unlocked (utilitySpend already passed its
+  // threshold, or it wouldn't have had a cursor to begin with) but has no
+  // cursor, so it's at max level. Re-anchor to whichever ranked item is
+  // currently purchasable, live each pass since a re-anchored item can
+  // itself become unavailable (bought out, or maxed) as the simulation
+  // proceeds -- normalized back to a ratio-1-equivalent cost so the score
+  // formula doesn't need a separate branch for this case (already scores
+  // itself as 1 through the normal formula, so no `criticalPathKey` needed).
+  for (const name of RANKED_PRIORITY_ORDER) {
+    if (name === PRIORITY_BASE_NAME) continue
+    const cursor = cursors.get(`enhancement:${name}`)
+    if (!cursor) continue
+    const priced = nextBatchCost(cursor)
+    if (priced.priceable) return { baseCost: priced.cost / priorityRatio(name), criticalPathKey: null }
+  }
+
+  return { baseCost: null, criticalPathKey: null }
+}
+
+// The eHP set only ever ratios Enhancement categories -- a Workshop upgrade
+// always gets FALLBACK_RATIO, even one that happens to share a name with a
+// ranked Enhancement category (e.g. "Health", "Health Regen" are both a
+// Workshop upgrade and an Enhancement category -- see workshopCategories.js/
+// enhancementCategories.js). `priorityRatio`/`RANKED_PRIORITY_ORDER` know
+// nothing about which kind of item a name belongs to, so every caller here
+// must gate on `cursor.source === 'enhancement'` first rather than passing
+// `cursor.name` straight through.
+const cursorPriorityRatio = (cursor) =>
+  cursor.source === 'enhancement' ? priorityRatio(cursor.name) : FALLBACK_RATIO
+
+const cursorRankIndex = (cursor) => {
+  if (cursor.source !== 'enhancement') return RANKED_PRIORITY_ORDER.length
+  const index = RANKED_PRIORITY_ORDER.indexOf(cursor.name)
+  return index === -1 ? RANKED_PRIORITY_ORDER.length : index
+}
+
+/**
+ * The priority-weighted buy order (Open-Questions.md OQ-2) -- the tool's
+ * actual core feature, superseding `getCheapestNextUpgrades`'s cost-only
+ * placeholder ranking (OQ-17/OQ-29) now that a default priority list exists
+ * (OQ-3). Same simulation shape, same candidate set (`buildCandidateCursors`),
+ * same batching/gating/row-cap/`unknownCost` rules -- only how the "best"
+ * candidate is chosen each pass differs:
+ *
+ * ```
+ * score = ratio × (base's next cost ÷ this item's next cost)
+ * ```
+ *
+ * (`Project-Outline.md`, "Core Feature: Recommended Buy Order".) `ratio`
+ * comes from `cursorPriorityRatio` -- the eHP set's own ratio for one of its
+ * 6 named Enhancement categories, or FALLBACK_RATIO (1/128) for everything
+ * else (every Workshop upgrade, the Lab, an unlock-group offer, and the 12
+ * Enhancement categories the eHP set doesn't name). Gated on `cursor.source
+ * === 'enhancement'` before ever looking at `cursor.name` -- a Workshop
+ * upgrade always gets FALLBACK_RATIO even when it happens to share a name
+ * with a ranked Enhancement category (e.g. "Health", "Health Regen" name
+ * both a Workshop upgrade and an Enhancement category), since the eHP set
+ * only ever ranks Enhancements. Ties are broken first by the eHP set's own
+ * priority order (a named Enhancement category beats everything else, and
+ * among named categories the higher one wins), then alphabetically by name
+ * -- the same final tie-break `getCheapestNextUpgrades` already uses, for
+ * the same reason: nothing else distinguishes two fallback-ratio items.
+ *
+ * The formula's `base` is Coin Bonus (`PRIORITY_BASE_NAME`), the eHP set's
+ * own anchor (ratio 1) -- but Coin Bonus is itself a gated, capped
+ * Enhancement category (Utility's 2nd, 50B-threshold-locked, capped at
+ * level 300), not always available to price directly. `resolveBaseCost`
+ * (above) resolves what stands in for it each scoring pass:
+ * - **Unlocked, not maxed (normal):** Coin Bonus's own live next-batch cost.
+ * - **Locked** (the Enhancement Lab isn't bought yet, or it is but the
+ *   Utility tree hasn't reached 50B): the *effective cost of reaching Coin
+ *   Bonus's own first level* -- the Lab's remaining cost + every Cash Bonus
+ *   level still needed to cross the threshold + Coin Bonus's own real
+ *   level-1 cost. Whichever prerequisite is next (the Lab, or else Cash
+ *   Bonus) scores exactly 1 in the loop below regardless of its own
+ *   ratio/cost, via `criticalPathKey` -- it's not competing on its own
+ *   merits, it's a required step toward the ratio-1 item. A cheap-enough
+ *   Workshop upgrade still wins until its own cost gets close to this
+ *   effective cost (scaled by FALLBACK_RATIO); past that, the chain toward
+ *   Coin Bonus starts winning instead.
+ * - **Maxed** (level 300 reached): re-anchor to whichever ranked eHP item is
+ *   currently purchasable, live each pass.
+ * - **The (extremely unlikely) case nothing ranked, and no prerequisite
+ *   toward it, is reachable at all:** no valid anchor exists; every
+ *   remaining candidate necessarily shares FALLBACK_RATIO in that case, so
+ *   falls back to ranking by cost alone, which is equivalent for same-ratio
+ *   items regardless of what a hypothetical anchor value would have been.
+ */
+export function getPrioritizedNextUpgrades(
+  {
+    workshopLevels = {},
+    enhancementLevels = {},
+    enhancementLabLevel = 0,
+    unlockedGroups = {},
+  } = {},
+  { rowCap = DEFAULT_ROW_CAP } = {},
+) {
+  const cursors = buildCandidateCursors({ workshopLevels, enhancementLevels, enhancementLabLevel, unlockedGroups })
+
+  const ranked = []
+  const unknownCost = []
+  const stuck = new Set()
+
+  while (ranked.length < rowCap) {
+    const { baseCost, criticalPathKey } = resolveBaseCost(cursors, enhancementLevels, enhancementLabLevel)
+    let best = null
+
+    for (const [key, cursor] of cursors) {
+      if (stuck.has(key)) continue
+
+      const priced = nextBatchCost(cursor)
+      if (!priced.priceable) {
+        stuck.add(key)
+        unknownCost.push({
+          name: cursor.name,
+          source: cursor.source,
+          categoryId: cursor.categoryId,
+          categoryLabel: cursor.categoryLabel,
+          currentLevel: cursor.level,
+          nextLevel: cursor.level + 1,
+        })
+        continue
+      }
+
+      // A prerequisite on the critical path toward Coin Bonus (the Lab, or
+      // Cash Bonus -- see resolveBaseCost) scores exactly 1, the same
+      // self-referential score the base always gets against itself, rather
+      // than through its own ratio/cost -- it isn't competing on its own
+      // merits.
+      let score
+      if (key === criticalPathKey) {
+        score = 1
+      } else if (baseCost == null) {
+        score = 1 / priced.cost
+      } else {
+        score = (cursorPriorityRatio(cursor) * baseCost) / priced.cost
+      }
+      const rank = cursorRankIndex(cursor)
+
+      if (
+        !best ||
+        score > best.score ||
+        (score === best.score && rank < best.rank) ||
+        (score === best.score && rank === best.rank && cursor.name.localeCompare(best.cursor.name) < 0)
+      ) {
+        best = { key, cursor, cost: priced.cost, batchLevels: priced.batchLevels, score, rank }
       }
     }
 
