@@ -345,7 +345,26 @@ function resolveBaseCost(cursors, enhancementLevels, enhancementLabLevel) {
 
   const utilityCategory = ENHANCEMENT_CATEGORIES.find((category) => category.id === UTILITY_CATEGORY_ID)
   const coinBonusUpgrade = utilityCategory.upgrades.find((upgrade) => upgrade.name === PRIORITY_BASE_NAME)
-  const utilitySpend = enhancementTreeSpend(utilityCategory, enhancementLevels)
+  const cashBonusUpgrade = utilityCategory.upgrades.find((upgrade) => upgrade.unlocksAt == null)
+
+  // Unlike every other gate in this file, whether Coin Bonus is still locked
+  // has to be read live rather than fixed from the caller's real
+  // `enhancementLevels` -- it's the one gate a single simulation run can
+  // realistically cross entirely on its own (10 simulated Cash Bonus
+  // purchases, well inside `rowCap`), and Cash Bonus's `criticalPathKey`
+  // override below scores it 1 regardless of its real cost, so nothing else
+  // would ever naturally end the streak once the threshold is actually
+  // crossed. Cash Bonus's cursor -- if it currently has one -- already
+  // tracks this run's own simulated purchases via its mutated `.level`, so
+  // reading tree spend through that instead of the static entered level is
+  // enough; no other Utility category can gain a cursor while Coin Bonus
+  // itself has none.
+  const cashBonusCursor = cursors.get(`enhancement:${cashBonusUpgrade.name}`)
+  const liveCashBonusLevel = cashBonusCursor ? cashBonusCursor.level : (enhancementLevels[cashBonusUpgrade.name] ?? 0)
+  const utilitySpend = enhancementTreeSpend(utilityCategory, {
+    ...enhancementLevels,
+    [cashBonusUpgrade.name]: liveCashBonusLevel,
+  })
 
   // Locked (covers "before the Lab is bought" too, not just "Lab bought but
   // Utility tree under its 50B threshold" -- both are just different points
@@ -354,10 +373,7 @@ function resolveBaseCost(cursors, enhancementLevels, enhancementLabLevel) {
   // reaching Coin Bonus's own first level*: whatever's left of the Lab (5B,
   // 0 once bought) + every Cash Bonus level still needed to cross the
   // threshold (Utility's free starter -- the only thing that can currently
-  // advance that tree's spend) + Coin Bonus's own real level-1 cost. Fixed
-  // for this whole call, from the caller's real `enhancementLevels`/
-  // `enhancementLabLevel`, the same "evaluated once per call" simplification
-  // the Lab/threshold gates elsewhere in this file already use.
+  // advance that tree's spend) + Coin Bonus's own real level-1 cost.
   //
   // Whichever prerequisite is next in that chain -- the Lab while unbought,
   // else Cash Bonus -- is returned as `criticalPathKey`: the caller scores
@@ -370,9 +386,8 @@ function resolveBaseCost(cursors, enhancementLevels, enhancementLabLevel) {
   // own cost exceeds baseCost / (1/FALLBACK_RATIO) -- past that point the
   // chain toward Coin Bonus starts winning instead.
   if (utilitySpend < coinBonusUpgrade.unlocksAt) {
-    const cashBonusUpgrade = utilityCategory.upgrades.find((upgrade) => upgrade.unlocksAt == null)
     const cashBonusLevels = ENHANCEMENT_LEVELS[cashBonusUpgrade.name] ?? []
-    let cashBonusLevel = enhancementLevels[cashBonusUpgrade.name] ?? 0
+    let cashBonusLevel = liveCashBonusLevel
     let cashBonusRemaining = 0
     let treeSpend = utilitySpend
     while (treeSpend < coinBonusUpgrade.unlocksAt) {
@@ -474,7 +489,12 @@ const cursorRankIndex = (cursor) => {
  *   merits, it's a required step toward the ratio-1 item. A cheap-enough
  *   Workshop upgrade still wins until its own cost gets close to this
  *   effective cost (scaled by FALLBACK_RATIO); past that, the chain toward
- *   Coin Bonus starts winning instead.
+ *   Coin Bonus starts winning instead. Whether Coin Bonus is *still* locked
+ *   is read live off Cash Bonus's own cursor (unlike every other gate here,
+ *   which only ever reflects the caller's real entered levels) -- otherwise
+ *   Cash Bonus's score-1 override would keep winning for the rest of the
+ *   run even after enough simulated purchases actually cross the threshold,
+ *   since nothing else would ever revisit the check.
  * - **Maxed** (level 300 reached): re-anchor to whichever ranked eHP item is
  *   currently purchasable, live each pass.
  * - **The (extremely unlikely) case nothing ranked, and no prerequisite
