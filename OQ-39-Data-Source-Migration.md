@@ -1,6 +1,6 @@
 # OQ-39 Plan: Source Workshop, Enhancement, and Lab data from mytower.app instead of `tower-idle-toolkit`
 
-Companion plan for [Open-Questions.md](Open-Questions.md)'s OQ-39 — mirrors how [`OQ-1-Checklist.md`](OQ-1-Checklist.md) tracks OQ-1's own work. **Status: planned, not started.** Waiting on an additional data source (Workshop upgrade-unlock groups, see below) before Phase 1 begins.
+Companion plan for [Open-Questions.md](Open-Questions.md)'s OQ-39 — mirrors how [`OQ-1-Checklist.md`](OQ-1-Checklist.md) tracks OQ-1's own work. **Status: planned, not started.** The unlock-groups question (see below) is now settled — `tower-idle-toolkit` stays, solely for that data. Phase 1 is unblocked whenever the user wants to start.
 
 ## Why
 
@@ -21,9 +21,17 @@ Enhancement data (`enhancementCategories.js`/`enhancementLevels.js`) is already 
 
 ## Decisions made (2026-09-15)
 
-- **Unlock groups:** keep `tower-idle-toolkit` as a dependency solely for `ATTACK_UNLOCKS`/`DEFENSE_UNLOCKS`/`UTILITY_UNLOCKS` — not implicated in any known bug, and no replacement source has been found yet. **The user may have found an alternative source for this data** (pending as of this writing) — if so, this decision should be revisited before Phase 1, since a full removal becomes possible.
+- **Unlock groups:** keep `tower-idle-toolkit` as a dependency solely for `ATTACK_UNLOCKS`/`DEFENSE_UNLOCKS`/`UTILITY_UNLOCKS` — not implicated in any known bug. Two alternative sources were investigated and rejected (licensing; see below) — **this decision is now final**, not pending.
 - **Precision:** accept mytower.app's rounded (~3 significant figures) display values as the new baseline, replacing `tower-idle-toolkit`'s exact fractional costs. This matches what a player actually sees in-game anyway, and the "exact" data hasn't proven more trustworthy (see Wall Health). Affects batch-purchase sums and OQ-6's cumulative-spend thresholds, which currently benefit from exact inputs — a real but accepted tradeoff.
 - **Staging:** phased, one data category (and PR) at a time — Workshop first, then Enhancement. Smaller reviewable diffs, each independently mergeable, lower blast radius if a category turns out to need rework.
+
+## Alternative sources considered, for the unlock-groups gap (2026-09-15)
+
+The user found two candidate replacement sources for the Workshop upgrade-unlock group data (the one category with no mytower.app equivalent — see the footprint table above): [tower-smith](https://github.com/AngryBrit/tower-smith) and [the-tower-unified-tools](https://github.com/SFleet89/the-tower-unified-tools) (a newer tool that explicitly derives its own Workshop cost data from tower-smith's). Both were investigated and **rejected in favor of staying with mytower.app**, primarily over licensing:
+
+- **Both are CC BY-NC-SA 4.0**, not a permissive license — NonCommercial and ShareAlike clauses that conflict with this project's MIT license (SA in particular would require any derivative work to carry the same copyleft license, not MIT). mytower.app's own terms, by contrast, only ask for a linkback credit — no copyleft entanglement, consistent with how this project already credits `tower-idle-toolkit` and the community Google Sheet.
+- Technically, neither actually had the unlock-group *cost* data either — `tower-smith`'s unlock-gate code only maps group names to upgrade membership (for interpreting an externally-linked, live-synced "Effective Paths" Google Sheet, not bundled cost data), and `the-tower-unified-tools` has no unlock-group handling at all. So even setting licensing aside, neither source would have closed the actual gap.
+- `tower-smith` (archived/discontinued as of 2026-06-28) did turn up one genuinely useful data point along the way: its raw per-level Workshop cost JSON is **exact precision**, not rounded like mytower.app's UI, and it independently confirmed the OQ-38 Wall Health finding (its Lv1 cost, 8.2M, matches mytower.app and the user's real in-game number, contradicting `tower-idle-toolkit`'s 8.4M) — a third independent confirmation, but not enough to outweigh the licensing conflict for actually sourcing data from it.
 
 ## Data volume
 
@@ -51,11 +59,10 @@ Enhancement data (`enhancementCategories.js`/`enhancementLevels.js`) is already 
 
 ### Phase 1.5 / future: fully remove `tower-idle-toolkit`
 
-- Only possible once the Workshop upgrade-unlock group data (group names, one-time costs, upgrade membership) has a real replacement source — either the user's alternative source (pending) or the community Google Sheet, if it turns out to already document this.
-- Once resolved: replace `workshopUnlockGroups.js`'s import, remove `tower-idle-toolkit` from `package.json`, and get the real bundle-size win noted in OQ-12.
+- Only possible if the Workshop upgrade-unlock group data (group names, one-time costs, upgrade membership) ever gets a real replacement source — two candidates were already investigated and rejected (see "Alternative sources considered" above). Not actively pursued; `tower-idle-toolkit` staying as a small, single-purpose dependency is the accepted long-term state, not a stopgap.
+- If a source does turn up later: replace `workshopUnlockGroups.js`'s import, remove `tower-idle-toolkit` from `package.json`, and get the real bundle-size win noted in OQ-12.
 
 ## Open items before Phase 1 starts
 
-- **The user's alternative data source** for Workshop upgrade-unlock groups — once provided, re-evaluate whether Phase 1.5 can be folded into Phase 1 instead of deferred.
 - Confirm `/labs/Workshop Attack Discount` (and Defense/Utility) actually exist on mytower.app in the same shape as the Enhancement discount Lab pages already used for OQ-37 — assumed, not yet individually verified.
 - Decide the new data files' exact shape/location during implementation, following this project's existing conventions (`enhancementLevels.js`'s flat per-name array is the closest precedent).
