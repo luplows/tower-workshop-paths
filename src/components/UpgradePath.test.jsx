@@ -131,6 +131,49 @@ describe('UpgradePath', () => {
     expect(rows[0]).toHaveTextContent('2.49M coins')
   })
 
+  describe('Workshop discount Labs (OQ-4)', () => {
+    it("shows a discounted cost for a Workshop row, using that tree's own discount Lab level", async () => {
+      // Multishot Targets (Attack) costs 450 at level 0 undiscounted --
+      // Attack discount Lab level 10 is 5% off (450 x 0.95 = 427.5).
+      window.localStorage.setItem('workshopDiscountLabs', JSON.stringify({ attack: 10 }))
+      const user = userEvent.setup()
+      render(<UpgradePath />)
+
+      const rows = screen.getAllByRole('listitem')
+      expect(rows[0]).toHaveTextContent('Multishot Targets')
+      expect(rows[0]).toHaveTextContent('427.5 coins')
+
+      await user.click(
+        within(rows[0]).getByRole('button', {
+          name: 'Buy 1 level of Multishot Targets for 427.5 coins',
+        }),
+      )
+
+      expect(
+        JSON.parse(window.localStorage.getItem('workshopLevels'))['Multishot Targets'],
+      ).toBe(1)
+    })
+
+    it("doesn't discount an Enhancement row, even when that tree's Workshop discount is maxed", () => {
+      // Every Workshop upgrade maxed, every Enhancement maxed except one, so
+      // that lone Enhancement is unambiguously the only, first row -- same
+      // isolation as the OQ-29 tests below.
+      const enhancementLevels = maxedEnhancementLevels()
+      delete enhancementLevels['Recovery Package']
+      window.localStorage.setItem('workshopLevels', JSON.stringify(maxedWorkshopLevels()))
+      window.localStorage.setItem('enhancementLevels', JSON.stringify(enhancementLevels))
+      window.localStorage.setItem('enhancementLabLevel', JSON.stringify(1))
+      // "Recovery Package" is Utility -- a maxed Utility discount would
+      // wrongly discount it if the Workshop/Enhancement boundary leaked.
+      window.localStorage.setItem('workshopDiscountLabs', JSON.stringify({ utility: 99 }))
+      render(<UpgradePath />)
+
+      const rows = screen.getAllByRole('listitem')
+      expect(rows[0]).toHaveTextContent('Recovery Package +')
+      expect(rows[0]).toHaveTextContent('5B coins')
+    })
+  })
+
   describe('Workshop Enhancements in the path (OQ-29)', () => {
     it('shows an Enhancement row as "{name} +" (the game\'s own convention), and buying it updates enhancementLevels (not workshopLevels)', async () => {
       // Every Workshop upgrade maxed, every Enhancement maxed except one,

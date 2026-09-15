@@ -41,6 +41,21 @@ test('shows the cheapest not-yet-maxed upgrade first, batched (OQ-7)', async ({ 
   await expect(firstRow).toContainText('Lv 0 → 1')
 })
 
+test('reflects a discount Lab level entered on the Upgrade screen (OQ-4)', async ({ page }) => {
+  // Multishot Targets (Attack) costs 450 undiscounted -- 10% off at Attack
+  // discount Lab level 20.
+  const attackDiscount = page.getByLabel('Discount Lab', { exact: true })
+  await attackDiscount.fill('20')
+  await attackDiscount.blur()
+
+  await page.getByRole('tab', { name: 'Path', exact: true }).click()
+
+  const list = page.getByRole('list', { name: 'Recommended buy order' })
+  const firstRow = list.getByRole('listitem').first()
+  await expect(firstRow).toContainText('Multishot Targets')
+  await expect(firstRow).toContainText('405 coins')
+})
+
 test('reflects a level entered on the Upgrade screen', async ({ page }) => {
   const attackSpeedInput = page.getByLabel('Attack Speed', { exact: true })
   await attackSpeedInput.fill('1')

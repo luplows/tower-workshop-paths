@@ -49,6 +49,7 @@ function App() {
     window.localStorage.removeItem('enhancementLevels')
     window.localStorage.removeItem('enhancementLabLevel')
     window.localStorage.removeItem('workshopUnlockedGroups')
+    window.localStorage.removeItem('workshopDiscountLabs')
     setResetNonce((n) => n + 1)
   }
 

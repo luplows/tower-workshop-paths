@@ -1,11 +1,19 @@
 import { enhancementTreeSpend } from '../utils/enhancementTreeSpend'
 import { formatCoins } from '../utils/formatCoins'
 import {
+  DISCOUNT_LAB_LABEL,
+  formatDiscountPercent,
+  WORKSHOP_DISCOUNT_LAB_MAX_LEVEL,
+  workshopDiscountPercent,
+} from '../utils/workshopDiscount'
+import {
   findUnlockGroup,
   isWorkshopUpgradeUnlocked,
   nextPurchasableGroup,
 } from '../utils/workshopUnlockGroups'
 import { UpgradeLevelInput } from './UpgradeLevelInput'
+
+const DISCOUNT_LAB_UPGRADE = { name: DISCOUNT_LAB_LABEL, quantity: WORKSHOP_DISCOUNT_LAB_MAX_LEVEL }
 
 // Two independent, unrelated gates can hide an upgrade here, one per
 // system -- both now follow the same "show only the next one, hide the
@@ -25,6 +33,12 @@ import { UpgradeLevelInput } from './UpgradeLevelInput'
 //   Workshop upgrade isn't shown as a row at all -- every currently-locked
 //   upgrade is hidden, and a single Unlock button for the tree's one
 //   currently-purchasable group appears once, below the visible upgrades.
+//
+// `discountLabLevels`/`onDiscountLabLevelChange` are Workshop-only too (OQ-4),
+// gated on the same "only the Upgrade screen passes this" pattern as
+// `onUnlockGroup` -- the discount Lab reduces this tree's own Workshop
+// upgrade costs, nothing Enhancement-related, so it has no place on the
+// Enhance screen.
 export function WorkshopCategoryPanel({
   category,
   levels,
@@ -33,6 +47,8 @@ export function WorkshopCategoryPanel({
   nameSuffix = '',
   unlockedGroups,
   onUnlockGroup,
+  discountLabLevels,
+  onDiscountLabLevelChange,
 }) {
   const treeSpend = enhancementTreeSpend(category, levels)
   const purchasableGroup = onUnlockGroup
@@ -49,6 +65,14 @@ export function WorkshopCategoryPanel({
       aria-labelledby={`tab-${category.id}`}
       className={`category-panel category-panel--${category.id}`}
     >
+      {onDiscountLabLevelChange && (
+        <UpgradeLevelInput
+          upgrade={DISCOUNT_LAB_UPGRADE}
+          level={discountLabLevels?.[category.id] ?? 0}
+          onChange={(level) => onDiscountLabLevelChange(category.id, level)}
+          formatValue={(level) => formatDiscountPercent(workshopDiscountPercent(category.id, level))}
+        />
+      )}
       {category.upgrades.map((upgrade) => {
         const enhancementLocked = upgrade.unlocksAt != null && treeSpend < upgrade.unlocksAt
         if (enhancementLocked) {

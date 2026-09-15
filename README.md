@@ -49,8 +49,8 @@ npm run test:e2e   # end-to-end tests (Playwright)
 ## Roadmap
 
 - [x] Priority-weighted buy-order algorithm spanning Workshop upgrades and Enhancements
+- [x] Apply Workshop discount-lab savings to costs
 - [ ] Verify Workshop upgrade cost data against the current patch (OQ-1)
-- [ ] Apply Workshop discount-lab savings to costs (OQ-4)
 - [ ] Full buy-out simulation from lifetime coins (OQ-8)
 - [ ] Verify the UI on a real mobile device (OQ-9)
 

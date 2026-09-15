@@ -68,4 +68,43 @@ describe('WorkshopInputs', () => {
 
     expect(screen.getByLabelText('Damage')).toHaveValue(42)
   })
+
+  describe('discount Lab (OQ-4)', () => {
+    it('shows a Discount Lab input alongside the tree\'s upgrades', () => {
+      render(<ControlledWorkshopInputs />)
+      expect(screen.getByLabelText('Discount Lab')).toHaveValue(0)
+    })
+
+    it('persists an entered discount Lab level under its own storage key, keyed per tree', async () => {
+      const user = userEvent.setup()
+      const { unmount } = render(<ControlledWorkshopInputs />)
+
+      const discountInput = screen.getByLabelText('Discount Lab')
+      await user.clear(discountInput)
+      await user.type(discountInput, '10')
+
+      expect(JSON.parse(window.localStorage.getItem('workshopDiscountLabs'))).toEqual({
+        attack: 10,
+      })
+
+      unmount()
+      render(<ControlledWorkshopInputs />)
+      expect(screen.getByLabelText('Discount Lab')).toHaveValue(10)
+    })
+
+    it("keeps each tree's discount Lab level independent of the others", async () => {
+      const user = userEvent.setup()
+      render(<ControlledWorkshopInputs />)
+
+      const attackDiscount = screen.getByLabelText('Discount Lab')
+      await user.clear(attackDiscount)
+      await user.type(attackDiscount, '20')
+
+      await user.click(screen.getByRole('tab', { name: 'Defense' }))
+      expect(screen.getByLabelText('Discount Lab')).toHaveValue(0)
+
+      await user.click(screen.getByRole('tab', { name: 'Attack' }))
+      expect(screen.getByLabelText('Discount Lab')).toHaveValue(20)
+    })
+  })
 })
