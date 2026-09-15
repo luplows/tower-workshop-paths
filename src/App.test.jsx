@@ -39,6 +39,20 @@ describe('App', () => {
     expect(enhanceTab.closest('[role="tablist"]')).not.toBe(pathTablist)
   })
 
+  it('keeps the Labs section on the same top-level control as Path, not inside the Upgrade/Enhance toggle (OQ-4)', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    const labsTab = screen.getByRole('tab', { name: 'Labs' })
+    expect(labsTab.closest('[role="tablist"]')).toHaveAttribute('aria-label', 'App section')
+
+    await user.click(labsTab)
+
+    expect(screen.getByLabelText('Attack Discount Lab')).toBeInTheDocument()
+    expect(screen.queryByRole('tab', { name: 'Upgrade' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('tab', { name: 'Enhance' })).not.toBeInTheDocument()
+  })
+
   it('defaults to the Upgrade mode, showing Workshop upgrade categories', () => {
     render(<App />)
 
@@ -217,14 +231,15 @@ describe('App', () => {
     const user = userEvent.setup()
     render(<App />)
 
-    expect(screen.getByLabelText('Discount Lab')).toHaveValue(20)
+    await user.click(screen.getByRole('tab', { name: 'Labs' }))
+    expect(screen.getByLabelText('Attack Discount Lab')).toHaveValue(20)
 
     await user.click(screen.getByRole('button', { name: 'More actions' }))
     await user.click(screen.getByText('Clear all levels'))
     await user.click(screen.getByRole('button', { name: 'Clear' }))
 
     expect(JSON.parse(window.localStorage.getItem('workshopDiscountLabs'))).toEqual({})
-    expect(screen.getByLabelText('Discount Lab')).toHaveValue(0)
+    expect(screen.getByLabelText('Attack Discount Lab')).toHaveValue(0)
   })
 
   it('unlocking on the Enhance screen also removes the Lab from the Path list (OQ-32)', async () => {
@@ -235,6 +250,22 @@ describe('App', () => {
     expect(screen.getByText('Workshop Enhancements are locked')).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Unlock (5B coins)' }))
     expect(screen.getByLabelText('Damage +')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('tab', { name: 'Path' }))
+    expect(screen.queryByText('Workshop Enhancements Lab')).not.toBeInTheDocument()
+  })
+
+  it('unlocking Workshop Enhancements from the Labs page is reflected on the Enhance screen and the Path list too', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.click(screen.getByRole('tab', { name: 'Labs' }))
+    await user.type(screen.getByLabelText('Workshop Enhancements Lab'), '1')
+
+    await user.click(screen.getByRole('tab', { name: 'Input' }))
+    await user.click(screen.getByRole('tab', { name: 'Enhance' }))
+    expect(screen.getByLabelText('Damage +')).toBeInTheDocument()
+    expect(screen.queryByText('Workshop Enhancements are locked')).not.toBeInTheDocument()
 
     await user.click(screen.getByRole('tab', { name: 'Path' }))
     expect(screen.queryByText('Workshop Enhancements Lab')).not.toBeInTheDocument()
