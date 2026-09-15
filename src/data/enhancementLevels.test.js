@@ -24,9 +24,10 @@ describe('ENHANCEMENT_LEVELS', () => {
   })
 
   it('has only positive, finite costs -- no gaps, sentinels, or transcription slips', () => {
-    // Unlike WORKSHOP_LEVELS (tower-idle-toolkit), this data has no known
-    // gaps or "nothing more to buy" sentinel (see cheapestNextUpgrades.js) --
-    // every entry should be a real, positive cost.
+    // Neither this data nor WORKSHOP_LEVELS has any known gaps or "nothing
+    // more to buy" sentinel (tower-idle-toolkit's WORKSHOP_LEVELS used to,
+    // before OQ-39 -- see cheapestNextUpgrades.js) -- every entry should be
+    // a real, positive cost.
     for (const [name, costs] of Object.entries(ENHANCEMENT_LEVELS)) {
       for (const [level, cost] of costs.entries()) {
         expect(Number.isFinite(cost), `${name} level ${level}: ${cost}`).toBe(true)

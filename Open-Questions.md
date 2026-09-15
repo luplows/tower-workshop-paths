@@ -26,10 +26,6 @@ Offer two views of the same underlying purchase sequence: a granular step-by-ste
 As a player who checks this tool while actually playing on my phone, I want the phone-mimicking layout to work correctly on a real touch device, so that it's usable in the situation it's designed for.
 Only checked in a desktop browser at a fixed width so far.
 
-**OQ-12. Reduce production bundle size**
-As a maintainer, I want the shipped JS bundle to only include what the app uses, so that load time doesn't suffer as real usage grows.
-Currently ~2.4MB minified, mostly `tower-idle-toolkit`'s bundled game data (labs, cards, bots, etc. we don't use). Worth revisiting with code-splitting or a narrower import once the app has more real usage to justify the effort. Not currently blocking anything.
-
 **OQ-24. Import current levels from the game's `playerInfo.dat` file**
 As a player, I want to import my Workshop and Enhancement current levels straight from the game's own save data, so that I don't have to manually type in every level to get started.
 The game keeps a `playerInfo.dat` file (not normally player-facing) that should already contain current Workshop and Enhancement levels. Open questions: what format the file is actually in (plain JSON, a custom binary format, encrypted/obfuscated — unknown until inspected) and whether it's even parseable client-side; how the user gets the file into the browser (a file picker is the obvious client-only option, consistent with `Project-Outline.md`'s no-backend scope); and whether an import fully replaces entered levels (interacting with OQ-22's Clear) or merges with them.
@@ -37,9 +33,3 @@ The game keeps a `playerInfo.dat` file (not normally player-facing) that should 
 **OQ-25. Share entered levels with a friend via a link**
 As a player, I want to share my current Workshop/Enhancement levels with a friend (e.g. to compare progress or get buy-order advice), so that I don't have to describe my levels to them by hand.
 Client-only, per `Project-Outline.md`'s no-backend scope: likely encode `workshopLevels`/`enhancementLevels` into the URL itself (query string or fragment, probably compressed given ~48 Workshop + 18 Enhancement values) rather than a server-hosted share. Open questions: does opening a shared link overwrite the recipient's own entered levels (interacting with OQ-22's Clear/confirmation pattern) or show a separate read-only view; and how large the resulting link gets and whether that's practical to share (e.g. via text message). Now that the priority-weighted Path (OQ-2) exists, there's more worth sharing than raw levels alone — still worth doing regardless of timing.
-
-### Lowest priority
-
-**OQ-21. Consider forking tower-idle-toolkit to contribute corrected Workshop data back**
-As a maintainer, I want to consider publishing our corrected/verified Workshop cost and max-level data back to `tower-idle-toolkit` (or a maintained fork), so that other tools built on the package — and the community generally — benefit from the corrections instead of them living only in this repo's overrides.
-**Largely superseded by OQ-39:** this project no longer sources Workshop cost or max-level data from `tower-idle-toolkit` at all (`workshopQuantityOverrides.js`, the "corrections" this story was originally about publishing back, is deleted entirely) — there's nothing left in that category to contribute upstream. `tower-idle-toolkit` remains a dependency only for Workshop upgrade-unlock group data (OQ-5), which has no known corrections to publish either. Left open in case that changes, but likely worth closing out as no-longer-applicable rather than actually pursued.
