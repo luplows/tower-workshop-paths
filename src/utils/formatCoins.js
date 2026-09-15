@@ -24,6 +24,15 @@ const TIERS = [
  * bug -- tower-idle-toolkit's own per-level cost table has non-integer
  * `coins` values from around level 50-100 onward for most upgrades -- so
  * every tier needs this same truncation, not just the condensed ones.
+ *
+ * If a displayed batch total is ever reported off by ~0.01 at this tier
+ * from what the game shows (e.g. "959.71B" here vs. "959.72B" in-game),
+ * it's very unlikely to be this function -- see OQ-39-Data-Source-
+ * Migration.md's "Precision" decision for a real, investigated case: the
+ * OQ-39 migration's accepted ~3-significant-figure source precision can
+ * drift a large batch's summed total by enough to land on the wrong side
+ * of a display-rounding boundary, even though this truncation itself
+ * (and every individual level's cost) is correct.
  */
 export function formatCoins(coins) {
   const tier = TIERS.find((t) => coins >= t.value)

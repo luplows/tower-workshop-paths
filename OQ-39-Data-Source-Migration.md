@@ -1,6 +1,6 @@
 # OQ-39 Plan: Source Workshop, Enhancement, and Lab data from mytower.app instead of `tower-idle-toolkit`
 
-Companion plan for [Open-Questions.md](Open-Questions.md)'s OQ-39 — mirrors how [`OQ-1-Checklist.md`](OQ-1-Checklist.md) tracks OQ-1's own work. **Status: planned, not started.** The unlock-groups question (see below) is now settled — `tower-idle-toolkit` stays, solely for that data. Phase 1 is unblocked whenever the user wants to start.
+Companion plan for [Open-Questions.md](Open-Questions.md)'s OQ-39 — mirrors how [`OQ-1-Checklist.md`](OQ-1-Checklist.md) tracks OQ-1's own work. **Status: Phase 1 (Workshop) done. Phase 2 (Enhancement) not started.**
 
 ## Why
 
@@ -23,6 +23,7 @@ Enhancement data (`enhancementCategories.js`/`enhancementLevels.js`) is already 
 
 - **Unlock groups:** keep `tower-idle-toolkit` as a dependency solely for `ATTACK_UNLOCKS`/`DEFENSE_UNLOCKS`/`UTILITY_UNLOCKS` — not implicated in any known bug. Two alternative sources were investigated and rejected (licensing; see below) — **this decision is now final**, not pending.
 - **Precision:** accept mytower.app's rounded (~3 significant figures) display values as the new baseline, replacing `tower-idle-toolkit`'s exact fractional costs. This matches what a player actually sees in-game anyway, and the "exact" data hasn't proven more trustworthy (see Wall Health). Affects batch-purchase sums and OQ-6's cumulative-spend thresholds, which currently benefit from exact inputs — a real but accepted tradeoff.
+  **Observed in practice (2026-09-15):** the user's real 100-level Wall Health batch (Lv700→800, 10.5% discount) displayed in-game as 959.72B; this app showed 959.71B. The underlying math is exactly right — the app's raw total is 959,717,450,000, i.e. 959.71745B, genuinely on the truncate side of the `.715` boundary — so this isn't a `formatCoins.js` truncate-vs-round bug (a deliberate, tested choice — see its own docstring and `formatCoins.test.js`'s ".xx5 boundary" test, verified against a clean single-level in-game value). It's this precision tradeoff surfacing exactly as expected: summing 100 individually-~3-sig-fig-rounded per-level costs can drift a large batch's total by roughly a hundredth of a percent, occasionally landing it on the wrong side of a display-rounding boundary even though every individual level is correct to display precision. Judged not worth chasing right now (would mean reopening the tower-smith/the-tower-unified-tools licensing tradeoff for exact per-level data) — **noted here for reference if a similar user-reported mismatch comes up again**, so it isn't re-investigated as a new, unexplained bug each time.
 - **Staging:** phased, one data category (and PR) at a time — Workshop first, then Enhancement. Smaller reviewable diffs, each independently mergeable, lower blast radius if a category turns out to need rework.
 
 ## Alternative sources considered, for the unlock-groups gap (2026-09-15)
@@ -39,17 +40,18 @@ The user found two candidate replacement sources for the Workshop upgrade-unlock
 
 ## Phased plan
 
-### Phase 1: Workshop upgrade costs, max levels, and discount Lab data
+### Phase 1: Workshop upgrade costs, max levels, and discount Lab data — ✅ done
 
-- Extend `scripts/verify-workshop-costs.mjs`'s technique into a proper extraction script (or a new mode of it) that captures every level's cost for all 48 upgrades, not just the 3 checklist spot-check levels — writing incrementally to a cache file so an interrupted run can resume rather than restarting from scratch.
-- Also capture each upgrade's real max level (`M` field) and each tree's discount Lab data from `/labs/Workshop {Tree} Discount`.
-- New data file(s) under `src/data/` (shape TBD at implementation time — likely mirroring `enhancementLevels.js`'s flat `{ [name]: [cost, cost, ...] }` structure) replacing:
-  - `workshopCategories.js`'s `ATTACK_UPGRADES`/`DEFENSE_UPGRADES`/`UTILITY_UPGRADES` import (keeps `workshopQuantityOverrides.js`'s override *mechanism* if any mytower-sourced max level is later found stale, but the 5 currently-known corrections may become unnecessary if mytower.app's own max levels already reflect them — needs checking during implementation)
-  - `cheapestNextUpgrades.js`'s `WORKSHOP_LEVELS` import
-  - `workshopDiscount.js`'s `LabValues` import
-- `workshopUnlockGroups.js` keeps importing `tower-idle-toolkit` for `ATTACK_UNLOCKS`/etc. (per the decision above), so the dependency stays in `package.json` after this phase — only fully removable once Phase 1.5 (see below) resolves.
-- Test impact: `workshopCategories.test.js`'s snapshot will need regenerating (`vitest -u`, reviewed) since the data source itself changes shape/values. `cheapestNextUpgrades.test.js`/`getPrioritizedNextUpgrades.test.js`'s fixtures reference specific real costs (e.g. Multishot Targets' 450/2000/5000/... sequence) — need re-verifying against the new source, since a rounded-precision source may shift small numbers that happen to display identically today but could differ once the source itself changes.
-- `scripts/verify-workshop-costs.mjs` (or its extraction-mode successor) becomes the ongoing re-verification tool after future patches, replacing its current "spot-check 3 levels" role with "this is how the data gets (re-)generated in the first place."
+- `scripts/extract-workshop-data.mjs` (new): full per-level extraction for all 48 Workshop upgrades — not just the 3 checklist spot-check levels. Reads ~14 rows per scroll snapshot via one `page.evaluate()` call (the grid's own virtualized viewport), rather than one round-trip per level; resumable via `.cache/workshop-extraction.json` (gitignored), so an interrupted run picks back up. Full run: all 48 upgrades, zero missing levels, zero errors, ~9 minutes total (the two largest, Damage and Health/Health Regen at 6000 levels each, ~80s apiece).
+- `scripts/generate-workshop-data-files.mjs` (new): turns that cache into the two files app code actually imports — a separate, instant, deterministic step from the slow scrape itself.
+- New data files: `src/data/workshopUpgradeList.js` (name/order/max level per tree) and `src/data/workshopLevels.js` (per-upgrade cost arrays, `enhancementLevels.js`'s flat `{ [name]: [cost, cost, ...] }` shape) — replacing `workshopCategories.js`'s `ATTACK_UPGRADES`/etc. import and `cheapestNextUpgrades.js`'s `WORKSHOP_LEVELS` import.
+- `workshopDiscount.js`'s `LabValues` import replaced with a hardcoded formula (mirroring `enhancementDiscount.js`) — independently re-verified against `/labs/Workshop {Tree} Discount` on all 3 trees first (0.5%/level, 99 max, identical to what `LabValues` already gave), so no data changed, just its source.
+- **`workshopQuantityOverrides.js` deleted entirely**, not just kept as a mechanism — all 48 upgrades' mytower.app max levels matched this project's existing values exactly (confirmed via a byte-identical `workshopCategories.test.js` snapshot diff), including all 5 previously-corrected ones (OQ-13). The override mechanism itself is gone; if a future patch needs one again, it'll need reintroducing.
+- `workshopUnlockGroups.js` untouched, still importing `tower-idle-toolkit` for `ATTACK_UNLOCKS`/etc., per the decision above.
+- **Test fallout, all resolved:** 4 tests in `cheapestNextUpgrades.test.js` and 1 in `UpgradePath.test.jsx` depended on the old Health/Health Regen/Recovery Amount/Max Recovery cost-data gap (OQ-1) to exercise `unknownCost`/partial-batch-refusal — removed, since that gap no longer exists anywhere in the real data (their premise is now unreachable), with a comment pointing at why. 4 fixtures elsewhere hardcoded `tower-idle-toolkit`'s exact-decimal batch sums (e.g. `2964837.2903208775`) — recomputed against the new data and updated to the new real values (e.g. `2964910`), not guessed.
+- One lint cleanup found along the way: `parseAbbreviated`'s float multiplication (`8.2 * 1e6`) produces meaningless trailing noise like `8199999.999999999` — now rounded to a clean integer when generating the final data files, since the source precision is only ever ~3 significant figures anyway.
+- `scripts/verify-workshop-costs.mjs` updated to import from this project's own new `workshopLevels.js` instead of `tower-idle-toolkit` — its role shifted from "does our data match mytower.app" (the original OQ-1/OQ-38 cross-check) to "does our *shipped* data still match mytower.app's *live* data" (a drift detector for after a future patch), since both now come from the same place. Also gained a `MAX LEVEL DRIFT` check (comparing our stored `quantity` against mytower's live `M` field) as a natural side effect of no longer needing the old gap-specific logic.
+- **Bundle size increased** (2,526.55 kB → 2,755.90 kB minified) rather than decreased — carrying both the new generated data and the still-needed `tower-idle-toolkit` (for unlock groups) adds up to more than `tower-idle-toolkit` alone did. OQ-12's bundle-size goal stays unmet until/unless the unlock-groups dependency is ever fully dropped.
 
 ### Phase 2: Enhancement costs
 
@@ -62,7 +64,7 @@ The user found two candidate replacement sources for the Workshop upgrade-unlock
 - Only possible if the Workshop upgrade-unlock group data (group names, one-time costs, upgrade membership) ever gets a real replacement source — two candidates were already investigated and rejected (see "Alternative sources considered" above). Not actively pursued; `tower-idle-toolkit` staying as a small, single-purpose dependency is the accepted long-term state, not a stopgap.
 - If a source does turn up later: replace `workshopUnlockGroups.js`'s import, remove `tower-idle-toolkit` from `package.json`, and get the real bundle-size win noted in OQ-12.
 
-## Open items before Phase 1 starts
+## Open items before Phase 2 starts
 
-- Confirm `/labs/Workshop Attack Discount` (and Defense/Utility) actually exist on mytower.app in the same shape as the Enhancement discount Lab pages already used for OQ-37 — assumed, not yet individually verified.
-- Decide the new data files' exact shape/location during implementation, following this project's existing conventions (`enhancementLevels.js`'s flat per-name array is the closest precedent).
+- Whether `enhancementCategories.js`'s `unlocksAt` thresholds (OQ-6) and `quantity` values are re-sourceable from mytower.app at all, or need to stay Google-Sheet-sourced even after Phase 2 (a partial migration for that one file) — not yet checked.
+- Decide the Enhancement data files' exact shape/location, following the same conventions Phase 1 landed on (`workshopUpgradeList.js` + `workshopLevels.js`).

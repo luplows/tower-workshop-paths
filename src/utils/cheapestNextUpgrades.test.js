@@ -57,18 +57,6 @@ const workshopQuantityByName = Object.fromEntries(
   WORKSHOP_CATEGORIES.flatMap((category) => category.upgrades.map((u) => [u.name, u.quantity])),
 )
 
-// The Workshop upgrades whose entered `quantity` was corrected upward
-// (OQ-13) beyond tower-idle-toolkit's own WORKSHOP_LEVELS cost-data
-// ceiling (OQ-1) -- the only upgrades that can land in `unknownCost`, and
-// the exact level each gets stuck at. (ENHANCEMENT_LEVELS has no known
-// gaps, so no Enhancement equivalent exists.)
-const COST_DATA_CEILINGS = {
-  Health: 5000,
-  'Health Regen': 5000,
-  'Recovery Amount': 60,
-  'Max Recovery': 50,
-}
-
 describe('getCheapestNextUpgrades', () => {
   describe('Workshop upgrades (OQ-7/17/19/20)', () => {
     it('ranks upgrades cheapest-first at level 0 by batch cost, breaking ties by name (OQ-7)', () => {
@@ -175,10 +163,10 @@ describe('getCheapestNextUpgrades', () => {
 
       // Damage has >1000 max levels, so each step is a 100-level batch.
       expect(ranked.map((e) => [e.currentLevel, e.nextLevel, e.levels, e.cost])).toEqual([
-        [0, 100, 100, 2499617.5557601233],
-        [100, 200, 100, 30363353.437774427],
-        [200, 300, 100, 108337577.2629618],
-        [300, 400, 100, 227682082.7876627],
+        [0, 100, 100, 2499678],
+        [100, 200, 100, 30363380],
+        [200, 300, 100, 108388000],
+        [300, 400, 100, 227660000],
       ])
       expect(ranked.every((e) => e.name === 'Damage' && e.source === 'workshop')).toBe(true)
     })
@@ -204,7 +192,7 @@ describe('getCheapestNextUpgrades', () => {
           currentLevel: 5,
           nextLevel: 105,
           levels: 100,
-          cost: 2964837.2903208775,
+          cost: 2964910,
         },
       ])
     })
@@ -265,61 +253,25 @@ describe('getCheapestNextUpgrades', () => {
           currentLevel: 95,
           nextLevel: 99,
           levels: 4,
-          cost: 459181.07339254196,
+          cost: 459190,
         },
       ])
     })
 
-    it('treats an upgrade already past its cost-data ceiling as unknown, immediately', () => {
-      // Health's quantity was corrected to 6000 (WORKSHOP_QUANTITY_OVERRIDES),
-      // but tower-idle-toolkit's own cost table only covers levels 0-5000.
-      // Health is in Defense's free "Default" group, so no unlock needed.
-      const { ranked, unknownCost } = getCheapestNextUpgrades({
-        workshopLevels: { Health: 5000 },
-      })
-
-      expect(ranked.some((e) => e.name === 'Health')).toBe(false)
-      expect(unknownCost).toContainEqual({
-        name: 'Health',
-        source: 'workshop',
-        categoryId: 'defense',
-        categoryLabel: 'Defense',
-        currentLevel: 5000,
-        nextLevel: 5001,
-      })
-    })
-
-    it('refuses a batch instead of pricing a partial one when cost data runs out mid-batch (OQ-7)', () => {
-      // Health's 100-level batch starting at 4999 would span 4999-5098, but
-      // cost data only covers a valid transition through level 4999 -> 5000;
-      // level 5000 -> 5001 (index 5000) is a "nothing more to buy" sentinel
-      // from before the OQ-13 correction. Rather than silently buying a
-      // priced 1-level "batch", the whole batch is refused and Health lands
-      // in unknownCost immediately, at its currently entered level.
-      const workshopLevels = maxedWorkshopLevels()
-      workshopLevels.Health = 4999
-      const { ranked, unknownCost } = getCheapestNextUpgrades(
-        {
-          workshopLevels,
-          enhancementLevels: maxedEnhancementLevels(),
-          enhancementLabLevel: 1,
-          unlockedGroups: allUnlockedGroups(),
-        },
-        { rowCap: 5 },
-      )
-
-      expect(ranked).toEqual([])
-      expect(unknownCost).toEqual([
-        {
-          name: 'Health',
-          source: 'workshop',
-          categoryId: 'defense',
-          categoryLabel: 'Defense',
-          currentLevel: 4999,
-          nextLevel: 5000,
-        },
-      ])
-    })
+    // Health's cost-data ceiling used to fall short of its corrected
+    // quantity (tower-idle-toolkit's WORKSHOP_LEVELS stopped at level
+    // 5000, quantity was corrected to 6000 -- see OQ-13), so `ranked`/
+    // `unknownCost`'s gap-handling had real, easy-to-exercise coverage
+    // here (an upgrade landing in `unknownCost` the moment its next
+    // batch couldn't be fully priced, including a batch refused whole
+    // rather than partially priced when cost data ran out mid-batch,
+    // OQ-7). The OQ-39 migration to mytower.app-sourced data resolved
+    // that specific gap -- WORKSHOP_LEVELS now has no known gaps at all
+    // (matching ENHANCEMENT_LEVELS, which never did) -- so this exact
+    // scenario can no longer be reproduced with real data. The
+    // `unknownCost`/partial-batch-refusal code itself is left in place
+    // defensively (nextBatchCost, buildCandidateCursors); see the
+    // module's own docstring.
 
     // OQ-20: realistic, non-empty starting levels -- everything above this
     // point starts from either an all-zero or a single-upgrade-isolated
@@ -371,60 +323,6 @@ describe('getCheapestNextUpgrades', () => {
         }
       })
 
-      it("doesn't let multiple upgrades past their cost-data ceiling interfere with each other's reporting", () => {
-        // All four ceiling upgrades stuck at once, everything else maxed out
-        // so nothing else competes -- isolates unknownCost reporting itself.
-        const workshopLevels = maxedWorkshopLevels()
-        for (const [name, ceiling] of Object.entries(COST_DATA_CEILINGS)) {
-          workshopLevels[name] = ceiling
-        }
-        const { ranked, unknownCost } = getCheapestNextUpgrades(
-          {
-            workshopLevels,
-            enhancementLevels: maxedEnhancementLevels(),
-            enhancementLabLevel: 1,
-            unlockedGroups: allUnlockedGroups(),
-          },
-          { rowCap: 10 },
-        )
-
-        expect(ranked).toEqual([])
-        expect(unknownCost).toEqual([
-          {
-            name: 'Health',
-            source: 'workshop',
-            categoryId: 'defense',
-            categoryLabel: 'Defense',
-            currentLevel: 5000,
-            nextLevel: 5001,
-          },
-          {
-            name: 'Health Regen',
-            source: 'workshop',
-            categoryId: 'defense',
-            categoryLabel: 'Defense',
-            currentLevel: 5000,
-            nextLevel: 5001,
-          },
-          {
-            name: 'Max Recovery',
-            source: 'workshop',
-            categoryId: 'utility',
-            categoryLabel: 'Utility',
-            currentLevel: 50,
-            nextLevel: 51,
-          },
-          {
-            name: 'Recovery Amount',
-            source: 'workshop',
-            categoryId: 'utility',
-            categoryLabel: 'Utility',
-            currentLevel: 60,
-            nextLevel: 61,
-          },
-        ])
-      })
-
       it('stays cost-ascending with no off-by-one or infinite-loop once cheap early tiers are gone (late-game)', () => {
         // Every upgrade three levels from its own max -- including the four
         // ceiling upgrades, which land past their cost-data coverage this
@@ -467,14 +365,11 @@ describe('getCheapestNextUpgrades', () => {
           expect(entry.nextLevel).toBe(entry.currentLevel + expectedBatch)
         }
 
-        // The four ceiling upgrades are already well past their cost-data
-        // ceiling at "three levels from (corrected) max" here, so they get
-        // stuck immediately, at the level this fixture entered for them.
-        const unknownNames = unknownCost.map((e) => e.name).sort()
-        expect(unknownNames).toEqual(Object.keys(COST_DATA_CEILINGS).sort())
-        for (const entry of unknownCost) {
-          expect(entry.currentLevel).toBe(workshopQuantityByName[entry.name] - 3)
-        }
+        // Since the OQ-39 migration, every upgrade has real cost data all
+        // the way to its own max (no gap -- see the removed tests just
+        // above this describe block) -- nothing should land in
+        // unknownCost here anymore.
+        expect(unknownCost).toEqual([])
       })
     })
   })
