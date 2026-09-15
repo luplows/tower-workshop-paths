@@ -176,6 +176,35 @@ test('shows the Workshop Enhancements Lab while locked, buying it unlocks Enhanc
   await expect(firstRow).toContainText('+')
 })
 
+test('recommends Cash Bonus + over a Workshop upgrade that would win on raw cost alone (OQ-2)', async ({
+  page,
+}) => {
+  // Damage's next batch at level 450 costs ~503M -- far cheaper in raw
+  // coins than Cash Bonus's own next level (5B), so a cost-only ranking
+  // would pick this Workshop row first. But Cash Bonus is the critical
+  // path toward Coin Bonus here (Lab already bought, fresh Enhancement
+  // state): the effective cost of finishing that chain (~60.54B) makes
+  // 503M expensive enough to lose (see getPrioritizedNextUpgrades.test.js
+  // for the same fixture verified against both ranking functions). This is
+  // the end-to-end proof the priority-weighted ranking is actually wired
+  // up in the real app -- every other Path test in this file uses a
+  // fixture where cost-only and priority-weighted ranking happen to agree.
+  const workshopLevels = maxedLevels(WORKSHOP_CATEGORIES)
+  workshopLevels.Damage = 450
+  await page.addInitScript((workshop) => {
+    window.localStorage.setItem('workshopLevels', JSON.stringify(workshop))
+    window.localStorage.setItem('enhancementLabLevel', JSON.stringify(1))
+  }, workshopLevels)
+  await page.goto('/')
+
+  await page.getByRole('tab', { name: 'Path', exact: true }).click()
+
+  const list = page.getByRole('list', { name: 'Recommended buy order' })
+  const firstRow = list.getByRole('listitem').first()
+  await expect(firstRow).toContainText('Cash Bonus +')
+  await expect(firstRow).toContainText('5B coins')
+})
+
 test('keeps Path on a separate control from the Upgrade/Enhance toggle', async ({
   page,
 }) => {
