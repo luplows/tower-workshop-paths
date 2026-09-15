@@ -2,6 +2,8 @@
 
 Tracking checklist for [Open-Questions.md](Open-Questions.md)'s OQ-1 — working through every Workshop upgrade one by one to confirm its max level and per-level coin costs are correct for the current patch, rather than just trusted from `tower-idle-toolkit`.
 
+**Costs are now cross-checked automatically where possible**, via `scripts/verify-workshop-costs.mjs` — it compares this project's own cost data against mytower.app's independently-hosted per-level cost tables at the same 3 spot-check levels documented below, and checks the "Costs spot-checked" box on a clean match. This is a genuinely useful cross-reference (it already caught a real discrepancy — see Wall Health below) but not a full substitute for "Max level confirmed," which still needs real in-game confirmation: mytower.app's own max level isn't necessarily independently sourced either, and both tools may ultimately share some upstream data lineage (mytower.app credits "Tower Data Collection" by CrisRody as its own foundation) — agreement between the two is corroborating, not proof against the actual current patch.
+
 ## How to verify each upgrade
 
 - **Max level**: in-game, max out the upgrade (or check its listed cap) and compare against the "current data max" value noted below for that upgrade. If it differs, add/update an entry in `src/data/workshopQuantityOverrides.js` (see OQ-13 — five upgrades are already corrected there) and update `WORKSHOP_QUANTITY_OVERRIDES`'s snapshot test (`workshopCategories.test.js`) with `vitest -u` after reviewing the diff.
@@ -14,151 +16,151 @@ Tracking checklist for [Open-Questions.md](Open-Questions.md)'s OQ-1 — working
 
 - [ ] **Damage** (current data max: 6000) — Lv1: 55 → 55 · Lv2999: 276,505,729.67732 → 276.5M · Lv5999: 5,102,919,181,957.31 → 5.1T
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
 - [ ] **Attack Speed** (current data max: 99) — Lv1: 56 → 56 · Lv49: 23,612 → 23.61k · Lv98: 118,796.277305302 → 118.79k
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
 - [ ] **Critical Chance** (current data max: 79) — Lv1: 76 → 76 · Lv39: 11,987 → 11.98k · Lv78: 59,184.0016683236 → 59.18k
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
 - [ ] **Critical Factor** (current data max: 150) — Lv1: 75 → 75 · Lv74: 40,627.3188714981 → 40.62k · Lv149: 26,237,981,683.4733 → 26.23B
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
 - [ ] **Range** (current data max: 79) — Lv1: 78 → 78 · Lv39: 12,459 → 12.45k · Lv78: 61,395.6690064517 → 61.39k
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
 - [ ] **Damage / Meter** (current data max: 200) — Lv1: 78 → 78 · Lv99: 104,252.266369778 → 104.25k · Lv199: 28,361,544,890,870 → 28.36T
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
 - [ ] **Multishot Chance** (current data max: 99) — Lv1: 103 → 103 · Lv49: 27,695 → 27.69k · Lv98: 141,996.613607269 → 141.99k
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
 - [ ] **Multishot Targets** (current data max: 7) — Lv1: 2,000 → 2k · Lv3: 12,500 → 12.5k · Lv6: 350,000 → 350k
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
 - [ ] **Rapid Fire Chance** (current data max: 85) — Lv1: 183 → 183 · Lv42: 21,747 → 21.74k · Lv84: 108,049.412591865 → 108.04k
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
 - [ ] **Rapid Fire Duration** (current data max: 99) — Lv1: 183 → 183 · Lv49: 30,339 → 30.33k · Lv98: 152,786.73831754 → 152.78k
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
 - [ ] **Bounce Shot Chance** (current data max: 85) — Lv1: 279 → 279 · Lv42: 25,151 → 25.15k · Lv84: 125,579.444808842 → 125.57k
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
 - [ ] **Bounce Shot Targets** (current data max: 7) — Lv1: 3,000 → 3k · Lv3: 25,000 → 25k · Lv6: 650,000 → 650k
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
 - [ ] **Bounce Shot Range** (current data max: 60) — Lv1: 279 → 279 · Lv29: 11,573 → 11.57k · Lv59: 1,230,739,761,536.52 → 1.23T
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
 - [ ] **Super Crit Chance** (current data max: 100) — Lv1: 125,006 → 125k · Lv49: 7,372,947,656 → 7.37B · Lv99: 355,491,582,265.499 → 355.49B
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
 - [ ] **Super Crit Mult** (current data max: 120) — Lv1: 80,005 → 80k · Lv59: 5,538,511,396.5572 → 5.53B · Lv119: 28,697,622,982,251.1 → 28.69T
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
 - [ ] **Rend Armor Chance** (current data max: 299 — OQ-13 correction) — Lv1: 603,000,005 → 603M · Lv149: 2,737,713,007,833.39 → 2.73T · Lv298: 19,834,161,062,191,700 → 19.83q
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
 - [ ] **Rend Armor Mult** (current data max: 299) — Lv1: 602,500,005 → 602.5M · Lv149: 8,209,630,478,405.82 → 8.2T · Lv298: 595,007,103,327,681,000 → 595q
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
 
 ## Defense
 
 - [ ] **Health** (current data max: 6000 — OQ-13 correction) — Lv1: 55 → 55 · Lv2500: 170,119,376.775304 → 170.11M · Lv5000: 0 (sentinel, not real) — **GAP: cost data missing for levels 5001–5999**
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked (covered range only)
+  - [x] Costs spot-checked (covered range only) — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`). **Gap update: mytower.app's own max here is also 6000 and it has real cost data through Lv5999 (≈4.68T) — the gap isn't a missing-data dead end, it's just missing from `tower-idle-toolkit`.** Not yet pulled into this project's own data — see Open-Questions.md.
 - [ ] **Health Regen** (current data max: 6000 — OQ-13 correction) — Lv1: 55 → 55 · Lv2500: 170,119,376.775304 → 170.11M · Lv5000: 0 (sentinel, not real) — **GAP: cost data missing for levels 5001–5999**
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked (covered range only)
+  - [x] Costs spot-checked (covered range only) — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`). **Gap update: mytower.app's own max here is also 6000 and it has real cost data through Lv5999 (≈388.00B) — the gap isn't a missing-data dead end, it's just missing from `tower-idle-toolkit`.** Not yet pulled into this project's own data — see Open-Questions.md.
 - [ ] **Defense Percent** (current data max: 99) — Lv1: 76 → 76 · Lv49: 18,329 → 18.32k · Lv98: 90,728.1098596107 → 90.72k
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
 - [ ] **Defense Absolute** (current data max: 5000) — Lv1: 75 → 75 · Lv2499: 169,967,762.814239 → 169.96M · Lv4999: 797,447,803.840501 → 797.44M
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
 - [ ] **Thorns** (current data max: 99) — Lv1: 85 → 85 · Lv49: 15,585 → 15.58k · Lv98: 75,553.584470234 → 75.55k
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
 - [ ] **Lifesteal** (current data max: 80) — Lv1: 86 → 86 · Lv39: 12,000 → 12k · Lv79: 61,323.2085117551 → 61.32k
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
 - [ ] **Knockback Chance** (current data max: 80) — Lv1: 113 → 113 · Lv39: 13,111 → 13.11k · Lv79: 66,334.8791449509 → 66.33k
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
 - [ ] **Knockback Force** (current data max: 40) — Lv1: 113 → 113 · Lv19: 3,109 → 3.1k · Lv39: 14,013 → 14.01k
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
 - [ ] **Orb Speed** (current data max: 38) — Lv1: 163 → 163 · Lv18: 5,429 → 5.42k · Lv37: 29,733 → 29.73k
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
 - [ ] **Orbs** (current data max: 4) — Lv1: 20,000 → 20k · Lv3: 350,000 → 350k
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
 - [ ] **Shockwave Size** (current data max: 35) — Lv1: 314 → 314 · Lv17: 10,090 → 10.09k · Lv34: 59,602 → 59.6k
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
 - [ ] **Shockwave Frequency** (current data max: 40) — Lv1: 314 → 314 · Lv19: 13,299 → 13.29k · Lv39: 85,599 → 85.59k
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
 - [ ] **Land Mine Chance** (current data max: 50) — Lv1: 755 → 755 · Lv24: 133,095 → 133.09k · Lv49: 1,255,458 → 1.25M
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
 - [ ] **Land Mine Damage** (current data max: 200) — Lv1: 755 → 755 · Lv99: 25,571,693.592408 → 25.57M · Lv199: 217,605,876,374,893 → 217.6T
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
 - [ ] **Land Mine Radius** (current data max: 50) — Lv1: 805 → 805 · Lv24: 194,209 → 194.2k · Lv49: 19,815,023,750 → 19.81B
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
 - [ ] **Death Defy** (current data max: 75) — Lv1: 1,506 → 1.5k · Lv37: 7,203,222 → 7.2M · Lv74: 110,498,817.170683 → 110.49M
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
 - [ ] **Wall Health** (current data max: 1800) — Lv1: 8,400,003 → 8.4M · Lv899: 127,629,117,950.932 → 127.62B · Lv1799: 108,448,766,883,393 → 108.44T
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [ ] Costs spot-checked — **real discrepancy found via `scripts/verify-workshop-costs.mjs`, not yet resolved:** mytower.app shows a noticeably different (and slower-growing) cost curve at the same levels — Lv1: 8.20M (not 8.4M), Lv899: 33.73B (not 127.62B, ~3.8× off), Lv1799: 23.48T (not 108.44T, ~4.6× off). The growing ratio rules out a display-rounding artifact. Needs a real in-game check to determine which source (if either) is current — don't trust either blindly until then.
 - [ ] **Wall Rebuild** (current data max: 300) — Lv1: 16,800,005 → 16.8M · Lv149: 2,117,081,457.28082 → 2.11B · Lv299: 923,563,988,197.91 → 923.56B
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
 
 ## Utility
 
 - [ ] **Cash Bonus** (current data max: 149) — Lv1: 56 → 56 · Lv74: 57,788.1483948231 → 57.78k · Lv148: 352,358.9191525 → 352.35k
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
 - [ ] **Cash / Wave** (current data max: 149) — Lv1: 56 → 56 · Lv74: 57,788.1483948231 → 57.78k · Lv148: 352,358.9191525 → 352.35k
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
 - [ ] **Coins / Kill Bonus** (current data max: 149) — Lv1: 83 → 83 · Lv74: 74,699.7179250717 → 74.69k · Lv148: 467,977.384471294 → 467.97k
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
 - [ ] **Coins / Wave** (current data max: 149) — Lv1: 83 → 83 · Lv74: 74,699.7179250717 → 74.69k · Lv148: 467,977.384471294 → 467.97k
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
 - [ ] **Free Attack Upgrade** (current data max: 99) — Lv1: 118 → 118 · Lv49: 26,529 → 26.52k · Lv98: 133,873.467701802 → 133.87k
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
 - [ ] **Free Defense Upgrade** (current data max: 99) — Lv1: 118 → 118 · Lv49: 26,529 → 26.52k · Lv98: 133,873.467701802 → 133.87k
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
 - [ ] **Free Utility Upgrade** (current data max: 99) — Lv1: 143 → 143 · Lv49: 26,554 → 26.55k · Lv98: 133,900.505199824 → 133.9k
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
 - [ ] **Interest / Wave** (current data max: 99) — Lv1: 179 → 179 · Lv49: 45,852 → 45.85k · Lv98: 252,466.423021985 → 252.46k
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
 - [ ] **Recovery Amount** (current data max: 300 — OQ-13 correction) — Lv1: 1,055 → 1.05k · Lv30: 1,889,703 → 1.88M · Lv60: 0 (sentinel, not real) — **GAP: cost data missing for levels 61–299**
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked (covered range only)
+  - [x] Costs spot-checked (covered range only) — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`). **Gap update: mytower.app's own max here is also 300 and it has real cost data through Lv299 (≈21.59B) — the gap isn't a missing-data dead end, it's just missing from `tower-idle-toolkit`.** Not yet pulled into this project's own data — see Open-Questions.md.
 - [ ] **Max Recovery** (current data max: 500 — OQ-13 correction) — Lv1: 1,055 → 1.05k · Lv25: 946,158 → 946.15k · Lv50: 0 (sentinel, not real) — **GAP: cost data missing for levels 51–499**
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked (covered range only)
+  - [x] Costs spot-checked (covered range only) — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`). **Gap update: mytower.app's own max here is also 500 and it has real cost data through Lv499 (≈151.17B) — the gap isn't a missing-data dead end, it's just missing from `tower-idle-toolkit`.** Not yet pulled into this project's own data — see Open-Questions.md.
 - [ ] **Package Chance** (current data max: 60) — Lv1: 1,055 → 1.05k · Lv29: 1,661,541 → 1.66M · Lv59: 25,404,001.694355 → 25.4M
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
 - [ ] **Enemy Attack Level Skip** (current data max: 699) — Lv1: 316,000,004 → 316M · Lv349: 7,619,015,471,279.12 → 7.61T · Lv698: 4,555,412,346,950,580,000 → 4.55Q
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
 - [ ] **Enemy Health Level Skip** (current data max: 699) — Lv1: 316,000,004 → 316M · Lv349: 7,619,015,471,279.12 → 7.61T · Lv698: 4,555,412,346,950,580,000 → 4.55Q
   - [ ] Max level confirmed
-  - [ ] Costs spot-checked
+  - [x] Costs spot-checked — cross-checked via mytower.app (`scripts/verify-workshop-costs.mjs`)
