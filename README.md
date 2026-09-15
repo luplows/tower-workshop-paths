@@ -67,4 +67,7 @@ Project Link: [https://github.com/luplows/tower-workshop-paths](https://github.c
 ## Acknowledgments
 
 - [tower-idle-toolkit](https://www.npmjs.com/package/tower-idle-toolkit) for Workshop upgrade data
-- Discord user **@Mattew** and contributors to the community *The Tower - Idle Tower Defense* Workshop Google Sheet, the source for all Workshop Enhancement data (category list, thresholds, per-level costs) — this project claims no credit for that data, only for using it
+- Discord user **@Mattew** and contributors to the community *The Tower - Idle Tower Defense* Workshop Google Sheet, the source for all Workshop Enhancement data (category list, thresholds, per-level costs)
+- Discord user **@QuietFanta** for the eHP priority ratios (shipped as this tool's default) and the reserved-for-later GC ratios, from the same sheet's "Desired Ratios" tab
+
+This project claims no credit for any of that data or those ratios — only for using them.
