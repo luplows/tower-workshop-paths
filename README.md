@@ -2,6 +2,8 @@
 
 A tool to help decide how to spend coins in the **Workshop** tab of the mobile game *The Tower - Idle Tower Defense*. Given your current Workshop upgrade and Enhancement levels, it recommends what to buy next — weighted by a community-sourced priority list, not just raw cost.
 
+**[Live demo](https://luplows.github.io/tower-workshop-paths/)** — deployed to GitHub Pages on every push to `main`.
+
 See [Project-Outline.md](Project-Outline.md) for the full design, and [Open-Questions.md](Open-Questions.md) / [Completed-Questions.md](Completed-Questions.md) for what's built, in progress, or still open.
 
 ## Built With
