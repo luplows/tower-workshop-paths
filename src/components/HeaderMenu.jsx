@@ -98,9 +98,9 @@ export function HeaderMenu({ onClearAllLevels, themePreference, onThemeChange })
             </p>
             <p className="header-menu__confirm-body">
               This resets every Workshop upgrade and Enhancement level, and
-              every Workshop discount Lab level, back to zero, and re-locks
-              the Workshop Enhancements Lab and every Workshop upgrade-unlock
-              group. This can't be undone.
+              every Workshop and Enhancement discount Lab level, back to
+              zero, and re-locks the Workshop Enhancements Lab and every
+              Workshop upgrade-unlock group. This can't be undone.
             </p>
             <div className="header-menu__confirm-actions">
               <button type="button" onClick={() => setConfirmOpen(false)}>

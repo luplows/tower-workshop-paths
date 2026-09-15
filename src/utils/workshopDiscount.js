@@ -1,10 +1,12 @@
 import { LabValues } from 'tower-idle-toolkit'
 
 // The Workshop discount Labs, one per tree (Open-Questions.md OQ-4) --
-// separate from anything Enhancement-related (no such lab exists in any
-// data source this project has -- see OQ-37) and separate from the
-// Workshop Enhancements unlock Lab (cheapestNextUpgrades.js), which costs
-// coins and is bought through the Path list rather than hand-entered here.
+// separate from the Enhancement discount Labs (a different shape entirely,
+// sourced from mytower.app rather than tower-idle-toolkit -- see
+// enhancementDiscount.js, Completed-Questions.md OQ-37) and separate from
+// the Workshop Enhancements unlock Lab (cheapestNextUpgrades.js), which
+// costs coins and is bought through the Path list rather than hand-entered
+// here.
 const DISCOUNT_LAB_NAMES = {
   attack: 'Workshop Attack Discount',
   defense: 'Workshop Defense Discount',

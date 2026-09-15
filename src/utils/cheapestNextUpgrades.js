@@ -8,6 +8,7 @@ import {
   RANKED_PRIORITY_ORDER,
 } from '../data/enhancementPriority'
 import { WORKSHOP_CATEGORIES } from '../data/workshopCategories'
+import { enhancementDiscountMultiplier } from './enhancementDiscount'
 import { enhancementTreeSpend, isEnhancementCategoryUnlocked } from './enhancementTreeSpend'
 import { workshopDiscountMultiplier } from './workshopDiscount'
 import {
@@ -83,8 +84,15 @@ const enhancementLabCostAt = (name, level) => (level === 0 ? ENHANCEMENT_LAB_COS
  * applied only to a tree's own per-level Workshop upgrade costs -- not the
  * same tree's unlock-group cost (a one-time fee, not an "upgrade" the
  * discount Lab reduces -- see Open-Questions.md), not Enhancement costs
- * (no discount Lab exists for those at all -- see OQ-37), and not the
- * Enhancement Lab's flat cost.
+ * (a separate Lab covers those -- see `enhancementDiscountLabLevels`
+ * below), and not the Enhancement Lab's flat cost.
+ *
+ * `enhancementDiscountLabLevels` (`{ attack, defense, utility }`, each
+ * 0-100, OQ-37) mirrors `discountLabLevels` for Enhancement costs instead
+ * of Workshop ones -- applied only to a tree's own per-level Enhancement
+ * category costs, never Workshop costs, and never the Enhancement Lab's
+ * flat cost (a one-time unlock, not a per-level Enhancement cost the
+ * discount Lab reduces).
  */
 function buildCandidateCursors({
   workshopLevels,
@@ -92,6 +100,7 @@ function buildCandidateCursors({
   enhancementLabLevel,
   unlockedGroups,
   discountLabLevels = {},
+  enhancementDiscountLabLevels = {},
 }) {
   const cursors = new Map()
 
@@ -150,6 +159,14 @@ function buildCandidateCursors({
     })
   } else {
     for (const category of ENHANCEMENT_CATEGORIES) {
+      const discountMultiplier = enhancementDiscountMultiplier(
+        enhancementDiscountLabLevels[category.id] ?? 0,
+      )
+      const discountedEnhancementCostAt = (name, level) => {
+        const coins = enhancementCostAt(name, level)
+        return coins === undefined ? undefined : coins * discountMultiplier
+      }
+
       for (const upgrade of category.upgrades) {
         if (!isEnhancementCategoryUnlocked(upgrade, category, enhancementLevels)) continue
         const currentLevel = enhancementLevels[upgrade.name] ?? 0
@@ -162,7 +179,7 @@ function buildCandidateCursors({
             batchSize: SINGLE_BATCH_SIZE,
             categoryId: category.id,
             categoryLabel: category.label,
-            costAt: enhancementCostAt,
+            costAt: discountedEnhancementCostAt,
           })
         }
       }
@@ -280,6 +297,7 @@ export function getCheapestNextUpgrades(
     enhancementLabLevel = 0,
     unlockedGroups = {},
     discountLabLevels = {},
+    enhancementDiscountLabLevels = {},
   } = {},
   { rowCap = DEFAULT_ROW_CAP } = {},
 ) {
@@ -289,6 +307,7 @@ export function getCheapestNextUpgrades(
     enhancementLabLevel,
     unlockedGroups,
     discountLabLevels,
+    enhancementDiscountLabLevels,
   })
 
   const ranked = []
@@ -362,8 +381,13 @@ const LAB_CURSOR_KEY = 'lab:Workshop Enhancements Lab'
  * unreachable) -- safe to treat as "compare by cost alone" in that case,
  * since every candidate still in play at that point shares FALLBACK_RATIO
  * anyway, so the actual anchor value can't affect their relative order.
+ *
+ * `enhancementDiscountLabLevels` (OQ-37) only matters to the locked branch
+ * below -- the unlocked/maxed branches already price Coin Bonus through its
+ * own cursor, which `buildCandidateCursors` built with the Utility
+ * Enhancement discount already folded in.
  */
-function resolveBaseCost(cursors, enhancementLevels, enhancementLabLevel) {
+function resolveBaseCost(cursors, enhancementLevels, enhancementLabLevel, enhancementDiscountLabLevels) {
   const coinBonusCursor = cursors.get(`enhancement:${PRIORITY_BASE_NAME}`)
   if (coinBonusCursor) {
     const priced = nextBatchCost(coinBonusCursor)
@@ -412,7 +436,19 @@ function resolveBaseCost(cursors, enhancementLevels, enhancementLabLevel) {
   // `baseCost`, so a cheap-enough Workshop upgrade keeps winning until its
   // own cost exceeds baseCost / (1/FALLBACK_RATIO) -- past that point the
   // chain toward Coin Bonus starts winning instead.
+  //
+  // `treeSpend` (whether the threshold is crossed, and after how many Cash
+  // Bonus levels) is deliberately tracked from undiscounted costs, the same
+  // simplification `enhancementTreeSpend` already makes everywhere else
+  // (OQ-6's gate has no discount awareness at all) -- only the *coins this
+  // run will actually pay* for those same levels (`cashBonusRemaining`,
+  // `coinBonusLevel1Cost`) reflects the Utility Enhancement discount Lab
+  // (OQ-37), since that's the real buy-order cost this function exists to
+  // get right.
   if (utilitySpend < coinBonusUpgrade.unlocksAt) {
+    const utilityDiscountMultiplier = enhancementDiscountMultiplier(
+      enhancementDiscountLabLevels.utility ?? 0,
+    )
     const cashBonusLevels = ENHANCEMENT_LEVELS[cashBonusUpgrade.name] ?? []
     let cashBonusLevel = liveCashBonusLevel
     let cashBonusRemaining = 0
@@ -422,7 +458,7 @@ function resolveBaseCost(cursors, enhancementLevels, enhancementLabLevel) {
       // Cash Bonus itself ran out (maxed) before crossing the threshold --
       // no way to reach Coin Bonus at all right now.
       if (levelCost === undefined) return { baseCost: null, criticalPathKey: null }
-      cashBonusRemaining += levelCost
+      cashBonusRemaining += levelCost * utilityDiscountMultiplier
       treeSpend += levelCost
       cashBonusLevel += 1
     }
@@ -434,7 +470,10 @@ function resolveBaseCost(cursors, enhancementLevels, enhancementLabLevel) {
     const criticalPathKey =
       enhancementLabLevel < 1 ? LAB_CURSOR_KEY : `enhancement:${cashBonusUpgrade.name}`
 
-    return { baseCost: labRemaining + cashBonusRemaining + coinBonusLevel1Cost, criticalPathKey }
+    return {
+      baseCost: labRemaining + cashBonusRemaining + coinBonusLevel1Cost * utilityDiscountMultiplier,
+      criticalPathKey,
+    }
   }
 
   // Maxed: Coin Bonus is unlocked (utilitySpend already passed its
@@ -510,7 +549,10 @@ const cursorRankIndex = (cursor) => {
  *   Utility tree hasn't reached 50B): the *effective cost of reaching Coin
  *   Bonus's own first level* -- the Lab's remaining cost + every Cash Bonus
  *   level still needed to cross the threshold + Coin Bonus's own real
- *   level-1 cost. Whichever prerequisite is next (the Lab, or else Cash
+ *   level-1 cost, the Cash Bonus/Coin Bonus figures discounted by the
+ *   Utility Enhancement discount Lab if leveled (OQ-37; the threshold
+ *   crossing itself still counts undiscounted spend, matching OQ-6's own
+ *   gate). Whichever prerequisite is next (the Lab, or else Cash
  *   Bonus) scores exactly 1 in the loop below regardless of its own
  *   ratio/cost, via `criticalPathKey` -- it's not competing on its own
  *   merits, it's a required step toward the ratio-1 item. A cheap-enough
@@ -537,6 +579,7 @@ export function getPrioritizedNextUpgrades(
     enhancementLabLevel = 0,
     unlockedGroups = {},
     discountLabLevels = {},
+    enhancementDiscountLabLevels = {},
   } = {},
   { rowCap = DEFAULT_ROW_CAP } = {},
 ) {
@@ -546,6 +589,7 @@ export function getPrioritizedNextUpgrades(
     enhancementLabLevel,
     unlockedGroups,
     discountLabLevels,
+    enhancementDiscountLabLevels,
   })
 
   const ranked = []
@@ -553,7 +597,12 @@ export function getPrioritizedNextUpgrades(
   const stuck = new Set()
 
   while (ranked.length < rowCap) {
-    const { baseCost, criticalPathKey } = resolveBaseCost(cursors, enhancementLevels, enhancementLabLevel)
+    const { baseCost, criticalPathKey } = resolveBaseCost(
+      cursors,
+      enhancementLevels,
+      enhancementLabLevel,
+      enhancementDiscountLabLevels,
+    )
     let best = null
 
     for (const [key, cursor] of cursors) {

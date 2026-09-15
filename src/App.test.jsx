@@ -242,6 +242,22 @@ describe('App', () => {
     expect(screen.getByLabelText('Attack Discount Lab')).toHaveValue(0)
   })
 
+  it('also zeroes every Enhancement discount Lab level when clearing (OQ-37)', async () => {
+    window.localStorage.setItem('enhancementDiscountLabs', JSON.stringify({ attack: 20 }))
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.click(screen.getByRole('tab', { name: 'Labs' }))
+    expect(screen.getByLabelText('Attack Enhancement Discount Lab')).toHaveValue(20)
+
+    await user.click(screen.getByRole('button', { name: 'More actions' }))
+    await user.click(screen.getByText('Clear all levels'))
+    await user.click(screen.getByRole('button', { name: 'Clear' }))
+
+    expect(JSON.parse(window.localStorage.getItem('enhancementDiscountLabs'))).toEqual({})
+    expect(screen.getByLabelText('Attack Enhancement Discount Lab')).toHaveValue(0)
+  })
+
   it('unlocking on the Enhance screen also removes the Lab from the Path list (OQ-32)', async () => {
     const user = userEvent.setup()
     render(<App />)

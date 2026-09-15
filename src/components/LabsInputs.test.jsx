@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { LabsInputs } from './LabsInputs'
@@ -24,8 +24,12 @@ describe('LabsInputs', () => {
     expect(screen.getByText('5.0% off')).toBeInTheDocument()
     expect(screen.getByLabelText('Utility Discount Lab')).toHaveValue(99)
     expect(screen.getByText('49.5% off')).toBeInTheDocument()
-    expect(screen.getByLabelText('Defense Discount Lab')).toHaveValue(0)
-    expect(screen.getByText('0.0% off')).toBeInTheDocument()
+
+    const defenseInput = screen.getByLabelText('Defense Discount Lab')
+    expect(defenseInput).toHaveValue(0)
+    // Several other rows also default to "0.0% off" -- scope to this row's
+    // own container rather than asserting the text exists anywhere at all.
+    expect(within(defenseInput.closest('.upgrade-row')).getByText('0.0% off')).toBeInTheDocument()
   })
 
   it('persists an entered level under workshopDiscountLabs, keyed per tree', async () => {
@@ -109,6 +113,70 @@ describe('LabsInputs', () => {
       fireEvent.change(screen.getByLabelText('Workshop Enhancements Lab'), { target: { value: '99' } })
 
       expect(screen.getByLabelText('Workshop Enhancements Lab')).toHaveValue(1)
+    })
+  })
+
+  describe('Enhancement discount Labs (OQ-37)', () => {
+    it('shows all 3 Enhancement discount Labs below the Workshop Enhancements unlock, each labeled by its own tree', () => {
+      render(<LabsInputs />)
+
+      expect(screen.getByLabelText('Attack Enhancement Discount Lab')).toHaveValue(0)
+      expect(screen.getByLabelText('Defense Enhancement Discount Lab')).toHaveValue(0)
+      expect(screen.getByLabelText('Utility Enhancement Discount Lab')).toHaveValue(0)
+    })
+
+    it('shows the percent off computed from each entered level -- 0.3% per level', () => {
+      window.localStorage.setItem(
+        'enhancementDiscountLabs',
+        JSON.stringify({ attack: 10, utility: 100 }),
+      )
+      render(<LabsInputs />)
+
+      expect(screen.getByLabelText('Attack Enhancement Discount Lab')).toHaveValue(10)
+      expect(screen.getByText('3.0% off')).toBeInTheDocument()
+      expect(screen.getByLabelText('Utility Enhancement Discount Lab')).toHaveValue(100)
+      expect(screen.getByText('30.0% off')).toBeInTheDocument()
+      expect(screen.getByLabelText('Defense Enhancement Discount Lab')).toHaveValue(0)
+    })
+
+    it('persists an entered level under enhancementDiscountLabs, keyed per tree and independent of the Workshop discount Labs', async () => {
+      const user = userEvent.setup()
+      const { unmount } = render(<LabsInputs />)
+
+      const attackInput = screen.getByLabelText('Attack Enhancement Discount Lab')
+      await user.clear(attackInput)
+      await user.type(attackInput, '20')
+
+      expect(JSON.parse(window.localStorage.getItem('enhancementDiscountLabs'))).toEqual({
+        attack: 20,
+      })
+      expect(JSON.parse(window.localStorage.getItem('workshopDiscountLabs'))).toEqual({})
+
+      unmount()
+      render(<LabsInputs />)
+      expect(screen.getByLabelText('Attack Enhancement Discount Lab')).toHaveValue(20)
+    })
+
+    it('keeps each tree independent -- entering one leaves the others untouched', async () => {
+      const user = userEvent.setup()
+      render(<LabsInputs />)
+
+      const attackInput = screen.getByLabelText('Attack Enhancement Discount Lab')
+      await user.clear(attackInput)
+      await user.type(attackInput, '30')
+
+      expect(screen.getByLabelText('Defense Enhancement Discount Lab')).toHaveValue(0)
+      expect(screen.getByLabelText('Utility Enhancement Discount Lab')).toHaveValue(0)
+    })
+
+    it("hard-caps an entered level at 100, this Lab's own max", () => {
+      render(<LabsInputs />)
+
+      fireEvent.change(screen.getByLabelText('Defense Enhancement Discount Lab'), {
+        target: { value: '999' },
+      })
+
+      expect(screen.getByLabelText('Defense Enhancement Discount Lab')).toHaveValue(100)
     })
   })
 })
