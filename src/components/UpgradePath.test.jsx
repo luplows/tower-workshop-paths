@@ -238,6 +238,9 @@ describe('UpgradePath', () => {
       expect(rows[0]).toHaveTextContent('Workshop Enhancements Lab')
       expect(rows[0]).toHaveTextContent('5B coins')
       expect(rows[0]).toHaveTextContent('Lv 0 → 1')
+      // Gets its own highlight color, the same way Attack/Defense/Utility
+      // rows already do -- see UpgradePath.css's --tree-lab.
+      expect(rows[0]).toHaveClass('upgrade-path__row--lab')
 
       await user.click(
         within(rows[0]).getByRole('button', {

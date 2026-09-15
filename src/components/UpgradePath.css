@@ -49,6 +49,10 @@
   border-left-color: var(--tree-utility);
 }
 
+.upgrade-path__row--lab {
+  border-left-color: var(--tree-lab);
+}
+
 .upgrade-path__rank {
   min-width: 20px;
   color: var(--text);
