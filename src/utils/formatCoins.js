@@ -20,10 +20,13 @@ const TIERS = [
  * Truncates to 2 decimal places rather than rounding, and drops a
  * trailing ".00" or trailing zero, matching the game's own "2.98k",
  * "137.45M", "2.5B", "30" (no suffix or decimals needed under 1000).
- * Workshop costs are frequently fractional in the underlying data, not a
- * bug -- tower-idle-toolkit's own per-level cost table has non-integer
- * `coins` values from around level 50-100 onward for most upgrades -- so
- * every tier needs this same truncation, not just the condensed ones.
+ * Dividing an arbitrary coin total by a tier's value (1e6, 1e9, ...)
+ * routinely produces more than 2 decimal digits even when the raw total
+ * itself is a whole number, so every tier needs this same truncation, not
+ * just the condensed ones. Raw totals can still be genuinely fractional
+ * too -- a discount multiplier (workshopDiscount.js, enhancementDiscount.js)
+ * applied to a whole-number cost, or several of those summed into a batch,
+ * rarely lands back on an exact integer.
  *
  * If a displayed batch total is ever reported off by ~0.01 at this tier
  * from what the game shows (e.g. "959.71B" here vs. "959.72B" in-game),

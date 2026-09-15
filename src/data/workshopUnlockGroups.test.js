@@ -25,13 +25,12 @@ describe('WORKSHOP_UNLOCK_GROUPS', () => {
     }
   })
 
-  // Change-detection tripwire, not a correctness assertion: fails if
-  // tower-idle-toolkit ever adds/removes/reorders a group or changes a
-  // cost, so an upstream update gets a reviewable diff instead of silently
-  // reshaping which upgrades are gated behind what -- see
-  // workshopCategories.test.js for the same pattern applied to upgrades
-  // themselves. A snapshot update here should always be a deliberate,
-  // reviewed choice -- see Open-Questions.md.
+  // Change-detection tripwire, not a correctness assertion: this data is
+  // hand-transcribed (see the comment atop workshopUnlockGroups.js), so a
+  // snapshot update here should always be a deliberate, reviewed choice --
+  // confirm it reflects a real correction to the source data, not an
+  // accidental edit. Same role workshopCategories.test.js's snapshot plays
+  // for Workshop upgrades themselves.
   it('matches the known group structure (snapshot)', () => {
     expect(WORKSHOP_UNLOCK_GROUPS).toMatchSnapshot()
   })

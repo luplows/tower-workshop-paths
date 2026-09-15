@@ -4,10 +4,13 @@
  * tree's own enhancements (see Completed-Questions.md's OQ-6 for the full
  * mechanic and the shared 50B/500B/5T/50T/500T threshold progression).
  *
- * Unlike WORKSHOP_CATEGORIES, this data isn't sourced from tower-idle-toolkit
- * (which has none of it) -- it's hand-entered from the community Google
- * Sheet credited in README.md. `unlocksAt` is unused until the
- * gating/discount-lab work happens -- see Open-Questions.md's OQ-6.
+ * This file (names, `quantity`, `unlocksAt`) is hand-entered from the
+ * community Google Sheet credited in README.md -- unlike this tree's own
+ * per-level costs (enhancementLevels.js) and every other Workshop data
+ * file in this project, which now come from mytower.app (Completed-
+ * Questions.md's OQ-39). mytower.app doesn't model the threshold-gating
+ * mechanic `unlocksAt` describes at all (confirmed directly, see
+ * OQ-39-Data-Source-Migration.md), so there was nothing to migrate here.
  * `quantity` (max level) comes from the Master Sheet tab's "Max level"
  * column (column W) and is accepted as correct for the current patch --
  * see OQ-14.
