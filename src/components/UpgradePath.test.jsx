@@ -280,6 +280,37 @@ describe('UpgradePath', () => {
     })
   })
 
+  describe('priority-weighted ranking (OQ-2)', () => {
+    it('recommends Cash Bonus + over a Workshop upgrade that would win on raw cost alone', () => {
+      // Damage's next batch at level 450 costs ~503M -- far cheaper in raw
+      // coins than Cash Bonus's own next level (5B), so cost-only ranking
+      // (getCheapestNextUpgrades) would pick this Workshop row first (see
+      // this same fixture verified against both ranking functions in
+      // getPrioritizedNextUpgrades.test.js). But Cash Bonus is the critical
+      // path toward Coin Bonus here (Lab already bought, fresh Enhancement
+      // state): the effective cost of finishing that chain is ~60.54B, and
+      // 503M already exceeds FALLBACK_RATIO of that (~473M) -- so the
+      // priority-weighted ranking actually wired into this screen should
+      // recommend completing the Coin Bonus chain instead. This is the
+      // component-level proof that UpgradePath is really using
+      // getPrioritizedNextUpgrades, not just a fixture that happens to
+      // produce the same answer either way (every other test in this file
+      // does, which is exactly how two real ranking bugs went unnoticed
+      // here -- see Open-Questions.md's OQ-2 history).
+      const workshopLevels = maxedWorkshopLevels()
+      workshopLevels.Damage = 450
+      window.localStorage.setItem('workshopLevels', JSON.stringify(workshopLevels))
+      window.localStorage.setItem('enhancementLabLevel', JSON.stringify(1))
+
+      render(<UpgradePath />)
+
+      const rows = screen.getAllByRole('listitem')
+      expect(rows[0]).toHaveTextContent('Cash Bonus +')
+      expect(rows[0]).toHaveTextContent('5B coins')
+      expect(rows[0]).toHaveTextContent('Lv 0 → 1')
+    })
+  })
+
   describe('Workshop upgrade-unlock groups (OQ-5)', () => {
     beforeEach(() => {
       // Overrides the outer beforeEach's default-unlocked seed.
