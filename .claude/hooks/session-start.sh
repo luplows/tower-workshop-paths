@@ -26,15 +26,35 @@ cd "${CLAUDE_PROJECT_DIR:-$(dirname "$0")/../..}"
 # that churn into an unrelated PR.
 npm install --no-save --no-fund --no-audit
 
-# Playwright needs a chromium build. Claude Code on the web ships one
-# pre-installed (PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers), so only
-# download when the browser really is absent -- the download is ~150MB.
+# Playwright needs a chromium build matching the exact revision
+# @playwright/test expects -- not merely "some chromium". Claude Code on the
+# web pre-installs a build, but it is not necessarily that revision, and the
+# sandbox network policy blocks cdn.playwright.dev, so the matching build
+# cannot simply be downloaded. Ask Playwright itself where it expects its
+# browser (no network, no download attempt); if that is missing, fall back to
+# the image's pre-installed chromium, which drives Playwright correctly even
+# at a different build number, via PLAYWRIGHT_CHROMIUM_EXECUTABLE. That
+# variable is read by playwright.config.js and stays unset on local machines
+# and in CI, where Playwright's own managed browser is used as usual.
 browsers_path="${PLAYWRIGHT_BROWSERS_PATH:-$HOME/.cache/ms-playwright}"
-if compgen -G "$browsers_path/chromium-*" > /dev/null 2>&1; then
-  echo "session-start: chromium already present in $browsers_path"
+expected_chromium="$(node -e \
+  "import('@playwright/test').then(m => { try { console.log(m.chromium.executablePath()) } catch {} })" \
+  2>/dev/null || true)"
+
+if [ -n "$expected_chromium" ] && [ -x "$expected_chromium" ]; then
+  echo "session-start: playwright's own chromium is present"
+elif [ -x "$browsers_path/chromium" ]; then
+  echo "session-start: playwright wants ${expected_chromium:-a chromium build} which is absent;"
+  echo "session-start: falling back to pre-installed $browsers_path/chromium"
+  if [ -n "${CLAUDE_ENV_FILE:-}" ]; then
+    echo "export PLAYWRIGHT_CHROMIUM_EXECUTABLE=$browsers_path/chromium" >> "$CLAUDE_ENV_FILE"
+  fi
 else
-  echo "session-start: no chromium found in $browsers_path, installing"
-  npx --yes playwright install chromium
+  # No pre-installed browser to fall back on. Try a download -- it fails on a
+  # restricted network, but succeeds on a permissive one, so it beats giving up.
+  echo "session-start: no usable chromium found, attempting download"
+  npx --yes playwright install chromium || \
+    echo "session-start: chromium unavailable -- e2e tests cannot run in this session" >&2
 fi
 
 echo "session-start: ready"
