@@ -91,8 +91,22 @@ jobs:
             echo "tripped=false" >> "$GITHUB_OUTPUT"
           fi
 
+      # Disabled by default. The review cannot currently run: the Claude Code
+      # Action rejects a `claude setup-token` OAuth token with `401 OAuth
+      # access token is invalid` (anthropics/claude-code-action#1614, open, no
+      # workaround). Two separately pasted tokens failed identically, so this
+      # is not a bad paste.
+      #
+      # It is gated rather than left running because `continue-on-error` made
+      # a total failure report as a GREEN check -- a signal meaning "reviewed
+      # fine, or did not run at all" is worse than a red one. Set the
+      # repository variable REVIEW_ENABLED to "true" to turn it back on once
+      # the upstream issue is fixed or the credential changes.
       - name: Review against REVIEW.md
-        if: steps.key.outputs.present == 'true' && steps.breaker.outputs.tripped == 'false'
+        if: >-
+          vars.REVIEW_ENABLED == 'true'
+          && steps.key.outputs.present == 'true'
+          && steps.breaker.outputs.tripped == 'false'
         uses: anthropics/claude-code-action@v1
         # The review is non-enforcing, so its failure must not read as a red
         # check on every PR. Known broken as of writing: the OAuth token is
@@ -146,7 +160,10 @@ jobs:
             --max-turns 30
 
       - name: Record verdict
-        if: always() && steps.key.outputs.present == 'true' && steps.breaker.outputs.tripped == 'false'
+        if: >-
+          always() && vars.REVIEW_ENABLED == 'true'
+          && steps.key.outputs.present == 'true'
+          && steps.breaker.outputs.tripped == 'false'
         env:
           GH_TOKEN: ${{ github.token }}
           PR: ${{ github.event.pull_request.number }}
@@ -189,3 +206,10 @@ jobs:
             exit 1
           fi
           echo "::warning title=Review would block::REVIEW_ENFORCING is not set, so this is advisory for now."
+
+      - name: Report review status
+        if: always()
+        run: |
+          if [ "${{ vars.REVIEW_ENABLED }}" != "true" ]; then
+            echo "::notice title=Review disabled::REVIEW_ENABLED is not set. No review ran on this PR -- this check passing means only that CI plumbing ran. See Open-Questions.md OQ-42."
+          fi
