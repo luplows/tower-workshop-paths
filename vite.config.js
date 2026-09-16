@@ -12,7 +12,11 @@ export default defineConfig(({ command, isPreview }) => ({
   // / as usual.
   base: command === 'build' || isPreview ? '/tower-workshop-paths/' : '/',
   test: {
+    // Default for files with no `// @vitest-environment` pragma. Pure-logic
+    // test files (src/utils, src/data) opt into `node` per-file to skip
+    // jsdom construction, which otherwise dominates suite runtime (OQ-41).
     environment: 'jsdom',
+    pool: 'vmThreads',
     setupFiles: './src/test/setup.js',
     globals: true,
     exclude: ['**/node_modules/**', 'e2e/**'],

@@ -1,3 +1,5 @@
+// @vitest-environment node
+
 import { describe, expect, it } from 'vitest'
 import { WORKSHOP_CATEGORIES } from './workshopCategories'
 import { WORKSHOP_UNLOCK_GROUPS } from './workshopUnlockGroups'

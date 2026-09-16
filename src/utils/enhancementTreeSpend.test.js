@@ -1,3 +1,5 @@
+// @vitest-environment node
+
 import { describe, expect, it } from 'vitest'
 import { ENHANCEMENT_CATEGORIES } from '../data/enhancementCategories'
 import { enhancementTreeSpend, isEnhancementCategoryUnlocked } from './enhancementTreeSpend'
