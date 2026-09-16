@@ -1,1 +1,6 @@
 * text=auto eol=lf
+
+# Vitest snapshots are generated output, not hand-written source. Marking them
+# as generated collapses them in GitHub diffs, so a PR that regenerates data
+# reads as the logic it actually changed rather than thousands of churned lines.
+*.snap linguist-generated=true
