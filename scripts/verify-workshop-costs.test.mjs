@@ -1,7 +1,7 @@
 // @vitest-environment node
 
 import { describe, expect, it } from 'vitest'
-import { checklistLevels, classify, parseAbbreviated } from './verify-workshop-costs.mjs'
+import { checklistLevels, classify, exitCodeForResults, parseAbbreviated } from './verify-workshop-costs.mjs'
 
 describe('checklistLevels', () => {
   it('picks Lv1, the midpoint, and the last covered index -- matching OQ-1-Checklist.md', () => {
@@ -61,5 +61,32 @@ describe('classify', () => {
 
   it('is MISMATCH when either side fails to parse, rather than silently passing', () => {
     expect(classify('276.5M', 'n/a')).toBe('MISMATCH')
+  })
+})
+
+describe('exitCodeForResults', () => {
+  it('is 0 when every row matches or is a rounding difference', () => {
+    expect(
+      exitCodeForResults([
+        { status: 'MATCH' },
+        { status: 'NEAR (rounding)' },
+      ]),
+    ).toBe(0)
+  })
+
+  it('is 1 when a row could not be checked, but nothing mismatched', () => {
+    expect(exitCodeForResults([{ status: 'MATCH' }, { status: 'ERROR' }])).toBe(1)
+  })
+
+  it('is 2 for a real cost mismatch', () => {
+    expect(exitCodeForResults([{ status: 'MATCH' }, { status: 'MISMATCH' }])).toBe(2)
+  })
+
+  it('is 2 for max level drift', () => {
+    expect(exitCodeForResults([{ status: 'MAX LEVEL DRIFT' }])).toBe(2)
+  })
+
+  it('prefers 2 over 1 when a run has both an error and a confirmed mismatch', () => {
+    expect(exitCodeForResults([{ status: 'ERROR' }, { status: 'MISMATCH' }])).toBe(2)
   })
 })
