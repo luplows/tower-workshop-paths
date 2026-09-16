@@ -1,0 +1,102 @@
+name: Screenshot baselines
+
+# Playwright screenshot baselines (OQ-40) are renderer-specific: the chromium
+# build, its rasteriser and the runner's fonts all end up in the pixels. A
+# baseline generated on a contributor's machine -- or in a Claude Code web
+# session, whose pre-installed chromium is a different build from the one CI
+# downloads -- fails against CI's renderer no matter how correct the test is.
+# So CI mints them and the repo carries exactly one canonical set.
+#
+# Two ways in:
+#   * automatically, on a pull request that touches the e2e suite, minting
+#     only baselines that do not exist yet (`--update-snapshots=missing`
+#     never overwrites an existing image, so this cannot turn a regression
+#     green -- it can only give a newly-added screenshot its first baseline);
+#   * manually, via "Run workflow" with mode=all, for an intentional
+#     appearance change, which does rewrite them.
+#
+# Note: a push made with GITHUB_TOKEN does not trigger further workflow runs,
+# so the CI run that compares against a freshly-committed baseline is the one
+# started by the *next* push to the branch.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'e2e/**'
+      - 'playwright.config.js'
+      - '.github/workflows/update-screenshots.yml'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'missing = only mint baselines that do not exist yet; all = regenerate every baseline'
+        type: choice
+        options: [missing, all]
+        default: missing
+
+permissions:
+  contents: write
+
+concurrency:
+  group: screenshot-baselines-${{ github.event.pull_request.head.ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  baselines:
+    # A fork's GITHUB_TOKEN is read-only, so there would be nothing to push to.
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+
+      # Writing a baseline that was missing is reported as a test failure
+      # ("A snapshot doesn't exist ..., writing actual"), which is the normal
+      # path here -- the verify step below is what decides whether the images
+      # are any good.
+      - name: Generate baselines
+        run: npx playwright test e2e/appearance.spec.js --update-snapshots=${{ inputs.mode || 'missing' }} || true
+
+      - name: Check no existing baseline was rewritten
+        if: github.event_name == 'pull_request'
+        run: |
+          rewritten="$(git diff --name-only -- e2e/__screenshots__)"
+          if [ -n "$rewritten" ]; then
+            echo "::error::mode=missing rewrote baselines that already existed:"
+            echo "$rewritten"
+            echo "Updating a baseline is a deliberate act that belongs in the PR diff (REVIEW.md item 10), not a side effect of this job."
+            exit 1
+          fi
+
+      # The suite that CI actually gates on, against the images just written:
+      # a baseline that cannot reproduce itself in the environment that made
+      # it is a flaky baseline, and never gets committed.
+      - name: Verify the baselines reproduce
+        run: npm run test:e2e
+
+      - name: Commit the baselines
+        run: |
+          if [ -z "$(git status --porcelain -- e2e/__screenshots__)" ]; then
+            echo "Baselines unchanged; nothing to commit."
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add e2e/__screenshots__
+          git status --short -- e2e/__screenshots__
+          git commit -m 'Generate Playwright screenshot baselines on CI'
+          git push origin HEAD:${{ github.event.pull_request.head.ref || github.ref_name }}
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
