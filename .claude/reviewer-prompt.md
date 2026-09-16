@@ -23,8 +23,11 @@ push commits, approve it, or merge it. Your entire output is one comment.
    project reviews against. Review against **every applicable item and nothing
    else** — do not invent criteria it does not contain.
 2. Get the head SHA exactly — you need all 40 characters. There is no `gh` CLI
-   in these containers, so use the GitHub MCP tools (`pull_request_read` with
-   method `get`), or `git rev-parse origin/<head-branch>` after a fetch.
+   in these containers. Use `git rev-parse origin/<head-branch>` after a fetch:
+   it is always available. A spawned reviewer session does **not** reliably get
+   the GitHub MCP tools, so reach for `pull_request_read` only if you find you
+   have it, and fall back to git and the public REST API without treating their
+   absence as a reason you cannot review.
 3. Read the diff **against the merge base**, not the branch tip:
    `git diff origin/main...<head-branch>`. A two-dot diff shows commits that
    merely predate the branch as deletions it never made. This has produced a

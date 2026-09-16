@@ -2,7 +2,7 @@
 
 ## Workflow
 
-Never commit or push directly to `main`. `main` is protected (pull requests required, enforced even for admins) — for every change, create a feature branch, commit there, push it, and open a pull request. Note that agent containers have no `gh` CLI — open and inspect PRs through the GitHub MCP tools instead.
+Never commit or push directly to `main`. `main` is protected (pull requests required, enforced even for admins) — for every change, create a feature branch, commit there, push it, and open a pull request. Note that agent containers have no `gh` CLI — open and inspect PRs through the GitHub MCP tools where the session has them, and plain `git` plus the REST API where it does not (a spawned session may get neither `gh` nor those tools).
 
 While a PR is still open, address anything that comes up from reviewing that PR's own state (a spotted issue, a follow-up question, a requested tweak) with a new commit on its existing branch, not a new branch/PR. Only start a new branch for genuinely new, unrelated work.
 
