@@ -102,6 +102,14 @@ jobs:
           # `is_error: true, total_cost_usd: 0` with the real error suppressed.
           # See anthropics/claude-code-action#721.
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          # TEMPORARY DIAGNOSTIC -- remove once the auth failure is understood.
+          # The action hides its real error ("full output hidden for security"),
+          # so a 401 surfaces only as `is_error: true, total_cost_usd: 0` with
+          # no way to tell what was rejected. This repo is public and its PR
+          # diffs already are, so the exposure here is the review's own
+          # reasoning rather than anything secret -- an acceptable trade to see
+          # one error message. Do not leave this on.
+          show_full_output: true
           prompt: |
             REPO: ${{ github.repository }}
             PR NUMBER: ${{ github.event.pull_request.number }}
