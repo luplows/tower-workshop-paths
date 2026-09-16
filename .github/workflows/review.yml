@@ -96,6 +96,12 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # Required alongside the OAuth token: without it the action tries
+          # GitHub App authentication (an OIDC token exchange) first and 401s
+          # before reaching the model, which surfaces only as
+          # `is_error: true, total_cost_usd: 0` with the real error suppressed.
+          # See anthropics/claude-code-action#721.
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           prompt: |
             REPO: ${{ github.repository }}
             PR NUMBER: ${{ github.event.pull_request.number }}
