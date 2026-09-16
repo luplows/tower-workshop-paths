@@ -19,7 +19,7 @@
 }
 
 .app__header {
-  padding: 14px 16px 11px;
+  padding: 14px 16px 10px;
   border-bottom: 1px solid var(--border);
   background: var(--bg);
   display: flex;
