@@ -93,3 +93,87 @@ for (const { name, viewport } of VIEWPORTS) {
     })
   })
 }
+
+// Dark palette (OQ-44). index.css declares the dark values twice -- once
+// under `prefers-color-scheme: dark`, once under `:root[data-theme='dark']`,
+// because a selector list can't span in and out of a @media block -- with
+// only a comment asking that they stay in sync. The realistic failure is
+// those two blocks drifting apart, which src/index.css.test.js catches by
+// comparing their declared custom properties directly: an informative
+// "--accent differs" beats a pixel-diff count for that failure, and it's a
+// unit test, so it costs nothing here. What that unit test *can't* catch is
+// a real browser failing to apply either selector at all (a typo breaking
+// `:not(...)`, say) -- so one screenshot stands in for the six a full
+// second matrix would cost, chosen for the screen with the most var(--...)
+// usage (tree/success/danger accents on top of text/bg/border), at one
+// viewport: dark and light differ only in color values, not layout, so the
+// mobile-breakpoint crossing the light matrix exists for buys nothing here.
+test.describe('dark palette appearance', () => {
+  test.use({
+    viewport: { width: 1280, height: 720 },
+    colorScheme: 'dark',
+    deviceScaleFactor: 1,
+  })
+
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      window.localStorage.setItem('enhancementLabLevel', JSON.stringify(1))
+    })
+    await page.goto('/')
+  })
+
+  test('Path screen', async ({ page }) => {
+    await page.getByRole('tab', { name: 'Path', exact: true }).click()
+    await expect(page.getByRole('list', { name: 'Recommended buy order' })).toBeVisible()
+
+    await settle(page)
+    await expect(page).toHaveScreenshot('path-desktop-dark.png')
+  })
+})
+
+// The data-theme override (HeaderMenu's Light/Dark toggle, see App.jsx)
+// forces a theme regardless of OS preference. header-menu.spec.js and
+// App.test.jsx both check that choosing it sets the `data-theme` attribute;
+// neither checks that index.css's selectors actually pick it up. Checked via
+// a computed custom property rather than a screenshot -- cheap, runs in a
+// real browser's cascade (unlike a jsdom unit test), and a broken selector
+// fails naming the exact property and value rather than a pixel count. The
+// assertion is self-referential (forcing a theme must reproduce what that
+// theme's OS preference alone renders) rather than a hard-coded hex, so it
+// doesn't duplicate the palette values index.css.test.js already guards.
+test.describe('data-theme override', () => {
+  const backgroundOf = (page) =>
+    page.evaluate(() =>
+      getComputedStyle(document.documentElement).getPropertyValue('--bg').trim(),
+    )
+
+  test('data-theme="dark" reproduces the OS-dark background under an OS-light preference', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ colorScheme: 'dark' })
+    await page.goto('/')
+    const osDarkBg = await backgroundOf(page)
+
+    await page.emulateMedia({ colorScheme: 'light' })
+    await page.addInitScript(() =>
+      window.localStorage.setItem('themePreference', JSON.stringify('dark')),
+    )
+    await page.goto('/')
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+    expect(await backgroundOf(page)).toBe(osDarkBg)
+  })
+
+  test('data-theme="light" suppresses the OS-dark background', async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'light' })
+    await page.goto('/')
+    const osLightBg = await backgroundOf(page)
+
+    await page.emulateMedia({ colorScheme: 'dark' })
+    await page.addInitScript(() =>
+      window.localStorage.setItem('themePreference', JSON.stringify('light')),
+    )
+    await page.goto('/')
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
+    expect(await backgroundOf(page)).toBe(osLightBg)
+  })
+})

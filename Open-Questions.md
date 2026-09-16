@@ -40,11 +40,7 @@ Client-only, per `Project-Outline.md`'s no-backend scope: likely encode `worksho
 
 ### Project health and workflow
 
-Not player-facing features, but they decide how safely and cheaply everything above can be built. OQ-40, which closed the appearance gap that removing the pre-merge visual-inspection gate opened, is resolved; see `Completed-Questions.md`.
-
-**OQ-44. Guard the dark palette's appearance too**
-As a player who uses dark mode, I want the dark theme to keep looking right as features are added, so that a palette that drifts out of sync doesn't ship unnoticed.
-OQ-40's screenshots pin `colorScheme: 'light'` deliberately — a runner or agent machine with a dark OS preference would otherwise render a different app and produce baselines nobody meant. That leaves the dark palette unguarded, and it is the half more likely to drift: `index.css` carries the dark values **twice** (once under `prefers-color-scheme: dark`, once under `:root[data-theme='dark']`, because a selector list cannot span in and out of a `@media` block) with only a comment asking that they be kept in sync. Open questions: whether a dark shot of all three screens is worth doubling the baseline count, or whether one screen plus a unit test asserting the two blocks declare identical values would catch the realistic failure more cheaply; and whether the same applies to the `data-theme` override paths, which no test exercises today.
+Not player-facing features, but they decide how safely and cheaply everything above can be built. OQ-40 and OQ-44, which closed the appearance gaps that removing the pre-merge visual-inspection gate opened, are resolved; see `Completed-Questions.md`.
 
 **OQ-42. Add automated, merge-gating review to pull requests**
 As someone working on this project, I want every PR to get an adversarial read of its diff before it merges, so that a green CI check isn't the only thing between a change and `main` — and so that an agent handed a task can be confirmed to have followed the whole defined process, every time.
