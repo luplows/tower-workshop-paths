@@ -40,15 +40,11 @@ Client-only, per `Project-Outline.md`'s no-backend scope: likely encode `worksho
 
 ### Project health and workflow
 
-Not player-facing features, but they decide how safely and cheaply everything above can be built. OQ-40 is the most urgent of the three: it closes a gap that removing the pre-merge visual-inspection gate deliberately opened.
+Not player-facing features, but they decide how safely and cheaply everything above can be built. OQ-40 is the more urgent of the two: it closes a gap that removing the pre-merge visual-inspection gate deliberately opened.
 
 **OQ-40. Guard the UI's appearance against regressions**
 As a player, I want the layout to keep working as features are added, so that a change to one screen doesn't silently break how another one looks.
 Removing the pre-merge visual-inspection gate (`Completed-Questions.md`) traded a human spot-check for automated coverage — but the automated side only covers *behavior*. The Playwright suite asserts what the app does; nothing asserts what it looks like. `playwright.config.js` has no screenshot assertions, so a CSS or layout break passes CI silently, and `CLAUDE.md` says as much in its Testing section. Proposal: `toHaveScreenshot()` baselines committed to the repo, covering the Upgrade, Path and Enhance screens plus at least one mobile viewport. Open questions: how many viewports justify their baseline-churn cost; what pixel tolerance avoids false failures from antialiasing differences between a local run and the CI runner; and whether baselines should be generated in CI (one consistent renderer) rather than on whichever machine happened to add the test. Pinning a mobile viewport partly de-risks OQ-9, though it is not a substitute for a real device.
-
-**OQ-41. Cut the unit-test suite's jsdom overhead**
-As someone working on this project, I want `npm test` to spend its time running tests rather than constructing DOM environments, so that the edit-test loop stays fast as the suite grows.
-Measured on the current suite: 240 tests across 27 files in ~12.4s, of which **63% is jsdom environment creation** (20.6s of tracked time, one environment per file) against only ~21% actually running tests. Of the 26 `*.test.js{,x}` files under `src/`, just 12 touch a DOM — the `utils/` and `data/` suites are pure functions paying for an environment they never use. Two composable fixes: `environmentMatchGlobs` (or a per-file `// @vitest-environment node` pragma) so pure-logic files skip jsdom entirely, and `pool: 'vmThreads'` for the rest, which vitest's own output recommends and which keeps per-file isolation. Success criterion: all 240 tests still pass and wall-clock drops meaningfully. Worth doing before the suite grows, since the cost is per-file and therefore compounds.
 
 **OQ-42. Add automated code review to pull requests**
 As someone working on this project, I want every PR to get an adversarial read of its diff before it merges, so that a green CI check isn't the only thing between a change and `main`.
