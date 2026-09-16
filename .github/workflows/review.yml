@@ -1,0 +1,164 @@
+name: Review
+
+# Automated review against REVIEW.md, per Open-Questions.md OQ-42.
+#
+# Ships NON-ENFORCING: the job reports findings and records a verdict, but does
+# not fail. Set the repository variable REVIEW_ENFORCING to "true" (and make
+# this check required in branch protection) once it has been watched on real
+# PRs. That is a deliberate second step -- see OQ-42 for why gating is the goal
+# and why enabling it blind is not.
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  id-token: write
+
+env:
+  # Number of open review-blocked PRs at which the circuit breaker trips.
+  BREAKER_THRESHOLD: '5'
+  # Rounds of blocking findings before a PR is escalated to a human.
+  MAX_ROUNDS: '2'
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # The workflow must be safe to merge before the secret exists, so a
+      # missing key skips the review rather than failing every PR red.
+      - name: Check for API key
+        id: key
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -n "${ANTHROPIC_API_KEY:-}" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Review skipped::ANTHROPIC_API_KEY is not set on this repository, so the automated review did not run."
+          fi
+
+      # Circuit breaker. Many blocked PRs at once means something systemic is
+      # wrong -- a bad checklist, a bad reviewer, bad prompts -- and reviewing
+      # more PRs just multiplies it. Exempt PRs that could carry the fix, or
+      # the breaker becomes a trap escapable only by an admin merge.
+      - name: Circuit breaker
+        id: breaker
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          blocked="$(gh pr list --state open --label review-blocked --json number --jq 'length')"
+          echo "blocked=$blocked" >> "$GITHUB_OUTPUT"
+          echo "$blocked open PR(s) currently labelled review-blocked (threshold: $BREAKER_THRESHOLD)"
+
+          exempt=false
+          if gh pr view "$PR" --json labels --jq '.labels[].name' | grep -qx 'breaker-override'; then
+            exempt=true
+            echo "This PR carries breaker-override."
+          elif [ -z "$(gh pr diff "$PR" --name-only | grep -v '^\.github/workflows/' || true)" ]; then
+            exempt=true
+            echo "This PR touches only .github/workflows/, so it may carry the fix."
+          fi
+
+          if [ "$blocked" -ge "$BREAKER_THRESHOLD" ] && [ "$exempt" = false ]; then
+            echo "tripped=true" >> "$GITHUB_OUTPUT"
+            echo "::error title=Review circuit breaker tripped::$blocked PRs are blocked on review findings. Clear the backlog before landing more work."
+          else
+            echo "tripped=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Review against REVIEW.md
+        if: steps.key.outputs.present == 'true' && steps.breaker.outputs.tripped == 'false'
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+
+            The PR branch is checked out in the working directory.
+
+            Read `REVIEW.md` in the repository root. It is the enumerated
+            checklist this project reviews against. Review this pull request
+            against every applicable item, and nothing else -- do not invent
+            criteria it does not contain.
+
+            Two things to be careful about:
+
+            - Items 8-11 apply only when the PR changes app code. Skip them for
+              a docs-only diff.
+            - The "Reading the PR body" section is not optional. Read the PR
+              description's actual content and judge whether each of its three
+              sections is substantively filled. A heading with a placeholder
+              comment, "N/A", "tests pass" with no command or result, or a
+              restatement of the PR title all count as unfilled.
+
+            Diff against the merge base, not the branch tip, or changes that
+            merely predate this branch will look like deletions it made.
+
+            Post your findings with `gh pr comment`. For each finding, name the
+            REVIEW.md item number it comes from. Be specific about what is
+            wrong and what would fix it.
+
+            Then write `/tmp/verdict.json` containing exactly:
+              {"blocking": <number of items the PR fails>, "summary": "<one line>"}
+            A failed item is blocking. If the PR satisfies every applicable
+            item, write {"blocking": 0, "summary": "..."}.
+          claude_args: |
+            --allowedTools "Read,Grep,Glob,Write,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(git diff:*),Bash(git log:*),Bash(git merge-base:*)"
+            --max-turns 30
+
+      - name: Record verdict
+        if: always() && steps.key.outputs.present == 'true' && steps.breaker.outputs.tripped == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          ENFORCING: ${{ vars.REVIEW_ENFORCING }}
+        run: |
+          set -euo pipefail
+          if [ ! -f /tmp/verdict.json ]; then
+            echo "::warning title=No verdict::The review step produced no verdict file; treating as inconclusive."
+            exit 0
+          fi
+          blocking="$(jq -r '.blocking // 0' /tmp/verdict.json)"
+          summary="$(jq -r '.summary // ""' /tmp/verdict.json)"
+          echo "blocking findings: $blocking"
+
+          if [ "$blocking" -eq 0 ]; then
+            echo "Review passed."
+            exit 0
+          fi
+
+          # Count previous rounds from our own marker comments, so the bound
+          # survives re-runs and does not depend on check-run history (which
+          # does not exist while this workflow is non-enforcing).
+          rounds="$(gh pr view "$PR" --json comments \
+            --jq '[.comments[] | select(.body | contains("<!-- review-verdict-blocking -->"))] | length')"
+          rounds=$((rounds + 1))
+          echo "round $rounds of $MAX_ROUNDS"
+
+          gh pr comment "$PR" --body "$(printf '%s\n\n%s\n\n%s\n' \
+            "<!-- review-verdict-blocking -->" \
+            "**Review found $blocking blocking item(s)** (round $rounds of $MAX_ROUNDS): $summary" \
+            "There is no dismissal mechanism — push a change that addresses the findings and the check re-runs.")"
+
+          if [ "$rounds" -ge "$MAX_ROUNDS" ]; then
+            gh pr edit "$PR" --add-label review-blocked || \
+              echo "::warning::Could not add the review-blocked label."
+            gh pr comment "$PR" --body "Escalating: $MAX_ROUNDS rounds of blocking findings. Labelled \`review-blocked\` for a human to weigh in."
+          fi
+
+          if [ "${ENFORCING:-false}" = "true" ]; then
+            exit 1
+          fi
+          echo "::warning title=Review would block::REVIEW_ENFORCING is not set, so this is advisory for now."

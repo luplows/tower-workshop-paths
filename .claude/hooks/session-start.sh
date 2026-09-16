@@ -57,4 +57,36 @@ else
     echo "session-start: chromium unavailable -- e2e tests cannot run in this session" >&2
 fi
 
+# Circuit breaker notice (Open-Questions.md OQ-42). Many PRs blocked on review
+# findings at once means something systemic is wrong, and starting more work
+# multiplies it. This is advisory -- the enforced half lives in the review
+# workflow -- so it is best-effort and never fails the hook.
+#
+# Note: GitHub's /search/issues API is not available to session tokens, so this
+# lists the repo's open PRs and filters labels client-side.
+breaker_threshold=5
+if [ -n "${GITHUB_TOKEN:-}" ]; then
+  slug="$(git config --get remote.origin.url 2>/dev/null \
+    | sed -E 's#(git@github\.com:|https://github\.com/)##; s#\.git$##')"
+  if [ -n "$slug" ]; then
+    blocked="$(curl -fsS --max-time 15 \
+      -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+      -H "Accept: application/vnd.github+json" \
+      "https://api.github.com/repos/${slug}/pulls?state=open&per_page=100" 2>/dev/null \
+      | python3 -c "import sys,json
+try:
+    d = json.load(sys.stdin)
+    print(sum(1 for p in d if any(l['name'] == 'review-blocked' for l in p.get('labels', []))))
+except Exception:
+    print(0)" 2>/dev/null || echo 0)"
+    if [ "${blocked:-0}" -ge "$breaker_threshold" ]; then
+      echo ""
+      echo "  !! $blocked open PRs are labelled review-blocked (threshold $breaker_threshold)."
+      echo "  !! Do not start new feature work. Something systemic is likely wrong --"
+      echo "  !! investigate the blocked PRs first. See Open-Questions.md OQ-42."
+      echo ""
+    fi
+  fi
+fi
+
 echo "session-start: ready"
