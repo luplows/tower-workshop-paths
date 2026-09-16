@@ -50,6 +50,16 @@ baselines are generated on a CI runner rather than locally, so that one renderer
 owns them — see `CLAUDE.md` for how to regenerate them after an intentional
 appearance change.
 
+### Data drift
+
+`npm run verify:workshop-costs` (`scripts/verify-workshop-costs.mjs`) spot-checks
+the shipped Workshop cost data (`src/data/workshopLevels.js`) against
+mytower.app's live tables, catching the one thing the test suite can't: a game
+patch changing a cost after this project last extracted it. A weekly
+`.github/workflows/detect-drift.yml` GitHub Action runs it automatically and
+files an issue on a confirmed mismatch — see [Open-Questions.md](Open-Questions.md)
+OQ-43 / [Completed-Questions.md](Completed-Questions.md) for why.
+
 ## Roadmap
 
 - [x] Priority-weighted buy-order algorithm spanning Workshop upgrades and Enhancements

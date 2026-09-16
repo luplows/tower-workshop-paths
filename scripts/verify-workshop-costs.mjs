@@ -34,6 +34,16 @@
  * scripts/lib/resolve-extensionless.mjs):
  *   npm run verify:workshop-costs                      # every upgrade
  *   npm run verify:workshop-costs -- Damage "Rend Armor Chance"  # a subset, by name
+ *
+ * Exit code (relied on by .github/workflows/detect-drift.yml, OQ-43, to tell
+ * a confirmed data problem apart from the check simply failing to run):
+ *   0 -- completed, no drift found.
+ *   1 -- could not complete the check (page didn't load as expected, a
+ *        row/level wasn't found, or the browser session itself threw) --
+ *        a scrape/network problem, not evidence the game data is wrong.
+ *   2 -- completed and found a real MISMATCH or MAX LEVEL DRIFT.
+ * 2 wins over 1 when both occur in the same run: a confirmed mismatch is the
+ * more actionable signal even if another upgrade in the same run errored.
  */
 import { chromium } from 'playwright'
 import { fileURLToPath } from 'node:url'
@@ -100,6 +110,14 @@ export const classify = (ours, theirs) => {
   return relDiff < ROUNDING_TOLERANCE ? 'NEAR (rounding)' : 'MISMATCH'
 }
 
+// See the exit-code contract in the header comment. Drift (2) takes priority
+// over a scrape error (1) since it's the more actionable, confirmed finding.
+export const exitCodeForResults = (results) => {
+  if (results.some((r) => r.status === 'MISMATCH' || r.status === 'MAX LEVEL DRIFT')) return 2
+  if (results.some((r) => r.status === 'ERROR')) return 1
+  return 0
+}
+
 async function dismissConsent(page) {
   const agree = page.getByRole('button', { name: 'Agree and continue' })
   if (await agree.isVisible().catch(() => false)) {
@@ -137,46 +155,56 @@ async function readMaxLevelOnPage(page) {
   return match ? Number.parseInt(match[1].replace(/,/g, ''), 10) : null
 }
 
+// Mirrors playwright.config.js's own fallback: unset on local machines and in
+// CI, where Playwright's managed browser is used as usual; set by
+// .claude/hooks/session-start.sh in a Claude Code web session whose
+// pre-installed chromium doesn't match the revision Playwright expects and
+// can't download the right one on a restricted network.
+const chromiumExecutable = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE
+
 async function main() {
-  const browser = await chromium.launch()
-  const page = await browser.newPage()
+  const browser = await chromium.launch(chromiumExecutable ? { executablePath: chromiumExecutable } : {})
   const results = []
 
-  for (const upgrade of upgrades) {
-    const url = `${BASE_URL}/workshop/upgrade/${upgrade.tree}/${encodeURIComponent(upgrade.name)}`
-    await page.goto(url, { waitUntil: 'networkidle' })
-    await dismissConsent(page)
+  try {
+    const page = await browser.newPage()
 
-    const maxLevelOnPage = await readMaxLevelOnPage(page)
-    if (maxLevelOnPage === null) {
-      results.push({ name: upgrade.name, level: '?', status: 'ERROR', detail: 'could not read page' })
-      continue
-    }
+    for (const upgrade of upgrades) {
+      const url = `${BASE_URL}/workshop/upgrade/${upgrade.tree}/${encodeURIComponent(upgrade.name)}`
+      await page.goto(url, { waitUntil: 'networkidle' })
+      await dismissConsent(page)
 
-    if (maxLevelOnPage !== upgrade.quantity) {
-      results.push({
-        name: upgrade.name,
-        level: 'M',
-        status: 'MAX LEVEL DRIFT',
-        detail: `ours=${upgrade.quantity} mytower=${maxLevelOnPage}`,
-      })
-    }
-
-    for (const ourIndex of checklistLevels(upgrade.quantity)) {
-      const ours = formatCoins(WORKSHOP_LEVELS[upgrade.name]?.[ourIndex] ?? 0).replace(' coins', '')
-      const mytowerLevel = ourIndex + 1
-      const theirs = await readMytowerCost(page, mytowerLevel, maxLevelOnPage)
-      if (theirs === null) {
-        results.push({ name: upgrade.name, level: ourIndex, status: 'ERROR', detail: 'row not found' })
+      const maxLevelOnPage = await readMaxLevelOnPage(page)
+      if (maxLevelOnPage === null) {
+        results.push({ name: upgrade.name, level: '?', status: 'ERROR', detail: 'could not read page' })
         continue
       }
-      results.push({ name: upgrade.name, level: ourIndex, status: classify(ours, theirs), detail: `ours=${ours} theirs=${theirs}` })
+
+      if (maxLevelOnPage !== upgrade.quantity) {
+        results.push({
+          name: upgrade.name,
+          level: 'M',
+          status: 'MAX LEVEL DRIFT',
+          detail: `ours=${upgrade.quantity} mytower=${maxLevelOnPage}`,
+        })
+      }
+
+      for (const ourIndex of checklistLevels(upgrade.quantity)) {
+        const ours = formatCoins(WORKSHOP_LEVELS[upgrade.name]?.[ourIndex] ?? 0).replace(' coins', '')
+        const mytowerLevel = ourIndex + 1
+        const theirs = await readMytowerCost(page, mytowerLevel, maxLevelOnPage)
+        if (theirs === null) {
+          results.push({ name: upgrade.name, level: ourIndex, status: 'ERROR', detail: 'row not found' })
+          continue
+        }
+        results.push({ name: upgrade.name, level: ourIndex, status: classify(ours, theirs), detail: `ours=${ours} theirs=${theirs}` })
+      }
+
+      await page.waitForTimeout(NAV_DELAY_MS)
     }
-
-    await page.waitForTimeout(NAV_DELAY_MS)
+  } finally {
+    await browser.close()
   }
-
-  await browser.close()
 
   console.log('\n=== Results ===')
   for (const r of results) {
@@ -195,11 +223,19 @@ async function main() {
     const clean = noDrift && spotCheckRows.length > 0 && spotCheckRows.every((r) => r.status === 'MATCH' || r.status === 'NEAR (rounding)')
     console.log(`${clean ? 'CLEAN' : 'REVIEW'.padEnd(6)} ${name}`)
   }
+
+  process.exitCode = exitCodeForResults(results)
 }
 
 // Only run when invoked directly (`node scripts/verify-workshop-costs.mjs`),
 // not when imported -- lets a test file import the pure helpers above
 // (checklistLevels/parseAbbreviated/classify) without launching a browser.
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  main()
+  main().catch((error) => {
+    // Couldn't even complete the run (e.g. the browser session or a
+    // navigation threw outright) -- exit code 1, same bucket as a per-row
+    // ERROR: a scrape/network problem, not confirmed data drift.
+    console.error('\nverify-workshop-costs failed to complete:', error)
+    process.exitCode = 1
+  })
 }
