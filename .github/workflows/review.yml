@@ -94,6 +94,13 @@ jobs:
       - name: Review against REVIEW.md
         if: steps.key.outputs.present == 'true' && steps.breaker.outputs.tripped == 'false'
         uses: anthropics/claude-code-action@v1
+        # The review is non-enforcing, so its failure must not read as a red
+        # check on every PR. Known broken as of writing: the OAuth token is
+        # rejected with `401 OAuth access token is invalid` (retried 10x),
+        # matching anthropics/claude-code-action#1614. The verdict step below
+        # already treats a missing verdict as inconclusive. Remove this when
+        # setting REVIEW_ENFORCING -- a gate that cannot fail is not a gate.
+        continue-on-error: true
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # Required alongside the OAuth token: without it the action tries
@@ -102,14 +109,6 @@ jobs:
           # `is_error: true, total_cost_usd: 0` with the real error suppressed.
           # See anthropics/claude-code-action#721.
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          # TEMPORARY DIAGNOSTIC -- remove once the auth failure is understood.
-          # The action hides its real error ("full output hidden for security"),
-          # so a 401 surfaces only as `is_error: true, total_cost_usd: 0` with
-          # no way to tell what was rejected. This repo is public and its PR
-          # diffs already are, so the exposure here is the review's own
-          # reasoning rather than anything secret -- an acceptable trade to see
-          # one error message. Do not leave this on.
-          show_full_output: true
           prompt: |
             REPO: ${{ github.repository }}
             PR NUMBER: ${{ github.event.pull_request.number }}
