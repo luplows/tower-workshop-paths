@@ -1,5 +1,12 @@
 import { defineConfig, devices } from '@playwright/test'
 
+// Set by .claude/hooks/session-start.sh only when Claude Code on the web has a
+// pre-installed chromium that is not the revision @playwright/test expects,
+// and the sandbox blocks cdn.playwright.dev so the matching build cannot be
+// downloaded. Unset on local machines and in CI, where Playwright's own
+// managed browser is used as usual.
+const chromiumExecutable = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
@@ -13,7 +20,12 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: {
+        ...devices['Desktop Chrome'],
+        ...(chromiumExecutable
+          ? { launchOptions: { executablePath: chromiumExecutable } }
+          : {}),
+      },
     },
   ],
   webServer: {
