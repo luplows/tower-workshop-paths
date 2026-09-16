@@ -45,6 +45,11 @@ npx playwright install chromium   # one-time browser install
 npm run test:e2e   # end-to-end tests (Playwright)
 ```
 
+The e2e suite includes screenshot assertions (`e2e/appearance.spec.js`). Their
+baselines are generated on a CI runner rather than locally, so that one renderer
+owns them — see `CLAUDE.md` for how to regenerate them after an intentional
+appearance change.
+
 ## Roadmap
 
 - [x] Priority-weighted buy-order algorithm spanning Workshop upgrades and Enhancements

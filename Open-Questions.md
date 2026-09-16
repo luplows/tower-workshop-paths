@@ -40,11 +40,7 @@ Client-only, per `Project-Outline.md`'s no-backend scope: likely encode `worksho
 
 ### Project health and workflow
 
-Not player-facing features, but they decide how safely and cheaply everything above can be built. OQ-40 is the more urgent of the two: it closes a gap that removing the pre-merge visual-inspection gate deliberately opened.
-
-**OQ-40. Guard the UI's appearance against regressions**
-As a player, I want the layout to keep working as features are added, so that a change to one screen doesn't silently break how another one looks.
-Removing the pre-merge visual-inspection gate (`Completed-Questions.md`) traded a human spot-check for automated coverage — but the automated side only covers *behavior*. The Playwright suite asserts what the app does; nothing asserts what it looks like. `playwright.config.js` has no screenshot assertions, so a CSS or layout break passes CI silently, and `CLAUDE.md` says as much in its Testing section. Proposal: `toHaveScreenshot()` baselines committed to the repo, covering the Upgrade, Path and Enhance screens plus at least one mobile viewport. Open questions: how many viewports justify their baseline-churn cost; what pixel tolerance avoids false failures from antialiasing differences between a local run and the CI runner; and whether baselines should be generated in CI (one consistent renderer) rather than on whichever machine happened to add the test. Pinning a mobile viewport partly de-risks OQ-9, though it is not a substitute for a real device.
+Not player-facing features, but they decide how safely and cheaply everything above can be built. OQ-40, which closed the appearance gap that removing the pre-merge visual-inspection gate opened, is resolved; see `Completed-Questions.md`.
 
 **OQ-42. Add automated, merge-gating review to pull requests**
 As someone working on this project, I want every PR to get an adversarial read of its diff before it merges, so that a green CI check isn't the only thing between a change and `main` — and so that an agent handed a task can be confirmed to have followed the whole defined process, every time.
