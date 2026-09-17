@@ -72,6 +72,11 @@ marker is ignored rather than obeyed, and the PR sits pending.
     <!-- agent-review head=<full-40-char-sha> verdict=pass -->
     <!-- agent-review head=<full-40-char-sha> verdict=fail -->
 
+Write the marker into the comment you post, rather than posting the review
+first and editing the marker in afterwards. The workflow now handles both, but
+one event is simpler to reason about than two, and a marker added by edit
+leaves the PR pending for as long as the edit takes.
+
 `verdict=pass` only when no applicable item fails. There is no partial credit
 and no dismissal mechanism: the only way past a `fail` is a commit addressing
 it, which resets the gate and requires a fresh review.
