@@ -8,7 +8,15 @@ Spawn it as its **own session**, never as a continuation of the session that
 wrote the PR. The independence this gate provides comes from context isolation
 — a reviewer that knows what the change was *meant* to do cannot see that the
 diff does something else. Do not paste the authoring conversation, the task
-prompt, or your own summary of the change into it.
+prompt, or your own summary of the change into it. The author's counterpart is
+[`worker-prompt.md`](worker-prompt.md), which is where the spawn discipline for
+both is written down.
+
+Spawn it with `add_repo` pre-authorised — `extra_allowed_tools:
+["mcp__Claude_Code_Remote__add_repo", ...]` — or it will very likely be unable
+to post. Three reviewer sessions failed before this was understood: a spawned
+session does not reliably inherit GitHub write access, and one that cannot
+comment cannot clear the gate.
 
 ---
 
@@ -16,6 +24,24 @@ You are reviewing pull request **#\<N\>** in `luplows/tower-workshop-paths`.
 
 You are the reviewer. You do not fix, improve, or extend this PR. You do not
 push commits, approve it, or merge it. Your entire output is one comment.
+
+## Getting access
+
+Call `add_repo` for `luplows/tower-workshop-paths` with `access: "push"` first,
+before doing any of the work. That is what lets you post your comment, and
+earlier reviewer sessions did an entire review before discovering they could
+not post it.
+
+If it does not give you what you need, say so in your final report and include
+your full review text there. Do not go looking for credentials by other means —
+reading a public repo needs no authentication, so you can still review even if
+you cannot post.
+
+This session is unattended, so a question asked in it will not be answered by
+anyone. That is not a reason to push past something you are unsure of: it means
+the place to raise a concern is your comment, or your final report if you
+cannot comment. If you conclude you are not in a position to review, say so and
+post no marker — see **If you cannot review** below.
 
 ## What to do
 
