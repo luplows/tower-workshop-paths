@@ -49,11 +49,22 @@ jobs:
           # Circuit breaker (OQ-42). Once five open PRs carry `review-blocked`,
           # something systemic is wrong -- a bad checklist, a bad reviewer, bad
           # prompts -- and landing more only spreads it.
+          #
+          # A tripped breaker narrows what may land; it does not stop landing
+          # outright. OQ-42 requires the PR that fixes the jam to stay
+          # landable, "or it becomes a trap escapable only by admin merge", and
+          # since nothing else merges PRs any more, a breaker with no exemption
+          # here would be exactly that trap. The two exemptions mirror
+          # review.yml's: an explicit `breaker-override` label, or a diff
+          # confined to .github/workflows/, which is where a fix to the gate
+          # itself would live. Neither bypasses review -- an exempt PR still
+          # needs review/agent success and green CI like any other.
           blocked_prs="$(gh api "repos/${REPO}/pulls?state=open&per_page=100" \
             --jq '[.[] | select([.labels[].name] | index("review-blocked"))] | length')"
+          breaker_tripped=no
           if [ "${blocked_prs}" -ge 5 ]; then
-            echo "::warning title=Circuit breaker tripped::${blocked_prs} open PRs carry review-blocked; landing nothing."
-            exit 0
+            breaker_tripped=yes
+            echo "::warning title=Circuit breaker tripped::${blocked_prs} open PRs carry review-blocked; landing only breaker-override or workflow-only PRs."
           fi
 
           candidates="$(gh api "repos/${REPO}/pulls?state=open&sort=created&direction=asc&per_page=100" \
@@ -72,6 +83,24 @@ jobs:
             if printf '%s' "${pr_json}" | jq -e '[.labels[].name] | index("review-blocked")' >/dev/null; then
               echo "PR #${pr}: review-blocked, skipping"
               continue
+            fi
+
+            if [ "${breaker_tripped}" = yes ]; then
+              if printf '%s' "${pr_json}" | jq -e '[.labels[].name] | index("breaker-override")' >/dev/null; then
+                echo "PR #${pr}: breaker tripped, but carries breaker-override"
+              else
+                # An empty file list must not read as "touches only workflows",
+                # so require at least one changed file as well as no file
+                # outside .github/workflows/.
+                changed="$(gh api "repos/${REPO}/pulls/${pr}/files?per_page=100" --paginate --jq '.[].filename')"
+                outside="$(printf '%s\n' "${changed}" | grep -v '^\.github/workflows/' || true)"
+                if [ -n "${changed}" ] && [ -z "${outside}" ]; then
+                  echo "PR #${pr}: breaker tripped, but touches only .github/workflows/"
+                else
+                  echo "PR #${pr}: breaker tripped and no exemption, skipping"
+                  continue
+                fi
+              fi
             fi
 
             # `clean` means mergeable, no conflict, and every *required* check

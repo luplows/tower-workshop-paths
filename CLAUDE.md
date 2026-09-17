@@ -16,7 +16,7 @@ This is deliberate, not a convenience. Landing used to be the author's job, but 
 
 **Open a PR as a draft if it is not finished, and mark it ready when it is.** The sweep skips drafts, and nothing else distinguishes "passed review" from "done": a non-draft PR that goes green will be landed whether or not you meant to add another commit.
 
-Nothing lands while the `review-blocked` circuit breaker is tripped (see `Open-Questions.md`, OQ-42), except the PR that clears the jam.
+While the `review-blocked` circuit breaker is tripped (see `Open-Questions.md`, OQ-42), the sweep lands only the PR that clears the jam — one carrying a `breaker-override` label, or one whose diff is confined to `.github/workflows/`. Neither exemption skips review: an exempt PR still needs `review/agent` success and green CI. Without them a tripped breaker would be a trap escapable only by admin merge, since nothing else merges PRs.
 
 PRs land on `main` as a single squash commit, so commits within a PR exist only to make review easier, not to build history. One commit is right for most changes. The exception worth splitting: when a change both regenerates data files and alters logic, commit the regeneration separately from the logic so the reviewable part isn't buried in generated churn.
 
