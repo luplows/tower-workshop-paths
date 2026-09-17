@@ -1,0 +1,106 @@
+name: Land approved PRs
+
+# The merge half of OQ-42's review gate. `review-gate.yml` decides whether a PR
+# is allowed to land; this decides nothing at all. Every condition below was
+# already established by CI and by an independent reviewer -- this only notices
+# that they hold, and acts.
+#
+# It exists because landing used to be the author's job, and a worker session
+# finishes long before its verdict arrives. That assigned the work to something
+# which no longer existed: #92 sat merge-ready with nobody responsible for
+# noticing, and #93 only landed because someone happened to ask. A schedule
+# depends on no session being alive.
+#
+# One PR per run, oldest first. GitHub recomputes mergeability asynchronously,
+# so a second merge in the same run would be decided on `mergeable_state` read
+# before the first one landed -- it would still say `clean` because nothing had
+# recalculated yet. Stopping after one costs a few minutes and removes that
+# whole class of mistake. Oldest first so a PR cannot be starved by newer ones.
+#
+# Scheduled runs are best effort and GitHub delays them under load, so treat
+# the cadence as "within the hour" rather than every 15 minutes.
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  statuses: read
+
+# Never two sweeps at once: both would read the same pre-merge state.
+concurrency:
+  group: land-approved
+  cancel-in-progress: false
+
+jobs:
+  land:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Land the oldest ready PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          # Circuit breaker (OQ-42). Once five open PRs carry `review-blocked`,
+          # something systemic is wrong -- a bad checklist, a bad reviewer, bad
+          # prompts -- and landing more only spreads it.
+          blocked_prs="$(gh api "repos/${REPO}/pulls?state=open&per_page=100" \
+            --jq '[.[] | select([.labels[].name] | index("review-blocked"))] | length')"
+          if [ "${blocked_prs}" -ge 5 ]; then
+            echo "::warning title=Circuit breaker tripped::${blocked_prs} open PRs carry review-blocked; landing nothing."
+            exit 0
+          fi
+
+          candidates="$(gh api "repos/${REPO}/pulls?state=open&sort=created&direction=asc&per_page=100" \
+            --jq '.[] | select(.draft | not) | select(.base.ref == "main") | .number')"
+
+          if [ -z "${candidates}" ]; then
+            echo "No open non-draft PRs against main."
+            exit 0
+          fi
+
+          for pr in ${candidates}; do
+            pr_json="$(gh api "repos/${REPO}/pulls/${pr}")"
+            sha="$(printf '%s' "${pr_json}" | jq -r '.head.sha')"
+            mergeable_state="$(printf '%s' "${pr_json}" | jq -r '.mergeable_state // "unknown"')"
+
+            if printf '%s' "${pr_json}" | jq -e '[.labels[].name] | index("review-blocked")' >/dev/null; then
+              echo "PR #${pr}: review-blocked, skipping"
+              continue
+            fi
+
+            # `clean` means mergeable, no conflict, and every *required* check
+            # passing. `unknown` means GitHub has not finished computing it --
+            # not a failure, just not an answer yet, so leave it for next run.
+            if [ "${mergeable_state}" != "clean" ]; then
+              echo "PR #${pr}: mergeable_state=${mergeable_state}, skipping"
+              continue
+            fi
+
+            # Belt and braces. `clean` already implies this while `review/agent`
+            # is a required status check -- but that setting silently went
+            # missing once between being set and being checked the next
+            # morning, and a sweep that lands unreviewed PRs whenever branch
+            # protection lapses is worse than no sweep. Check it directly.
+            verdict="$(gh api "repos/${REPO}/commits/${sha}/status" \
+              --jq '.statuses[] | select(.context == "review/agent") | .state')"
+            if [ "${verdict}" != "success" ]; then
+              echo "PR #${pr}: review/agent=${verdict:-absent} on ${sha}, skipping"
+              continue
+            fi
+
+            # --match-head-commit refuses the merge if anything was pushed
+            # between the checks above and this call. A push would have reset
+            # review/agent to pending anyway; this closes the window rather
+            # than trusting it to be narrow.
+            gh pr merge "${pr}" --repo "${REPO}" --squash --match-head-commit "${sha}"
+            echo "::notice title=Landed::PR #${pr} merged at ${sha}"
+            exit 0
+          done
+
+          echo "No PR ready to land."

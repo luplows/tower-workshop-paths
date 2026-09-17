@@ -82,18 +82,22 @@ same branch. That resets the gate and requires a fresh review, which is
 intended rather than a problem to route around. If you believe a finding is
 wrong, reply on the PR with your reasoning instead of ignoring it.
 
-## Merging
+## You do not merge
 
-`CLAUDE.md` makes landing the PR your job once it is ready, and "ready" means
-all three of: CI green; `review/agent` reading `success` **on the PR's current
-head SHA**; and every finding fixed or answered. Read that status yourself
-rather than trusting the merge button — a verdict about an earlier commit was
-reset by your later one and does not count.
+A scheduled workflow lands PRs that are green, verdict-passed and
+conflict-free, oldest first, one per run. You do not merge your own, and
+neither does the reviewer. Your job ends with the PR open and your work
+defensible.
 
-Review usually lands minutes after you finish, not instantly. If no verdict has
-arrived once your work is done, do not idle waiting on it: say in your final
-report that the PR is open and awaiting review, and give the head SHA, so
-whoever picks it up can confirm the verdict is about the right commit.
+**Open the PR as a draft if you are not finished, and mark it ready when you
+are.** The sweep skips drafts, and nothing else distinguishes "passed review"
+from "done" — a non-draft PR that goes green will be landed whether or not you
+meant to add another commit.
+
+Do not idle waiting for a verdict. Review arrives minutes after you finish, not
+instantly, and there is nothing for you to do when it does. Say in your final
+report that the PR is open, and give its head SHA, so anyone picking it up can
+tell whether a later verdict is about the right commit.
 
 ## Working unattended
 
