@@ -1,0 +1,133 @@
+name: Workshop cost drift detection
+
+# Scheduled companion to scripts/verify-workshop-costs.mjs (Open-Questions.md
+# OQ-43). That script already spot-checks the shipped src/data/workshopLevels.js
+# costs against mytower.app's live tables, but only when someone remembers to
+# run it -- the one failure mode the test suite structurally cannot catch,
+# since the tests assert the data is internally *consistent*, never that it
+# still matches the game after a patch.
+#
+# Cadence -- weekly (Mondays). Patches to the game are irregular (weeks to
+# months apart), so checking daily would mostly hit mytower.app -- a small
+# fan site, not an API meant for bulk traffic -- for nothing; monthly risks a
+# patch sitting undetected for most of a month before anyone notices a bad
+# recommendation. Weekly bounds the staleness to at most a few days at the
+# cost of one scrape a week, which is also the cadence the script's own
+# NAV_DELAY_MS / single-browser-context politeness choices were made for.
+#
+# Failed fetch vs. detected drift -- verify-workshop-costs.mjs exits 0 clean,
+# 1 when it could not complete the check at all (page didn't render as
+# expected, a row wasn't found, a navigation threw), and 2 when it completed
+# and found a real MISMATCH or MAX LEVEL DRIFT (see exitCodeForResults in that
+# script). Only exit 2 opens or updates a GitHub issue: a transient fetch
+# problem is not evidence the game data is wrong, and this workflow should
+# never turn "we couldn't check" into "something is broken" for a human to
+# act on. Exit 1 gets exactly one retry first -- a genuine network blip
+# resolves far more often than not -- and if it still isn't clean, the run is
+# just left failing (no issue filed), visible via GitHub's own Actions
+# failure notification, the same mechanism review-gate.yml relies on to make
+# a block noticeable.
+#
+# This workflow never touches src/data/workshopLevels.js. Regenerating cost
+# data automatically would mean a bad scrape (or a mytower.app markup change
+# this script misreads) could silently rewrite good data with nobody
+# watching; it only ever reports, and a human decides whether and how to
+# update the shipped data.
+
+on:
+  schedule:
+    - cron: '17 8 * * 1' # Monday ~08:17 UTC, off the hour, once a week
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: workshop-cost-drift
+  cancel-in-progress: false
+
+jobs:
+  detect-drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+
+      - name: Run drift check
+        id: check
+        run: |
+          STATUS=0
+          npm run verify:workshop-costs > drift-output.txt 2>&1 || STATUS=$?
+          echo "status=$STATUS" >> "$GITHUB_OUTPUT"
+          cat drift-output.txt
+
+      # A lone exit 1 is treated as a possible blip, not a confirmed problem,
+      # so it gets one immediate retry before anything is reported.
+      - name: Retry once after a possible transient fetch error
+        id: retry
+        if: steps.check.outputs.status == '1'
+        run: |
+          STATUS=0
+          npm run verify:workshop-costs > drift-output.txt 2>&1 || STATUS=$?
+          echo "status=$STATUS" >> "$GITHUB_OUTPUT"
+          cat drift-output.txt
+
+      - name: Determine final status
+        id: final
+        run: |
+          if [ "${{ steps.check.outputs.status }}" = "1" ] && [ -n "${{ steps.retry.outputs.status }}" ]; then
+            echo "status=${{ steps.retry.outputs.status }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "status=${{ steps.check.outputs.status }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: drift-check-output
+          path: drift-output.txt
+          retention-days: 14
+
+      # Exit 2 (confirmed drift): file or update an issue with the findings,
+      # then fail the run so it's noticed. Anything else non-zero (exit 1
+      # after the retry, or a completely unexpected exit code): fail the run
+      # so it's noticed, but file no issue -- it isn't a confirmed data
+      # problem, just an inability to check right now.
+      - name: Report result
+        if: steps.final.outputs.status != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          STATUS="${{ steps.final.outputs.status }}"
+          if [ "$STATUS" = "2" ]; then
+            TITLE="Workshop cost drift detected against mytower.app"
+            RUN_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+            {
+              echo "\`npm run verify:workshop-costs\` found a discrepancy against mytower.app's live tables on $(date -u +%F):"
+              echo
+              echo '```'
+              cat drift-output.txt
+              echo '```'
+              echo
+              echo "Run: $RUN_URL"
+              echo
+              echo "This likely means a game patch changed a Workshop cost or max level since \`src/data/workshopLevels.js\` was last extracted (see Open-Questions.md OQ-43). Re-run \`npm run extract:workshop-data\` and \`npm run generate:workshop-data-files\`, confirm the change against \`OQ-1-Checklist.md\`, and ship the update in its own PR -- this workflow only detects, it never rewrites the shipped data itself."
+            } > issue-body.md
+            EXISTING="$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --json number,title --jq --arg t "$TITLE" '[.[] | select(.title == $t)] | .[0].number // empty')"
+            if [ -n "$EXISTING" ]; then
+              gh issue comment "$EXISTING" --repo "$GITHUB_REPOSITORY" --body-file issue-body.md
+            else
+              gh issue create --repo "$GITHUB_REPOSITORY" --title "$TITLE" --body-file issue-body.md
+            fi
+            echo "::error::Workshop cost drift detected -- see the issue just filed/updated and the drift-check-output artifact."
+          else
+            echo "::error::verify-workshop-costs could not complete (exit $STATUS) after one retry -- likely a network or site-layout problem, not confirmed drift. No issue filed; see the drift-check-output artifact."
+          fi
+          exit 1
