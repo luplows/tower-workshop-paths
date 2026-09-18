@@ -4,7 +4,7 @@ A tool to help decide how to spend coins in the **Workshop** tab of the mobile g
 
 **[Live demo](https://luplows.github.io/tower-workshop-paths/)** — deployed to GitHub Pages on every push to `main`.
 
-See [Project-Outline.md](Project-Outline.md) for the full design, and [Open-Questions.md](Open-Questions.md) / [Completed-Questions.md](Completed-Questions.md) for what's built, in progress, or still open.
+See [Project-Outline.md](Project-Outline.md) for the full design. Work in flight lives in [stories/](stories/README.md), the refined queue; [Open-Questions.md](Open-Questions.md) is the idea backlog behind it, and [Completed-Questions.md](Completed-Questions.md) the archive of everything resolved.
 
 ## Built With
 
