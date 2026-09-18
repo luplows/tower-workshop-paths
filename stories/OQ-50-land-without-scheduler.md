@@ -50,7 +50,7 @@ pre-empt the decision)*
 
 Measured on 2026-09-18 against `origin/main`:
 
-- `land-approved.yml` landed on `main` at **01:46Z** (`0d9189e`, #96) with
+- `.github/workflows/land-approved.yml` landed on `main` at **01:46Z** (`0d9189e`, #96) with
   `cron: '*/15 * * * *'`.
 - By **17:32Z** — 15.8 hours, ~63 scheduled runs expected — exactly **three**
   had occurred: `07:07Z`, `12:14Z`, `16:30Z`. Roughly **5% of the scheduled
@@ -61,8 +61,9 @@ Measured on 2026-09-18 against `origin/main`:
 - **Every `workflow_dispatch` run has succeeded**, including the two that landed
   #98 and #99. The workflow logic is not the problem; delivery of the `schedule`
   event is.
-- `agent-workflow-design.md` already allows for slippage — "treat `*/15` as
-  'within the hour'" — so an allowance exists. Five hours is well outside it.
+- `agent-workflow-design.md` (external to this repository) already allowed for
+  slippage — "treat `*/15` as within the hour" — so an allowance existed. Five
+  hours was well outside it.
 - **The `schedule:` trigger was removed on 2026-09-18**, leaving
   `workflow_dispatch` as the only way the sweep runs. A trigger that fires 5% of
   the time is worse than one that never fires on its own: it is too slow to rely
@@ -71,8 +72,9 @@ Measured on 2026-09-18 against `origin/main`:
   AC-1 the whole of the work rather than a refinement of it.
 
 - `.github/workflows/land-approved.yml` — the sweep as it stands
-- `agent-workflow-design.md`, "Merging" and "Watchdog" — why landing is
-  a sweep at all rather than the author's job, and what the backstop covers
+- `agent-workflow-design.md` — **external**, in the owner's working directory,
+  not this repository. "Merging" and "Watchdog": why landing is a sweep at all
+  rather than the author's job, and what the backstop covers.
 
 ## Open questions
 

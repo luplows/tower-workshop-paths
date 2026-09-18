@@ -80,8 +80,9 @@ which is the cheapest moment to fix it.
 
 - `.claude/prompts/reviewer.md`, `.claude/prompts/coder.md` — the `{{STORY}}`
   placeholder and the sections around it
-- `agent-workflow-design.md`, "Credential minimalism" — the prior instance of a
-  spawn prompt drifting into injection shape
+- `agent-workflow-design.md` — **external**, in the owner's working directory,
+  not this repository. "Credential minimalism": the prior instance of a spawn
+  prompt drifting into injection shape.
 
 ## Open questions
 
