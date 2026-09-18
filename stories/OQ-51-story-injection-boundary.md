@@ -1,7 +1,8 @@
 ---
 id: OQ-51
 title: Mark where an injected story ends, so it cannot shadow the prompt
-tier: workflow
+tier: normal
+kind: workflow
 depends_on: []
 model: sonnet
 blocked: null
