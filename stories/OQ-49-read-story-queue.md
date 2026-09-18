@@ -23,9 +23,9 @@ selection is deterministic and needs no human or model judgment.
       skipped, and never silently defaulted.
 - [ ] **AC-3** — Status is derived, never read from a field, and the first
       match in this order wins: `done` (the file is in `stories/done/`),
-      `blocked` (`blocked` is non-null), `draft` (**Open questions** is
-      non-empty), `waiting` (a `depends_on` entry is not in `stories/done/`),
-      `ready` (none of the above).
+      `blocked` (`blocked` is non-null), `draft` (**Open questions** holds
+      content beyond the empty marker, per AC-7), `waiting` (a `depends_on`
+      entry is not in `stories/done/`), `ready` (none of the above).
 - [ ] **AC-4** — Only `ready` stories are returned as dispatchable. A `waiting`
       story is still listed, with what it is waiting on.
 - [ ] **AC-5** — Ordering is by `tier` — `foundational`, `dependent`,
@@ -35,6 +35,11 @@ selection is deterministic and needs no human or model judgment.
 - [ ] **AC-6** — Run as a script (`node scripts/dispatch/queue.mjs`) it prints
       every story in that order with its id, title and derived status, and
       exits non-zero if any story failed to parse.
+- [ ] **AC-7** — A section counts as empty when its content, ignoring HTML
+      comments and whitespace, is either nothing or exactly `*(none)*`. This
+      file uses that marker, and must therefore derive `ready` rather than
+      `draft` — a queue reader that cannot dispatch its own story is precisely
+      the failure this criterion exists to prevent.
 
 ## Out of scope
 

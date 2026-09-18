@@ -56,9 +56,18 @@ first match wins, so the order of the rows is part of the definition:
 |---|---|
 | `done` | the file lives in `stories/done/` |
 | `blocked` | `blocked` is non-null |
-| `draft` | **Open questions** section is non-empty |
+| `draft` | **Open questions** holds content beyond the empty marker — see below |
 | `waiting` | a `depends_on` entry is not yet in `stories/done/` |
 | `ready` | none of the above |
+
+**What "empty" means**, because two readings of that word give opposite answers
+for the same file. A section is empty when its content — ignoring HTML comments
+and whitespace — is either nothing at all, or exactly the marker `*(none)*`.
+
+The marker earns its place. It distinguishes *"considered, nothing
+outstanding"* from *"nobody has filled this in"*, and those look identical if
+the only representation of empty is emptiness. Anything else in the section,
+including a single line, makes the story `draft`.
 
 **From git and GitHub.** These refine `ready` once work has started, and need
 refs and PRs rather than files, so they belong to the dispatcher rather than to
