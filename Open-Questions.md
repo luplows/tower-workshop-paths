@@ -2,6 +2,8 @@
 
 Outstanding tasks and open questions for the project, written as user stories — each one a single testable unit of work. See `Project-Outline.md` for goals and definitions.
 
+**This is the idea backlog, and nothing dispatches from it.** The refined, dispatchable queue is [`stories/`](stories/README.md) — one file per story, with enumerated acceptance criteria a reviewer can check a diff against. An entry here crosses over when it is next picked up, acquiring acceptance criteria as it goes: there is no bulk migration, and nothing here is rewritten in advance. Entries resolved directly from this file still move to `Completed-Questions.md` as they always have.
+
 Each story has a permanent number (e.g. "OQ-7") for easy reference. Numbers are never reused or renumbered, even when a story is resolved and moves out to [`Completed-Questions.md`](Completed-Questions.md) — so a number always points to the same story.
 
 ## Outstanding
