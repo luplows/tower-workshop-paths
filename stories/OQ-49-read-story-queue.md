@@ -41,6 +41,14 @@ selection is deterministic and needs no human or model judgment.
       told apart from one nobody filled in. This file uses the marker, and must
       therefore derive `ready` rather than `draft` — a queue reader that cannot
       dispatch its own story is the failure this criterion exists to prevent.
+- [ ] **AC-8** — Section boundaries ignore fenced code blocks. A `## ` line
+      inside a fence is content, not a heading, so it neither starts a section
+      nor ends one. `stories/OQ-51-*.md` carries `## Open questions` inside a
+      fence at one point in the file and the real heading later; a scanner that
+      takes the first `^## Open questions` reads the wrong section entirely.
+      That file is the fixture — a naive parser gets `draft` from it for the
+      wrong reason, and would get `ready` wrong for a story arranged slightly
+      differently.
 
 ## Out of scope
 
