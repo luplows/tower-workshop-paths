@@ -160,15 +160,19 @@ not migrated. Only the handful of currently-open stories move.
 
 ### Status is derived, not stored
 
-| Status | Derived from |
-|---|---|
-| `draft` | **Open questions** section is non-empty |
-| `ready` | Open questions empty, `blocked: null`, no branch, `depends_on` all in `done/` |
-| `in-progress` | a `story/OQ-49-*` branch exists |
-| `in-review` | a PR is open for that branch |
-| `done` | file lives in `stories/done/` |
+Only `blocked` is stored, because only it is not derivable. Everything else is read from the files,
+from git and from GitHub. No status commits, no sweep, no drift.
 
-Only `blocked` is stored, because only it is not derivable. No status commits, no sweep, no drift.
+**The statuses themselves, and what each is derived from, are specified in `stories/README.md`**,
+and are deliberately not restated here. They were once: this document and that file each carried a
+copy of the table, the copies disagreed within days, and a literal reading of the one here made the
+queue reader unable to dispatch its own story. One authoritative statement, in the file closest to
+the thing it describes.
+
+What belongs here is the shape rather than the values. Status derives in **two layers** — what can
+be known from the story files alone, and what needs git and GitHub — and that split is load-bearing.
+Keeping the file-only derivation free of git is what lets the queue be read, tested and printed
+without a repository in any particular state.
 
 **Deliberately *not* a frontmatter field: the review round count.** It is derived by counting
 `block` verdicts on the PR — see [Retry is bounded](#retry-is-bounded-and-the-bound-is-derived).
