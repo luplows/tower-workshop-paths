@@ -9,10 +9,10 @@ result. Rendering it by hand is fine; improvising it is not.
 
 | Placeholder | Substituted with |
 |---|---|
-| `{{STORY_ID}}` | `OQ-49` |
-| `{{STORY_PATH}}` | `stories/OQ-49-read-story-queue.md` |
+| `{{STORY_ID}}` | the story's id, e.g. `OQ-49` |
+| `{{STORY_PATH}}` | the story file's path, e.g. `stories/OQ-49-read-story-queue.md` |
 | `{{STORY}}` | the entire contents of that file, verbatim |
-| `{{BRANCH}}` | `story/OQ-49-read-story-queue` |
+| `{{BRANCH}}` | the branch to work on, e.g. `story/OQ-49-read-story-queue` |
 
 The story is **injected** rather than looked up. The coder does not choose which
 story to work on and does not need to find it: selection is the dispatcher's
@@ -25,6 +25,14 @@ check and that its PR would be blocked from merging. Neither was true at the
 time. The worker did the right thing anyway — but only because it believed a
 claim nobody had checked. A file gets reviewed once; an improvised prompt gets
 reviewed never.
+
+**Spawn it with `--permission-prompts none`.** That is what actually prevents
+the hang the *write and exit* section describes: with nobody attached, anything
+that would prompt blocks forever, and denying it instead is a property of the
+invocation rather than of the agent's good behaviour. The prose in that section
+tells the coder what to do when it has a choice; the flag is what holds when it
+does not. Pair it with `--max-budget-usd`, which turns "how much can one runaway
+story cost" into a number chosen in advance rather than discovered afterwards.
 
 Read the assembled prompt end to end before sending it, as a stranger would. A
 prompt that gains a fix after every failed run can end up reading like an
