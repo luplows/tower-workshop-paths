@@ -1,7 +1,8 @@
 ---
 id: OQ-49
 title: Read and rank the story queue
-tier: workflow
+tier: next
+kind: workflow
 depends_on: []
 model: sonnet
 blocked: null
@@ -28,10 +29,10 @@ selection is deterministic and needs no human or model judgment.
       entry is not in `stories/done/`), `ready` (none of the above).
 - [ ] **AC-4** — Only `ready` stories are returned as dispatchable. A `waiting`
       story is still listed, with what it is waiting on.
-- [ ] **AC-5** — Ordering is by `tier` — `foundational`, `dependent`,
-      `anytime`, `workflow`, in that order — then lowest id first, and is
-      identical across runs regardless of the order the filesystem enumerates
-      files in.
+- [ ] **AC-5** — Ordering is by `tier` — `fix`, `next`, `normal`, `later`, in
+      that order — then lowest id first, and is identical across runs regardless
+      of the order the filesystem enumerates files in. An unrecognised `tier`
+      fails loudly per AC-2 rather than sorting somewhere arbitrary.
 - [ ] **AC-6** — Run as a script (`node scripts/dispatch/queue.mjs`) it prints
       every story in that order with its id, title and derived status, and
       exits non-zero if any story failed to parse.
@@ -57,6 +58,9 @@ selection is deterministic and needs no human or model judgment.
   table in `stories/README.md` are derived from branches and PRs, and belong to
   `dispatch.mjs` later — `queue.mjs` derives only the five states in AC-3.
 - Writing to any story file, including setting `blocked`.
+- Reading `kind`. It groups stories for people, and `stories/README.md` states
+  that nothing in the dispatcher reads it and nothing in the ordering may. Sorting
+  by it later should be a visible violation rather than a natural extension.
 - Validating anything beyond the fields this module reads. A full schema lint
   is a later story.
 

@@ -1,7 +1,8 @@
 ---
 id: OQ-52
 title: Delete the head branch when the sweep lands a PR, and say so accurately
-tier: workflow
+tier: normal
+kind: workflow
 depends_on: []
 model: sonnet
 blocked: null

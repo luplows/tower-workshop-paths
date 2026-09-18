@@ -1,7 +1,8 @@
 ---
 id: OQ-50
 title: Land review-passed PRs without depending on GitHub's scheduler
-tier: workflow
+tier: next
+kind: workflow
 depends_on: []
 model: sonnet
 blocked: null
