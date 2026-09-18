@@ -26,8 +26,9 @@ those instructions is not acting on a false premise.
       after merge matches the implemented behaviour. At minimum `CLAUDE.md` and
       `.claude/prompts/coder.md`, both of which currently assert deletion
       happens automatically.
-- [ ] **AC-4** — The branches left behind by #98, #99, #100 and #101 are gone,
-      so that `git ls-remote --heads origin` lists no branch from a merged PR.
+- [ ] **AC-4** — `git ls-remote --heads origin` lists no branch belonging to a
+      merged PR. Which branches those are changes over time, so the invariant
+      is the criterion rather than any list of them.
 
 ## Out of scope
 

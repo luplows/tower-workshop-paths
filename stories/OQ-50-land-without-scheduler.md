@@ -11,7 +11,7 @@ blocked: null
 
 As the owner, I need a PR that has passed review to land promptly, so that the
 loop's throughput is bounded by how fast work gets reviewed rather than by when
-GitHub's scheduler happens to fire.
+somebody remembers to trigger the sweep by hand.
 
 ## Acceptance criteria
 
@@ -36,8 +36,10 @@ GitHub's scheduler happens to fire.
   promptness of acting on them is in question.
 - Merge queue. That is a different problem — semantic conflict between
   independently-green PRs — and is deferred until parallel dispatch.
-- Removing `land-approved.yml`. Whatever else lands PRs, a scheduled sweep that
-  survives the owner's machine being off is still wanted as a backstop.
+- Removing `land-approved.yml`. Its eligibility and safety logic is correct and
+  is what any replacement trigger would drive. A sweep that survives the owner's
+  machine being off is still wanted as a backstop — it is the *trigger* that
+  needs replacing, not the workflow.
 
 ## Constraints
 
@@ -61,10 +63,16 @@ Measured on 2026-09-18 against `origin/main`:
   event is.
 - `agent-workflow-design.md` already allows for slippage — "treat `*/15` as
   'within the hour'" — so an allowance exists. Five hours is well outside it.
+- **The `schedule:` trigger was removed on 2026-09-18**, leaving
+  `workflow_dispatch` as the only way the sweep runs. A trigger that fires 5% of
+  the time is worse than one that never fires on its own: it is too slow to rely
+  on, yet automatic enough that nobody notices it has stopped. Landing is now
+  explicitly manual, and visibly so, until this story replaces it. That makes
+  AC-1 the whole of the work rather than a refinement of it.
 
 - `.github/workflows/land-approved.yml` — the sweep as it stands
-- `agent-workflow-design.md`, "Merging" and "Watchdog" — why the sweep is
-  scheduled rather than triggered, and what the backstop is meant to cover
+- `agent-workflow-design.md`, "Merging" and "Watchdog" — why landing is
+  a sweep at all rather than the author's job, and what the backstop covers
 
 ## Open questions
 
@@ -81,9 +89,3 @@ Measured on 2026-09-18 against `origin/main`:
      events do not fire for every token that posts them, and that needs
      verifying before anything depends on it — exactly the kind of claim this
      project has shipped wrong twice.
-- **Is ~5 hours stable enough to design against?** Three intervals over 16 hours
-  on one day, all 4.3–5.3h, is more consistent than it first looked but still
-  thin — it says nothing about other days, other load, or whether the throttle
-  is account-wide or repository-specific. Worth re-measuring across a few days
-  before optimising for a number, since a fix aimed at the wrong cause is worse
-  than the delay.
