@@ -36,10 +36,11 @@ selection is deterministic and needs no human or model judgment.
       every story in that order with its id, title and derived status, and
       exits non-zero if any story failed to parse.
 - [ ] **AC-7** — A section counts as empty when its content, ignoring HTML
-      comments and whitespace, is either nothing or exactly `*(none)*`. This
-      file uses that marker, and must therefore derive `ready` rather than
-      `draft` — a queue reader that cannot dispatch its own story is precisely
-      the failure this criterion exists to prevent.
+      comments and whitespace, is exactly `*(none)*`. A section holding nothing
+      at all is **malformed** and fails loudly per AC-2, because it cannot be
+      told apart from one nobody filled in. This file uses the marker, and must
+      therefore derive `ready` rather than `draft` — a queue reader that cannot
+      dispatch its own story is the failure this criterion exists to prevent.
 
 ## Out of scope
 
