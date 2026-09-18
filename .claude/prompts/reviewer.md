@@ -39,11 +39,12 @@ verdict; whoever ran it records that verdict. Invoke it with `Edit`, `Write`,
 `NotebookEdit`, `Bash(git push:*)` and `Bash(gh:*)` disallowed — an invocation
 without those tools cannot violate the rule, and prose has no compiler.
 
-**Two further flags on that invocation are load-bearing.** `--permission-prompts
-none` makes anything that would prompt be *denied* rather than block a session
-nobody is attached to — a reviewer that stops to ask waits forever, and one did,
-for eight minutes. `--max-budget-usd` puts a hard ceiling on what a single review
-can cost, chosen in advance rather than discovered afterwards.
+**Two further flags on that invocation are load-bearing.** Pass
+`--permission-prompts none`, so anything that would prompt is *denied* rather
+than blocking a session nobody is attached to — a reviewer that stops to ask
+waits forever, and one did, for eight minutes. Pass `--max-budget-usd` as a hard
+ceiling on what a single review can cost, chosen in advance rather than
+discovered afterwards.
 
 That is also why this file has no credentials section. The previous version of
 this prompt accreted one fix per failed run — credential hunting after sessions
