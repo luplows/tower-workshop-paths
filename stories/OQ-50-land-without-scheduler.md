@@ -61,9 +61,8 @@ Measured on 2026-09-18 against `origin/main`:
 - **Every `workflow_dispatch` run has succeeded**, including the two that landed
   #98 and #99. The workflow logic is not the problem; delivery of the `schedule`
   event is.
-- `agent-workflow-design.md` (external to this repository) already allowed for
-  slippage — "treat `*/15` as within the hour" — so an allowance existed. Five
-  hours was well outside it.
+- `docs/agent-workflow-design.md` already allowed for slippage — "treat `*/15`
+  as within the hour" — so an allowance existed. Five hours was well outside it.
 - **The `schedule:` trigger was removed on 2026-09-18**, leaving
   `workflow_dispatch` as the only way the sweep runs. A trigger that fires 5% of
   the time is worse than one that never fires on its own: it is too slow to rely
@@ -72,9 +71,8 @@ Measured on 2026-09-18 against `origin/main`:
   AC-1 the whole of the work rather than a refinement of it.
 
 - `.github/workflows/land-approved.yml` — the sweep as it stands
-- `agent-workflow-design.md` — **external**, in the owner's working directory,
-  not this repository. "Merging" and "Watchdog": why landing is a sweep at all
-  rather than the author's job, and what the backstop covers.
+- `docs/agent-workflow-design.md`, "Merging" and "Watchdog" — why landing is a
+  sweep at all rather than the author's job, and what the backstop covers.
 
 ## Open questions
 
