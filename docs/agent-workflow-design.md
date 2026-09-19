@@ -401,19 +401,6 @@ Three flags are load-bearing:
   Directly answers the observed hang.
 - **`--max-budget-usd`** — a hard spend ceiling per invocation. Turns "how much can one runaway
   story cost" into a number chosen in advance.
-
-**What a spawn actually costs**, measured across the OQ-63 and OQ-66 hand-runs rather than guessed,
-so that `spawn.mjs` picks its budget and timeout from data:
-
-| Role | Model | Cost | Wall time |
-|---|---|---|---|
-| Coder, first pass on a fresh story | sonnet | $0.96 – $3.17 | 3 – 16 min |
-| Reviewer, full diff plus re-running the suite | opus | $0.95 – $1.38 | 1.8 – 2.7 min |
-
-Two things follow. The sketch's `6` and `3` are **generous** — no spawn here came close, and the one
-that ended early ended on a session limit rather than the budget. And a reviewer costs about what a
-cheap coder round does, so a second review is not the expensive part of a retry; the coder round is.
-A timeout wants to be well clear of 16 minutes, not tuned to the median.
 - **`--allowedTools`** — what the session can actually do once prompting is off. This one is
   easy to leave out and the first hand-run of the loop did: `--permission-prompts none` plus
   `--permission-mode acceptEdits` covers file edits, and `.claude/settings.json` adds the
@@ -435,6 +422,23 @@ those paths can read a token that was never in the environment. This is the same
 **credential minimalism** below, applied to the coder rather than the reviewer, and it is the
 reason `Bash(gh:*)` disappears from the coder's list entirely rather than being narrowed: there is
 no longer a legitimate use for it to allowlist.
+
+**What a spawn actually costs**, measured across the OQ-63 and OQ-66 hand-runs rather than guessed,
+so that `spawn.mjs` picks its budget and timeout from data:
+
+| Role | Model | Cost | Wall time |
+|---|---|---|---|
+| Coder, first pass on a fresh story | sonnet | $0.96 – $3.17 | 3 – 16 min |
+| Reviewer, full diff plus re-running the suite | opus | $0.95 – $1.38 | 1.8 – 2.7 min |
+
+Two things follow. The sketch's `6` and `3` are **generous** — no spawn here came close, and the one
+that ended early ended on a session limit rather than the budget. And a reviewer costs about what a
+cheap coder round does, so a second review is not the expensive part of a retry; the coder round is.
+A timeout wants to be well clear of 16 minutes, not tuned to the median.
+
+These are session observations from six spawns, recorded here because nothing in the repository
+captures them and a reviewer therefore cannot check them. Treat them as a starting point to be
+replaced once `spawn.mjs` records its own.
 
 The reviewer's list is the mirror image, and narrower on purpose: read-only `git` subcommands
 enumerated rather than `Bash(git:*)`, so `git push` is not in the allowlist *before* the
@@ -855,10 +859,16 @@ once the reviewer runs locally, but the document of record is currently wrong.
 
 ### A spawned session cannot edit `.claude/prompts/`
 
-**Claude Code refuses every `Edit` and `Write` under `.claude/` from a spawned `claude -p` session**,
+**Claude Code refuses `Edit` and `Write` to `.claude/prompts/` from a spawned `claude -p` session**,
 as a sensitive path, with no approval surface to appeal to. Found when the OQ-63 coder tried to
-deliver its own story's AC-8 and could not; it correctly identified the guard as *"a deliberate
-guard against a coder session rewriting its own spawn instructions"*, which is exactly what it is.
+deliver its own story's AC-8 and could not; it read the refusal as a deliberate guard against a
+coder session rewriting its own spawn instructions, which is what it appears to be.
+
+**Scoped to what was actually observed.** The refusals seen were on
+`.claude/prompts/coder.md`, from a spawned session, for both `Edit` and `Write`. Whether the guard
+covers all of `.claude/` — `settings.json` especially, which would matter more — is untested and
+should not be assumed. Stating it wider than the evidence is the failure this whole section exists
+to record.
 
 The consequence is structural and easy to miss: **no coder can deliver a story that changes the
 prompts.** That is not a rare case here — OQ-51, OQ-64 and OQ-66 all touch `.claude/prompts/`, and
