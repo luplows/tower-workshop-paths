@@ -75,8 +75,17 @@ claims. Denying prompts decides that nothing may ask; the allowlist decides what
 does not need to, and a reviewer that cannot run `npm test` silently reviews by
 reading. Enumerate the read-only `git` subcommands rather than granting
 `Bash(git:*)`, so `git push` is absent from the allowlist before the
-`--disallowedTools` deny rule also removes it: two independent reasons it cannot
-push beats one.
+`--disallowedTools` deny rule also removes it.
+
+**That is defence in depth, not containment, and the difference matters.** The
+same list grants `npm`, `npx` and `node`, because **Verify rather than accept**
+requires running the suite — and those are arbitrary execution. `node -e` can
+write files despite `Edit`/`Write` being disallowed, and can spawn `git push`
+despite the deny rule, which matches a command *prefix* that `node …` never
+trips. So the enumeration raises the floor against the accidental path; it does
+not make writing impossible, and nothing in this invocation does. What keeps the
+gate honest is that you **post nothing** — a rule you follow, not one the flags
+enforce. Treat that as a reason to hold to it more carefully, not less.
 
 That is also why this file has no credentials section. The previous version of
 this prompt accreted one fix per failed run — credential hunting after sessions

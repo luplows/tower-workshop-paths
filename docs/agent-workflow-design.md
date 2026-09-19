@@ -407,21 +407,48 @@ Three flags are load-bearing:
 
 The reviewer's list is the mirror image, and narrower on purpose: read-only `git` subcommands
 enumerated rather than `Bash(git:*)`, so `git push` is not in the allowlist *before* the
-`--disallowedTools` deny rule also removes it. Two independent reasons it cannot push beats one.
+`--disallowedTools` deny rule also removes it. Two barriers against the accidental path beats one.
+
+**That is defence in depth, not containment.** The same list grants `npm`, `npx` and `node`,
+because verifying the author's claims means running the suite — and those are arbitrary execution.
+`node -e` writes files despite `Edit`/`Write` being disallowed, and spawns `git push` despite the
+deny rule, which matches a command *prefix* that `node …` never trips. A reviewer session today is
+therefore **not** structurally unable to write; it is unwilling, because its prompt tells it to post
+nothing. Claiming otherwise — an earlier draft of this section said "two independent reasons it
+cannot push" — overstates the guarantee, and overstating a security property is worse than not
+having it, because it stops people looking.
+
+The tension is real rather than an oversight: **verification requires execution, and execution
+defeats structural write-prevention.** Closing it needs the capability removed rather than the
+command denied — a reviewer that runs with no SSH agent, no keyring access and no push-capable
+credential, so that `git push` fails for want of authorisation rather than for want of permission.
+That is the same conclusion **credential minimalism** reaches below by a different route, and it is
+not built yet.
 
 That narrowness has its own cost, and it is not symmetric with the coder's. A hole in the
 **coder's** allowlist fails loudly and late — it cannot open its PR, and someone notices. A hole in
 the **reviewer's** fails *quietly*: a reviewer that cannot run `npm test` or `git merge-base` can
-still return a confident `pass`, having checked less than it thinks. The list above is therefore a
-known-complete set of read-only verbs rather than a minimal one, and `reviewer.md` instructs the
+still return a confident `pass`, having checked less than it thinks. The `git` verbs above are
+therefore a known-complete read-only set rather than a minimal one — and the rest of the list is
+not read-only at all, per the paragraph above. `reviewer.md` instructs the
 reviewer to treat a denied read-only command as a finding about its own invocation rather than
 something to work around. An enumerated allowlist has to be maintained; the alternative is a gate
 that silently reviews by reading.
 
 ### Credential minimalism
 
-**The reviewer holds no GitHub write access.** It returns a structured verdict on stdout; the
-dispatcher posts the status.
+**The reviewer is given no GitHub write access, and needs none.** It returns a structured verdict on
+stdout; the dispatcher posts the status.
+
+**"Given" is doing real work in that sentence.** Running locally, the reviewer runs as the owner,
+on a machine where an SSH key and a `gh` keyring token are reachable — and its allowlist must
+include `npm`/`node` so it can verify the author's claims, which is arbitrary execution. So it is
+not *denied* write access; it is *handed* none and told to post nothing, on a machine where the
+capability exists. That is a weaker property than the heading once implied, and the weaker version
+is the true one. What makes it hold in practice is that no part of the prompt asks the reviewer to
+post, so nothing pushes it toward looking — which is exactly the failure mode the paragraph below
+describes, arrived at from the other side. Genuinely removing the capability means a reviewer with
+no agent, no keyring and no push-capable credential; see the **invocation shape** section.
 
 This is not convenience. In the existing workflow the reviewer prompt accreted one fix per failed
 run — credential hunting after sessions could not post, "do not ask questions" after one hung —
