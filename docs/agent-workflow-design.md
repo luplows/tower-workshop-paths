@@ -376,7 +376,7 @@ claude -p "$(render .claude/prompts/coder.md OQ-49)" \
   --permission-prompts none \
   --allowedTools $(coderAllowedTools "$BRANCH") \
     $READ_ONLY_SHELL_UTILS \
-  --disallowedTools "Bash(gh:*)" "Bash(git push:*)" \
+  --disallowedTools "Bash(gh:*)" \
   --env "$(coderEnv)" \
   --max-budget-usd 6 \
   --output-format json
@@ -426,6 +426,15 @@ no longer a legitimate use for it to allowlist.
 The reviewer's list is the mirror image, and narrower on purpose: read-only `git` subcommands
 enumerated rather than `Bash(git:*)`, so `git push` is not in the allowlist *before* the
 `--disallowedTools` deny rule also removes it. Two barriers against the accidental path beats one.
+
+The coder's `--disallowedTools` stops at `"Bash(gh:*)"` and does **not** also carry a blanket
+`"Bash(git push:*)"` the way the reviewer's does. Deny rules take precedence over allow rules, and
+that pattern is a prefix match against the scoped push patterns `coderAllowedTools` grants — added
+together they would deny the coder's own push, not just an unscoped one, defeating AC-5. The
+reviewer can afford the blanket deny as a second barrier because its allowlist never grants push to
+begin with, so there is nothing for the deny rule to shadow; the coder's does, so keeping both would
+break the one write the coder is meant to have. Scoping push to the assigned branch is
+`coderAllowedTools`'s job alone here.
 
 **That is defence in depth, not containment.** The same list grants `npm`, `npx` and `node`,
 because verifying the author's claims means running the suite — and those are arbitrary execution.

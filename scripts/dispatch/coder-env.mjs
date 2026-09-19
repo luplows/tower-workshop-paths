@@ -94,5 +94,15 @@ export function coderAllowedTools(branch) {
  * (`coderEnv`). Raises the floor against the ordinary, non-bypassing path the
  * same way OQ-62 denies it to the reviewer -- see `coderEnv`'s doc comment
  * for why this alone would not satisfy AC-4.
+ *
+ * Deliberately does *not* include `Bash(git push:*)`, unlike the reviewer's
+ * equivalent list. Deny rules take precedence over allow rules, and that
+ * pattern prefix-matches the scoped `Bash(git push origin HEAD:<branch>)` /
+ * `Bash(git push origin <branch>:<branch>)` entries `coderAllowedTools`
+ * grants -- applied together, the coder could not push at all, defeating
+ * AC-5. The reviewer can carry the blanket deny because its allowlist never
+ * grants push in the first place, so there is nothing for it to shadow; the
+ * coder's allowlist does, so the deny has to stop short of it. Scoping push
+ * to one branch is `coderAllowedTools`'s job, not this list's.
  */
-export const CODER_DISALLOWED_TOOLS = ['Bash(gh:*)', 'Bash(git push:*)']
+export const CODER_DISALLOWED_TOOLS = ['Bash(gh:*)']
