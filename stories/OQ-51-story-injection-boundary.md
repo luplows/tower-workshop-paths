@@ -1,6 +1,6 @@
 ---
 id: OQ-51
-title: Mark where an injected story ends, so it cannot shadow the prompt
+title: Mark where an injected block ends, so it cannot shadow the prompt
 tier: normal
 kind: workflow
 depends_on: []
@@ -10,22 +10,27 @@ blocked: null
 
 ## Intent
 
-As whoever assembles a spawn prompt, I need the injected story to be clearly
-bounded within it, so that a story's own text cannot be read as an instruction
-to the agent receiving it.
+As whoever assembles a spawn prompt, I need every injected block to be clearly
+bounded within it, so that text I did not write cannot be read as an instruction
+to the agent receiving it. There are two such blocks: the story, in both
+prompts, and the PR description, in the reviewer's.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — The assembled prompt marks unambiguously where the injected
-      story begins and ends, and those markers are present regardless of what
-      the story contains.
-- [ ] **AC-2** — No heading in an injected story appears at the same structural
+- [ ] **AC-1** — The assembled prompt marks unambiguously where each injected
+      block begins and ends, and those markers are present regardless of what
+      the block contains. There are two: `{{STORY}}` in both prompts, and
+      `{{PR_BODY}}` in the reviewer's.
+- [ ] **AC-2** — No heading in an injected block appears at the same structural
       level as the prompt's own top-level sections.
-- [ ] **AC-3** — A story crafted to collide — one whose body contains a heading
+- [ ] **AC-3** — An injected block crafted to collide — one containing a heading
       matching a real section of the prompt, such as `## Your verdict` — does
-      not shadow or displace the prompt's own section of that name.
-- [ ] **AC-4** — A test exercises AC-1 to AC-3 against such a deliberately
-      hostile fixture story, not merely against a well-behaved one.
+      not shadow or displace the prompt's own section of that name. This holds
+      for a hostile story and for a hostile PR description alike; the PR body is
+      the less trusted of the two, since the story is authored by a planning
+      session and the body by the agent under review.
+- [ ] **AC-4** — A test exercises AC-1 to AC-3 against such deliberately
+      hostile fixtures, not merely against well-behaved ones.
 - [ ] **AC-5** — Assembling either prompt against a real story still leaves no
       unsubstituted `{{PLACEHOLDER}}`, which holds today and must keep holding.
 
@@ -53,25 +58,29 @@ The assembled reviewer prompt's heading outline reads:
 
 ```
 ## The story this PR is meant to implement
-## Intent                  <- story
-## Acceptance criteria     <- story
-## Out of scope            <- story
-## Constraints             <- story
-## Context                 <- story
-## Open questions          <- story
-## What review is          <- the prompt again, same level, no marker
+## Intent                        <- story
+## Acceptance criteria           <- story
+## Out of scope                  <- story
+## Constraints                   <- story
+## Context                       <- story
+## Open questions                <- story
+## The pull request's own description
+## What changed                  <- PR body
+## Verification                  <- PR body
+## Docs check                    <- PR body
+## What review is                <- the prompt again, same level, no marker
 ```
 
-Nothing separates the story from the instructions. Three consequences, getting
-worse as they go:
+Nothing separates either injected block from the instructions. Three
+consequences, getting worse as they go:
 
 1. `## Out of scope` and `## Constraints` belong to the story but read as
    constraints on the review.
 2. The story's `## Context` names files as "the house style to match" —
    guidance meant for the *coder* — and in the reviewer's assembled prompt it
    sits as a top-level section indistinguishable from the reviewer's own.
-3. Story text is spliced into an instruction document at the same structural
-   level as the instructions. A story containing `## Your verdict` would shadow
+3. Injected text is spliced into an instruction document at the same structural
+   level as the instructions. A block containing `## Your verdict` would shadow
    the prompt's real section. That is a prompt-injection-shaped surface in a
    file whose own preamble exists because this project once shipped a prompt
    that a reviewer correctly refused as an injection attack.
@@ -80,9 +89,16 @@ Nothing assembles these automatically yet, so this is latent rather than live �
 which is the cheapest moment to fix it.
 
 - `.claude/prompts/reviewer.md`, `.claude/prompts/coder.md` — the `{{STORY}}`
-  placeholder and the sections around it
+  and `{{PR_BODY}}` placeholders and the sections around them
 - `docs/agent-workflow-design.md`, "Credential minimalism" — the prior instance
   of a spawn prompt drifting into injection shape.
+
+**Updated 2026-09-18**, after the first hand-run of the loop: the reviewer
+prompt now also injects `{{PR_BODY}}`, so there are two blocks to bound rather
+than one. The PR description is the more dangerous of the two — a story is
+written by a planning session, whereas the body is written by the very agent
+whose diff is under review, which makes "text the author controls" and "text
+instructing the reviewer" the same bytes.
 
 ## Open questions
 
