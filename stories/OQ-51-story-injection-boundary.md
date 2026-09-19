@@ -100,12 +100,35 @@ written by a planning session, whereas the body is written by the very agent
 whose diff is under review, which makes "text the author controls" and "text
 instructing the reviewer" the same bytes.
 
+**Updated 2026-09-19. This story now owns `scripts/dispatch/render.mjs`**, and
+its open question — *where does assembly live?* — is settled: a separate tested
+module with pure functions behind a thin caller, matching `queue.mjs` and
+`coder-env.mjs`, rather than folding assembly into `spawn.mjs`. OQ-65 declares
+`depends_on: [OQ-51]` and calls it. Deciding it here rather than there is what
+stops a coder inventing the module boundary as a side effect, which is what this
+section warned about.
+
+Two requirements on `render.mjs` came out of running the loop by hand, both
+beyond bounding the blocks:
+
+- **The leftover check must not be fooled by injected content.** Rendering the
+  reviewer against OQ-63's PR produced a body that contained the coder's proposed
+  diff *of `coder.md`*, which legitimately includes `{{BRANCH}}` and
+  `{{STORY_PATH}}`. A renderer that scans its finished output for `{{...}}` reads
+  those as unsubstituted placeholders and refuses to assemble a valid prompt. The
+  check has to run against template text, before injection — masking each real
+  placeholder and scanning in between works.
+- **Both directions of the placeholder contract must be asserted.** Every
+  placeholder used must be documented and every documented one used. That check
+  is what found `{{STORY_PATH}}` documented-but-unused in `reviewer.md`, and a
+  Phase 0 exit criterion claiming it had been verified when it had not.
+  Documented-but-unused should warn rather than fail, so a defect in a prompt
+  file cannot take a dispatch down with it.
+
+A third injected block is coming: a retry carries review findings, and there is
+no `{{FINDINGS}}` placeholder yet (OQ-65's **Context**). Whichever story adds it,
+the bounding here must cover it rather than being written for exactly two.
+
 ## Open questions
 
-- **Where does assembly live?** The migration plan puts `spawn.mjs` in Phase 1
-  doing invocation, JSON parsing, timeout and budget, with rendering implied
-  rather than specified. This story needs a render step to exist. Either it
-  carves out `render.mjs` as its own tested module — which matches the house
-  pattern of pure functions behind a thin caller — or it waits and becomes part
-  of `spawn.mjs`'s specification. Dispatching this before that is settled would
-  have a coder inventing the module boundary as a side effect.
+*(none)*
