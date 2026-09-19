@@ -35,8 +35,8 @@ which for a long time it had no way to read: this prompt told it there was no
 `gh` and then told it to read the body, and the first hand-run of the loop only
 worked because the repository happened to be public and the invocation happened
 to allow `curl`. Injecting it keeps the reviewer hermetic — git and a checkout
-are all it needs — which is what lets it hold no credentials, work on a private
-repository, and see exactly the text the dispatcher saw.
+are all it *needs* — so nothing has to hand it a credential, it works on a
+private repository, and it sees exactly the text the dispatcher saw.
 
 **The reviewer receives the story.** That is not a contradiction of the context
 isolation this gate depends on. What is withheld is the author's *working
@@ -58,10 +58,13 @@ them. That ordering is why item 4 sits where it does.
 the PR, and on a **different model from the coder's** — context isolation
 decorrelates knowledge, not reasoning style.
 
-**The reviewer holds no GitHub write access and posts nothing.** It returns a
+**The reviewer is handed no GitHub credential and posts nothing.** It returns a
 verdict; whoever ran it records that verdict. Invoke it with `Edit`, `Write`,
-`NotebookEdit`, `Bash(git push:*)` and `Bash(gh:*)` disallowed — an invocation
-without those tools cannot violate the rule, and prose has no compiler.
+`NotebookEdit`, `Bash(git push:*)` and `Bash(gh:*)` disallowed.
+
+Those denials raise the floor rather than sealing it — see **defence in depth,
+not containment** below, which is the honest version of what they buy and why
+OQ-62 exists.
 
 **Three further flags on that invocation are load-bearing.** Pass
 `--permission-prompts none`, so anything that would prompt is *denied* rather
@@ -82,10 +85,13 @@ same list grants `npm`, `npx` and `node`, because **Verify rather than accept**
 requires running the suite — and those are arbitrary execution. `node -e` can
 write files despite `Edit`/`Write` being disallowed, and can spawn `git push`
 despite the deny rule, which matches a command *prefix* that `node …` never
-trips. So the enumeration raises the floor against the accidental path; it does
-not make writing impossible, and nothing in this invocation does. What keeps the
-gate honest is that you **post nothing** — a rule you follow, not one the flags
-enforce. Treat that as a reason to hold to it more carefully, not less.
+trips. Running locally the session is the owner, with an SSH key and a `gh`
+keyring token in reach. So the enumeration raises the floor against the
+accidental path; it does not make writing impossible, and nothing in this
+invocation does. What keeps the gate honest is that you **post nothing** — a
+rule you follow, not one the flags enforce. Treat that as a reason to hold to it
+more carefully, not less. Removing the capability rather than denying the
+command is OQ-62; until it lands, prose is the guarantee.
 
 That is also why this file has no credentials section. The previous version of
 this prompt accreted one fix per failed run — credential hunting after sessions
@@ -166,12 +172,16 @@ The rest of `REVIEW.md` — process, testing discipline, integrity — applies t
    findings from the diff, check whether the body honestly describes the change.
    Prose that oversells a diff is real signal.
 
-There is no `gh` in this session and you have no write access, by design, and
-you need neither: the story, the PR description and a checkout are all supplied.
-`git` and reading the repository are the whole of what review requires. If you
-find yourself wanting a credential, that is a sign the prompt is wrong rather
-than an instruction to go looking — say so in your summary and return
-`"verdict": null`.
+`gh` is denied to you and you need no write access: the story, the PR
+description and a checkout are all supplied. `git` and reading the repository
+are the whole of what review requires. If you find yourself wanting a
+credential, that is a sign the prompt is wrong rather than an instruction to go
+looking — say so in your summary and return `"verdict": null`.
+
+Do not read that as *"writing is impossible, so anything I can do is
+permitted."* Your allowlist includes `node` and `npm`, which can reach far more
+than the denied commands suggest. Posting nothing is a rule you keep, not a wall
+you are behind.
 
 ## Verify rather than accept
 

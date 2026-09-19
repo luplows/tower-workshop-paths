@@ -128,7 +128,7 @@ from, ending with exactly one marker line:
 <!-- agent-review head=<full-40-char-sha> verdict=block -->
 ```
 
-That split is deliberate: the reviewer holds no GitHub write access and posts
+That split is deliberate: the reviewer is handed no GitHub credential and posts
 nothing. It returns its verdict and findings, and the runner — a person today,
 the dispatcher once it exists — records them. A reviewer that had to post its
 own verdict needed credentials, and hunting for them is what turned the old

@@ -377,7 +377,7 @@ claude -p "$(render .claude/prompts/coder.md OQ-49)" \
   --max-budget-usd 6 \
   --output-format json
 
-# Reviewer — structurally unable to write, holds no credentials
+# Reviewer — handed no credentials, denied the obvious write paths (see OQ-62)
 claude -p "$(render .claude/prompts/reviewer.md OQ-49 $PR)" \
   --model opus --effort high \
   --disallowedTools Edit Write NotebookEdit "Bash(git push:*)" "Bash(gh:*)" \
@@ -429,8 +429,11 @@ That narrowness has its own cost, and it is not symmetric with the coder's. A ho
 **coder's** allowlist fails loudly and late — it cannot open its PR, and someone notices. A hole in
 the **reviewer's** fails *quietly*: a reviewer that cannot run `npm test` or `git merge-base` can
 still return a confident `pass`, having checked less than it thinks. The `git` verbs above are
-therefore a known-complete read-only set rather than a minimal one — and the rest of the list is
-not read-only at all, per the paragraph above. `reviewer.md` instructs the
+therefore a deliberately broad read-only set rather than a minimal one — not a complete one, since
+`blame`, `rev-list`, `ls-tree`, `describe`, `remote`, `shortlog` and `config --get` are all
+plausible and none are listed. Calling it complete would be the same overstatement this section
+exists to correct. The rest of the list is not read-only at all, per the paragraph above.
+`reviewer.md` instructs the
 reviewer to treat a denied read-only command as a finding about its own invocation rather than
 something to work around. An enumerated allowlist has to be maintained; the alternative is a gate
 that silently reviews by reading.
