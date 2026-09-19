@@ -371,6 +371,9 @@ claude -p "$(render .claude/prompts/coder.md OQ-49)" \
   --model "$STORY_MODEL" --effort medium \
   --permission-mode acceptEdits \
   --permission-prompts none \
+  --allowedTools Read Write Edit Glob Grep TodoWrite \
+    "Bash(git:*)" "Bash(gh:*)" "Bash(npm:*)" "Bash(npx:*)" "Bash(node:*)" \
+    $READ_ONLY_SHELL_UTILS \
   --max-budget-usd 6 \
   --output-format json
 
@@ -378,17 +381,30 @@ claude -p "$(render .claude/prompts/coder.md OQ-49)" \
 claude -p "$(render .claude/prompts/reviewer.md OQ-49 $PR)" \
   --model opus --effort high \
   --disallowedTools Edit Write NotebookEdit "Bash(git push:*)" "Bash(gh:*)" \
+  --allowedTools Read Glob Grep TodoWrite \
+    "Bash(git fetch:*)" "Bash(git diff:*)" "Bash(git log:*)" "Bash(git show:*)" \
+    "Bash(git rev-parse:*)" "Bash(npm:*)" "Bash(npx:*)" "Bash(node:*)" \
   --permission-prompts none \
   --max-budget-usd 3 \
   --output-format json
 ```
 
-Two flags are load-bearing:
+Three flags are load-bearing:
 
 - **`--permission-prompts none`** — anything that would prompt is denied rather than hanging.
   Directly answers the observed hang.
 - **`--max-budget-usd`** — a hard spend ceiling per invocation. Turns "how much can one runaway
   story cost" into a number chosen in advance.
+- **`--allowedTools`** — what the session can actually do once prompting is off. This one is
+  easy to leave out and the first hand-run of the loop did: `--permission-prompts none` plus
+  `--permission-mode acceptEdits` covers file edits, but `.claude/settings.json` allowlists only
+  read-only git, so `git commit`, `git push` and `gh pr create` are all silently **denied**. The
+  coder does the work and then cannot open a PR. The two flags are a pair — the first decides
+  that nothing may prompt, the second decides what does not need to.
+
+The reviewer's list is the mirror image, and narrower on purpose: read-only `git` subcommands
+enumerated rather than `Bash(git:*)`, so `git push` is not in the allowlist *before* the
+`--disallowedTools` deny rule also removes it. Two independent reasons it cannot push beats one.
 
 ### Credential minimalism
 

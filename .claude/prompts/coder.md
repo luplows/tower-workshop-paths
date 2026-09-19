@@ -34,6 +34,27 @@ tells the coder what to do when it has a choice; the flag is what holds when it
 does not. Pair it with `--max-budget-usd`, which turns "how much can one runaway
 story cost" into a number chosen in advance rather than discovered afterwards.
 
+**That flag is only safe to use with an `--allowedTools` list wide enough to
+finish the job**, and the two have to be chosen together. `--permission-prompts
+none` denies anything that would prompt; `--permission-mode acceptEdits` covers
+file edits but nothing else; and `.claude/settings.json` allowlists only
+read-only git. So a spawn carrying just those two flags silently denies
+`git commit`, `git push` and `gh pr create` — the coder does the work and then
+cannot open a PR, which looks like a model failure and is not one. The coder
+needs at least:
+
+```
+Read Write Edit Glob Grep TodoWrite
+Bash(git:*) Bash(gh:*) Bash(npm:*) Bash(npx:*) Bash(node:*)
+```
+
+plus the read-only shell utilities it uses to inspect the repository. Grant
+`git` and `gh` as families rather than enumerating subcommands: the coder is
+confined to its own worktree and branch, so the blast radius is that branch, and
+an allowlist with a hole in it fails at the last step rather than the first.
+Denials are visible in the transcript rather than fatal, so a gap degrades into
+a route-around rather than a hang — but it still costs a run.
+
 Read the assembled prompt end to end before sending it, as a stranger would. A
 prompt that gains a fix after every failed run can end up reading like an
 attack: one reviewer session correctly refused a task whose prompt had

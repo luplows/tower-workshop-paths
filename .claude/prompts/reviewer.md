@@ -13,22 +13,46 @@ whatever spawns the session substitutes these placeholders and sends the result.
 | `{{HEAD_BRANCH}}` | its head branch, e.g. `story/OQ-49-read-story-queue` |
 | `{{HEAD_SHA}}` | the full 40-character SHA of the commit under review |
 | `{{STORY_ID}}` | the story's id, e.g. `OQ-49` |
-| `{{STORY_PATH}}` | the story file's path, e.g. `stories/OQ-49-read-story-queue.md` |
+| `{{STORY_PATH}}` | the story file's path **on the PR branch** — `stories/done/OQ-49-read-story-queue.md` once the PR has made item 19's move |
 | `{{STORY}}` | the entire contents of that file, verbatim |
+| `{{PR_BODY}}` | the pull request's description, verbatim |
+
+**Every placeholder in this table must appear in the prompt below**, and every
+placeholder below must appear in this table. Rendering is the only thing that
+reads either, so a row with no corresponding use is not a harmless leftover — it
+is a value the dispatcher computes and silently drops, and whether that is an
+error or a warning is a decision `render` has to make. `{{STORY_PATH}}` sat in
+this table unused until the first hand-run of the loop checked both directions.
 
 For a PR that implements no story — a bootstrap or workflow-only change —
 `{{STORY}}` renders as
 `*(none — this PR implements no story; items 16–19 do not apply.)*` and the
 other story placeholders render as `n/a`.
 
+**`{{PR_BODY}}` is injected rather than fetched.** The reviewer is required to
+judge the PR description (item 4 below, and `REVIEW.md`'s "Reading the PR body"),
+which for a long time it had no way to read: this prompt told it there was no
+`gh` and then told it to read the body, and the first hand-run of the loop only
+worked because the repository happened to be public and the invocation happened
+to allow `curl`. Injecting it keeps the reviewer hermetic — git and a checkout
+are all it needs — which is what lets it hold no credentials, work on a private
+repository, and see exactly the text the dispatcher saw.
+
 **The reviewer receives the story.** That is not a contradiction of the context
-isolation this gate depends on. What is withheld is the author's *account* of
-the change — its session, its summary, its reasoning, and any commentary from
-whatever dispatched it. The *authored story* is a different thing: it is the
-standard the diff has to meet. A reviewer that never sees it can only compare
-the diff to the PR body, and the same worker wrote both, so a worker that
-misread the story produces a body describing what it actually built, a diff
-matching that body, and a review that cannot fail.
+isolation this gate depends on. What is withheld is the author's *working
+context* — its session and transcript, its internal reasoning, and any
+commentary from whatever dispatched it. The *authored story* is a different
+thing: it is the standard the diff has to meet. A reviewer that never sees it
+can only compare the diff to the PR body, and the same worker wrote both, so a
+worker that misread the story produces a body describing what it actually built,
+a diff matching that body, and a review that cannot fail.
+
+**The PR body is given too, but as an exhibit rather than as testimony.** It is
+the author's account, and the review's job includes deciding whether that
+account is honest — which is impossible without reading it. So it is supplied
+for judging, never for believing: where it and the diff disagree, the diff is
+what happened. Read it last, after the findings are formed, so it cannot frame
+them. That ordering is why item 4 sits where it does.
 
 **Spawn it as its own session**, never as a continuation of the one that wrote
 the PR, and on a **different model from the coder's** — context isolation
@@ -68,7 +92,19 @@ JSON verdict described at the end of this prompt; nothing else you write is read
 
 ## The story this PR is meant to implement
 
+The story file is at `{{STORY_PATH}}` on the branch. Item 19 requires this PR to
+have moved it into `stories/done/`, so that path is itself part of what you are
+checking.
+
 {{STORY}}
+
+## The pull request's own description
+
+Reproduced verbatim. This is the author's account of the change, and judging it
+is part of the review — see item 4 under **What to do**. You do not need to fetch
+it, and there is nothing to fetch it with.
+
+{{PR_BODY}}
 
 ## What review is
 
@@ -104,17 +140,20 @@ The rest of `REVIEW.md` — process, testing discipline, integrity — applies t
    `git diff origin/main...{{HEAD_BRANCH}}`. A two-dot diff shows commits that
    merely predate the branch as deletions it never made. That has produced a
    false accusation here before; use three dots.
-4. **Read the PR body.** `REVIEW.md`'s "Reading the PR body" section is not
-   optional — judge whether each of its three sections is *substantively*
-   filled. A heading with a placeholder comment, `N/A`, `tests pass` with no
-   command or result, or a restatement of the PR title all count as unfilled.
-   **The description is itself in scope**: after forming your findings from the
-   diff, check whether the body honestly describes the change. Prose that
-   oversells a diff is real signal.
+4. **Judge the PR body**, reproduced above. `REVIEW.md`'s "Reading the PR body"
+   section is not optional — judge whether each of its three sections is
+   *substantively* filled. A heading with a placeholder comment, `N/A`, `tests
+   pass` with no command or result, or a restatement of the PR title all count
+   as unfilled. **The description is itself in scope**: after forming your
+   findings from the diff, check whether the body honestly describes the change.
+   Prose that oversells a diff is real signal.
 
-There is no `gh` in this session and you have no write access, by design. `git`
-and reading the repository are all you need; a public repo requires no
-authentication to read.
+There is no `gh` in this session and you have no write access, by design, and
+you need neither: the story, the PR description and a checkout are all supplied.
+`git` and reading the repository are the whole of what review requires. If you
+find yourself wanting a credential, that is a sign the prompt is wrong rather
+than an instruction to go looking — say so in your summary and return
+`"verdict": null`.
 
 ## Verify rather than accept
 
