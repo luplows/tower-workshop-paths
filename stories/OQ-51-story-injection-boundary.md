@@ -1,7 +1,7 @@
 ---
 id: OQ-51
 title: Mark where an injected block ends, so it cannot shadow the prompt
-tier: normal
+tier: next
 kind: workflow
 depends_on: []
 model: sonnet
