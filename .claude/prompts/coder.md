@@ -37,11 +37,12 @@ story cost" into a number chosen in advance rather than discovered afterwards.
 **That flag is only safe to use with an `--allowedTools` list wide enough to
 finish the job**, and the two have to be chosen together. `--permission-prompts
 none` denies anything that would prompt; `--permission-mode acceptEdits` covers
-file edits but nothing else; and `.claude/settings.json` allowlists only
-read-only git. So a spawn carrying just those two flags silently denies
-`git commit`, `git push` and `gh pr create` — the coder does the work and then
-cannot open a PR, which looks like a model failure and is not one. The coder
-needs at least:
+file edits but nothing else; and `.claude/settings.json` allowlists the project's
+npm and npx commands plus read-only git — **nothing that writes to the repository
+or to GitHub**. So a spawn carrying just those two flags can run the test suite
+and then silently denies `git commit`, `git push` and `gh pr create`: the coder
+does the work, verifies it, and cannot open a PR. That looks like a model failure
+and is not one. The coder needs at least:
 
 ```
 Read Write Edit Glob Grep TodoWrite

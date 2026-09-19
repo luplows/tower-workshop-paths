@@ -397,10 +397,11 @@ Three flags are load-bearing:
   story cost" into a number chosen in advance.
 - **`--allowedTools`** — what the session can actually do once prompting is off. This one is
   easy to leave out and the first hand-run of the loop did: `--permission-prompts none` plus
-  `--permission-mode acceptEdits` covers file edits, but `.claude/settings.json` allowlists only
-  read-only git, so `git commit`, `git push` and `gh pr create` are all silently **denied**. The
-  coder does the work and then cannot open a PR. The two flags are a pair — the first decides
-  that nothing may prompt, the second decides what does not need to.
+  `--permission-mode acceptEdits` covers file edits, and `.claude/settings.json` adds the
+  project's npm/npx commands and read-only git — but nothing that writes to the repository or
+  to GitHub, so `git commit`, `git push` and `gh pr create` are all silently **denied**. The
+  coder does the work, runs the suite green, and then cannot open a PR. The two flags are a
+  pair — the first decides that nothing may prompt, the second decides what does not need to.
 
 The reviewer's list is the mirror image, and narrower on purpose: read-only `git` subcommands
 enumerated rather than `Bash(git:*)`, so `git push` is not in the allowlist *before* the

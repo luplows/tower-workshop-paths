@@ -1,6 +1,6 @@
 ---
 id: OQ-51
-title: Mark where an injected story ends, so it cannot shadow the prompt
+title: Mark where an injected block ends, so it cannot shadow the prompt
 tier: normal
 kind: workflow
 depends_on: []
@@ -10,9 +10,10 @@ blocked: null
 
 ## Intent
 
-As whoever assembles a spawn prompt, I need the injected story to be clearly
-bounded within it, so that a story's own text cannot be read as an instruction
-to the agent receiving it.
+As whoever assembles a spawn prompt, I need every injected block to be clearly
+bounded within it, so that text I did not write cannot be read as an instruction
+to the agent receiving it. There are two such blocks: the story, in both
+prompts, and the PR description, in the reviewer's.
 
 ## Acceptance criteria
 

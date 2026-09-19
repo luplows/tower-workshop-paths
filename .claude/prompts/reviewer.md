@@ -63,12 +63,20 @@ verdict; whoever ran it records that verdict. Invoke it with `Edit`, `Write`,
 `NotebookEdit`, `Bash(git push:*)` and `Bash(gh:*)` disallowed — an invocation
 without those tools cannot violate the rule, and prose has no compiler.
 
-**Two further flags on that invocation are load-bearing.** Pass
+**Three further flags on that invocation are load-bearing.** Pass
 `--permission-prompts none`, so anything that would prompt is *denied* rather
 than blocking a session nobody is attached to — a reviewer that stops to ask
 waits forever, and one did, for eight minutes. Pass `--max-budget-usd` as a hard
 ceiling on what a single review can cost, chosen in advance rather than
-discovered afterwards.
+discovered afterwards. Pass `--allowedTools` covering what review actually
+needs — reading the repository, read-only `git`, and the test and lint commands,
+since **Verify rather than accept** below requires re-running the author's
+claims. Denying prompts decides that nothing may ask; the allowlist decides what
+does not need to, and a reviewer that cannot run `npm test` silently reviews by
+reading. Enumerate the read-only `git` subcommands rather than granting
+`Bash(git:*)`, so `git push` is absent from the allowlist before the
+`--disallowedTools` deny rule also removes it: two independent reasons it cannot
+push beats one.
 
 That is also why this file has no credentials section. The previous version of
 this prompt accreted one fix per failed run — credential hunting after sessions
