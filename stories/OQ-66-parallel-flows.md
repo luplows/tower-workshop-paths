@@ -47,10 +47,11 @@ shape is arguable, not because it is settled.)*
 
 ## Context
 
-Raised 2026-09-19, after Phase 1 had produced eight workflow stories against
-five product ones and the product backlog had not moved in that time. That is a
-deliberate choice — tooling first — rather than a defect, but it is the point at
-which the imbalance is worth a mechanism instead of attention.
+Raised 2026-09-19, when the queue held **eleven open `workflow` stories against
+five `product`** — thirteen to five counting `stories/done/` — and none of the
+product ones had moved while the conveyor was built. That is a deliberate
+choice, tooling first, rather than a defect; it is simply the point at which the
+imbalance is worth a mechanism instead of attention.
 
 **The `kind` rule is the live tension.** `stories/README.md` says, in as many
 words: *"Nothing in the dispatcher reads it, and nothing in the ordering may.
@@ -60,8 +61,8 @@ rather than a natural-looking extension."* Alternating workflow and product **is
 ordering by `kind`. The rule exists to make this proposal surface as a decision,
 and it has done its job; what it does not do is decide the answer.
 
-**Concurrency here is not ordinary parallel dispatch.** The design's Phase 4
-warns about semantic conflict between independently-green PRs. This split is
+**Concurrency here is not ordinary parallel dispatch.** The migration plan's
+Phase 4 warns about semantic conflict between independently-green PRs. This split is
 worse than that: the workflow flow modifies the machinery the product flow is
 running on. A workflow story that edits `coder.md`, `render.mjs` or `spawn.mjs`
 changes the contract for a coder that is already mid-flight. That is not
@@ -73,10 +74,11 @@ Hence AC-4: parallel in dispatch, serialised at the machinery boundary.
   this story must either honour or deliberately rewrite
 - `stories/OQ-59-promote-starved-story.md` — the age-based valve, which may
   already deliver this outcome without reading `kind` at all
-- `docs/migration-plan.md`, Phase 4 — parallel dispatch, and why the merge queue
-  comes first
-- `docs/agent-workflow-design.md` — Phase 3 before Phase 4: *"throughput without
-  a human checkpoint is how the mental model degrades fastest"*
+- `docs/migration-plan.md`, "Phase 4 — Scale" — parallel dispatch, and why the
+  merge queue comes first
+- `docs/migration-plan.md`, end of "Phase 3 — Session B" — why Phase 3 comes
+  first: *"parallel dispatch increases throughput, and throughput without a
+  human checkpoint is how the mental model degrades fastest"*
 
 ## Open questions
 
