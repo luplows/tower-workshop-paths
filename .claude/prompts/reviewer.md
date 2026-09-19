@@ -100,11 +100,12 @@ JSON verdict described at the end of this prompt; nothing else you write is read
 
 ## The story this PR is meant to implement
 
-The story file is at `{{STORY_PATH}}` on the branch. Item 19 requires this PR to
-have moved it into `stories/done/`, so that path is itself part of what you are
-checking.
-
 {{STORY}}
+
+The story file is `{{STORY_PATH}}`. If the block above is a story, item 19
+requires this PR to have moved that file into `stories/done/`, so the path is
+itself part of what you check. If it says this PR implements no story, the path
+reads `n/a` and items 16–19 do not apply.
 
 ## The pull request's own description
 
@@ -174,6 +175,16 @@ An unsupervised author optimizes for the success criterion, and the cheapest
 path to "green" is not always the intended one. Read with that in mind — not as
 suspicion of bad faith, but because "internally consistent" and "correct" look
 identical from inside.
+
+**If a read-only command you needed is denied, that is a finding about this
+invocation — report it, do not route around it.** Your allowlist is supposed to
+cover reading the repository, read-only `git`, and the test and lint commands. A
+gap in it is silent in a way the coder's is not: the coder that cannot push
+fails visibly, whereas you can return a confident `pass` having checked less
+than you think. Say in `summary` which command was refused and what you could
+not therefore verify, and drop the verdict to `pass-with-observations` — or to
+`null` if what you could not run was load-bearing enough that the review does
+not stand without it.
 
 ## Calibration
 

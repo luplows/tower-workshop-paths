@@ -383,7 +383,9 @@ claude -p "$(render .claude/prompts/reviewer.md OQ-49 $PR)" \
   --disallowedTools Edit Write NotebookEdit "Bash(git push:*)" "Bash(gh:*)" \
   --allowedTools Read Glob Grep TodoWrite \
     "Bash(git fetch:*)" "Bash(git diff:*)" "Bash(git log:*)" "Bash(git show:*)" \
-    "Bash(git rev-parse:*)" "Bash(npm:*)" "Bash(npx:*)" "Bash(node:*)" \
+    "Bash(git rev-parse:*)" "Bash(git merge-base:*)" "Bash(git grep:*)" \
+    "Bash(git cat-file:*)" "Bash(git ls-files:*)" "Bash(git status:*)" \
+    "Bash(git branch:*)" "Bash(npm:*)" "Bash(npx:*)" "Bash(node:*)" \
   --permission-prompts none \
   --max-budget-usd 3 \
   --output-format json
@@ -406,6 +408,15 @@ Three flags are load-bearing:
 The reviewer's list is the mirror image, and narrower on purpose: read-only `git` subcommands
 enumerated rather than `Bash(git:*)`, so `git push` is not in the allowlist *before* the
 `--disallowedTools` deny rule also removes it. Two independent reasons it cannot push beats one.
+
+That narrowness has its own cost, and it is not symmetric with the coder's. A hole in the
+**coder's** allowlist fails loudly and late — it cannot open its PR, and someone notices. A hole in
+the **reviewer's** fails *quietly*: a reviewer that cannot run `npm test` or `git merge-base` can
+still return a confident `pass`, having checked less than it thinks. The list above is therefore a
+known-complete set of read-only verbs rather than a minimal one, and `reviewer.md` instructs the
+reviewer to treat a denied read-only command as a finding about its own invocation rather than
+something to work around. An enumerated allowlist has to be maintained; the alternative is a gate
+that silently reviews by reading.
 
 ### Credential minimalism
 
