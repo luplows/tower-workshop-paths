@@ -59,6 +59,23 @@ a known set of outcomes rather than a shell line retyped per spawn.
       asserts its module surface. Those belong to `github.mjs`, and keeping them
       out is what lets a spawn be tested without a repository in any particular
       state.
+- [ ] **AC-9** — Every untrusted value is passed through `wrapInjectedBlock`
+      before `render` — `{{STORY}}` for both roles, `{{PR_BODY}}` for the
+      reviewer, and any findings block a retry carries. A test asserts the
+      assembled prompt contains exactly one begin and one end marker per
+      injected block, and no heading at or above the prompt's own top level.
+      **`render.mjs` deliberately does not enforce this**: it substitutes
+      whatever string it is given and has no notion of which placeholders are
+      untrusted, so OQ-51's guarantee currently lives in caller discipline and
+      this story is the caller. Three independent reviewers raised it across
+      #117's four rounds — twice recorded as an observation and closed by
+      assertion, the third time demonstrating it against
+      `render.test.mjs`, which renders a bare unbounded `{{PR_BODY}}` without
+      complaint. A **name-keyed default** — `wrapInjectedBlock` applied
+      automatically to a named set, with an explicit opt-out — was raised in
+      that third round and still satisfies the requirement that a future
+      `{{FINDINGS}}` be covered without editing `render.mjs`. Choose that or
+      something better, but do not close this by assertion a fourth time.
 
 ## Out of scope
 
@@ -100,10 +117,41 @@ things that run surfaced, each of which this module has to answer:
    `{{PR_BODY}}` for OQ-63 contained the coder's proposed diff *of `coder.md`*,
    which legitimately includes `{{BRANCH}}`. A renderer that scans its own
    output for leftovers reads those as unsubstituted and refuses to render a
-   valid prompt. That is `render.mjs`'s problem (OQ-51) but it was found here.
+   valid prompt. That was `render.mjs`'s problem and OQ-51 has settled it —
+   `checkPlaceholderContract` runs against the template before injection.
 4. **A coder cannot edit `.claude/prompts/`.** Every `Edit`/`Write` there is
    refused as a sensitive file. It is a good guard, and it means a coder can
    never deliver a story that changes the prompts.
+
+**Added 2026-09-19, after running OQ-51 through this loop by hand — four coder
+rounds and four reviews, recorded as marker comments on
+[#117](https://github.com/luplows/tower-workshop-paths/pull/117).** Three things
+that run surfaced which land on this story:
+
+5. **`claude` on PATH may not be spawnable from Node.** On the owner's machine
+   it is a `/bin/sh` shim, and `child_process.spawn('claude', …)` fails with
+   `ENOENT`. Spawning the real binary directly
+   (`…/node_modules/@anthropic-ai/claude-code/bin/claude.exe`) works and also
+   avoids `shell: true`, which would mean pushing a ~20 KB prompt through
+   `cmd.exe` quoting rules. Resolve the executable rather than assuming PATH,
+   and do not reach for a shell to work around it.
+6. **A findings block is the third injected block, and the most dangerous one
+   to bound.** Point 2 above says a retry has no contract; the hand-run showed
+   why that contract has to include bounding. Findings text discusses the
+   bounding mechanism, so it quotes marker syntax and heading syntax as its
+   subject matter — and on three separate renders during #117 the findings
+   forged the very construct they described, producing spurious begin/end
+   markers and live headings inside the block meant to contain them. The
+   injected story did it too, via its own frontmatter delimiter. **The documents
+   most likely to contain injection-shaped text are the ones discussing
+   injection**, which is exactly the corpus this dispatcher points at. AC-9
+   covers it; this is why.
+7. **A retry needs to be told what round it is and what already exists.** All
+   three of #117's retries were hand-composed prose telling the coder that its
+   branch and PR already existed, that item 19's move was done, that the PR body
+   would *replace* rather than append, and how many rounds remained. None of
+   that is in `coder.md` and all of it was load-bearing — a retry not told the
+   PR exists may try to open a second one.
 
 - `docs/migration-plan.md`, "Order within Phase 1" step 3 — the scope this story
   implements, and the liveness requirement in AC-6
