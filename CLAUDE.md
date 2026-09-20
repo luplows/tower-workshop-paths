@@ -12,8 +12,7 @@ Instructions only. Rationale, mechanism and history live in the files listed und
 - When a change both regenerates data files and alters logic, commit the regeneration separately.
 - Read [`REVIEW.md`](REVIEW.md) before opening a pull request.
 - Fill all three sections of [`.github/pull_request_template.md`](.github/pull_request_template.md).
-  An empty section is a missing one. **Verification** gives the commands run and their real results,
-  and names any check you could not run.
+  An empty section is a missing one. **Verification** gives the commands run and their real results.
 - Check whether `README.md`, `Open-Questions.md` and `Project-Outline.md` need updating as a result
   of the change. Include any such updates in the same pull request.
 - Open a pull request as a draft if it is not finished. Mark it ready when it is.
