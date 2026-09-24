@@ -261,6 +261,12 @@ describe('coderAllowedTools (OQ-67)', () => {
     expect(permits(tools, `git push origin ${branch}:${branch}`)).toBe(true)
   })
 
+  it('permits the plain push with -u or --set-upstream, which the first spawned coder was refused (#127)', () => {
+    const tools = coderAllowedTools(branch)
+    expect(permits(tools, `git push -u origin ${branch}`)).toBe(true)
+    expect(permits(tools, `git push --set-upstream origin ${branch}`)).toBe(true)
+  })
+
   it('OQ-67/AC-2 - no returned pattern permits a push to main, or to any other ref', () => {
     const tools = coderAllowedTools(branch)
     const forbidden = [
@@ -271,6 +277,14 @@ describe('coderAllowedTools (OQ-67)', () => {
       `git push origin ${branch}:main`,
       'git push origin :main',
       'git push -f origin HEAD:main',
+      'git push -u origin main',
+      'git push --set-upstream origin main',
+      'git push -u origin HEAD:main',
+      `git push -u origin ${branch}:main`,
+      `git push -u origin ${branch} main`,
+      `git push -u -f origin ${branch}`,
+      'git push -u origin HEAD',
+      'git push -u',
       'git push origin HEAD',
       'git push origin',
       'git push',
@@ -289,8 +303,13 @@ describe('coderAllowedTools (OQ-67)', () => {
     // The structural reason the list above holds for commands nobody thought
     // to enumerate: an exact rule permits one command and nothing else.
     const pushRules = coderAllowedTools(branch).filter((tool) => tool.startsWith('Bash(git push'))
-    expect(pushRules).toHaveLength(3)
-    for (const rule of pushRules) expect(rule.endsWith(':*)'), rule).toBe(false)
+    expect(pushRules.length).toBeGreaterThan(0)
+    for (const rule of pushRules) {
+      expect(rule.endsWith(':*)'), rule).toBe(false)
+      // ...and every one names this branch as its destination, as its last
+      // token, so none can be pointed anywhere else.
+      expect(rule.slice('Bash('.length, -1).split(' ').at(-1).split(':').at(-1), rule).toBe(branch)
+    }
   })
 
   it('OQ-67/AC-2 - refuses main as the assigned branch, since every push pattern would then name it', () => {
