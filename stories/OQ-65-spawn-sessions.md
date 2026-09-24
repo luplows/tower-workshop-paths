@@ -36,14 +36,16 @@ a known set of outcomes rather than a shell line retyped per spawn.
       no longer awaited. A timeout that leaves the process running is a leak,
       not a timeout.
 - [ ] **AC-5** — The spawn is watched while it runs, not only read at exit: a
-      session producing no output for a configured interval is detected and
-      recorded. The migration plan requires this in as many words (*"every
-      spawn needs a liveness check, not just a result read"*), because the
-      failure it exists for is a session that neither finishes nor dies.
-- [ ] **AC-6** — The raw record handed to `outcome.mjs` (exit code, signal,
-      captured stdout, and whether the session timed out or stalled) is
-      defined here as the contract between the two modules, and a test
-      asserts that a stand-in session's record has that shape.
+      session producing no output for a configured interval is terminated,
+      with the same guarantee as AC-4 that the child is actually gone, and
+      recorded as stalled. The migration plan requires this in as many words
+      (*"every spawn needs a liveness check, not just a result read"*),
+      because the failure it exists for is a session that neither finishes nor
+      dies.
+- [ ] **AC-6** — The raw record handed to `outcome.mjs` is the shape OQ-75's
+      AC-1 defines and exports, imported rather than redefined. A test asserts
+      that records from a stand-in session that exits, one that times out, and
+      one that stalls all conform to it.
 - [ ] **AC-7** — `spawn.mjs` performs no GitHub operation of any kind. It does
       not create a pull request, post a status, or apply a label, and a test
       asserts its module surface. Those belong to `github.mjs` (OQ-68).

@@ -21,8 +21,9 @@ is automated.
       reviewer half: resolve the PR's head SHA and branch, assemble the reviewer
       prompt, spawn the reviewer, parse its verdict, and record that verdict as a
       **marker comment**. It posts no commit status — `review-gate.yml` derives
-      `review/agent` from the marker, per OQ-68's AC-3. It calls `render.mjs`,
-      `spawn.mjs` and `github.mjs` and reimplements none of them.
+      `review/agent` from the marker, per OQ-68's AC-3. It calls `spawn.mjs`
+      (OQ-65, which builds the prompt through OQ-74's `invocation.mjs`) and
+      `github.mjs`, and reimplements none of them.
 - [ ] **AC-2** — Every untrusted value is bounded before it reaches the prompt:
       `{{STORY}}` and `{{PR_BODY}}` go through `wrapInjectedBlock`. A test
       asserts the assembled prompt has exactly one begin and one end marker per
@@ -115,7 +116,8 @@ incidental turned out to be load-bearing:
 
 - `docs/migration-plan.md`, "Order within Phase 1" step 4 — this story's scope
 - `.claude/prompts/reviewer.md` — the placeholder table AC-6 satisfies, the
-  head-moved rule AC-3 implements, and the JSON contract `spawn.mjs` parses
+  head-moved rule AC-3 implements, and the JSON contract `outcome.mjs`
+  (OQ-75) returns
 - `REVIEW.md`, "Recording a verdict", "The three verdicts", "When the reviewer
   returns no verdict" — AC-3, AC-4
 - `scripts/dispatch/render.mjs` — `wrapInjectedBlock` and `render`

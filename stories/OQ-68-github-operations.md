@@ -64,7 +64,8 @@ function with a known contract rather than a command line retyped per round.
       unrecognised, is a classified result and not silently the last one.
 - [ ] **AC-7** — No function in this module spawns a session, renders a prompt,
       reads a story, or decides anything about the loop's progress, and a test
-      asserts the module surface. `spawn.mjs` and `dispatch.mjs` own those.
+      asserts the module surface. `spawn.mjs`, `invocation.mjs` and
+      `dispatch.mjs` own those.
 
 ## Out of scope
 

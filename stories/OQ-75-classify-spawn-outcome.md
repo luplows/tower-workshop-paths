@@ -17,13 +17,18 @@ successful one, or a successful one for a failed one.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — `scripts/dispatch/outcome.mjs` takes the raw record of a
-      finished session (exit code, signal, captured stdout, and whether the
-      session was stopped for timing out) and returns one classification:
-      `completed`, `budget-exhausted`, `timed-out`, `died` (non-zero exit,
-      abnormal `stop_reason`, or `is_error`), or `malformed-output` (the exit
-      looked clean but the JSON is absent or unparseable). This is a pure
-      function tested against fixture records, with no process started.
+- [ ] **AC-1** — `scripts/dispatch/outcome.mjs` defines and exports the shape
+      of a finished session's raw record: exit code, signal, captured stdout,
+      and whether the session was stopped for timing out or for stalling (no
+      output for the configured interval). It takes such a record and returns
+      one classification: `completed`, `budget-exhausted`, `timed-out`,
+      `stalled`, `died` (non-zero exit, abnormal `stop_reason`, or
+      `is_error`), or `malformed-output` (the exit looked clean but the JSON is
+      absent or unparseable). `stalled` is kept separate from `timed-out`
+      because the likely causes differ: a session that went silent is usually
+      waiting on something, while one that ran out the clock was usually still
+      working. This is a pure function tested against fixture records, with
+      no process started.
       **Nothing is ever reported as `completed` by default:** a record that
       fits none of the rules is not `completed`.
 - [ ] **AC-2** — **A non-`completed` outcome asserts only that the session did
@@ -51,8 +56,9 @@ successful one, or a successful one for a failed one.
 ## Out of scope
 
 - **Producing the raw record:** running the session, the timeout, the
-  liveness watch. That is OQ-65, which defines the record's shape and calls
-  this module.
+  liveness watch. That is OQ-65, which produces records in the shape AC-1
+  defines and calls this module. The shape is defined here rather than there
+  because this story can be built first.
 - **Building the invocation.** That is OQ-74.
 - **Interpreting a reviewer's verdict**, retrying, or counting rounds. That is
   the loop: OQ-48, and OQ-69 for recording a verdict.
@@ -71,7 +77,8 @@ Split out of OQ-65 on 2026-09-23, along with OQ-74. OQ-65 had grown to eleven
 acceptance criteria covering three mechanisms, and this story is the one that
 reads a result. OQ-65 supplies the raw record at runtime. Until it exists,
 this module can be built and tested against fixtures alone, which is why it
-has no dependencies.
+has no dependencies, and why it owns the record's shape: the story that is
+built first defines the contract, and the one built later conforms to it.
 
 - **A spawn can report failure and still have succeeded.** The session-limit
   case in AC-2 is not hypothetical: it is what happened during the OQ-63
