@@ -39,11 +39,15 @@ one that is busy, rather than only from one that has run past the timeout.
       session, not written by hand. The PR says which session it came from.
       The existing `json`-envelope fixtures are kept or converted, and no
       existing classification test is deleted to make room.
-- [ ] **AC-5** — `DEFAULT_STALL_MS` in `scripts/dispatch/spawn.mjs` is
-      lowered to 12 minutes, with a comment giving the bound it is derived
-      from: the longest single Bash tool call a session can make, during which
-      it emits no event (10 minutes, the tool's maximum timeout), plus a
-      margin. `DEFAULT_TIMEOUT_MS` is unchanged.
+- [ ] **AC-5** — The longest single Bash tool call a session can make, during
+      which it emits no event, is pinned by the invocation rather than
+      inherited: `buildInvocation` sets `BASH_MAX_TIMEOUT_MS` to 10 minutes
+      (`600000`) in the environment of both roles, overriding whatever the
+      dispatcher's environment holds, and a test asserts it for each role.
+      `DEFAULT_STALL_MS` in `scripts/dispatch/spawn.mjs` is lowered to 12
+      minutes, defined from that pinned value plus a margin rather than as a
+      separate literal, so the two cannot drift apart. `DEFAULT_TIMEOUT_MS` is
+      unchanged.
 - [ ] **AC-6** — `spawnSession`'s return value keeps its shape. `output` is
       still the result object, not the stream, so OQ-69 and OQ-70 callers are
       unaffected. A test asserts this through the stand-in, which gains a
@@ -81,9 +85,21 @@ and the classifier rather than to OQ-65.
   it. It does not say whether print mode needs `--verbose` alongside
   `stream-json`. That is believed but not verified, which is why AC-1 asks for
   it to be established by running the CLI.
-- The 10-minute bound in AC-5 is the Bash tool's maximum per-call timeout.
-  A session running one long command emits no event until the command
-  returns, so a stall interval below that would kill a working session.
+- The 10-minute bound in AC-5 is the Bash tool's default maximum per-call
+  timeout. A session running one long command emits no event until the
+  command returns, so a stall interval below that would kill a working
+  session.
+- **Why AC-5 pins it rather than assuming it.** #132's review found that the
+  installed CLI (2.1.281) reads `BASH_MAX_TIMEOUT_MS` and
+  `BASH_DEFAULT_TIMEOUT_MS` from its environment. The runner found this by
+  searching the binary; `claude --help` does not document either. Both roles
+  inherit the dispatcher's environment: the reviewer gets a copy of
+  `baseEnv`, and the coder gets `coderEnv`, which strips only credentials. So
+  a dispatcher environment that raised the variable would let one long Bash
+  call outlast the stall interval, and a working session would be killed.
+  Pinning the value in the invocation is what makes the derivation hold.
+  `BASH_DEFAULT_TIMEOUT_MS` needs no pin, because a session can already ask
+  for any timeout up to the maximum.
 - `scripts/dispatch/outcome.mjs`: `parseEnvelope`, and `RAW_RECORD_FIELDS`,
   whose `stdout` field stays a string
 - `scripts/dispatch/fixtures/`: the existing envelopes and the stand-in
