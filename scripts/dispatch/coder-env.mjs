@@ -67,8 +67,11 @@ const READ_ONLY_GIT_TOOLS = [
  * is usually called (AC-5). That rules out utilities that are read-only by
  * habit: `sed` (`-i`, and its `w` command), `sort` (`-o`), `uniq` (a second
  * operand is an output file), `find` (`-delete`, `-exec`), `awk`, `tee`,
- * `xargs`. The test asserts the property by probing each entry with those
- * write-shaped arguments rather than by comparing the list to a fixed one.
+ * `xargs` (runs its operands), `dd` (`of=`), and any interpreter (`perl`).
+ * The test asserts the property by probing each entry with write-shaped
+ * arguments rather than by comparing the list to a fixed one. Those probes
+ * are themselves a fixed set, so a new entry is only as safe as the probes
+ * are complete: check its write modes against them when adding it.
  *
  * Shell redirection (`cat f > g`) is out of this list's reach: it is a
  * property of the shell, not of the utility, and applies equally to

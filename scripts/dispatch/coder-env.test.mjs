@@ -327,7 +327,10 @@ describe('READ_ONLY_SHELL_UTILS (OQ-67)', () => {
   // Arguments that make some common utility write, each tried in a scratch
   // directory holding one file. A utility that can write in any mode is
   // expected to trip at least one of these; the control test below shows
-  // that the ones this list must exclude do.
+  // that the ones this list must exclude do. The probes are a fixed set, so
+  // the property is only as strong as they are: a writer added to the list
+  // needs a probe here before its absence proves anything. #122's review
+  // found xargs, dd and perl passing clean before their probes were added.
   const WRITE_PROBES = [
     ['-i', 's/a/b/', 'f'], // sed -i
     ['--in-place', 's/a/b/', 'f'],
@@ -340,6 +343,10 @@ describe('READ_ONLY_SHELL_UTILS (OQ-67)', () => {
     ['.', '-exec', 'touch', 'made', ';'],
     ['.', '-fprint', 'out'],
     ['BEGIN { print 1 > "out" }'], // awk
+    ['touch', 'made'], // xargs: its operands are a command to run
+    ['of=out'], // dd
+    ['-i', '-pe', 's/a/b/', 'f'], // perl -i
+    ['-e', 'open(F, ">out")'], // perl -e, and any other interpreter
   ]
 
   function snapshot(dir) {
@@ -373,10 +380,12 @@ describe('READ_ONLY_SHELL_UTILS (OQ-67)', () => {
   const hasGnuUtility = (utility) => spawnSync(utility, ['--version'], { stdio: 'pipe' }).status === 0
   const listed = READ_ONLY_SHELL_UTILS.map(utilityOf)
 
-  it.skipIf(!['sed', 'sort', 'tee', 'find'].every(hasGnuUtility))(
-    'OQ-67/AC-5 - control: the probes do catch sed, sort, tee and find, so a clean result below is not vacuous',
+  const KNOWN_WRITERS = ['sed', 'sort', 'tee', 'find', 'xargs', 'dd', 'perl']
+
+  it.skipIf(!KNOWN_WRITERS.every(hasGnuUtility))(
+    'OQ-67/AC-5 - control: the probes do catch sed, sort, tee, find, xargs, dd and perl, so a clean result below is not vacuous',
     () => {
-      for (const utility of ['sed', 'sort', 'tee', 'find']) {
+      for (const utility of KNOWN_WRITERS) {
         expect(writingProbes(utility), utility).not.toEqual([])
       }
     },
