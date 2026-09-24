@@ -75,6 +75,19 @@ Measured on 2026-09-18 against `origin/main`:
 - `docs/agent-workflow-design.md`, "Merging" and "Watchdog" — why landing is a
   sweep at all rather than the author's job, and what the backstop covers.
 
+**Added 2026-09-24: `unknown` straight after a merge.** GitHub recomputes
+`mergeable_state` after a merge, and until it finishes, other open PRs can
+read `unknown`, which the sweep skips. #123 merged at 02:13:42Z. A run at
+02:17:14Z skipped #125 as `unknown`, and the next run, at 02:26:30Z, landed
+it. Today that costs a manual re-run. For whichever trigger this story
+chooses, it is likely to matter more, because both candidates below fire
+*close to* a state change: the dispatcher merging right after it posts a
+verdict, or a `status` event firing as a check completes. Only the
+after-a-merge case has been observed. That GitHub is also still recomputing
+at those moments is a reasonable expectation, not a measurement. If the
+trigger does not retry after a delay, a burst of merges leaves PRs sitting
+landable, which fails AC-2 without anything reporting an error.
+
 ## Open questions
 
 - **Where should the merge happen?** Two candidates, and the choice decides most
