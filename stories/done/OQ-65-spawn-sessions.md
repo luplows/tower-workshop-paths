@@ -16,37 +16,37 @@ a known set of outcomes rather than a shell line retyped per spawn.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — `scripts/dispatch/spawn.mjs` exports one entry point that
+- [x] **AC-1** — `scripts/dispatch/spawn.mjs` exports one entry point that
       takes a role and its inputs, builds the invocation with OQ-74's
       `invocation.mjs`, runs it, hands the raw record to OQ-75's `outcome.mjs`,
       and returns that classification together with the parsed output. It
       reimplements neither module. OQ-69 and OQ-70 call this entry point.
-- [ ] **AC-2** — The `claude` executable is resolved to the real binary and
+- [x] **AC-2** — The `claude` executable is resolved to the real binary and
       started directly, never through a shell: no `shell: true` and no
       `cmd.exe`. A test asserts the spawn options. On the owner's machines,
       `claude` on PATH is a shim that `child_process.spawn` cannot start (see
       **Context**, point 2). Resolution failing is reported as an error, not
       worked around.
-- [ ] **AC-3** — The prompt is written to the child's **stdin**. A test spawns
+- [x] **AC-3** — The prompt is written to the child's **stdin**. A test spawns
       a stand-in executable (not `claude`) with a prompt longer than 32,767
       characters and asserts the whole prompt arrives intact (see **Context**,
       point 3).
-- [ ] **AC-4** — A spawn exceeding its timeout is terminated and recorded as
+- [x] **AC-4** — A spawn exceeding its timeout is terminated and recorded as
       timed out. A test asserts the child process is actually gone, not merely
       no longer awaited. A timeout that leaves the process running is a leak,
       not a timeout.
-- [ ] **AC-5** — The spawn is watched while it runs, not only read at exit: a
+- [x] **AC-5** — The spawn is watched while it runs, not only read at exit: a
       session producing no output for a configured interval is terminated,
       with the same guarantee as AC-4 that the child is actually gone, and
       recorded as stalled. The migration plan requires this in as many words
       (*"every spawn needs a liveness check, not just a result read"*),
       because the failure it exists for is a session that neither finishes nor
       dies.
-- [ ] **AC-6** — The raw record handed to `outcome.mjs` is the shape OQ-75's
+- [x] **AC-6** — The raw record handed to `outcome.mjs` is the shape OQ-75's
       AC-1 defines and exports, imported rather than redefined. A test asserts
       that records from a stand-in session that exits, one that times out, and
       one that stalls all conform to it.
-- [ ] **AC-7** — `spawn.mjs` performs no GitHub operation of any kind. It does
+- [x] **AC-7** — `spawn.mjs` performs no GitHub operation of any kind. It does
       not create a pull request, post a status, or apply a label, and a test
       asserts its module surface. Those belong to `github.mjs` (OQ-68).
       Keeping them out is what lets a spawn be tested without a repository in
