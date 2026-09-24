@@ -20,8 +20,18 @@ const PR_REPORT = [
   '### Verification',
   '`npm test` passed.',
   '',
+  '## Open as',
   'draft',
 ].join('\n')
+
+// A real `claude -p --output-format json` envelope: the coder spawn that
+// wrote this module (#127, Claude Code 2.1.281). Unaltered except that each
+// `permission_denials[].tool_input.command` longer than 200 characters is cut
+// to 200 and marked, because one of them held the whole of a denied heredoc.
+// Its `result` is a real coder report written before coder.md pinned the
+// closing block, so it ends the old way: a free-form draft/ready line
+// followed by a head-SHA line.
+const REAL_CODER_ENVELOPE = readFileSync(path.join(HERE, 'fixtures/oq75-coder-envelope.json'), 'utf8')
 
 function envelope(overrides = {}) {
   return {
@@ -166,19 +176,60 @@ describe('OQ-75/AC-3 coder PR block', () => {
   it('OQ-75/AC-3 reports absent and malformed blocks rather than guessing', () => {
     expect(parsePrBlock('Just prose.')).toMatchObject({ status: 'absent' })
     expect(parsePrBlock(undefined)).toMatchObject({ status: 'absent' })
-    expect(parsePrBlock('## PR title\nT\n\ndraft')).toMatchObject({ status: 'malformed' })
-    expect(parsePrBlock('## PR title\nT\n## PR body\nB')).toMatchObject({ status: 'malformed' })
-    expect(parsePrBlock('## PR title\nT\n## PR body\nB\nmaybe')).toMatchObject({
+    expect(parsePrBlock('## PR title\nT\n\n## Open as\ndraft')).toMatchObject({ status: 'malformed' })
+    expect(parsePrBlock('## PR title\nT\n## PR body\nB\ndraft')).toMatchObject({ status: 'malformed' })
+    expect(parsePrBlock('## PR title\nT\n## PR body\nB\n## Open as')).toMatchObject({
       status: 'malformed',
     })
-    expect(parsePrBlock('## PR title\n\n## PR body\nB\nready')).toMatchObject({
+    expect(parsePrBlock('## PR title\nT\n## PR body\nB\n## Open as\nmaybe')).toMatchObject({
       status: 'malformed',
     })
-    expect(parsePrBlock('## PR title\nT\n## PR body\nready')).toMatchObject({ status: 'malformed' })
+    expect(parsePrBlock('## PR title\n\n## PR body\nB\n## Open as\nready')).toMatchObject({
+      status: 'malformed',
+    })
+    expect(parsePrBlock('## PR title\nT\n## PR body\n## Open as\nready')).toMatchObject({
+      status: 'malformed',
+    })
     const missing = classifySession(record({}, envelope({ result: 'done, no block' })))
     expect(missing.outcome).toBe('completed')
     expect(missing.prText).toMatchObject({ status: 'absent' })
     expect(missing.prText).not.toHaveProperty('body')
+  })
+
+  it('OQ-75/AC-3 rejects anything after the draft/ready line, such as a head SHA', () => {
+    expect(parsePrBlock(`${PR_REPORT}\n\nBranch head is abc123.`)).toMatchObject({
+      status: 'malformed',
+      reason: expect.stringContaining('nothing else'),
+    })
+    expect(parsePrBlock(PR_REPORT.replace(/draft$/, 'Open as: draft'))).toMatchObject({
+      status: 'malformed',
+    })
+  })
+
+  it('OQ-75/AC-1 classifies a real success envelope as completed', () => {
+    const real = classifySession({
+      role: 'coder', exitCode: 0, signal: null, stdout: REAL_CODER_ENVELOPE, stoppedFor: null,
+    })
+    expect(real.outcome).toBe('completed')
+    expect(real.envelope).toMatchObject({ subtype: 'success', is_error: false, stop_reason: 'end_turn' })
+  })
+
+  it('OQ-75/AC-3 rejects a real report that ends the pre-pin way, and reads it once re-ended', () => {
+    const report = JSON.parse(REAL_CODER_ENVELOPE).result
+    const asWritten = parsePrBlock(report)
+    expect(asWritten).toMatchObject({ status: 'malformed' })
+    expect(asWritten).not.toHaveProperty('body')
+
+    // The same report with only its ending changed to coder.md's pinned block:
+    // the free-form draft/ready line becomes "## Open as", and the head-SHA
+    // line moves above the block.
+    const [head, tail] = report.split(/^## PR title\s*$/m)
+    const [titlePart, bodyPart] = tail.split(/^## PR body\s*$/m)
+    const title = titlePart.trim()
+    const body = bodyPart.split(/^\*\*Draft or ready:\*\*/m)[0].trim()
+    const sha = report.match(/^Branch head is .*$/m)[0]
+    const reEnded = `${head}${sha}\n\n## PR title\n${title}\n\n## PR body\n${body}\n\n## Open as\nready\n`
+    expect(parsePrBlock(reEnded)).toEqual({ status: 'parsed', title, body, draft: false })
   })
 })
 

@@ -81,14 +81,26 @@ function parseEnvelope(stdout) {
 }
 
 /**
- * Parses the `## PR title` / `## PR body` / `draft`-or-`ready` block that
- * coder.md requires as the last thing in a coder's report. Returns
- * `{ status: 'parsed', title, body, draft }` or
+ * Parses the closing block that coder.md pins as the last thing in a coder's
+ * report:
+ *
+ *   ## PR title
+ *   <one line>
+ *   ## PR body
+ *   <the filled template>
+ *   ## Open as
+ *   draft            (or ready; nothing may follow)
+ *
+ * Returns `{ status: 'parsed', title, body, draft }` or
  * `{ status: 'absent' | 'malformed', reason }`. Never invents a body.
  *
- * Reading of the contract: the last `## PR title` heading opens the block,
- * `## PR body` follows it, and the last non-empty line of the report is
- * `draft` or `ready` (optionally in backticks or bold), which closes the body.
+ * The last `## PR title` opens the block, so a report that quotes the
+ * headings earlier still parses. After `## Open as` there must be exactly
+ * one non-empty line, `draft` or `ready` (backticks, asterisks or
+ * underscores around it are tolerated, nothing else is). Anything after it,
+ * such as a head-SHA line, makes the block malformed: coder.md puts that
+ * above the block, and guessing which trailing prose is harmless is exactly
+ * what this module must not do.
  */
 export function parsePrBlock(text) {
   if (typeof text !== 'string') return { status: 'absent', reason: 'no report text' }
@@ -102,15 +114,25 @@ export function parsePrBlock(text) {
     return { status: 'malformed', reason: '"## PR title" without a following "## PR body"' }
   }
 
-  let last = lines.length - 1
-  while (last > bodyAt && lines[last].trim() === '') last--
-  const marker = last > bodyAt ? lines[last].trim().match(/^[`*_]*(draft|ready)[`*_]*$/i) : null
-  if (!marker) {
-    return { status: 'malformed', reason: 'the last line of the report is not "draft" or "ready"' }
+  const openAt = lines.findLastIndex((line, i) => i > bodyAt && /^##\s+Open as\s*$/i.test(line))
+  if (openAt === -1) {
+    return { status: 'malformed', reason: '"## PR body" without a following "## Open as"' }
   }
 
+  const after = lines.slice(openAt + 1).map((line) => line.trim()).filter((line) => line !== '')
+  if (after.length !== 1) {
+    return {
+      status: 'malformed',
+      reason: after.length === 0
+        ? '"## Open as" is empty'
+        : '"## Open as" must be followed by one line, "draft" or "ready", and nothing else',
+    }
+  }
+  const marker = after[0].match(/^[`*_]*(draft|ready)[`*_]*$/i)
+  if (!marker) return { status: 'malformed', reason: '"## Open as" is not "draft" or "ready"' }
+
   const title = lines.slice(titleAt + 1, bodyAt).join('\n').trim()
-  const body = lines.slice(bodyAt + 1, last).join('\n').trim()
+  const body = lines.slice(bodyAt + 1, openAt).join('\n').trim()
   if (title === '') return { status: 'malformed', reason: '"## PR title" is empty' }
   if (body === '') return { status: 'malformed', reason: '"## PR body" is empty' }
 
