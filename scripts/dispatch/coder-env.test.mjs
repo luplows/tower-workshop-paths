@@ -283,6 +283,10 @@ describe('coderAllowedTools (OQ-67)', () => {
       `git push -u origin ${branch}:main`,
       `git push -u origin ${branch} main`,
       `git push -u -f origin ${branch}`,
+      `git push origin main ${branch}`,
+      `git push origin :main ${branch}`,
+      `git push -f origin ${branch}`,
+      `git push --force origin HEAD:${branch}`,
       'git push -u origin HEAD',
       'git push -u',
       'git push origin HEAD',
@@ -299,16 +303,48 @@ describe('coderAllowedTools (OQ-67)', () => {
     }
   })
 
-  it('OQ-67/AC-2 - every push-granting pattern is exact, never a prefix wildcard', () => {
-    // The structural reason the list above holds for commands nobody thought
-    // to enumerate: an exact rule permits one command and nothing else.
+  // Whether one push rule is safe, judged on the whole command rather than on
+  // where its last token points: exact (no `:*`), `git push`, then only the
+  // upstream-tracking flags, then `origin`, then exactly one refspec, and that
+  // refspec pushes this branch or HEAD to this branch and nothing else. Any
+  // other flag (-f, --force, --delete, --all, --mirror...) or a second refspec
+  // (`main <branch>`, `:main <branch>`) fails it.
+  function isSafePushRule(rule, assigned) {
+    const match = rule.match(/^Bash\((git push .*)\)$/)
+    if (!match || match[1].endsWith(':*')) return false
+    const tokens = match[1].split(' ')
+    let i = 2
+    while (tokens[i] === '-u' || tokens[i] === '--set-upstream') i++
+    if (tokens[i] !== 'origin') return false
+    const refspecs = tokens.slice(i + 1)
+    if (refspecs.length !== 1) return false
+    return [assigned, `HEAD:${assigned}`, `${assigned}:${assigned}`].includes(refspecs[0])
+  }
+
+  it('OQ-67/AC-2 - every push-granting pattern is exact and can push only this branch', () => {
+    // The structural reason the forbidden list above holds for commands nobody
+    // thought to enumerate, and what keeps a future spelling from widening
+    // push: each rule must pass isSafePushRule as a whole command.
     const pushRules = coderAllowedTools(branch).filter((tool) => tool.startsWith('Bash(git push'))
     expect(pushRules.length).toBeGreaterThan(0)
-    for (const rule of pushRules) {
-      expect(rule.endsWith(':*)'), rule).toBe(false)
-      // ...and every one names this branch as its destination, as its last
-      // token, so none can be pointed anywhere else.
-      expect(rule.slice('Bash('.length, -1).split(' ').at(-1).split(':').at(-1), rule).toBe(branch)
+    for (const rule of pushRules) expect(isSafePushRule(rule, branch), rule).toBe(true)
+  })
+
+  it('the push-rule check rejects the unsafe shapes #128\'s review found its first version accepted', () => {
+    // Not vacuous: each of these ends in the branch name, which is all the
+    // first version of the check looked at.
+    for (const rule of [
+      `Bash(git push origin main ${branch})`,
+      `Bash(git push origin :main ${branch})`,
+      `Bash(git push -f origin ${branch})`,
+      `Bash(git push --force origin HEAD:${branch})`,
+      `Bash(git push -u --force origin ${branch})`,
+      `Bash(git push --all origin ${branch})`,
+      `Bash(git push upstream ${branch})`,
+      `Bash(git push origin ${branch}:*)`,
+      `Bash(git push origin main:${branch})`,
+    ]) {
+      expect(isSafePushRule(rule, branch), rule).toBe(false)
     }
   })
 
