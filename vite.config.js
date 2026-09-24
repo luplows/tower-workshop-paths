@@ -19,6 +19,9 @@ export default defineConfig(({ command, isPreview }) => ({
     pool: 'vmThreads',
     setupFiles: './src/test/setup.js',
     globals: true,
-    exclude: ['**/node_modules/**', 'e2e/**'],
+    // .claude/worktrees/ holds full checkouts of other branches, made by the
+    // local agent tooling. Collecting their test files would run a second
+    // copy of the suite against code that is not this branch's.
+    exclude: ['**/node_modules/**', 'e2e/**', '.claude/worktrees/**'],
   },
 }))
