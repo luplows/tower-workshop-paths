@@ -119,6 +119,10 @@ incidental turned out to be load-bearing:
 - `REVIEW.md`, "Recording a verdict", "The three verdicts", "When the reviewer
   returns no verdict" — AC-3, AC-4
 - `scripts/dispatch/render.mjs` — `wrapInjectedBlock` and `render`
+- OQ-65's AC-10 — the reviewer's `--allowedTools` list, read-only shell
+  utilities included. This story passes it through and does not define its own.
+  Both hand-run reviews of #122 and #123 had shell pipelines denied for want of
+  it.
 - [#117](https://github.com/luplows/tower-workshop-paths/pull/117) — four review
   rounds recorded as marker comments at known head SHAs; the fixtures for this
   story's tests are sitting in it

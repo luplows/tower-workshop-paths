@@ -3,7 +3,7 @@ id: OQ-65
 title: Spawn a coder or reviewer session and classify how it ended
 tier: next
 kind: workflow
-depends_on: [OQ-51]
+depends_on: [OQ-51, OQ-67]
 model: sonnet
 blocked: null
 ---
@@ -76,6 +76,23 @@ a known set of outcomes rather than a shell line retyped per spawn.
       that third round and still satisfies the requirement that a future
       `{{FINDINGS}}` be covered without editing `render.mjs`. Choose that or
       something better, but do not close this by assertion a fourth time.
+- [ ] **AC-10** — The reviewer's allowlist is built by an exported function
+      in `scripts/dispatch/`, in the same way `coderAllowedTools` builds the
+      coder's, rather than being retyped per spawn. It includes
+      `READ_ONLY_SHELL_UTILS` from `coder-env.mjs` (OQ-67), imported rather
+      than restated, and grants no `git push` and no `gh`. Each role's list is
+      **complete on its own**: a test asserts that the constructed argv carries
+      every tool the role uses, because `permissions.allow` in
+      `.claude/settings.json` is silently ignored when the workspace is not
+      trusted (see **Context**, point 9). `docs/agent-workflow-design.md`'s
+      reviewer invocation sketch and `reviewer.md`'s prose description of the
+      list are updated to match. `reviewer.md` is under `.claude/prompts/`, so
+      that half is emitted as a diff in the PR body.
+- [ ] **AC-11** — The rendered prompt reaches `claude -p` on **stdin**, never
+      as an argv element. A test asserts that no element of the constructed
+      argv contains the prompt text, and one spawns a stand-in executable with
+      a prompt longer than 32,767 characters and checks that the whole prompt
+      arrives (see **Context**, point 8).
 
 ## Out of scope
 
@@ -152,6 +169,33 @@ that run surfaced which land on this story:
    would *replace* rather than append, and how many rounds remained. None of
    that is in `coder.md` and all of it was load-bearing — a retry not told the
    PR exists may try to open a second one.
+
+**Added 2026-09-23, after reviewing #122 and #123 through the orchestrator on
+the owner's second machine.** Two things that run surfaced, both about
+Windows:
+
+8. **The prompt does not fit on a command line.** The orchestrator reported
+   that passing the prompt as an argument hits `cmd.exe`'s limit of about
+   8 KB, and delivered it on stdin instead, which worked. Point 5 already rules
+   out a shell. Without one, the limit is `CreateProcess`'s 32,767 characters.
+   That is still not enough. `coder.md` and `reviewer.md` are 14,745 and 14,267
+   bytes (`wc -c` on 2026-09-23, documentation section included), and the
+   injected story adds its own size on top: this file alone is over 12 KB. A
+   reviewer prompt also carries the PR body, which can include a whole proposed
+   diff, as OQ-63's did. So stdin is required whichever way the process is
+   started, and AC-11 tests past the higher of the two limits.
+9. **`settings.json` allowances disappear without warning.** The reviewer spawn
+   logged that 14 `permissions.allow` entries from `.claude/settings.json` were
+   ignored because the workspace was untrusted in the owner's local config.
+   `claude --help` says the trust dialog is skipped under `-p`, and that settings
+   files failing validation are "silently ignored in this mode". Those spawns
+   were unaffected only because they passed their own `--allowedTools`. The
+   same two reviews showed the reviewer's list itself was short. `npm test | tail` was
+   denied on #122, and pipelines through `sed`, `sort`, `tail` and `head` on
+   #123. That is the reviewer-side twin of OQ-67. Hence AC-10: one exported
+   list per role, complete without `settings.json`, with the read-only
+   utilities OQ-67 exports. `sed` and `sort` stay denied even then, because
+   they can write, and OQ-67's property test is what keeps them out.
 
 - `docs/migration-plan.md`, "Order within Phase 1" step 3 — the scope this story
   implements, and the liveness requirement in AC-6
