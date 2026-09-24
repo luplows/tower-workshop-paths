@@ -915,17 +915,19 @@ person is attached to. So the restriction is a property of the *spawn*, not of t
 what makes the workaround legitimate rather than a bypass:
 
 > **The coder emits, the dispatcher writes.** The coder publishes the intended change as a diff in
-> its PR body; whatever spawned it applies that with `git apply` in a separate, attributed commit.
-> Used for the first time in #112, where the diff applied cleanly.
+> its PR body, and whoever is running the loop applies it with `git apply`, by hand, in a separate,
+> attributed commit. For this relay the "dispatcher" in the name is always a person, never the
+> dispatcher script (see below). Used for the first time in #112, where the diff applied cleanly.
 
 That is the same division of labour the loop already uses twice — the reviewer returns a verdict and
 the runner records it, and under OQ-63 the coder emits a PR body and the dispatcher opens the PR.
-Prompt edits are the third instance, with one difference: **the dispatcher does not automate this
-one.** OQ-70 considered applying the emitted diff automatically and rejected it on 2026-09-19. That
-would mean a script taking patch text from a PR body written by the agent under review and applying
-it to the one directory that agent is forbidden to touch, and the paths it would check come from the
-same untrusted patch. So a story that changes a prompt stays partly manual, permanently: whoever
-runs the loop applies the diff by hand, in a separate, attributed commit (OQ-70, AC-7b).
+Prompt edits are the third instance, with one difference: **the dispatcher script does not automate
+this one**, whatever the principle's name suggests. OQ-70 considered applying the emitted diff
+automatically and rejected it on 2026-09-19. That would mean a script taking patch text from a PR
+body written by the agent under review and applying it to the one directory that agent is forbidden
+to touch, and the paths it would check come from the same untrusted patch. So a story that changes a
+prompt stays partly manual, permanently: whoever runs the loop applies the diff by hand, in a
+separate, attributed commit (OQ-70, AC-7b).
 
 ### `GH_TOKEN=""` does not remove a credential
 
