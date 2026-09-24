@@ -21,13 +21,14 @@ is automated.
       reviewer half: resolve the PR's head SHA and branch, assemble the reviewer
       prompt, spawn the reviewer, parse its verdict, and record that verdict as a
       **marker comment**. It posts no commit status — `review-gate.yml` derives
-      `review/agent` from the marker, per OQ-68's AC-3. It calls `render.mjs`,
-      `spawn.mjs` and `github.mjs` and reimplements none of them.
+      `review/agent` from the marker, per OQ-68's AC-3. It calls `spawn.mjs`
+      (OQ-65, which builds the prompt through OQ-74's `invocation.mjs`) and
+      `github.mjs`, and reimplements none of them.
 - [ ] **AC-2** — Every untrusted value is bounded before it reaches the prompt:
       `{{STORY}}` and `{{PR_BODY}}` go through `wrapInjectedBlock`. A test
       asserts the assembled prompt has exactly one begin and one end marker per
       block and no heading at or above the prompt's own top level. This overlaps
-      OQ-65's AC-9 deliberately — that one covers the spawn contract, this one
+      OQ-74's AC-4 deliberately — that one covers the spawn contract, this one
       covers the reviewer path specifically, because the PR body is the least
       trusted input in the system and is only present here.
 - [ ] **AC-3** — The verdict is recorded against **the SHA the reviewer
@@ -110,15 +111,20 @@ incidental turned out to be load-bearing:
    one.
 3. **Bounding the PR body is not optional.** Round 2's body documented the marker
    format literally, so a nonce-less wrap counted its prose as real markers.
-   Content that discusses the mechanism forges the mechanism — see OQ-65's
-   Context, point 6.
+   Content that discusses the mechanism forges the mechanism — see OQ-74's
+   Context, point 3.
 
 - `docs/migration-plan.md`, "Order within Phase 1" step 4 — this story's scope
 - `.claude/prompts/reviewer.md` — the placeholder table AC-6 satisfies, the
-  head-moved rule AC-3 implements, and the JSON contract `spawn.mjs` parses
+  head-moved rule AC-3 implements, and the JSON contract `outcome.mjs`
+  (OQ-75) returns
 - `REVIEW.md`, "Recording a verdict", "The three verdicts", "When the reviewer
   returns no verdict" — AC-3, AC-4
 - `scripts/dispatch/render.mjs` — `wrapInjectedBlock` and `render`
+- OQ-74's AC-3 — the reviewer's `--allowedTools` list, read-only shell
+  utilities included. This story passes it through and does not define its own.
+  Both hand-run reviews of #122 and #123 had shell pipelines denied for want of
+  it.
 - [#117](https://github.com/luplows/tower-workshop-paths/pull/117) — four review
   rounds recorded as marker comments at known head SHAs; the fixtures for this
   story's tests are sitting in it

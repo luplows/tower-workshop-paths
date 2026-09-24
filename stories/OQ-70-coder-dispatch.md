@@ -20,7 +20,8 @@ costs a command rather than a sequence of steps I have to get right each time.
       `queue.mjs`, creates its branch and a dedicated worktree, spawns the
       coder, and opens a pull request from the `## PR title` / `## PR body` /
       `draft`-or-`ready` block the coder emits. It calls `queue.mjs`,
-      `render.mjs`, `spawn.mjs` and `github.mjs` and reimplements none of them.
+      `spawn.mjs` (OQ-65, which builds the prompt through OQ-74's
+      `invocation.mjs`) and `github.mjs`, and reimplements none of them.
 - [ ] **AC-2** — The branch is `story/OQ-<n>-<slug>` derived from the story
       filename, is created from the current `origin/main`, and **carries no
       upstream tracking `main`**. A branch created with `git branch <name>
@@ -32,7 +33,7 @@ costs a command rather than a sequence of steps I have to get right each time.
       environment.
 - [ ] **AC-4** — A coder that pushed nothing does not get a pull request opened
       for it. The branch's existence on the remote is checked rather than
-      assumed from a `completed` classification, because OQ-65's AC-4 makes
+      assumed from a `completed` classification, because OQ-75's AC-2 makes
       those separate questions: a session can report failure having succeeded,
       and can report success having pushed nothing.
 - [ ] **AC-5** — A missing or malformed `## PR title` / `## PR body` block is a

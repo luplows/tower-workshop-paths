@@ -165,7 +165,7 @@ Three further things that hand-run established, all feeding the ACs above:
    round 3's findings meant quoting marker syntax and setext headings verbatim,
    and on three separate renders those quoted lines became live markers and live
    headings inside the block meant to contain them. AC-4's fixture exists for
-   this. See OQ-65's Context, point 6.
+   this. See OQ-74's Context, point 3.
 2. **A retry needs context the prompt cannot supply.** All three retries were
    hand-written prose telling the coder the round number, that its branch and PR
    existed, that item 19 was done, and that the body replaces rather than
