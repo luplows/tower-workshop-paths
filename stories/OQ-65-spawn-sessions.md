@@ -3,7 +3,7 @@ id: OQ-65
 title: Spawn a coder or reviewer session and classify how it ended
 tier: next
 kind: workflow
-depends_on: [OQ-51, OQ-67]
+depends_on: [OQ-74, OQ-75]
 model: sonnet
 blocked: null
 ---
@@ -16,196 +16,100 @@ a known set of outcomes rather than a shell line retyped per spawn.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — `spawn.mjs` builds the `claude -p` invocation from a role and
-      the story's fields, and the argv construction is a pure exported function
-      tested without running `claude`. It carries `--permission-prompts none`,
-      `--max-budget-usd`, `--output-format json`, `--model` and `--effort`, plus
-      the role's `--allowedTools` and `--disallowedTools`.
-- [ ] **AC-2** — A coder spawn takes its environment from `coderEnv` and its
-      allowlist from `coderAllowedTools(branch)` in
-      `scripts/dispatch/coder-env.mjs`, rather than restating either. A test
-      asserts no credential variable survives into the constructed environment.
-      That module currently has no importer anywhere in the repository; this
-      story is what makes OQ-63's guarantee load-bearing instead of a library
-      nothing calls.
-- [ ] **AC-3** — The outcome is classified, and the classification is the
-      module's contract: `completed`, `budget-exhausted`, `timed-out`, `died`
-      (non-zero exit, abnormal `stop_reason`, or `is_error`), or
-      `malformed-output` (exit looked clean but the JSON is absent or
-      unparseable). Nothing is ever reported as `completed` by default.
-- [ ] **AC-4** — **A non-`completed` outcome asserts only that the session did
-      not report completion — never that the work did not happen.** In the first
-      hand-run of this loop a coder hit a session limit and returned
-      `is_error: true` with `stop_reason: "stop_sequence"`, having already
-      committed, pushed and opened its pull request. A dispatcher that reads
-      that as "nothing happened" would respawn over completed work. The
-      classification and the repository's actual state are separate questions,
-      and `spawn.mjs` answers only the first.
-- [ ] **AC-5** — A spawn exceeding its timeout is terminated and classified
-      `timed-out`, and a test asserts the child process is actually gone rather
-      than merely awaited — a timeout that leaves the process running is a leak,
+- [ ] **AC-1** — `scripts/dispatch/spawn.mjs` exports one entry point that
+      takes a role and its inputs, builds the invocation with OQ-74's
+      `invocation.mjs`, runs it, hands the raw record to OQ-75's `outcome.mjs`,
+      and returns that classification together with the parsed output. It
+      reimplements neither module. OQ-69 and OQ-70 call this entry point.
+- [ ] **AC-2** — The `claude` executable is resolved to the real binary and
+      started directly, never through a shell: no `shell: true` and no
+      `cmd.exe`. A test asserts the spawn options. On the owner's machines,
+      `claude` on PATH is a shim that `child_process.spawn` cannot start (see
+      **Context**, point 2). Resolution failing is reported as an error, not
+      worked around.
+- [ ] **AC-3** — The prompt is written to the child's **stdin**. A test spawns
+      a stand-in executable (not `claude`) with a prompt longer than 32,767
+      characters and asserts the whole prompt arrives intact (see **Context**,
+      point 3).
+- [ ] **AC-4** — A spawn exceeding its timeout is terminated and recorded as
+      timed out. A test asserts the child process is actually gone, not merely
+      no longer awaited. A timeout that leaves the process running is a leak,
       not a timeout.
-- [ ] **AC-6** — The spawn is watched while it runs, not only read at exit: a
-      session producing no output for a configured interval is detectable. The
-      migration plan requires this in as many words — *"every spawn needs a
-      liveness check, not just a result read"* — because the failure it exists
-      for is a session that neither finishes nor dies.
-- [ ] **AC-7** — For a coder spawn, the `## PR title` / `## PR body` /
-      `draft`-or-`ready` block that `coder.md` requires as the last thing in its
-      report is parsed out and returned. Absent or malformed, that is a
-      classified result and not a guess — `spawn.mjs` never invents a PR body.
-- [ ] **AC-8** — `spawn.mjs` performs no GitHub operation of any kind. It does
+- [ ] **AC-5** — The spawn is watched while it runs, not only read at exit: a
+      session producing no output for a configured interval is detected and
+      recorded. The migration plan requires this in as many words (*"every
+      spawn needs a liveness check, not just a result read"*), because the
+      failure it exists for is a session that neither finishes nor dies.
+- [ ] **AC-6** — The raw record handed to `outcome.mjs` (exit code, signal,
+      captured stdout, and whether the session timed out or stalled) is
+      defined here as the contract between the two modules, and a test
+      asserts that a stand-in session's record has that shape.
+- [ ] **AC-7** — `spawn.mjs` performs no GitHub operation of any kind. It does
       not create a pull request, post a status, or apply a label, and a test
-      asserts its module surface. Those belong to `github.mjs`, and keeping them
-      out is what lets a spawn be tested without a repository in any particular
-      state.
-- [ ] **AC-9** — Every untrusted value is passed through `wrapInjectedBlock`
-      before `render` — `{{STORY}}` for both roles, `{{PR_BODY}}` for the
-      reviewer, and any findings block a retry carries. A test asserts the
-      assembled prompt contains exactly one begin and one end marker per
-      injected block, and no heading at or above the prompt's own top level.
-      **`render.mjs` deliberately does not enforce this**: it substitutes
-      whatever string it is given and has no notion of which placeholders are
-      untrusted, so OQ-51's guarantee currently lives in caller discipline and
-      this story is the caller. Three independent reviewers raised it across
-      #117's four rounds — twice recorded as an observation and closed by
-      assertion, the third time demonstrating it against
-      `render.test.mjs`, which renders a bare unbounded `{{PR_BODY}}` without
-      complaint. A **name-keyed default** — `wrapInjectedBlock` applied
-      automatically to a named set, with an explicit opt-out — was raised in
-      that third round and still satisfies the requirement that a future
-      `{{FINDINGS}}` be covered without editing `render.mjs`. Choose that or
-      something better, but do not close this by assertion a fourth time.
-- [ ] **AC-10** — The reviewer's allowlist is built by an exported function
-      in `scripts/dispatch/`, in the same way `coderAllowedTools` builds the
-      coder's, rather than being retyped per spawn. It includes
-      `READ_ONLY_SHELL_UTILS` from `coder-env.mjs` (OQ-67), imported rather
-      than restated, and grants no `git push` and no `gh`. Each role's list is
-      **complete on its own**: a test asserts that the constructed argv carries
-      every tool the role uses, because `permissions.allow` in
-      `.claude/settings.json` is silently ignored when the workspace is not
-      trusted (see **Context**, point 9). `docs/agent-workflow-design.md`'s
-      reviewer invocation sketch and `reviewer.md`'s prose description of the
-      list are updated to match. `reviewer.md` is under `.claude/prompts/`, so
-      that half is emitted as a diff in the PR body.
-- [ ] **AC-11** — The rendered prompt reaches `claude -p` on **stdin**, never
-      as an argv element. A test asserts that no element of the constructed
-      argv contains the prompt text, and one spawns a stand-in executable with
-      a prompt longer than 32,767 characters and checks that the whole prompt
-      arrives (see **Context**, point 8).
+      asserts its module surface. Those belong to `github.mjs` (OQ-68).
+      Keeping them out is what lets a spawn be tested without a repository in
+      any particular state.
 
 ## Out of scope
 
-- **Rendering the prompt.** `render.mjs` is OQ-51's deliverable; `spawn.mjs`
-  calls it. That boundary was settled deliberately rather than left for whoever
-  picked this up first — see OQ-51's **Context**.
-- **Anything touching GitHub** — status posting, PR creation, labels. That is
-  `github.mjs`, step 2 of the migration plan's Phase 1 ordering.
-- **The loop.** Retrying, counting `block` verdicts, the two-round bound,
-  setting `blocked:` and the `review-blocked` label all belong to
-  `dispatch.mjs`. This story spawns one session and returns.
+- **Building the arguments, environment, allowlists or prompt.** That is
+  OQ-74. This module passes on what OQ-74 builds.
+- **Classifying the result, or parsing the coder's PR block.** That is OQ-75.
+- **Rendering the prompt.** That is `render.mjs` (OQ-51).
+- **Anything touching GitHub.** That is `github.mjs` (OQ-68).
+- **The loop:** retrying, counting `block` verdicts, the two-round bound,
+  setting `blocked:` and the `review-blocked` label. All of that belongs to
+  `dispatch.mjs` (OQ-48). This story spawns one session and returns.
 - **Choosing which story to run.** `queue.mjs` does that and is already merged.
-- **Interpreting a reviewer's verdict.** `spawn.mjs` returns the parsed JSON;
-  deciding what a verdict means is the loop's job.
 
 ## Constraints
 
 - Node, ESM, no new runtime dependencies.
-- Unit tests must not invoke `claude`. Argv construction, environment building,
-  result parsing and classification are pure functions behind a thin caller, as
-  `queue.mjs` and `coder-env.mjs` already do.
+- Unit tests must not invoke `claude`. Process behaviour is tested against a
+  stand-in executable, such as a small Node script that echoes stdin, sleeps,
+  or exits with a chosen code.
 
 ## Context
 
-Written after running the full loop by hand for OQ-63 — coder, reviewer, a
-blocking verdict, a fix round, a passing verdict, and the landing sweep. Four
-things that run surfaced, each of which this module has to answer:
+Written after running the full loop by hand for OQ-63, and extended after
+OQ-51's hand-run (#117) and the #122/#123 reviews. **Split on 2026-09-23:**
+this story had grown to eleven acceptance criteria covering three mechanisms.
+Building the invocation became OQ-74, and reading the result became OQ-75.
+This story kept the process itself and the entry point that joins all three,
+so the stories that depend on OQ-65 (OQ-69, OQ-70) still depend on the right
+thing. Context points about the other two parts moved with them.
 
-1. **A spawn can report failure and still have succeeded.** The session-limit
-   case in AC-4 is not hypothetical; it is what happened, and the PR was already
-   open when the error came back.
-2. **Retries have no contract.** The migration plan says a blocked coder is
-   *"respawned with story + findings"*, but `coder.md` has no `{{FINDINGS}}`
-   placeholder and nothing tells a retry that its branch and PR already exist.
-   Both were hand-written prose in the hand-run. Whether that contract lives in
-   `coder.md` or in what `spawn.mjs` appends is this story's to decide, but a
-   retry must stop depending on a human composing it.
-3. **Injected text can contain placeholder-shaped text.** The reviewer's
-   `{{PR_BODY}}` for OQ-63 contained the coder's proposed diff *of `coder.md`*,
-   which legitimately includes `{{BRANCH}}`. A renderer that scans its own
-   output for leftovers reads those as unsubstituted and refuses to render a
-   valid prompt. That was `render.mjs`'s problem and OQ-51 has settled it —
-   `checkPlaceholderContract` runs against the template before injection.
-4. **A coder cannot edit `.claude/prompts/`.** Every `Edit`/`Write` there is
-   refused as a sensitive file. It is a good guard, and it means a coder can
-   never deliver a story that changes the prompts.
-
-**Added 2026-09-19, after running OQ-51 through this loop by hand — four coder
-rounds and four reviews, recorded as marker comments on
-[#117](https://github.com/luplows/tower-workshop-paths/pull/117).** Three things
-that run surfaced which land on this story:
-
-5. **`claude` on PATH may not be spawnable from Node.** On the owner's machine
-   it is a `/bin/sh` shim, and `child_process.spawn('claude', …)` fails with
-   `ENOENT`. Spawning the real binary directly
-   (`…/node_modules/@anthropic-ai/claude-code/bin/claude.exe`) works and also
-   avoids `shell: true`, which would mean pushing a ~20 KB prompt through
+1. **A spawn can report failure and still have succeeded.** In the OQ-63
+   hand-run, a coder hit a session limit after its PR was already open. OQ-75
+   owns what that means for classification. For this story, it means a
+   spawn's return value is never a statement about the repository.
+2. **`claude` on PATH may not be spawnable from Node.** On the owner's
+   machine it is a `/bin/sh` shim, and `child_process.spawn('claude', …)`
+   fails with `ENOENT`. Spawning the real binary directly
+   (`…/node_modules/@anthropic-ai/claude-code/bin/claude.exe`) works, and also
+   avoids `shell: true`, which would mean pushing a large prompt through
    `cmd.exe` quoting rules. Resolve the executable rather than assuming PATH,
    and do not reach for a shell to work around it.
-6. **A findings block is the third injected block, and the most dangerous one
-   to bound.** Point 2 above says a retry has no contract; the hand-run showed
-   why that contract has to include bounding. Findings text discusses the
-   bounding mechanism, so it quotes marker syntax and heading syntax as its
-   subject matter — and on three separate renders during #117 the findings
-   forged the very construct they described, producing spurious begin/end
-   markers and live headings inside the block meant to contain them. The
-   injected story did it too, via its own frontmatter delimiter. **The documents
-   most likely to contain injection-shaped text are the ones discussing
-   injection**, which is exactly the corpus this dispatcher points at. AC-9
-   covers it; this is why.
-7. **A retry needs to be told what round it is and what already exists.** All
-   three of #117's retries were hand-composed prose telling the coder that its
-   branch and PR already existed, that item 19's move was done, that the PR body
-   would *replace* rather than append, and how many rounds remained. None of
-   that is in `coder.md` and all of it was load-bearing — a retry not told the
-   PR exists may try to open a second one.
+3. **The prompt does not fit on a command line.** During the #122/#123
+   reviews on 2026-09-23, the orchestrator reported that passing the prompt as
+   an argument hit `cmd.exe`'s limit of about 8 KB. It delivered the prompt on
+   stdin instead, which worked. Point 2 already rules out a shell. Without
+   one, the limit is `CreateProcess`'s 32,767 characters, and that is still
+   not enough. `coder.md` and `reviewer.md` are 14,745 and 14,267 bytes
+   (`wc -c` on 2026-09-23, documentation section included), and the injected
+   story adds its own size on top: this file was over 12 KB before the split.
+   A reviewer prompt also carries the PR body, which can include a whole
+   proposed diff, as OQ-63's did. So stdin is required whichever way the
+   process is started, and AC-3 tests past the higher of the two limits.
 
-**Added 2026-09-23, after reviewing #122 and #123 through the orchestrator on
-the owner's second machine.** Two things that run surfaced, both about
-Windows:
-
-8. **The prompt does not fit on a command line.** The orchestrator reported
-   that passing the prompt as an argument hits `cmd.exe`'s limit of about
-   8 KB, and delivered it on stdin instead, which worked. Point 5 already rules
-   out a shell. Without one, the limit is `CreateProcess`'s 32,767 characters.
-   That is still not enough. `coder.md` and `reviewer.md` are 14,745 and 14,267
-   bytes (`wc -c` on 2026-09-23, documentation section included), and the
-   injected story adds its own size on top: this file alone is over 12 KB. A
-   reviewer prompt also carries the PR body, which can include a whole proposed
-   diff, as OQ-63's did. So stdin is required whichever way the process is
-   started, and AC-11 tests past the higher of the two limits.
-9. **`settings.json` allowances disappear without warning.** The reviewer spawn
-   logged that 14 `permissions.allow` entries from `.claude/settings.json` were
-   ignored because the workspace was untrusted in the owner's local config.
-   `claude --help` says the trust dialog is skipped under `-p`, and that settings
-   files failing validation are "silently ignored in this mode". Those spawns
-   were unaffected only because they passed their own `--allowedTools`. The
-   same two reviews showed the reviewer's list itself was short. `npm test | tail` was
-   denied on #122, and pipelines through `sed`, `sort`, `tail` and `head` on
-   #123. That is the reviewer-side twin of OQ-67. Hence AC-10: one exported
-   list per role, complete without `settings.json`, with the read-only
-   utilities OQ-67 exports. `sed` and `sort` stay denied even then, because
-   they can write, and OQ-67's property test is what keeps them out.
-
-- `docs/migration-plan.md`, "Order within Phase 1" step 3 — the scope this story
-  implements, and the liveness requirement in AC-6
-- `docs/agent-workflow-design.md`, "Invocation shape" — the flags, and why
-  `--permission-prompts none` and `--max-budget-usd` are load-bearing
-- `scripts/dispatch/coder-env.mjs` — `coderEnv` and `coderAllowedTools`, which
-  AC-2 wires up
-- `scripts/dispatch/queue.mjs` and its tests — the house style this should match
-- `.claude/prompts/coder.md`, "The coder holds no GitHub API credential" — the
-  `## PR title` / `## PR body` contract AC-7 parses
+- `docs/migration-plan.md`, "Order within Phase 1" step 3: the scope this
+  story and OQ-74/OQ-75 implement between them, and the liveness requirement
+  in AC-5
+- `docs/agent-workflow-design.md`, "Invocation shape", the paragraph "What a
+  spawn actually costs": measured
+  wall times, from which a timeout should be chosen "well clear of 16
+  minutes, not tuned to the median"
+- `scripts/dispatch/queue.mjs` and its tests: the house style to match
 
 ## Open questions
 

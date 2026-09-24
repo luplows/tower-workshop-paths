@@ -32,7 +32,7 @@ costs a command rather than a sequence of steps I have to get right each time.
       environment.
 - [ ] **AC-4** — A coder that pushed nothing does not get a pull request opened
       for it. The branch's existence on the remote is checked rather than
-      assumed from a `completed` classification, because OQ-65's AC-4 makes
+      assumed from a `completed` classification, because OQ-75's AC-2 makes
       those separate questions: a session can report failure having succeeded,
       and can report success having pushed nothing.
 - [ ] **AC-5** — A missing or malformed `## PR title` / `## PR body` block is a
