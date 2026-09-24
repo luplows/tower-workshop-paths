@@ -15,6 +15,10 @@
  * cannot start, and a shell would push the prompt through `cmd.exe` quoting.
  * The prompt goes on stdin because it exceeds `CreateProcess`'s 32,767
  * characters as well as `cmd.exe`'s 8 KB.
+ *
+ * Stopping a session stops its whole process tree, not just the child: a
+ * session's own subprocesses (a test run, a `node -e`) would otherwise outlive
+ * it, and a timeout that leaves a process running is a leak, not a timeout.
  */
 
 import { spawn } from 'node:child_process'
@@ -68,6 +72,47 @@ export function resolveClaudeExecutable({ env = process.env, exists = existsSync
   return found
 }
 
+const IS_WINDOWS = process.platform === 'win32'
+
+/**
+ * Kills `child` and every process descended from it, and resolves once the
+ * kill has been carried out. On Windows that is `taskkill /T /F`, started
+ * directly like everything else here; it walks the tree by parent pid, which
+ * reaches descendants started outside the child's job object. Elsewhere the
+ * child leads its own process group (see `runSession`), and the group is
+ * signalled. Either way the child itself is also killed directly, as a
+ * fallback if the tree kill found nothing to do or could not run.
+ */
+function killTree(child, spawnFn) {
+  const killChild = () => { child.kill('SIGKILL') }
+  if (!IS_WINDOWS) {
+    try {
+      process.kill(-child.pid, 'SIGKILL')
+    } catch {
+      // Already gone, or no group to signal; the direct kill below covers it.
+    }
+    killChild()
+    return Promise.resolve()
+  }
+  const taskkill = path.join(process.env.SystemRoot ?? 'C:\\Windows', 'System32', 'taskkill.exe')
+  return new Promise((resolve) => {
+    const done = () => { killChild(); resolve() }
+    let killer
+    try {
+      killer = spawnFn(taskkill, ['/PID', String(child.pid), '/T', '/F'], {
+        shell: false,
+        windowsHide: true,
+        stdio: 'ignore',
+      })
+    } catch {
+      done()
+      return
+    }
+    killer.on('error', done)
+    killer.on('exit', done)
+  })
+}
+
 /**
  * Starts `executable` with `args`, writes `prompt` to its stdin, and watches
  * it until it ends or is stopped.
@@ -81,8 +126,9 @@ export function resolveClaudeExecutable({ env = process.env, exists = existsSync
  *
  * Resolves `{ record, pid }` once the child has exited. `record` is the raw
  * record `outcome.mjs` defines, and is validated against it before returning.
- * When the session is stopped, the child has exited by the time this resolves.
- * Rejects if the process cannot be started.
+ * When the session is stopped, its whole process tree has been killed and the
+ * child has exited by the time this resolves. Rejects if the process cannot be
+ * started.
  */
 export function runSession({
   role, executable, args = [], env, prompt, timeoutMs, stallMs, spawnFn = spawn,
@@ -97,12 +143,18 @@ export function runSession({
       shell: false,
       windowsHide: true,
       stdio: ['pipe', 'pipe', 'pipe'],
+      // Outside Windows, a group of its own is what lets `killTree` reach the
+      // child's descendants. The cost is that a Ctrl-C at the dispatcher's
+      // terminal no longer reaches the session; the timeout still does. On
+      // Windows `detached` would mean a new console.
+      detached: !IS_WINDOWS,
     })
 
     let stdout = ''
     let stoppedFor = null
     let settled = false
     let stallTimer = null
+    let treeKilled = Promise.resolve()
 
     const clearTimers = () => {
       clearTimeout(timeoutTimer)
@@ -112,7 +164,7 @@ export function runSession({
       if (stoppedFor !== null || settled) return
       stoppedFor = reason
       clearTimers()
-      child.kill('SIGKILL')
+      treeKilled = killTree(child, spawnFn)
     }
     const armStall = () => {
       clearTimeout(stallTimer)
@@ -142,12 +194,16 @@ export function runSession({
       setImmediate(() => {
         child.stdout.destroy()
         child.stderr.destroy()
-        try {
-          validateRawRecord(record)
-          resolve({ record, pid: child.pid })
-        } catch (error) {
-          reject(error)
-        }
+        // The child can exit before `taskkill` has finished with its
+        // descendants; a stopped session is not reported until it has.
+        treeKilled.then(() => {
+          try {
+            validateRawRecord(record)
+            resolve({ record, pid: child.pid })
+          } catch (error) {
+            reject(error)
+          }
+        })
       })
     })
 

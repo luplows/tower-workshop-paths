@@ -36,6 +36,28 @@ const isGone = (pid) => {
   }
 }
 
+// A killed process can linger briefly before the OS reaps it (a zombie on
+// POSIX), so a descendant is given a moment to go rather than checked once.
+const waitGone = async (pid, ms = 3000) => {
+  const deadline = Date.now() + ms
+  while (!isGone(pid)) {
+    if (Date.now() > deadline) return false
+    await new Promise((r) => setTimeout(r, 50))
+  }
+  return true
+}
+
+// Runs the `tree` stand-in and returns the result plus the grandchild's pid,
+// killing the grandchild afterwards if it survived so a failure cannot leak.
+const runTree = async (overrides) => {
+  const result = await run('tree', undefined, overrides)
+  const grandchild = Number(result.record.stdout.match(/grandchild (\d+)/)?.[1])
+  expect(grandchild).toBeGreaterThan(0)
+  const grandchildGone = await waitGone(grandchild)
+  if (!grandchildGone) process.kill(grandchild, 'SIGKILL')
+  return { ...result, grandchildGone }
+}
+
 const STORY = { id: 'OQ-65', path: 'stories/OQ-65-spawn-sessions.md', text: 'story text', model: 'sonnet' }
 const CODER_OPTIONS = {
   role: 'coder',
@@ -104,6 +126,19 @@ describe('OQ-65/AC-2 the binary is started directly, never through a shell', () 
     expect(executable).not.toMatch(/cmd(\.exe)?$|(^|[\\/])(ba|z)?sh(\.exe)?$/i)
   })
 
+  it('stops a session without a shell either', async () => {
+    const real = (await import('node:child_process')).spawn
+    const spy = vi.fn(real)
+    await runTree({ spawnFn: spy, timeoutMs: 1000 })
+
+    // The session itself, plus taskkill on Windows.
+    expect(spy.mock.calls.length).toBeGreaterThanOrEqual(1)
+    for (const [executable, , options] of spy.mock.calls) {
+      expect(options.shell).toBe(false)
+      expect(executable).not.toMatch(/cmd(\.exe)?$|(^|[\\/])(ba|z)?sh(\.exe)?$/i)
+    }
+  })
+
   it('resolves the real binary beside a PATH entry, not the shim', () => {
     const bin = path.join('/npm', 'node_modules', '@anthropic-ai', 'claude-code', 'bin', 'claude.exe')
     const found = resolveClaudeExecutable({
@@ -151,6 +186,13 @@ describe('OQ-65/AC-4 a timeout terminates the child', () => {
     expect(record.stoppedFor).toBe('timeout')
     expect(isGone(pid)).toBe(true)
   })
+
+  it('kills the child\'s descendants too, not only the child', async () => {
+    const { record, pid, grandchildGone } = await runTree({ timeoutMs: 1000 })
+    expect(record.stoppedFor).toBe('timeout')
+    expect(isGone(pid)).toBe(true)
+    expect(grandchildGone).toBe(true)
+  })
 })
 
 describe('OQ-65/AC-5 a silent session is terminated as stalled', () => {
@@ -159,6 +201,13 @@ describe('OQ-65/AC-5 a silent session is terminated as stalled', () => {
     expect(record.stoppedFor).toBe('stall')
     expect(record.stdout).toContain('started')
     expect(isGone(pid)).toBe(true)
+  })
+
+  it('kills a stalled session\'s descendants too', async () => {
+    const { record, pid, grandchildGone } = await runTree({ stallMs: 1000, timeoutMs: 20_000 })
+    expect(record.stoppedFor).toBe('stall')
+    expect(isGone(pid)).toBe(true)
+    expect(grandchildGone).toBe(true)
   })
 
   it('does not stall a session that keeps producing output', async () => {

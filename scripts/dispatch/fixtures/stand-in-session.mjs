@@ -5,6 +5,14 @@
 //   sleep         read stdin, print nothing, and never finish
 //   chatty <ms>   print a line every <ms> forever
 //   hang          print one line, then never print again and never finish
+//   tree          start a grandchild that never finishes, print
+//                 "grandchild <pid>", then behave like hang
+//
+// The grandchild in `tree` is detached on Windows only. A non-detached child
+// there is placed in its parent's job object and dies with it anyway, which
+// would let a kill of the direct child alone pass the test. Elsewhere it must
+// stay in the parent's process group, and does by default.
+import { spawn } from 'node:child_process'
 import { createHash } from 'node:crypto'
 
 const [mode, arg] = process.argv.slice(2)
@@ -31,6 +39,13 @@ if (mode === 'echo') {
   setInterval(() => process.stdout.write('tick\n'), Number(arg))
 } else if (mode === 'hang') {
   process.stdout.write('started\n')
+  setInterval(() => {}, 1000)
+} else if (mode === 'tree') {
+  const grandchild = spawn(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], {
+    stdio: 'ignore',
+    detached: process.platform === 'win32',
+  })
+  process.stdout.write(`grandchild ${grandchild.pid}\n`)
   setInterval(() => {}, 1000)
 } else {
   process.stderr.write(`unknown mode ${mode}\n`)
