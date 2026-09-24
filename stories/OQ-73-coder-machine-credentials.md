@@ -47,14 +47,22 @@ only against one that happens not to.
         environment"*
       - `docs/agent-workflow-design.md`, "Credential minimalism": the paragraph
         beginning *"So the coder's credential is scoped rather than removed"*
+      - `.claude/prompts/coder.md`, the preamble paragraph headed *"The coder
+        holds no GitHub API credential"*, including *"none of them can conjure
+        a token that was never in the environment to begin with"*
       - `.claude/prompts/coder.md`, Environment: *"no GitHub API credential is
         reachable from this session"*
       - `REVIEW.md`, "For the coder: opening a PR": *"The coder holds no
         credential capable of a commit status…"*
-      - `scripts/dispatch/coder-env.mjs`, the header comment
-      Grep for further copies before calling this done. The `coder.md` edit
-      goes through the emit-a-diff route, because a spawned coder cannot write
-      to `.claude/prompts/`.
+      - `scripts/dispatch/coder-env.mjs`, the header comment, and `coderEnv`'s
+        own doc comment, which leaves *"a credential helper's own storage"*
+        untouched on purpose and presents that as safe. After AC-2 it must say
+        what keeps that storage out of reach.
+      If the `coder.md` heading is reworded, update
+      `stories/OQ-65-spawn-sessions.md`, which cites it by name. Grep for
+      further copies before calling this done.
+      The `coder.md` edits go through the emit-a-diff route, because a spawned
+      coder cannot write to `.claude/prompts/`.
 
 ## Out of scope
 
