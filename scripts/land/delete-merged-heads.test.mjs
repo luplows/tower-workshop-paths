@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { deleteMergedHeads } from './delete-merged-heads.mjs'
+import { execFileSync } from 'node:child_process'
+import { deleteMergedHeads, ghApi, LIST_PROJECTION } from './delete-merged-heads.mjs'
 
 const REPO = 'luplows/tower-workshop-paths'
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
@@ -102,6 +103,36 @@ describe('deleteMergedHeads', () => {
     expect(deleted).toEqual([])
     expect(results).toEqual([
       { pr: 4, ref: 'story/reused', outcome: 'kept: branch has moved since the merge' },
+    ])
+  })
+
+  it('OQ-52/AC-1 - ghApi survives a response larger than the 1 MiB default buffer', () => {
+    const big = (cmd, argv, opts) =>
+      execFileSync(process.execPath, ['-e', "process.stdout.write('x'.repeat(2 * 1024 * 1024))"], opts)
+    expect(ghApi(['anything'], big)).toHaveLength(2 * 1024 * 1024)
+  })
+
+  it('OQ-52/AC-1 - the listing request projects only the fields the script reads', () => {
+    const seenArgs = []
+    const api = (args) => {
+      seenArgs.push(args)
+      return '[]'
+    }
+    deleteMergedHeads(REPO, api)
+    expect(seenArgs[0]).toContain('--jq')
+    expect(seenArgs[0]).toContain(LIST_PROJECTION)
+  })
+
+  it('OQ-52/AC-4 - two merged PRs sharing a ref name: the one matching the tip is deleted even if an older one is met first', () => {
+    const { api, deleted } = fakeApi(
+      [pr(114, 'story/OQ-65-s', 'old'), pr(131, 'story/OQ-65-s', 'new')],
+      { 'story/OQ-65-s': 'new' },
+    )
+    const results = deleteMergedHeads(REPO, api)
+    expect(deleted).toEqual(['story/OQ-65-s'])
+    expect(results).toEqual([
+      { pr: 114, ref: 'story/OQ-65-s', outcome: 'kept: branch has moved since the merge' },
+      { pr: 131, ref: 'story/OQ-65-s', outcome: 'deleted' },
     ])
   })
 })

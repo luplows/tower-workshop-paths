@@ -13,9 +13,22 @@
 
 import { execFileSync } from 'node:child_process'
 
-export function ghApi(args) {
-  return execFileSync('gh', ['api', ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] })
+// Node's default maxBuffer is 1 MiB; an unprojected listing of 100 PRs is about 2 MB and
+// made every call fail with ENOBUFS. The listing is projected (see LIST_PROJECTION) and the
+// buffer is also raised, so neither alone is relied on. `run` is injectable for tests.
+export const MAX_BUFFER = 64 * 1024 * 1024
+
+export function ghApi(args, run = execFileSync) {
+  return run('gh', ['api', ...args], {
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+    maxBuffer: MAX_BUFFER,
+  })
 }
+
+// Only the fields deleteMergedHeads reads.
+export const LIST_PROJECTION =
+  '[.[] | {number, merged_at, base: {ref: .base.ref}, head: {ref: .head.ref, sha: .head.sha, repo: (if .head.repo then {full_name: .head.repo.full_name} else null end)}}]'
 
 // `api` takes the argument list after `gh api` and returns stdout, or throws.
 // Returns one { pr, ref, outcome } per merged PR considered.
@@ -24,7 +37,7 @@ export function deleteMergedHeads(repo, api = ghApi) {
   let closed
   try {
     closed = JSON.parse(
-      api([`repos/${repo}/pulls?state=closed&sort=updated&direction=desc&per_page=100`]),
+      api([`repos/${repo}/pulls?state=closed&sort=updated&direction=desc&per_page=100`, '--jq', LIST_PROJECTION]),
     )
   } catch (error) {
     return [{ pr: null, ref: null, outcome: `could not list closed PRs: ${error.message}` }]
@@ -36,7 +49,6 @@ export function deleteMergedHeads(repo, api = ghApi) {
     if (!pr.head?.repo || pr.head.repo.full_name !== repo) continue
     const ref = pr.head.ref
     if (ref === pr.base.ref || seen.has(ref)) continue
-    seen.add(ref)
 
     let tip
     try {
@@ -44,10 +56,13 @@ export function deleteMergedHeads(repo, api = ghApi) {
     } catch {
       continue // already gone
     }
+    // Only a PR whose head matched the tip claims the ref: another merged PR with the
+    // same ref name (a reused branch) must still be considered if this one did not.
     if (tip !== pr.head.sha) {
       results.push({ pr: pr.number, ref, outcome: 'kept: branch has moved since the merge' })
       continue
     }
+    seen.add(ref)
     try {
       api(['-X', 'DELETE', `repos/${repo}/git/refs/heads/${ref}`])
       results.push({ pr: pr.number, ref, outcome: 'deleted' })
