@@ -5,7 +5,7 @@ tier: next
 kind: workflow
 depends_on: []
 model: sonnet
-blocked: null
+blocked: "The edit to .claude/prompts/coder.md (AC-3) was denied as a sensitive-file write in an unattended session, so its sentence 'the landing sweep does that when the PR merges' is unchanged; who applies it? AC-4 can only be met by running the sweep after this lands."
 ---
 
 ## Intent
@@ -16,11 +16,11 @@ those instructions is not acting on a false premise.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — Landing a PR deletes its head branch as an explicit act of the
+- [x] **AC-1** — Landing a PR deletes its head branch as an explicit act of the
       sweep, rather than relying on the repository's
       `delete_branch_on_merge` setting, which is enabled and observably does not
       fire.
-- [ ] **AC-2** — A branch that is already gone, or that cannot be deleted, does
+- [x] **AC-2** — A branch that is already gone, or that cannot be deleted, does
       not fail the landing run or prevent the merge being recorded as
       successful. Deletion is cleanup, not a gate.
 - [ ] **AC-3** — Every shipped document describing what happens to a branch
