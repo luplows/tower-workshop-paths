@@ -18,7 +18,7 @@ one pull request.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — A new module, `scripts/dispatch/land.mjs`, has one entry point
+- [x] **AC-1** — A new module, `scripts/dispatch/land.mjs`, has one entry point
       that takes a pull request number. It waits until the PR is landable, then
       triggers `land-approved.yml` through `workflow_dispatch` and waits until
       the PR is merged. Landable means: not a draft, no `review-blocked` label,
@@ -26,7 +26,7 @@ one pull request.
       head SHA. It **never merges anything itself**; the sweep remains the only
       thing that merges. A test asserts no merge request (`PUT …/pulls/<n>/merge`)
       can be built from this module.
-- [ ] **AC-2** — Each reason a PR cannot become landable returns its own
+- [x] **AC-2** — Each reason a PR cannot become landable returns its own
       `status` rather than waiting indefinitely:
       - it is a draft;
       - it carries `review-blocked`;
@@ -37,14 +37,14 @@ one pull request.
       - `mergeable_state` is `dirty`;
       - the head moved while waiting.
       A test covers each.
-- [ ] **AC-3** — `unknown` is waited through, not treated as final. It
+- [x] **AC-3** — `unknown` is waited through, not treated as final. It
       re-reads `mergeable_state` after a delay, and re-triggers the sweep while
       the PR is still open after a triggered run, which covers both a sweep that
       skipped it as `unknown` and a sweep that landed an older PR first. Attempts
       and total wait are bounded, and both bounds are constants named in the
       module. A test replays the #123/#125 sequence below: skipped as `unknown`
       once, landed on the re-trigger.
-- [ ] **AC-4** — `land.mjs` sends only what it needs, enforced like
+- [x] **AC-4** — `land.mjs` sends only what it needs, enforced like
       `github.mjs`'s `send`: an allowlist checked before any network call. The
       only write it can send is a `workflow_dispatch` of `land-approved.yml` on
       `main`, with no inputs. A test asserts that dispatching any other workflow,
@@ -52,20 +52,20 @@ one pull request.
       allowlist and its OQ-68/AC-3 tests are unchanged, and a test asserts that
       neither `coder.mjs` nor `review.mjs` imports `land.mjs`, so neither half of
       the loop that runs a model can reach the landing trigger.
-- [ ] **AC-5** — The time from a PR becoming landable to the sweep being
+- [x] **AC-5** — The time from a PR becoming landable to the sweep being
       triggered is bounded by the module's poll interval, and that bound is
       written down in the module. A PR sitting merge-ready for hours fails this,
       whatever eventually lands it.
-- [ ] **AC-6** — `land-approved.yml`'s eligibility and safety logic is
+- [x] **AC-6** — `land-approved.yml`'s eligibility and safety logic is
       unchanged: one PR per run, oldest first, `--match-head-commit`,
       `review/agent` re-checked directly rather than trusted via `clean`, and the
       `review-blocked` circuit breaker with its exemptions. The diff changes no
       line of that workflow's steps.
-- [ ] **AC-7** — Landing latency is observable after the fact. It is possible
+- [x] **AC-7** — Landing latency is observable after the fact. It is possible
       to answer "how long did the last N PRs wait after becoming landable?"
       without reading Actions logs by hand. A cadence regression must be visible
       rather than silent, which is the failure this story exists because of.
-- [ ] **AC-8** — Each statement that triggering `land-approved.yml` is the
+- [x] **AC-8** — Each statement that triggering `land-approved.yml` is the
       owner's alone is updated to say the owner or `land.mjs` may trigger it, and
       that no agent session does. That includes `CLAUDE.md` ("Branches and pull
       requests") and any other copy a grep finds. Model sessions still never
