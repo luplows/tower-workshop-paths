@@ -329,6 +329,21 @@ describe('OQ-84/AC-3: what the session left decides the status', () => {
     const world = makeWorld()
     const { result, gh } = await dispatch(world, () => block())
     expect(result.status).toBe('nothing-committed')
+    expect(result.paths).toEqual([])
+    expect(pulls(gh)).toHaveLength(0)
+    remoteEmpty(world)
+  })
+
+  it('OQ-84/AC-3: no commit wins over uncommitted changes, and the uncommitted paths are still listed', async () => {
+    const world = makeWorld()
+    const { result, gh } = await dispatch(world, ({ cwd }) => {
+      writeFileSync(path.join(cwd, 'work.txt'), 'edited, never committed') // tracked, modified
+      writeFileSync(path.join(cwd, 'stray.txt'), 'never added') // untracked
+      return block()
+    })
+    expect(result.status).toBe('nothing-committed')
+    expect(result.paths.sort()).toEqual(['stray.txt', 'work.txt'])
+    expect(result.reason).toContain('stray.txt')
     expect(pulls(gh)).toHaveLength(0)
     remoteEmpty(world)
   })

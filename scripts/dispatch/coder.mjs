@@ -161,16 +161,20 @@ function classifyStatus(porcelainZ) {
  * coder's behalf and never forces. `dispatchCoder` and the retry path share it.
  *
  * Resolves `{ status: 'pushed', headSha, screenshots }`, or a status that means
- * nothing was pushed: `nothing-committed`, `uncommitted-changes` (with `paths`),
+ * nothing was pushed: `nothing-committed` and `uncommitted-changes` (each with
+ * `paths`, the uncommitted changes, empty when there are none),
  * `push-failed` (with git's error as `reason`).
  */
 export async function pushBranch({ cwd, branch, baseSha }) {
   const args = pushArgs(branch)
   const ahead = Number((await git(cwd, ['rev-list', '--count', `${baseSha}..refs/heads/${branch}`])).trim())
-  if (ahead === 0) {
-    return { status: 'nothing-committed', reason: `${branch} has no commit beyond ${BASE}` }
-  }
   const { changes, screenshots } = classifyStatus(await git(cwd, ['status', '--porcelain', '-z', '--untracked-files=all']))
+  if (ahead === 0) {
+    // No commit wins over uncommitted changes, but the paths are still named:
+    // the worktree is removed after this, so the result is their only record.
+    const left = changes.length > 0 ? `; uncommitted changes: ${changes.join(', ')}` : ''
+    return { status: 'nothing-committed', paths: changes, screenshots, reason: `${branch} has no commit beyond ${BASE}${left}` }
+  }
   if (changes.length > 0) {
     return {
       status: 'uncommitted-changes',

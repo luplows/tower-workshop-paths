@@ -108,10 +108,10 @@ export const READ_ONLY_SHELL_UTILS = [
  */
 export function coderAllowedTools(branch) {
   if (!branch) {
-    throw new Error('coderAllowedTools requires the branch, so push can be scoped to it')
+    throw new Error('coderAllowedTools requires the branch the coder is assigned')
   }
   if (branch === 'main' || branch === 'refs/heads/main') {
-    throw new Error('coderAllowedTools refuses main: every push pattern it returns would name it')
+    throw new Error('coderAllowedTools refuses main: a coder is never assigned main')
   }
 
   return [

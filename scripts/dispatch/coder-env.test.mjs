@@ -294,9 +294,7 @@ describe('coderAllowedTools (OQ-67)', () => {
 
   it("OQ-67/AC-3 - every git verb in coder.md's allowlist block is permitted by coderAllowedTools", () => {
     const tools = coderAllowedTools(branch)
-    // Push is the dispatcher's (OQ-84); until coder.md's `git push` lines are
-    // removed by the prompt edit (OQ-84/AC-6), they are not held to this test.
-    const gitEntries = coderMdAllowlist(branch).filter((entry) => entry.startsWith('Bash(git ') && !entry.startsWith('Bash(git push'))
+    const gitEntries = coderMdAllowlist(branch).filter((entry) => entry.startsWith('Bash(git '))
     // A representative command per entry: the prefix itself for `:*` rules,
     // the exact command otherwise.
     const commands = gitEntries.map((entry) => entry.slice('Bash('.length, -1).replace(/:\*$/, ''))
@@ -408,11 +406,7 @@ describe('READ_ONLY_SHELL_UTILS (OQ-67)', () => {
 describe("coder.md's allowlist block (OQ-67)", () => {
   it('OQ-67/AC-6 - lists exactly what coderAllowedTools returns, no more and no fewer', () => {
     const branch = 'story/OQ-67-coder-capability-gaps'
-    // coder.md's `git push` lines go with the prompt edit OQ-84/AC-6 proposes
-    // (the coder cannot write `.claude/prompts/`); until it is applied they
-    // are the one entry the two sides are allowed to disagree on. Once it is,
-    // this filter removes nothing and the comparison is exact.
-    const documented = coderMdAllowlist(branch).filter((entry) => !entry.startsWith('Bash(git push'))
+    const documented = coderMdAllowlist(branch)
     const returned = coderAllowedTools(branch)
     expect([...documented].sort()).toEqual([...returned].sort())
   })
