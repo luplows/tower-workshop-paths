@@ -63,7 +63,7 @@ it was refused, without digging out a transcript.
       `output`. The CLI prints it as part of the JSON it already prints. Tests
       cover `opened`, `nothing-committed`, `uncommitted-changes`,
       `push-failed`, `session-failed`, and an invalid PR block.
-- [ ] **AC-6** — `coder.md` tells the coder to commit and not push. Its
+- [x] **AC-6** — `coder.md` tells the coder to commit and not push. Its
       allowlist block (the `git push` lines), its "Push your branch, then …"
       instruction, the draft reason "your push failed", and step 2 of "When you
       cannot proceed" change to match. The coder cannot write `.claude/prompts/`,
