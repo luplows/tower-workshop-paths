@@ -3,7 +3,7 @@ id: OQ-83
 title: Have the loop review and land writer-authored pull requests it did not open
 tier: next
 kind: workflow
-depends_on: [OQ-48, OQ-81]
+depends_on: [OQ-81, OQ-86]
 model: sonnet
 blocked: null
 ---
