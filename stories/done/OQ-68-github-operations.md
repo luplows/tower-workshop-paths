@@ -97,8 +97,8 @@ function with a known contract rather than a command line retyped per round.
   either — OQ-48 settles that in `review-gate.yml` — though it does read labels,
   because the loop needs to see one.
 - **Branch and worktree creation.** Local git is OQ-70's.
-- **Deleting the head branch after a merge.** The sweep does that; OQ-52 covers
-  where it is claimed inaccurately.
+- **Deleting the head branch after a merge.** That belongs to the sweep, which
+  does not currently do it. OQ-52 makes it do so.
 
 ## Constraints
 
@@ -151,8 +151,9 @@ to overlook and are in AC-1 because of it:
 
 - `REVIEW.md`, "Recording a verdict" and "The three verdicts" — the marker
   format AC-5 parses and the mapping AC-3 implements
-- `.github/workflows/land-approved.yml` — what reads the status this module
-  posts, and the `review-blocked` label AC-1's label functions apply
+- `.github/workflows/land-approved.yml` — what reads the `review/agent`
+  status that `review-gate.yml` derives from this module's marker comment,
+  and the `review-blocked` label that AC-1's label functions read
 - `scripts/dispatch/queue.mjs` and its tests — the house style, and the
   fail-loudly-on-malformed stance AC-6 follows
 - `scripts/dispatch/coder-env.mjs` — the pure-functions-behind-a-thin-caller
