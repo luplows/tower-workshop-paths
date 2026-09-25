@@ -42,10 +42,13 @@ one that is busy, rather than only from one that has run past the timeout.
 - [ ] **AC-5** — The longest single Bash tool call a session can make, during
       which it emits no event, is pinned by the invocation rather than
       inherited: `buildInvocation` sets `BASH_MAX_TIMEOUT_MS` to 10 minutes
-      (`600000`) in the environment of both roles, overriding whatever the
-      dispatcher's environment holds, and a test asserts it for each role.
+      (`600000`) and `BASH_DEFAULT_TIMEOUT_MS` to 2 minutes (`120000`) in the
+      environment of both roles, overriding whatever the dispatcher's
+      environment holds, and a test asserts both for each role. Both are
+      pinned because the CLI's effective maximum depends on both (see
+      **Context**).
       `DEFAULT_STALL_MS` in `scripts/dispatch/spawn.mjs` is lowered to 12
-      minutes, defined from that pinned value plus a margin rather than as a
+      minutes, defined from the pinned maximum plus a margin rather than as a
       separate literal, so the two cannot drift apart. `DEFAULT_TIMEOUT_MS` is
       unchanged.
 - [ ] **AC-6** — `spawnSession`'s return value keeps its shape. `output` is
@@ -95,11 +98,21 @@ and the classifier rather than to OQ-65.
   searching the binary; `claude --help` does not document either. Both roles
   inherit the dispatcher's environment: the reviewer gets a copy of
   `baseEnv`, and the coder gets `coderEnv`, which strips only credentials. So
-  a dispatcher environment that raised the variable would let one long Bash
+  a dispatcher environment that raised either variable would let one long Bash
   call outlast the stall interval, and a working session would be killed.
-  Pinning the value in the invocation is what makes the derivation hold.
-  `BASH_DEFAULT_TIMEOUT_MS` needs no pin, because a session can already ask
-  for any timeout up to the maximum.
+  Pinning the values in the invocation is what makes the derivation hold.
+- **Why both variables, not only the maximum.** In CLI 2.1.281 the per-call
+  maximum is `Math.max(BASH_MAX_TIMEOUT_MS ?? 600000,
+  BASH_DEFAULT_TIMEOUT_MS ?? 120000)`. That was read from the code in the
+  installed binary during #132's second review, and re-derived the same way
+  before this line was written. So an inherited `BASH_DEFAULT_TIMEOUT_MS`
+  above `600000` raises the maximum even with `BASH_MAX_TIMEOUT_MS` pinned. An
+  earlier revision of this story said the default "needs no pin". That was
+  reasoned, not checked, and wrong. The code is minified and version-specific,
+  which is a further reason to pin both. With both set to the values above,
+  2.1.281's maximum is `600000`, and no inherited value reaches a later
+  version whatever rule it uses. Whether a later version's rule still gives
+  `600000` is for whoever upgrades the CLI to check.
 - `scripts/dispatch/outcome.mjs`: `parseEnvelope`, and `RAW_RECORD_FIELDS`,
   whose `stdout` field stays a string
 - `scripts/dispatch/fixtures/`: the existing envelopes and the stand-in
