@@ -42,6 +42,9 @@ const DEPRECATED_VERDICTS = { fail: 'block' }
 // malformed rather than skipped.
 const ANY_MARKER_RE = /<!--[^\S\n]*agent-review\b[^\n]*?(?:-->|$)/gm
 const FIELDS_RE = /^<!--[^\S\n]*agent-review[^\S\n]+head=(\S+)[^\S\n]+verdict=(\S+)[^\S\n]*-->$/
+// Transcribes the pattern review-gate.yml greps for, line by line.
+const WELL_FORMED_RE =
+  /<!--[^\S\n]*agent-review[^\S\n]+head=([0-9a-f]{40})[^\S\n]+verdict=(pass-with-observations|pass|block|fail)[^\S\n]*-->/g
 const SHA_RE = /^[0-9a-f]{40}$/
 
 // ---------------------------------------------------------------- requests
@@ -156,34 +159,39 @@ export function composeMarkerComment({ headSha, verdict, findings = '' }) {
   return text === '' ? marker : `${text}\n\n${marker}`
 }
 
-function classifyMarker(raw) {
+function classifyMalformed(raw) {
   const fields = raw.match(FIELDS_RE)
-  if (!fields) return { kind: 'malformed', reason: 'unparseable-marker', raw }
-  const [, headSha, verdictWord] = fields
-  if (!SHA_RE.test(headSha)) return { kind: 'malformed', reason: 'bad-head-sha', raw }
-  if (WRITABLE_VERDICTS.includes(verdictWord)) {
-    return { kind: 'marker', headSha, verdict: verdictWord, deprecatedSpelling: false }
-  }
-  if (Object.hasOwn(DEPRECATED_VERDICTS, verdictWord)) {
-    return { kind: 'marker', headSha, verdict: DEPRECATED_VERDICTS[verdictWord], deprecatedSpelling: true }
-  }
-  return { kind: 'malformed', reason: 'unrecognised-verdict', raw }
+  if (!fields) return { reason: 'unparseable-marker', raw }
+  if (!SHA_RE.test(fields[1])) return { reason: 'bad-head-sha', raw }
+  return { reason: 'unrecognised-verdict', raw }
 }
 
 /**
- * Classifies the marker(s) in one comment body. Never skips or defaults:
- *  - `absent`: no marker at all
- *  - `marker`: exactly one well-formed marker (`fail` read as `block`)
- *  - `malformed`: one marker that is not well-formed, with a `reason`
- *  - `multiple`: more than one marker, each classified in `markers`
- * Unlike the workflow, which takes the last well-formed marker, this does not
- * choose one: two markers is a result for the caller to see.
+ * Reads the verdict of one comment body by the gate's own rule (AC-6): a marker
+ * counts only if it is well-formed on one line, and the last well-formed one wins.
+ *  - `marker`: a verdict (`fail` read as `block`), with `malformed` listing any
+ *    marker-like text that was not well-formed; that neither prevents nor
+ *    replaces the verdict
+ *  - `malformed`: no well-formed marker, but marker-like text, listed in `malformed`
+ *  - `absent`: no marker-like text at all
  */
 export function parseMarkerComment(body) {
-  const found = (body ?? '').match(ANY_MARKER_RE) ?? []
-  if (found.length === 0) return { kind: 'absent' }
-  if (found.length === 1) return classifyMarker(found[0])
-  return { kind: 'multiple', markers: found.map(classifyMarker) }
+  const text = body ?? ''
+  const wellFormed = [...text.matchAll(WELL_FORMED_RE)]
+  // What remains once the well-formed markers are removed is what the gate ignored.
+  const malformed = (text.replace(WELL_FORMED_RE, '').match(ANY_MARKER_RE) ?? []).map(classifyMalformed)
+  if (wellFormed.length === 0) {
+    return malformed.length === 0 ? { kind: 'absent' } : { kind: 'malformed', malformed }
+  }
+  const [, headSha, verdictWord] = wellFormed[wellFormed.length - 1]
+  const deprecatedSpelling = Object.hasOwn(DEPRECATED_VERDICTS, verdictWord)
+  return {
+    kind: 'marker',
+    headSha,
+    verdict: deprecatedSpelling ? DEPRECATED_VERDICTS[verdictWord] : verdictWord,
+    deprecatedSpelling,
+    malformed,
+  }
 }
 
 /** Parses a page of comment objects, preserving order. Interprets nothing. */

@@ -58,7 +58,7 @@ function with a known contract rather than a command line retyped per round.
       compare or interpret them: the round count belongs to the loop (OQ-48),
       and keeping the parse here is what lets the count be tested against
       fixtures.
-- [ ] **AC-6** — A comment's verdict is read by the gate's own rule, so the
+- [x] **AC-6** — A comment's verdict is read by the gate's own rule, so the
       module never reports a verdict the gate did not apply or withholds one it
       did. A marker counts only if it is **well-formed** by the pattern
       `review-gate.yml` greps for, line by line: on one line, a full

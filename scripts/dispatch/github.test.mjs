@@ -250,6 +250,7 @@ describe('OQ-68/AC-4: verdict=fail', () => {
       headSha: SHA,
       verdict: 'block',
       deprecatedSpelling: true,
+      malformed: [],
     })
   })
 
@@ -272,7 +273,7 @@ describe('OQ-68/AC-5: listing comments parses markers in order', () => {
   })
 })
 
-describe('OQ-68/AC-6: malformed or ambiguous markers are classified', () => {
+describe('OQ-68/AC-6: a verdict is read by the gate\'s rule', () => {
   it('OQ-68/AC-6: absent is reported as absent, not defaulted', () => {
     expect(parseMarkerComment('nothing here')).toEqual({ kind: 'absent' })
     expect(parseMarkerComment(undefined)).toEqual({ kind: 'absent' })
@@ -281,21 +282,21 @@ describe('OQ-68/AC-6: malformed or ambiguous markers are classified', () => {
   it('OQ-68/AC-6: a short sha is malformed', () => {
     expect(parseMarkerComment('<!-- agent-review head=abc123 verdict=pass -->')).toMatchObject({
       kind: 'malformed',
-      reason: 'bad-head-sha',
+      malformed: [{ reason: 'bad-head-sha' }],
     })
   })
 
   it('OQ-68/AC-6: an unrecognised verdict is malformed, not defaulted', () => {
     expect(parseMarkerComment(`<!-- agent-review head=${SHA} verdict=approve -->`)).toMatchObject({
       kind: 'malformed',
-      reason: 'unrecognised-verdict',
+      malformed: [{ reason: 'unrecognised-verdict' }],
     })
   })
 
   it('OQ-68/AC-6: an unparseable marker is malformed', () => {
     expect(parseMarkerComment('<!-- agent-review verdict=pass -->')).toMatchObject({
       kind: 'malformed',
-      reason: 'unparseable-marker',
+      malformed: [{ reason: 'unparseable-marker' }],
     })
   })
 
@@ -306,16 +307,37 @@ describe('OQ-68/AC-6: malformed or ambiguous markers are classified', () => {
       `<!-- agent-review head=${SHA} verdict=pass\n-->`,
     ]) {
       expect(body).not.toMatch(WORKFLOW_MARKER_RE_LINEWISE)
-      expect(parseMarkerComment(body)).toMatchObject({ kind: 'malformed', reason: 'unparseable-marker' })
+      expect(parseMarkerComment(body)).toMatchObject({
+        kind: 'malformed',
+        malformed: [{ reason: 'unparseable-marker' }],
+      })
     }
   })
 
-  it('OQ-68/AC-6: two markers are reported as multiple, each classified, not silently the last', () => {
-    const result = parseMarkerComment(
-      `<!-- agent-review head=${SHA} verdict=block -->\n<!-- agent-review head=${SHA} verdict=nope -->`,
-    )
-    expect(result.kind).toBe('multiple')
-    expect(result.markers.map((m) => m.kind)).toEqual(['marker', 'malformed'])
+  it('OQ-68/AC-6: a quoted malformed marker before a real one does not hide the real verdict', () => {
+    // The shape of the runner's round-1 comment on #133: `\\n` in the template literals below is a literal backslash-n.
+    const quoted = `<!-- agent-review\\nhead=${SHA}\\nverdict=pass -->`
+    const real = `<!-- agent-review head=${SHA2} verdict=pass-with-observations -->`
+    const body = `Findings. The marker ${quoted} was malformed.\n\n${real}`
+    expect(body).toMatch(WORKFLOW_MARKER_RE_LINEWISE)
+    expect(parseMarkerComment(body)).toMatchObject({
+      kind: 'marker',
+      headSha: SHA2,
+      verdict: 'pass-with-observations',
+      malformed: [{ reason: 'unparseable-marker', raw: quoted }],
+    })
+  })
+
+  it('OQ-68/AC-6: the last well-formed marker wins, and a malformed one after it does not replace it', () => {
+    const body =
+      `<!-- agent-review head=${SHA} verdict=block -->\n<!-- agent-review head=${SHA2} verdict=pass -->\n` +
+      `<!-- agent-review head=${SHA} verdict=nope -->`
+    expect(parseMarkerComment(body)).toMatchObject({
+      kind: 'marker',
+      headSha: SHA2,
+      verdict: 'pass',
+      malformed: [{ reason: 'unrecognised-verdict' }],
+    })
   })
 })
 
