@@ -294,7 +294,7 @@ than relaxed.
    **Planned (OQ-81, OQ-82):** only a pull request from an account with write access can land, and
    a coder's own pull request cannot change `stories/` beyond its own story.
 2. Dispatcher picks the highest-tier, lowest-id ready story; creates a worktree and the branch
-   `story/OQ-49-import-player-info`. **Planned (OQ-48):** the loop skips a ready story whose
+   `story/OQ-49-import-player-info`. **Planned (OQ-86):** the loop skips a ready story whose
    `story/OQ-<n>-*` branch already exists on `origin` (`stories/README.md`'s `in-progress`), so a
    story it stopped, which still reads `ready` on `main`, is never dispatched again.
 3. Coder implements, tests green, commits, and emits the PR title/body and a
@@ -308,9 +308,9 @@ than relaxed.
    `review/agent` = `success` on the head SHA from it.
 7. The landing sweep merges it (squash) once `mergeable_state` is `clean`. The owner
    triggers the sweep, or runs `scripts/dispatch/land.mjs` (OQ-50), which waits until the PR is
-   landable, triggers it and waits for the merge. **Planned (OQ-48):** the loop calls `land.mjs`,
-   and the next story starts only once this one is merged or stopped, so every story is dispatched
-   from a `main` that includes the last.
+   landable, triggers it and waits for the merge. **Planned (OQ-48):** the loop calls `land.mjs`.
+   **Planned (OQ-86):** the next story starts only once this one is merged or stopped, so every
+   story is dispatched from a `main` that includes the last.
 
 ### Failure paths
 
@@ -318,10 +318,10 @@ The majority of the interesting behaviour.
 
 | Situation | Route |
 |---|---|
-| Reviewer returns `block` | Findings → coder respawned with story + findings. **Bounded**; OQ-48 sets the number. |
+| Reviewer returns `block` | Findings → coder respawned with story + findings. **Bounded**; OQ-48 sets the number. **Planned (OQ-85):** the respawn works on the existing branch and pull request, replaces the PR body, never opens a second PR, and says whether its findings came from review or CI. |
 | Still failing at the bound | Human queue. Round count **derived from `block` verdicts on the PR**, not stored. `review-blocked` is applied by hand today. **Planned (OQ-48):** the dispatcher records `blocked:` in the story file on the story's own branch, as a commit it pushes, and leaves the PR open; `main`'s copy is not touched. **Planned (OQ-80):** `review-gate.yml` applies `review-blocked`. |
-| CI red on the head | **Planned (OQ-48):** a run that concluded `failure` → failure output → coder respawned on the same branch. Bounded separately (OQ-48's AC-6b), derived from the PR's failed CI runs; then `blocked:` on the branch, no label. |
-| CI cancelled, timed out, or not finished within the dispatcher's wait | **Planned (OQ-48):** not retried and not counted. The story stops, with `blocked:` on the branch naming the outcome. None of these is something a coder can fix (OQ-48's AC-14). |
+| CI red on the head | **Planned (OQ-48):** a run that concluded `failure` → failure output → coder respawned on the same branch. Bounded separately (OQ-48's AC-4), derived from the PR's failed CI runs; then `blocked:` on the branch, no label. |
+| CI cancelled, timed out, or not finished within the dispatcher's wait | **Planned (OQ-48):** not retried and not counted. The story stops, with `blocked:` on the branch naming the outcome. None of these is something a coder can fix (OQ-48's AC-5). |
 | Story was wrong, not the code | `blocked:` set with the reason → Session A |
 | Coder hits ambiguity mid-story | `blocked:` + the specific question → Session A |
 | Branch stale | Rebase; if it fails, kick back rather than merge against a moved world |
