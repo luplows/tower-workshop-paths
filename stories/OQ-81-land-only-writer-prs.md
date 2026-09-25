@@ -38,9 +38,10 @@ open a pull request. Only a pass marker stands between them and the sweep.
       `review/agent` re-checked directly, and the circuit breaker with its
       exemptions. A pull request from outside that carries `breaker-override`
       is still skipped: this check comes before the breaker's exemptions.
-- [ ] **AC-5** — `docs/agent-workflow-design.md`, "Merging", lists the rule
-      alongside the sweep's other properties, with its reason: a landed `ready`
-      story is work the loop will carry out.
+- [ ] **AC-5** — Every `**Planned (…)**` marker in
+      `docs/agent-workflow-design.md` that names OQ-81 is resolved as that
+      document's "Reading this document" note says. That includes the rule in
+      "Merging", which lists it among the sweep's properties with its reason.
 
 ## Out of scope
 

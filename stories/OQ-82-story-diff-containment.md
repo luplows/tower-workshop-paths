@@ -50,6 +50,9 @@ that nobody asked for.
       - a story-writing PR, which is not restricted.
 - [ ] **AC-5** — `REVIEW.md` item 18 (Containment) notes that CI now enforces
       the `stories/` part of containment. Items 16–19 are otherwise unchanged.
+- [ ] **AC-6** — Every `**Planned (…)**` marker in
+      `docs/agent-workflow-design.md` that names OQ-82 is resolved as that
+      document's "Reading this document" note says.
 
 ## Out of scope
 

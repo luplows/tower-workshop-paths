@@ -38,6 +38,9 @@ follow the rule.
       the "Apply verdict from marker" step uses to read a verdict, and a test
       shows that a malformed marker, or one from an account without write
       access, is not counted.
+- [ ] **AC-4** — Every `**Planned (…)**` marker in
+      `docs/agent-workflow-design.md` that names OQ-80 is resolved as that
+      document's "Reading this document" note says.
 
 ## Out of scope
 
