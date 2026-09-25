@@ -17,37 +17,37 @@ is automated.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — One entry point takes a pull request number and runs the whole
+- [x] **AC-1** — One entry point takes a pull request number and runs the whole
       reviewer half: resolve the PR's head SHA and branch, assemble the reviewer
       prompt, spawn the reviewer, parse its verdict, and record that verdict as a
       **marker comment**. It posts no commit status — `review-gate.yml` derives
       `review/agent` from the marker, per OQ-68's AC-3. It calls `spawn.mjs`
       (OQ-65, which builds the prompt through OQ-74's `invocation.mjs`) and
       `github.mjs`, and reimplements none of them.
-- [ ] **AC-2** — Every untrusted value is bounded before it reaches the prompt:
+- [x] **AC-2** — Every untrusted value is bounded before it reaches the prompt:
       `{{STORY}}` and `{{PR_BODY}}` go through `wrapInjectedBlock`. A test
       asserts the assembled prompt has exactly one begin and one end marker per
       block and no heading at or above the prompt's own top level. This overlaps
       OQ-74's AC-4 deliberately — that one covers the spawn contract, this one
       covers the reviewer path specifically, because the PR body is the least
       trusted input in the system and is only present here.
-- [ ] **AC-3** — The verdict is recorded against **the SHA the reviewer
+- [x] **AC-3** — The verdict is recorded against **the SHA the reviewer
       actually reviewed**, taken from the reviewer's own `head` field rather
       than from what the dispatcher believed the head to be. A verdict whose
       `head` does not match the current tip is **not** recorded: the PR moved
       under the review, and `reviewer.md` already instructs the reviewer to
       return `null` in that case. A test covers the race where the head moves
       between resolving it and posting.
-- [ ] **AC-4** — A `null` verdict records nothing — no comment, and therefore no
+- [x] **AC-4** — A `null` verdict records nothing — no comment, and therefore no
       status — and is not treated as a failure of the dispatch. `REVIEW.md` is
       explicit that the PR stays pending, because a visible stuck PR beats an
       invisible wrong pass.
-- [ ] **AC-5** — The reviewer runs against a checkout at the SHA under review
+- [x] **AC-5** — The reviewer runs against a checkout at the SHA under review
       that is **not** the coder's working tree, and a test asserts the path
       passed to the spawn is neither the repository root nor a tree with
       uncommitted changes. A reviewer reading a dirty tree reviews something
       that is not what the PR contains.
-- [ ] **AC-6** — The story a pull request implements is resolved from **the story
+- [x] **AC-6** — The story a pull request implements is resolved from **the story
       file the diff moves into `stories/done/`**, with the `story/OQ-<n>-<slug>`
       branch name as a fallback when the diff contains no such move. That order
       matters: the move is what `REVIEW.md` item 19 actually requires, so it is
@@ -55,7 +55,7 @@ is automated.
       pull request this dispatcher did not open — which is the whole point of
       reviewer-only dispatch. A branch name is a convention nothing enforces, so
       it cannot be the primary source.
-- [ ] **AC-6b** — When neither signal resolves a story, that is reported, not
+- [x] **AC-6b** — When neither signal resolves a story, that is reported, not
       guessed. A pull request implementing no story is a real case — a bootstrap
       or workflow-only change — and is handled as `reviewer.md`'s table
       specifies: `{{STORY}}` renders as `*(none — this PR implements no story;
@@ -64,11 +64,11 @@ is automated.
       moves no story file but the branch name names one — which is a coder that
       forgot item 19, and must fail informatively rather than review against a
       story the diff never touched.
-- [ ] **AC-7** — The reviewer's model is never the coder's. `reviewer.md`
+- [x] **AC-7** — The reviewer's model is never the coder's. `reviewer.md`
       requires a different model for context isolation and `stories/README.md`
       says the reviewer is never the story's `model`. A test asserts the
       constructed invocation's model differs from the story's declared one.
-- [ ] **AC-8** — Running this against a pull request that already carries a
+- [x] **AC-8** — Running this against a pull request that already carries a
       verdict at the current head does not post a second one. Re-review happens
       because a commit moved the head, not because the entry point was invoked
       twice.
