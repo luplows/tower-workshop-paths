@@ -298,7 +298,7 @@ The majority of the interesting behaviour.
 |---|---|
 | Reviewer returns `block` | Findings → coder respawned with story + findings. **Bounded**; OQ-48 sets the number. |
 | Still failing at the bound | `blocked:` set on the story by the dispatcher, `review-blocked` applied by `review-gate.yml`, human queue. Round count **derived from `block` verdicts on the PR**, not stored. |
-| CI red on the head | Failure output (OQ-79) → coder respawned on the same branch. Bounded separately (OQ-48's AC-6d), derived from the PR's failed CI runs; then `blocked:`, no label. Decided 2026-09-25. |
+| CI red on the head | Failure output (OQ-79) → coder respawned on the same branch. Bounded separately (OQ-48's AC-6b), derived from the PR's failed CI runs; then `blocked:`, no label. Decided 2026-09-25. |
 | Story was wrong, not the code | `blocked:` set with the reason → Session A |
 | Coder hits ambiguity mid-story | `blocked:` + the specific question → Session A |
 | Branch stale | Rebase; if it fails, kick back rather than merge against a moved world |
@@ -331,7 +331,7 @@ anyway.
 
 The same derivation feeds the circuit breaker: when the bound is reached, the dispatcher sets
 `blocked:` on the story, and `review-gate.yml` applies `review-blocked`, because it sees every PR,
-including ones no dispatcher ran (OQ-48's AC-6b). That is what finally makes the breaker in
+including ones no dispatcher ran (OQ-80). That is what finally makes the breaker in
 `land-approved.yml` count a signal something reliably produces.
 
 ---
@@ -731,7 +731,7 @@ be kept essentially as-is:
   workflow-only diffs so a tripped breaker is not a trap.
 
 The one change: `review-blocked` must be **applied automatically** when a story reaches the round
-bound, by `review-gate.yml` (OQ-48's AC-6b), with the bound derived from the PR's own `block`
+bound, by `review-gate.yml` (OQ-80), with the bound derived from the PR's own `block`
 verdicts rather than remembered.
 Today the label is applied by hand, so the breaker counts a signal nothing reliably produces.
 

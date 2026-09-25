@@ -13,8 +13,8 @@ blocked: null
 As the owner, I want to add ready stories to `stories/` and have one loop run
 each of them to completion: dispatched from the latest `origin/main`, retried
 on a blocking review or a red CI under a bound that is enforced mechanically,
-and landed once it passes. The breaker then counts a real signal, not one
-applied when somebody happens to follow the rule.
+and landed once it passes. A bound that holds only when somebody remembers to
+follow it is the problem this story began with.
 
 ## Acceptance criteria
 
@@ -26,7 +26,7 @@ applied when somebody happens to follow the rule.
          verdict, retry the coder with the reviewer's findings;
       4. on a pass, land it (OQ-50).
 
-      Both retries are bounded (AC-6, AC-6d). CI comes before review so that no
+      Both retries are bounded (AC-6, AC-6b). CI comes before review so that no
       review is spent on a head that cannot land. A pull request the coder
       opened as a draft stops the story and is reported: the coder stopped
       short and has said why. If a retry replaces the PR body without pushing a
@@ -58,29 +58,14 @@ applied when somebody happens to follow the rule.
       loop sets `blocked:` on the story file with a reason naming the unresolved
       findings, and stops. It **does not write the `review-blocked` label**, and a
       test asserts no label-write request is constructible from this module —
-      AC-6b puts that in the workflow instead. The loop *reads* the label, so a
-      pull request already carrying one is not retried.
-- [ ] **AC-6b** — `.github/workflows/review-gate.yml` counts the blocking verdict
-      markers on a pull request and applies `review-blocked` once there are three.
-      This is where the rule lives, because the workflow sees **every** pull
-      request — including ones no dispatcher ran, which is OQ-48's original
-      complaint: the label is applied only when somebody remembers, so the
-      breaker counts a signal nothing reliably produces. Applying it here also
-      means the bound survives a dispatcher that dies mid-story. The workflow's
-      `permissions:` widens from `pull-requests: read` to `write` for this, which
-      is the cost and should be stated in the workflow's own comment.
-- [ ] **AC-6c** — The label is applied **once** and is never removed by anything
-      automated. Removing it is a deliberate human act meaning "I have seen the
-      cost, proceed" — so a fourth round dispatched by hand still works, and the
-      pull request stays out of the sweep until someone decides otherwise. A test
-      asserts the workflow does not remove the label and does not re-apply it to a
-      pull request that already carries it.
-- [ ] **AC-6d** — A red CI is retried like a blocking review, and is bounded
+      OQ-80 puts that in `review-gate.yml` instead. The loop *reads* the label,
+      so a pull request already carrying one is not retried.
+- [ ] **AC-6b** — A red CI is retried like a blocking review, and is bounded
       separately at **three** red CI rounds. The count is derived by OQ-79's
       AC-4 and never stored, so AC-2's restart test covers it too. When the
       bound is reached the loop sets `blocked:` on the story with a reason
       naming the failing jobs, and stops. It applies no label: `review-blocked`
-      means the review bound (AC-6b), and the workflow that applies it does not
+      means the review bound (OQ-80), and the workflow that applies it does not
       see CI rounds.
 - [ ] **AC-7** — The loop never merges and never dispatches a workflow itself.
       It lands a pull request only by calling OQ-50's `land.mjs`, which is the
@@ -131,7 +116,7 @@ applied when somebody happens to follow the rule.
 - Node, ESM, no new runtime dependencies.
 - **Keep the way open to running stories in parallel.** Everything the loop
   knows about a story's progress is derived from that story's own branch and
-  pull request (AC-2, AC-6d). The loop keeps no state that spans stories other
+  pull request (AC-2, AC-6b). The loop keeps no state that spans stories other
   than its checkout, and AC-9 updates that only while nothing is in flight. So
   running several stories at once later changes how many are started, not
   how any one of them is tracked.
@@ -229,7 +214,7 @@ Three further things that hand-run established, all feeding the ACs above:
 
 **Decided 2026-09-25, by the owner.** The loop's job is to take any ready story
 to merged without anyone in between. So it lands (AC-7, AC-8, through OQ-50's
-trigger rather than by merging), retries a red CI (AC-6d, reading it through
+trigger rather than by merging), retries a red CI (AC-6b, reading it through
 OQ-79), and dispatches every story from the latest `origin/main` (AC-9,
 AC-10). It runs one story at a time for now, built so that parallel dispatch
 can follow (Constraints). AC-9 came out of #142's review. `coder.mjs` read its
@@ -260,7 +245,7 @@ than here:
   "rounds that find nothing new" variant was set aside for want of a
   machine-applicable definition of "new"; a spend ceiling is a plausible second
   limit, not the primary one.
-- **Where the labelling lives.** `review-gate.yml` — AC-6b — because it sees every
+- **Where the labelling lives.** `review-gate.yml` — split out on 2026-09-25 as OQ-80 — because it sees every
   pull request including ones no dispatcher ran, which is what the original
   complaint was about. This module only reads the label (AC-6), so exactly one
   place knows the rule.

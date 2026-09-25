@@ -199,9 +199,11 @@ Getting these wrong means the marker is silently ignored rather than obeyed.
    running a fresh review of the **same head** and recording its verdict. The
    description is not part of the head, so a commit would change nothing it
    found. Either way it is a new review, never a waved-through old one, and
-   **the block still counts toward the two-round bound** like any other: the
+   **the block still counts toward the round bound** like any other: the
    bound counts `block` verdicts and makes no exception for what they were
-   about. First used on #133, where round 2 blocked on a missing Docs check.
+   about. (The bound is three blocking verdicts. OQ-48 sets it; this is a
+   restatement for the reader and must not drift from it.) First used on
+   #133, where round 2 blocked on a missing Docs check.
 4. **The comment must come from an account with write access.** Anyone can
    comment on a public repository; a marker from anyone else is ignored.
 
