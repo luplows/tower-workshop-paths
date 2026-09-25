@@ -3,7 +3,7 @@ id: OQ-70
 title: Take a ready story from the queue to an open pull request
 tier: next
 kind: workflow
-depends_on: [OQ-65, OQ-68]
+depends_on: [OQ-65, OQ-68, OQ-77]
 model: sonnet
 blocked: null
 ---
