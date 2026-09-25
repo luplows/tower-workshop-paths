@@ -3,7 +3,7 @@ id: OQ-48
 title: Close the loop, and enforce the retry bound with something other than an agent remembering
 tier: next
 kind: workflow
-depends_on: [OQ-50, OQ-69, OQ-70, OQ-78, OQ-79]
+depends_on: [OQ-50, OQ-69, OQ-70, OQ-78, OQ-79, OQ-84]
 model: sonnet
 blocked: null
 ---
@@ -41,7 +41,8 @@ follow it is the problem this story began with.
       settled and it answers the first of this story's original open questions.
 - [ ] **AC-3** — A retry happens on the **existing branch and pull request**,
       as new commits (or only a new PR body, for a block on the description
-      alone), and never opens a second PR. `CLAUDE.md` requires that in
+      alone), and never opens a second PR. The coder commits and the loop
+      pushes, through OQ-84's push function. `CLAUDE.md` requires that in
       as many words. A test asserts no PR-creation request is constructed on a
       retry path.
 - [ ] **AC-4** — The retry prompt carries the findings as a **bounded injected
