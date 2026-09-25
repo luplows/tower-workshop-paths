@@ -17,19 +17,19 @@ happens to be in.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — `runSession` in `scripts/dispatch/spawn.mjs` takes a `cwd`
+- [x] **AC-1** — `runSession` in `scripts/dispatch/spawn.mjs` takes a `cwd`
       option and starts the process in that directory. It is required: a call
       without it throws before anything is started, because the silent
       default (the caller's own directory) is the defect this story fixes. A
       test runs the stand-in in a directory other than the test's own and
       asserts, from the stand-in's output, that the process ran there. The
       stand-in gains a mode that prints its working directory.
-- [ ] **AC-2** — `spawnSession` takes the same required `cwd` and passes it
+- [x] **AC-2** — `spawnSession` takes the same required `cwd` and passes it
       to `runSession` unchanged. A test asserts that it arrives, and that a
       call without it throws before `run` is called.
-- [ ] **AC-3** — A `cwd` that does not exist makes `runSession` reject rather
+- [x] **AC-3** — A `cwd` that does not exist makes `runSession` reject rather
       than run anywhere else. A test covers it.
-- [ ] **AC-4** — The coder invocation sketch in
+- [x] **AC-4** — The coder invocation sketch in
       `docs/agent-workflow-design.md`, "Invocation shape", no longer shows
       `--add-dir "$WORKTREE"`. It says instead that the session is started
       with the worktree as its working directory. `buildInvocation` does not
