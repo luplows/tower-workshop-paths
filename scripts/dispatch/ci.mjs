@@ -28,7 +28,8 @@ export const CI_WORKFLOW_PATH = '.github/workflows/ci.yml'
 // ci.yml takes minutes on a runner; this leaves room for a queue.
 export const CI_WAIT_TIMEOUT_MS = 30 * 60 * 1000
 export const CI_POLL_INTERVAL_MS = 15 * 1000
-// The most characters of one failed job's log carried into the findings, taken from its end.
+// The most characters of one failed job's log carried into the findings, taken
+// from the end of the log once it is cut at its last error line (`excerptLog`).
 export const CI_LOG_EXCERPT_MAX_CHARS = 4000
 
 // ---------------------------------------------------------------- requests
@@ -157,9 +158,30 @@ async function latestCiRunFor(ctx, headSha) {
   return latestCiRun((json.workflow_runs ?? []).filter((run) => run.head_sha === headSha))
 }
 
-/** The last `CI_LOG_EXCERPT_MAX_CHARS` characters of `log`. */
+// The runner's annotation for an error. The last one in a failed job's log is
+// `##[error]Process completed with exit code N.`, ending the failed step.
+const ERROR_ANNOTATION = '##[error]'
+// eslint-disable-next-line no-control-regex -- matching the escape character is the point
+const ANSI_SGR = /\u001b\[[0-9;]*m/g
+
+/**
+ * The last `CI_LOG_EXCERPT_MAX_CHARS` characters of `log` up to the end of its
+ * last `##[error]` line, or of the whole log when it has none, with colour
+ * codes removed. A failed job's log does not end at its failure: `ci.yml`'s
+ * `if: failure()` artifact upload and the post-job cleanup follow it. On every
+ * failed `ci.yml` job in this repository when this was written, that tail was
+ * over 3,000 characters, so the log's own end held none of the failure and the
+ * end of the failed step held all of it.
+ */
 export function excerptLog(log) {
-  const text = String(log).trimEnd()
+  // Colour codes (Vitest and Playwright colour their output) cost characters and say nothing.
+  let text = String(log).replace(ANSI_SGR, '')
+  const error = text.lastIndexOf(ERROR_ANNOTATION)
+  if (error !== -1) {
+    const lineEnd = text.indexOf('\n', error)
+    if (lineEnd !== -1) text = text.slice(0, lineEnd)
+  }
+  text = text.trimEnd()
   return text.length <= CI_LOG_EXCERPT_MAX_CHARS ? text : text.slice(text.length - CI_LOG_EXCERPT_MAX_CHARS)
 }
 
@@ -175,7 +197,7 @@ export function composeCiFindings(headSha, run, failedJobs) {
     lines.push(
       `Failed job: ${job.name}`,
       `Failed step(s): ${steps}`,
-      `End of the job's log (last ${CI_LOG_EXCERPT_MAX_CHARS} characters at most):`,
+      `The job's log, up to its last error line (last ${CI_LOG_EXCERPT_MAX_CHARS} characters at most):`,
       '',
       job.logExcerpt,
       '',

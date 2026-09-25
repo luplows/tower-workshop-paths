@@ -1,5 +1,8 @@
 // @vitest-environment node
 
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import {
   CI_LOG_EXCERPT_MAX_CHARS,
@@ -11,9 +14,12 @@ import {
   buildListRunsForCommit,
   countRedCiRounds,
   createCiContext,
+  excerptLog,
   waitForCi,
 } from './ci.mjs'
 import { retrySection } from './invocation.mjs'
+
+const FIXTURES = path.join(path.dirname(fileURLToPath(import.meta.url)), 'fixtures')
 
 const REPO = 'luplows/tower-workshop-paths'
 const SHA = 'a'.repeat(40)
@@ -195,6 +201,39 @@ describe('OQ-79/AC-3: red carries findings a retry can use', () => {
     expect(failedJobs[0].logExcerpt.length).toBe(CI_LOG_EXCERPT_MAX_CHARS)
     expect(failedJobs[0].logExcerpt.endsWith('THE-END')).toBe(true)
     expect(failedJobs[0].logExcerpt).not.toContain('START')
+  })
+
+  it('ends the excerpt at the last ##[error] line, not at the cleanup that follows it', () => {
+    const log = ['a step', '##[error]first', 'more', '##[error]Process completed with exit code 1.', 'Post job cleanup.', ''].join('\n')
+    expect(excerptLog(log)).toBe(['a step', '##[error]first', 'more', '##[error]Process completed with exit code 1.'].join('\n'))
+  })
+
+  // Tails of real failed ci.yml job logs from this repository (1529d70 and
+  // 2c96580), cut at a line boundary. In each, the whole log's last
+  // CI_LOG_EXCERPT_MAX_CHARS characters are artifact upload and post-job
+  // cleanup, and hold none of the failure.
+  const realLog = (name) => readFileSync(path.join(FIXTURES, name), 'utf8')
+
+  it('puts the failure in the excerpt on a real unit-test failure log', () => {
+    const log = realLog('ci-log-unit-failure.txt')
+    expect(log.slice(-CI_LOG_EXCERPT_MAX_CHARS)).not.toContain('AssertionError')
+    const excerpt = excerptLog(log)
+    expect(excerpt).toContain('AssertionError')
+    expect(excerpt).toContain('src/index.css.test.js')
+    expect(log).toContain('\u001b[31m')
+    expect(excerpt).not.toContain('\u001b')
+    expect(excerpt).toMatch(/##\[error\]Process completed with exit code 1\.$/)
+    expect(excerpt).not.toContain('Post job cleanup')
+  })
+
+  it('puts the failure in the excerpt on a real e2e failure log', () => {
+    const log = realLog('ci-log-e2e-failure.txt')
+    expect(log.slice(-CI_LOG_EXCERPT_MAX_CHARS)).not.toMatch(/\d+ failed/)
+    const excerpt = excerptLog(log)
+    expect(excerpt).toMatch(/ 6 failed/)
+    expect(excerpt).toContain('e2e/appearance.spec.js')
+    expect(excerpt).toMatch(/##\[error\]Process completed with exit code 1\.$/)
+    expect(excerpt).not.toContain('actions/upload-artifact')
   })
 
   it("rendered as a retry's findings through invocation.mjs, has exactly one begin and one end marker", async () => {
