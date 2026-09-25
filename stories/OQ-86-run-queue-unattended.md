@@ -17,8 +17,8 @@ before it, until nothing is ready.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — Each story is dispatched from the latest `origin/main`,
-      including the loop's own code, prompts and queue. **Between stories**,
+- [ ] **AC-1** — Each story runs on the latest `origin/main`: the dispatcher
+      code that runs it, its prompts and the queue. **Between stories**,
       meaning before it starts one and while it is not running one itself,
       the loop fetches and fast-forwards its own checkout to `origin/main`
       (`git merge --ff-only`). If that is not a fast-forward (a local edit or a
@@ -29,33 +29,43 @@ before it, until nothing is ready.
       the update: the loop is not running them. Tests cover a fast-forward, a
       refusal, no update while a story is running, and an update that still
       happens while another story's branch is on `origin`.
-- [ ] **AC-2** — Stories run one at a time, each through OQ-48's entry point.
-      The next story starts only after the previous one is merged or stopped,
+- [ ] **AC-2** — Stories run one at a time. Each runs as **its own child
+      process** of OQ-48's entry point, started after AC-1's fast-forward, so
+      it loads the dispatch modules and prompts as they are on `origin/main`
+      at that moment. A module the loop's own process has already loaded does
+      not change when the files on disk do. The loop's own code is therefore
+      what it started with, and changes only when the loop is restarted. The
+      next story starts only after the previous one's process has finished,
       so every story starts from a `main` that includes everything the loop
-      landed before it. The loop runs until the queue has no ready story, then
-      stops with `nothing-ready`. A test runs two stories and asserts the
-      second's worktree base includes the first's merge.
-- [ ] **AC-3** — **What a stopped story does to the loop depends on whether
-      its pull request exists.**
-      - **Stopped after its pull request was opened.** OQ-48 has recorded the
-        stop on the story's branch, AC-4 skips the story from then on, and the
-        loop reports it and goes on to the next story.
-      - **Stopped before a pull request exists**, when the coder dispatch
-        returns anything other than `opened`. `dispatchCoder` in
+      landed before it. The loop runs until no ready story is left without a
+      branch on `origin` (AC-4), then stops with `nothing-ready`. Tests: two
+      stories run, and the second's worktree base includes the first's merge;
+      each story's process starts after that story's fast-forward.
+- [ ] **AC-3** — **The loop goes on only after a story merged, or stopped
+      with its stop fully recorded.** Fully recorded means OQ-48's AC-8
+      reported `recorded`: the pull request is a draft, and `blocked:` is on
+      the story's branch. Such a story is also skipped from then on (AC-4).
+      Anything else **stops the loop**, which reports the story and its
+      status:
+      - a stop before a pull request exists, when the coder dispatch returns
+        anything other than `opened`. `dispatchCoder` in
         `scripts/dispatch/coder.mjs` returns `install-failed`,
         `session-failed`, `nothing-committed`, `uncommitted-changes`,
-        `push-failed`, `pr-block-invalid`, `story-unreadable`,
-        `branch-exists` and `not-ready` today. This **stops the loop**, which reports the
-        story and its status. OQ-48 records nothing for such a stop (its AC-8
-        needs a pull request), and in most of these cases `coder.mjs`'s
-        clean-up leaves no branch on `origin`, or none at all. So nothing
-        would keep the story from being picked again, and each pick would be
-        another coder session with no bound. Restarting the loop is the
-        owner's decision.
+        `push-failed`, `pr-block-invalid`, `story-unreadable`, `branch-exists`
+        and `not-ready` today;
+      - a stop whose recording failed, so the pull request may still be
+        ready;
+      - a story process that exits without a result, or with an error.
 
-      Tests: a story stopped after its pull request was opened is followed by
-      the next story, and a story stopped before one exists stops the loop
-      with no second coder session spawned.
+      OQ-48 records nothing for a stop before a pull request exists (its AC-8
+      needs one), and in most of these cases `coder.mjs`'s clean-up leaves no
+      branch on `origin`, or none at all. So nothing would keep the story from
+      being picked again, and each pick would be another coder session with no
+      bound. Restarting the loop is the owner's decision. Tests: a merged
+      story and a fully recorded stop are each followed by the next story,
+      while a stop before a pull request, a stop whose recording failed and a
+      process that exits with an error each stop the loop, with no further
+      coder session spawned.
 - [ ] **AC-4** — **A story that is `in-progress` is skipped, never dispatched
       again.** The loop chooses the story itself and passes its id to OQ-48's
       entry point. It takes the first story `dispatchable()` returns whose
@@ -65,9 +75,12 @@ before it, until nothing is ready.
       branch. Without this, a story OQ-48 stopped still reads `ready` on
       `main`, `coder.mjs` returns `branch-exists` for it when called without
       an id, and the loop halts or re-picks it rather than reaching AC-2's
-      `nothing-ready`. Tests: a ready story with a branch on `origin` is
-      skipped and the next ready story is dispatched, and a queue whose only
-      ready stories all have branches stops with `nothing-ready`.
+      `nothing-ready`. A story whose run was interrupted (the loop's process
+      was killed) is `in-progress` too, and is skipped. The loop never resumes
+      a story; resuming one is OQ-48's AC-9, run by the owner. Tests: a ready
+      story with a branch on `origin` is skipped and the next ready story is
+      dispatched, and a queue whose only ready stories all have branches stops
+      with `nothing-ready`.
 - [ ] **AC-5** — Every `**Planned (…)**` marker in
       `docs/agent-workflow-design.md` that names OQ-86 is resolved as that
       document's "Reading this document" note says.
@@ -102,8 +115,8 @@ before it, until nothing is ready.
 
 Split out of OQ-48 on 2026-09-25, before dispatch, where AC-1, AC-2 and AC-4
 were AC-9, AC-10 and AC-12. The owner split OQ-48 because it had grown to
-sixteen criteria. See OQ-48's Context for the loop's goal, decided the same day: take
-any ready story to merged without anyone in between.
+sixteen criteria. See OQ-48's Context for the loop's goal, decided the same
+day: take any ready story to merged without anyone in between.
 
 AC-1 came out of #142's review. `coder.mjs` read its queue from a possibly
 stale local checkout, and the queue is only one of the things the loop's own
@@ -126,6 +139,14 @@ branch to skip it by, so the loop would have dispatched it again, one coder
 session after another. When it kept unpushed commits, `dispatchCoder` returned
 `branch-exists` on every pick instead, and the loop never reached
 `nothing-ready`. Stopping the loop bounds both at no further spend.
+
+The third review of #151 added two things. First, AC-3 goes on only after a
+stop that was fully recorded, so the loop never walks away from a stopped
+story whose pull request might still be ready to land (OQ-48's AC-8 makes it a
+draft). Second, AC-2 runs each story in its own process. As first written,
+AC-1 promised the loop's own code was current, but a Node process keeps the
+modules it has already loaded. `coder.mjs` reads its prompt from disk on each
+dispatch, so prompts would have updated while code would not.
 
 ## Open questions
 

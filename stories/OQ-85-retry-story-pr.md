@@ -23,21 +23,33 @@ the runner, or a coder respawned with hand-written prose.
       number, the findings, their source (`review` or `ci`), the round and the
       rounds remaining. It is also runnable from the CLI with the findings read
       from a file. It runs the coder in a fresh worktree of the story's
-      **existing branch**, checked out at that branch's tip on `origin`. The
-      coder commits, and the entry point pushes with OQ-84's `pushBranch`,
+      **existing branch**, checked out at that branch's tip on `origin`, after
+      installing dependencies as the first dispatch does (OQ-78). The coder
+      commits, and the entry point pushes with OQ-84's `pushBranch`,
       using that tip as the base. It then replaces the pull request's title and
       body with the ones the coder emitted, through `github.mjs`'s
       `replacePullRequest`. It never opens a pull request. A test asserts no
       PR-creation request is constructed anywhere on this path. It refuses a
       pull request that is not open, or whose head branch is not the story's,
-      before spawning anything.
-- [ ] **AC-2** — A retry that emits a new PR body but pushes no commit is a
-      result of its own, not a failure: the body is replaced, and the result
-      says no commit was pushed. That is the answer to a block on the
-      description alone. A retry with neither a new commit nor a valid PR block
-      is `nothing-committed` or `pr-block-invalid`, as for a first dispatch. The
-      body is not replaced unless the push succeeded or there was nothing to
-      push. Tests cover a commit with a body, a body alone, and neither.
+      before spawning anything, each with a status of its own. A retry that
+      pushed a commit and replaced the body is `retried`.
+- [ ] **AC-2** — **Only `retried` and `body-replaced` mean the retry
+      completed.** A retry that emits a valid PR block but pushes no commit is
+      `body-replaced`: the body is replaced, and no commit was pushed. That is
+      the answer to a block on the description alone. The body is replaced
+      only when the push succeeded or there was nothing to push. Every other
+      result is a status that means the retry did not complete:
+      - AC-1's refusals;
+      - `install-failed` and `session-failed`;
+      - `nothing-committed` (no commit and no valid PR block);
+      - `uncommitted-changes` and `push-failed`, as OQ-84 defines them;
+      - `pr-block-invalid` (with or without a pushed commit, and the body left
+        as it was);
+      - `replace-failed` (the commit was pushed, and replacing the body
+        failed).
+
+      Tests cover `retried`, `body-replaced`, `nothing-committed`,
+      `pr-block-invalid` after a push, and `replace-failed`.
 - [ ] **AC-3** — The retry prompt carries the findings as a **bounded injected
       block**, with the same guarantee `{{STORY}}` and `{{PR_BODY}}` get. A test
       through this entry point uses a findings fixture that quotes marker
@@ -59,10 +71,15 @@ the runner, or a coder respawned with hand-written prose.
       prompt still does.
 - [ ] **AC-6** — The result reports what the coder decided, and changes nothing
       about it: its draft-or-ready choice, and any `blocked:` it set in the
-      story file on the branch, read from the pushed tip as `dispatchCoder`
-      reads it. The retry does not change the pull request's draft state.
-      Every result after a session carries that session's output under the
-      same key and shape as OQ-84's AC-5.
+      story file, read from the branch's committed tip in the worktree (the
+      pushed tip, when there was a push) as `dispatchCoder` reads it. It
+      reports both on every result where the session completed, whatever the
+      status. The retry does not change the pull request's draft state.
+      Acting on a `blocked:` or a draft (stopping the story, and making the
+      pull request a draft) is OQ-48's (its AC-2 and AC-8). Every result after
+      a session carries that session's output under the same key and shape as
+      OQ-84's AC-5. Tests cover a retry whose coder set `blocked:` and asked
+      for a draft, with a push and without one.
 - [ ] **AC-7** — Every `**Planned (…)**` marker in
       `docs/agent-workflow-design.md` that names OQ-85 is resolved as that
       document's "Reading this document" note says.
@@ -73,7 +90,9 @@ the runner, or a coder respawned with hand-written prose.
   and passes the round and rounds remaining in.
 - **Reading CI or review results.** OQ-79 and OQ-69 produce the findings this
   takes.
-- **Recording a stop as `blocked:`.** OQ-48's, when a bound is reached.
+- **Stopping a story, recording `blocked:`, and making its pull request a
+  draft.** OQ-48's (its AC-2 and AC-8), including when this retry reports the
+  coder's own `blocked:` or draft.
 - **Retrying a pull request the loop did not open.** OQ-83 never spawns a
   coder for one.
 
@@ -126,7 +145,11 @@ rounds, and established three things about retries:
    got a fourth point-fix. This story relays findings as given; how they are
    framed is not decided here.
 
-AC-5 came from the runner's notes on #149 (OQ-79).
+AC-5 came from the runner's notes on #149 (OQ-79). The named statuses in
+AC-2, and AC-6's reporting of `blocked:` and draft on every completed
+session, came from the third review of #151. OQ-48 continues only on
+`retried` or `body-replaced` with neither reported, and stops on everything
+else.
 
 ## Open questions
 
