@@ -13,8 +13,10 @@
 > state. A passage that is decided but not built starts **Planned (OQ-n)**, naming the story or
 > stories that will build it. A decision is written here, marked, in the same pull request that
 > records it (usually the one that writes its story), so it reaches `main` when it is made. The
-> pull request that implements the story removes the marker and corrects the passage wherever what
-> was built differs; each such story has an acceptance criterion saying so. The convention dates
+> pull request that implements a story takes that story's id out of every marker that names it,
+> and corrects the passage wherever what was built differs. A marker naming several stories keeps
+> the others and stays until the last of them is built; only then does the marker go. Each such
+> story has an acceptance criterion saying so. The convention dates
 > from 2026-09-25. Passages written before then may describe unbuilt parts without a marker; the
 > migration plan tracks those. **Planned (OQ-61):** CI fails if a marker names a story that is
 > already in `stories/done/`.

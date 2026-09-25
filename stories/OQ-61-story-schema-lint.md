@@ -62,16 +62,16 @@ but cannot be reviewed against.
       `docs/agent-workflow-design.md`, "Reading this document".
 - [ ] **AC-8** — Every `**Planned (…)**` marker in
       `docs/agent-workflow-design.md` that names OQ-61 is resolved as that
-      document's "Reading this document" note says. OQ-61 comes out of the
-      marker (the whole marker, if it names no other story), and the passage is
-      corrected wherever what was built differs from what it describes.
+      document's "Reading this document" note says.
 
 ## Out of scope
 
 - **Cross-file duplicate `id` detection.** It needs its own story: the rule is
   cross-file rather than per-file, and the cause is upstream — the design documents
   spend real OQ numbers on illustrative examples, which is how `OQ-49` came to be
-  assigned twice. This lint validates one file at a time.
+  assigned twice. This lint validates each story one file at a time. AC-7's
+  marker check is the one exception: it reads the `stories/` and
+  `stories/done/` listings to resolve each marker's ids, and it is in scope.
 - Any judgment about whether a story is *good* — sizing, AC quality, whether the
   intent is coherent. Schema only. The readiness test stays human.
 - `AC`↔test traceability. Separate check, separate story.

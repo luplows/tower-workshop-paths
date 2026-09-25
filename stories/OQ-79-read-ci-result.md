@@ -50,9 +50,7 @@ never land and that nothing reports.
       tests are unchanged.
 - [ ] **AC-6** — Every `**Planned (…)**` marker in
       `docs/agent-workflow-design.md` that names OQ-79 is resolved as that
-      document's "Reading this document" note says. OQ-79 comes out of the
-      marker (the whole marker, if it names no other story), and the passage is
-      corrected wherever what was built differs from what it describes.
+      document's "Reading this document" note says.
 
 ## Out of scope
 
