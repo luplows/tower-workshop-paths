@@ -20,8 +20,9 @@ follow it is the problem this story began with.
 
 - [ ] **AC-1** — One entry point runs the loop for one story, in this order:
       1. dispatch the coder (OQ-70);
-      2. wait for CI on the head (OQ-79). If it is red, retry the coder with
-         OQ-79's findings;
+      2. wait for CI on the head (OQ-79). If it is red because the run
+         concluded `failure`, retry the coder with OQ-79's findings; any
+         other CI outcome stops the story (AC-14);
       3. if it is green, review the pull request (OQ-69). On a `block`
          verdict, retry the coder with the reviewer's findings;
       4. on a pass, land it (OQ-50).
@@ -56,16 +57,17 @@ follow it is the problem this story began with.
       PR body it emits **replaces** the existing one rather than appending to it.
       A test asserts each of those appears in the assembled prompt.
 - [ ] **AC-6** — The bound is **three** blocking verdicts. When it is reached the
-      loop sets `blocked:` on the story file with a reason naming the unresolved
+      loop records `blocked:` (AC-13) with a reason naming the unresolved
       findings, and stops. It **does not write the `review-blocked` label**, and a
       test asserts no label-write request is constructible from this module —
       OQ-80 puts that in `review-gate.yml` instead. The loop *reads* the label,
       so a pull request already carrying one is not retried.
-- [ ] **AC-6b** — A red CI is retried like a blocking review, and is bounded
-      separately at **three** red CI rounds. The count is derived by OQ-79's
-      AC-4 and never stored, so AC-2's restart test covers it too. When the
-      bound is reached the loop sets `blocked:` on the story with a reason
-      naming the failing jobs, and stops. It applies no label: `review-blocked`
+- [ ] **AC-6b** — A red CI whose run concluded `failure` is retried like a
+      blocking review, and is bounded separately at **three** red CI rounds.
+      The count is derived by OQ-79's AC-4, which counts exactly those runs,
+      and never stored, so AC-2's restart test covers it too. When the bound
+      is reached the loop records `blocked:` (AC-13) with a reason naming the
+      failing jobs, and stops. It applies no label: `review-blocked`
       means the review bound (OQ-80), and the workflow that applies it does not
       see CI rounds.
 - [ ] **AC-7** — The loop never merges and never dispatches a workflow itself.
@@ -77,8 +79,8 @@ follow it is the problem this story began with.
       request to `land.mjs`. The story is finished when that reports it merged.
       Observations are recorded and are **not** retried — `REVIEW.md` is clear
       that the middle verdict exists precisely for findings deliberately not
-      blocked on. Any other `land.mjs` result stops the story and is reported
-      with its reason.
+      blocked on. Any other `land.mjs` result stops the story, is reported
+      with its reason, and is recorded as AC-13 says.
 - [ ] **AC-9** — Each story is dispatched from the latest `origin/main`,
       including the loop's own code, prompts and queue. Before starting a
       story, and only while no story is in flight, the loop fetches and
@@ -97,13 +99,59 @@ follow it is the problem this story began with.
 - [ ] **AC-11** — Every `**Planned (…)**` marker in
       `docs/agent-workflow-design.md` that names OQ-48 is resolved as that
       document's "Reading this document" note says.
+- [ ] **AC-12** — **A story already in flight is skipped, never dispatched
+      again.** The loop chooses the story itself and passes its id to the
+      coder dispatch. It takes the first story `dispatchable()` returns whose
+      `story/OQ-<n>-*` branch does not exist on `origin`. That is
+      `stories/README.md`'s `in-progress` status, derived from the branch and
+      never stored. A skipped story appears in the loop's report with its
+      branch. Without this, a stopped story still reads `ready` on `main`,
+      `coder.mjs` returns `branch-exists` for it when called without an id,
+      and the loop halts or re-picks it rather than reaching AC-10's
+      `nothing-ready`. Tests: a ready story with a branch on `origin` is
+      skipped and the next ready story is dispatched, and a queue whose only
+      ready stories all have branches stops with `nothing-ready`.
+- [ ] **AC-13** — **Where a stop is recorded.** When the loop stops a story
+      whose pull request exists, it records `blocked:` with the reason in the
+      story file **on the story's own branch**, wherever that branch has it
+      (after the coder's move, in `stories/done/`), as one commit on top of
+      the branch's tip on `origin`, pushed with OQ-84's `pushBranch`. That is
+      where the coder's own `blocked:` already lives (`coder.md`, "When you
+      cannot proceed: write and exit"), so every stopped story reads the same
+      way. The pull request is left open for the owner. `main`'s copy is not
+      touched, and AC-12 keeps the story out of the loop. It applies to the
+      review bound (AC-6), the red-CI bound (AC-6b), a CI outcome that is not
+      retried (AC-14), and any `land.mjs` result other than merged (AC-8). A
+      pull request the coder opened as a draft already carries the coder's
+      own reason and gets no second commit. The commit is the loop's record,
+      not the coder's work, so OQ-84's AC-3 ("The dispatcher never commits on
+      the coder's behalf") is not engaged. If the push fails, the stop is
+      still reported, with the push failure. Tests cover each stop's commit,
+      the draft case with no commit, and a failed push.
+- [ ] **AC-14** — **Only a `failure` is retried.** A red CI run whose
+      conclusion is anything other than `failure` (`cancelled`, `timed_out`,
+      or any other), and OQ-79's `timed-out` result (the run did not finish
+      within OQ-79's bounded wait), stop the story with a status of their
+      own. They are not retried and do not count as red CI rounds. To tell
+      them apart, `ci.mjs`'s `red` result carries the run's `conclusion`,
+      which is added here if OQ-79 did not add it. A test covers each: a
+      `failure` is retried, while `cancelled`, `timed_out` and `timed-out`
+      each stop without a retry.
+- [ ] **AC-15** — **The retry says where its findings came from.** A CI
+      retry's findings are introduced as CI failure output, not as review
+      findings. `retrySection` in `scripts/dispatch/invocation.mjs` today
+      introduces every retry's findings with "The review findings to address
+      are below.", while OQ-79's AC-3 has CI findings say "that CI failed
+      rather than review". A test asserts that an assembled CI retry prompt
+      does not call its findings review findings, and that a review retry's
+      prompt still does.
 
 ## Out of scope
 
 - **Merging, or triggering the sweep other than through `land.mjs`.** AC-7 makes
   this a tested prohibition rather than an omission.
-- **Choosing the story.** `queue.mjs`, read from `origin/main` by `coder.mjs`
-  (OQ-78's AC-10).
+- **Ordering the queue.** `queue.mjs`, read from `origin/main` by `coder.mjs`
+  (OQ-78's AC-10). The loop only skips stories already in flight (AC-12).
 - **Running stories in parallel.** Sequential is deliberate for now (AC-10).
   Parallel dispatch needs a merge queue first (`docs/agent-workflow-design.md`,
   "Merge queue") and is OQ-66's. The Constraints below keep the way open.
@@ -119,8 +167,8 @@ follow it is the problem this story began with.
 - Node, ESM, no new runtime dependencies.
 - **Keep the way open to running stories in parallel.** Everything the loop
   knows about a story's progress is derived from that story's own branch and
-  pull request (AC-2, AC-6b). The loop keeps no state that spans stories other
-  than its checkout, and AC-9 updates that only while nothing is in flight. So
+  pull request (AC-2, AC-6b, AC-12, AC-13). The loop keeps no state that
+  spans stories other than its checkout, and AC-9 updates that only while nothing is in flight. So
   running several stories at once later changes how many are started, not
   how any one of them is tracked.
 - The `review-blocked` label string and the `review/agent` context must stay
@@ -233,6 +281,32 @@ modules come from it too, and each landing leaves it further behind.
 - `stories/README.md`, "The review round count is deliberately not a field here"
   — why AC-2 derives rather than stores
 - OQ-42, in `Completed-Questions.md` — where the two-round bound was decided
+
+**Amended 2026-09-25, by the owner, from the dispatch and review of OQ-79
+(#149).** Three gaps, one per new criterion:
+
+- **A stopped story was re-picked (AC-12, AC-13).** `blocked:` had no stated
+  home. `dispatchable()` in `scripts/dispatch/queue.mjs` filters on status
+  alone, and the queue is read from `origin/main`, where a stopped story still
+  reads `ready`. So the first stop would have halted the loop, or had it pick
+  the same story again. The owner chose the story's own branch for `blocked:`,
+  as the coder already uses, over deriving the stop with nothing written, or
+  a second pull request against `main`.
+- **Cancelled and timed-out CI (AC-14).** When this was written, `ci.yml` set
+  neither `concurrency` nor `timeout-minutes`. Its runs on GitHub had
+  concluded `success` 318 times and `failure` 7 times, and never `cancelled`
+  or `timed_out`. The last 100 took 62 seconds at the median and 97 at most.
+  So nothing cancels a run automatically, and a cancelled run on the head is
+  somebody's deliberate act. GitHub times a job out only at its default limit,
+  hours away, long after OQ-79's own wait has returned `timed-out`, so
+  `timed_out` is not expected at all. And a run that does not finish within
+  that wait points at GitHub (a queue, an outage) rather than the code, since
+  Vitest and Playwright each time out a single test. None of these is
+  anything a coder retry can fix. Retrying them would also not advance the
+  red-CI bound, since OQ-79's AC-4 counts only `failure`. Raised in both
+  the runner's notes and the review of #149.
+- **The retry prompt called CI output review findings (AC-15).** Noted in the
+  runner's notes on #149.
 
 ## Open questions
 
