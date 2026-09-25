@@ -16,14 +16,14 @@ function with a known contract rather than a command line retyped per round.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — `scripts/dispatch/github.mjs` exposes the operations the loop
+- [x] **AC-1** — `scripts/dispatch/github.mjs` exposes the operations the loop
       actually performs, and no others: create a pull request from a title, body
       and draft flag; replace an existing pull request's title and body; post a
       comment; read a pull request's state (head SHA, draft, labels,
       mergeability); read a pull request's labels; and list a pull request's
       comments. Each is an exported function. **It posts no commit status** —
       see AC-3.
-- [ ] **AC-2** — Every function's request construction is a pure exported
+- [x] **AC-2** — Every function's request construction is a pure exported
       function, tested without network access. Requests go over `fetch` with the
       token read once from `gh auth token`, so the single place that performs I/O
       is injectable and tests assert what *would* be sent rather than mocking a
@@ -32,7 +32,7 @@ function with a known contract rather than a command line retyped per round.
       would put the request construction back outside the tests. This is the
       property the migration plan's "why node, not bash" rationale rests on, so
       it is an acceptance criterion rather than a style note.
-- [ ] **AC-3** — **Nothing in this module writes the `review/agent` commit
+- [x] **AC-3** — **Nothing in this module writes the `review/agent` commit
       status, and a test asserts no such request is constructible.**
       `.github/workflows/review-gate.yml` already owns that: it sets `pending` on
       `pull_request` open/synchronize/reopen, and on an `issue_comment` it reads
@@ -40,7 +40,7 @@ function with a known contract rather than a command line retyped per round.
       from the verdict. This module's output is the **marker comment**; the
       status follows from it. A second writer on the same status context would
       race the workflow for no benefit.
-- [ ] **AC-3b** — Composing a marker comment produces exactly one
+- [x] **AC-3b** — Composing a marker comment produces exactly one
       `<!-- agent-review head=<full-40-char-sha> verdict=<v> -->` line, with the
       full 40-character SHA and one of `pass`, `pass-with-observations` or
       `block`. A `null` verdict composes **no** comment and is not an error:
@@ -48,21 +48,36 @@ function with a known contract rather than a command line retyped per round.
       the PR pending, and the workflow leaves the status alone when it finds no
       marker. A test covers `null`, and one asserts a composed comment is
       accepted by the same pattern `review-gate.yml` matches.
-- [ ] **AC-4** — `verdict=fail` is accepted when *reading* a marker comment, as
+- [x] **AC-4** — `verdict=fail` is accepted when *reading* a marker comment, as
       the deprecated spelling of `block`, and is never produced when writing
       one. `REVIEW.md` keeps it only because an unrecognised marker is ignored,
       which would leave a PR pending forever behind a valid-looking verdict.
-- [ ] **AC-5** — Reading a pull request's comments returns the parsed
+- [x] **AC-5** — Reading a pull request's comments returns the parsed
       `<!-- agent-review head=<sha> verdict=<v> -->` markers, each with its head
       SHA and verdict, in order. The module parses them and does not count,
       compare or interpret them: the round count belongs to the loop (OQ-48),
       and keeping the parse here is what lets the count be tested against
       fixtures.
-- [ ] **AC-6** — A malformed or absent marker is reported as such rather than
-      skipped or defaulted, matching how `queue.mjs` treats malformed
-      frontmatter. A comment with two markers, or a marker whose verdict is
-      unrecognised, is a classified result and not silently the last one.
-- [ ] **AC-7** — No function in this module spawns a session, renders a prompt,
+- [x] **AC-6** — A comment's verdict is read by the gate's own rule, so the
+      module never reports a verdict the gate did not apply or withholds one it
+      did. A marker counts only if it is **well-formed** by the pattern
+      `review-gate.yml` greps for, line by line: on one line, a full
+      40-character hex head, and a verdict of `pass`, `pass-with-observations`,
+      `block` or `fail`. When a comment carries more than one well-formed
+      marker, **the last one wins**, as `REVIEW.md` states. Marker-like text
+      that is not well-formed is reported alongside, never skipped silently,
+      but it neither prevents nor replaces the verdict of a well-formed marker.
+      A comment with no well-formed marker has no verdict. It is reported as
+      malformed if it holds marker-like text, and as absent otherwise. A test
+      covers a comment that quotes a malformed marker before a real one, and
+      asserts the real one's verdict.
+      *(Revised 2026-09-24 by the owner, during #133's review. It previously
+      read: "A comment with two markers, or a marker whose verdict is
+      unrecognised, is a classified result and not silently the last one."
+      Round 2's parser followed that literally, and reported no verdict for a
+      real review comment on #133 that the gate had passed. Unticked by the
+      runner until delivered.)*
+- [x] **AC-7** — No function in this module spawns a session, renders a prompt,
       reads a story, or decides anything about the loop's progress, and a test
       asserts the module surface. `spawn.mjs`, `invocation.mjs` and
       `dispatch.mjs` own those.
