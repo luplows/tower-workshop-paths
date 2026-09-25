@@ -18,8 +18,10 @@
  *  - Apply labels, count rounds, or decide what a verdict means (OQ-48).
  *  - Spawn sessions, render prompts, or read stories (AC-7).
  *
- * The marker grammar mirrors the grep in review-gate.yml; `MARKER_RE` must not
- * drift from it, and a test checks a composed comment against that pattern.
+ * The marker grammar mirrors the grep in review-gate.yml, which works line by
+ * line: a marker counts only when it lies on one line, so the patterns below use
+ * horizontal whitespace and never `\s`. A test checks a composed comment against
+ * a transcription of the workflow's pattern, and that a split marker is no verdict.
  */
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
@@ -34,13 +36,12 @@ export const WRITABLE_VERDICTS = ['pass', 'pass-with-observations', 'block']
 // `fail` is the deprecated spelling of `block`; accepted when reading only.
 const DEPRECATED_VERDICTS = { fail: 'block' }
 
-// Mirrors the pattern in .github/workflows/review-gate.yml (kept for readability
-// of the parse; the workflow is the authority).
-export const MARKER_RE =
-  /<!--\s*agent-review\s+head=[0-9a-f]{40}\s+verdict=(?:pass-with-observations|pass|block|fail)\s*-->/
-
-const ANY_MARKER_RE = /<!--\s*agent-review\b[\s\S]*?-->/g
-const FIELDS_RE = /^<!--\s*agent-review\s+head=(\S+)\s+verdict=(\S+)\s*-->$/
+// Horizontal whitespace only: the gate greps line by line, so `\s` (which matches
+// a newline) would accept markers the gate ignores. A candidate runs to `-->` or
+// to the end of its line, so an unterminated or split marker is classified as
+// malformed rather than skipped.
+const ANY_MARKER_RE = /<!--[^\S\n]*agent-review\b[^\n]*?(?:-->|$)/gm
+const FIELDS_RE = /^<!--[^\S\n]*agent-review[^\S\n]+head=(\S+)[^\S\n]+verdict=(\S+)[^\S\n]*-->$/
 const SHA_RE = /^[0-9a-f]{40}$/
 
 // ---------------------------------------------------------------- requests
@@ -205,6 +206,38 @@ export async function ghAuthToken() {
   return token
 }
 
+const PR = '[1-9][0-9]*'
+// [method, path after the repo, permitted body keys or null for none]: the shapes
+// of the six `build*` functions above, and nothing else.
+const ALLOWED = [
+  ['POST', new RegExp('^/pulls$'), ['title', 'body', 'head', 'base', 'draft']],
+  ['PATCH', new RegExp(`^/pulls/${PR}$`), ['title', 'body']],
+  ['POST', new RegExp(`^/issues/${PR}/comments$`), ['body']],
+  ['GET', new RegExp(`^/pulls/${PR}$`), null],
+  ['GET', new RegExp(`^/issues/${PR}/labels\\?per_page=100$`), null],
+  ['GET', new RegExp(`^/issues/${PR}/comments\\?per_page=100&page=[1-9][0-9]*$`), null],
+]
+
+/**
+ * Throws unless `request` has the shape one of the six `build*` functions
+ * produces for `repo`. `send` calls this before any network call, so the
+ * module's token cannot be used for anything else.
+ */
+export function assertAllowedRequest(repo, request) {
+  const prefix = repoPath(repo)
+  const url = typeof request?.url === 'string' ? request.url : ''
+  const rest = url.startsWith(`${prefix}/`) ? url.slice(prefix.length) : null
+  const rule = rest && ALLOWED.find(([method, re]) => method === request.method && re.test(rest))
+  if (!rule) {
+    throw new Error(`refusing a request outside the operations this module performs: ${request?.method} ${url}`)
+  }
+  const keys = rule[2]
+  const bodyKeys = request.body === undefined ? [] : Object.keys(request.body)
+  if (keys === null ? bodyKeys.length > 0 : bodyKeys.some((k) => !keys.includes(k))) {
+    throw new Error(`refusing a request with an unexpected body: ${request.method} ${url}`)
+  }
+}
+
 /**
  * Builds the context the operations run in. `fetch` and `getToken` are
  * injectable; the token is read once, on first use.
@@ -215,6 +248,7 @@ export function createContext({ repo, fetch = globalThis.fetch, getToken = ghAut
   return {
     repo,
     async send(request) {
+      assertAllowedRequest(repo, request)
       token ??= await getToken()
       const response = await fetch(request.url, {
         method: request.method,

@@ -33,6 +33,10 @@ const SHA2 = 'b'.repeat(40)
 const WORKFLOW_MARKER_RE =
   /<!--[\s]*agent-review[\s]+head=[0-9a-f]{40}[\s]+verdict=(pass-with-observations|pass|block|fail)[\s]*-->/
 
+// The same pattern with horizontal whitespace, as grep applies it one line at a time.
+const WORKFLOW_MARKER_RE_LINEWISE =
+  /<!--[^\S\n]*agent-review[^\S\n]+head=[0-9a-f]{40}[^\S\n]+verdict=(pass-with-observations|pass|block|fail)[^\S\n]*-->/
+
 function allBuiltRequests() {
   return [
     buildCreatePullRequest(REPO, { title: 't', body: 'b', head: 'h', draft: true }),
@@ -180,6 +184,25 @@ describe('OQ-68/AC-3: no commit status', () => {
     }
   })
 
+  it('OQ-68/AC-3: send itself refuses a status or workflow-dispatch request before any network call', async () => {
+    const fetch = fakeFetch(Array.from({ length: 6 }, () => ({ json: {} })))
+    const getToken = async () => 't'
+    const ctx = createContext({ repo: REPO, fetch, getToken })
+    const base = `https://api.github.com/repos/${REPO}`
+    const refused = [
+      { method: 'POST', url: `${base}/statuses/${SHA}`, body: { state: 'success', context: 'review/agent' } },
+      { method: 'POST', url: `${base}/actions/workflows/land-approved.yml/dispatches`, body: { ref: 'main' } },
+      { method: 'POST', url: `${base}/check-runs`, body: { name: 'x' } },
+      { method: 'POST', url: `${base}/issues/7/comments`, body: { body: 'x', state: 'success' } },
+      { method: 'GET', url: 'https://evil.example/pulls/7' },
+      { method: 'DELETE', url: `${base}/pulls/7` },
+    ]
+    for (const request of refused) await expect(ctx.send(request)).rejects.toThrow(/refusing/)
+    expect(fetch.calls).toHaveLength(0)
+    for (const request of allBuiltRequests()) await ctx.send(request)
+    expect(fetch.calls).toHaveLength(6)
+  })
+
   it('OQ-68/AC-3: the source neither names the status endpoint nor a workflow dispatch', async () => {
     const source = await readFile(path.join(here, 'github.mjs'), 'utf8')
     expect(source).not.toMatch(/\/statuses|\/dispatches|\/check-runs/)
@@ -276,6 +299,17 @@ describe('OQ-68/AC-6: malformed or ambiguous markers are classified', () => {
     })
   })
 
+  it('OQ-68/AC-6: a marker split across lines is not a verdict, as the gate finds none', () => {
+    for (const body of [
+      `<!-- agent-review\nhead=${SHA}\nverdict=pass -->`,
+      `<!-- agent-review head=${SHA}\nverdict=pass -->`,
+      `<!-- agent-review head=${SHA} verdict=pass\n-->`,
+    ]) {
+      expect(body).not.toMatch(WORKFLOW_MARKER_RE_LINEWISE)
+      expect(parseMarkerComment(body)).toMatchObject({ kind: 'malformed', reason: 'unparseable-marker' })
+    }
+  })
+
   it('OQ-68/AC-6: two markers are reported as multiple, each classified, not silently the last', () => {
     const result = parseMarkerComment(
       `<!-- agent-review head=${SHA} verdict=block -->\n<!-- agent-review head=${SHA} verdict=nope -->`,
@@ -289,8 +323,8 @@ describe('OQ-68/AC-7: module surface', () => {
   it('OQ-68/AC-7: exports exactly the GitHub operations and their pure helpers', () => {
     expect(Object.keys(github).sort()).toEqual(
       [
-        'MARKER_RE',
         'WRITABLE_VERDICTS',
+        'assertAllowedRequest',
         'buildCreatePullRequest',
         'buildGetPullRequestLabels',
         'buildGetPullRequestState',
