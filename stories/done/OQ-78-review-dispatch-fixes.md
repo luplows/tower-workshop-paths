@@ -21,19 +21,19 @@ already hands the coder.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — Before spawning the reviewer, `reviewPullRequest` runs `npm ci`
+- [x] **AC-1** — Before spawning the reviewer, `reviewPullRequest` runs `npm ci`
       in the review checkout. It uses the same credential-stripped environment
       the reviewer session gets (`coderEnv`, as the spawn already does), never
       the dispatcher's own: the install runs the PR's `package.json` scripts,
       which are code under review. A test asserts the install's working
       directory is the review checkout, and that its environment holds none of
       the GitHub credentials `coderEnv` removes.
-- [ ] **AC-2** — A failed install ends the dispatch with its own `status` (not
+- [x] **AC-2** — A failed install ends the dispatch with its own `status` (not
       `session-failed`), spawns no reviewer and posts nothing. The CLI treats it
       as a failure (non-zero exit). A test covers it. `reviewer.md` warns that a
       reviewer that cannot run `npm test` "silently reviews by reading", so the
       dispatch stops rather than letting that happen.
-- [ ] **AC-3** — An existing marker counts as a verdict only when the comment's
+- [x] **AC-3** — An existing marker counts as a verdict only when the comment's
       author association is one the gate honours. The set lives in
       `.github/workflows/review-gate.yml`, step "Apply verdict from marker", and
       a test reads that file and asserts `review.mjs` uses the same set, so the
@@ -41,11 +41,11 @@ already hands the coder.
       taken from the comment list response it already reads. A test covers a
       well-formed marker at the head from a non-writer: it does not produce
       `already-reviewed`, and the review goes ahead.
-- [ ] **AC-4** — When several honoured markers target the current head, the
+- [x] **AC-4** — When several honoured markers target the current head, the
       **latest** comment's governs, not the first. (`verdictAt` currently uses
       `find`, which returns the first.) A test covers a `block` followed by a
       `pass` at the same head.
-- [ ] **AC-5** — An explicit option (a `reviewPullRequest` parameter and a
+- [x] **AC-5** — An explicit option (a `reviewPullRequest` parameter and a
       `--rereview` CLI flag, documented in the file's usage line) permits
       reviewing a head that already has a verdict, **only** when the governing
       verdict at that head is `block`. This is the same-head re-review
@@ -54,27 +54,27 @@ already hands the coder.
       `pass-with-observations`, or where there is no verdict at the head, the
       dispatch returns its own `status` and posts nothing. Without the option,
       OQ-69's AC-8 behaviour is unchanged. Tests cover all four cases.
-- [ ] **AC-6** — Under the override, the check made just before posting (the
+- [x] **AC-6** — Under the override, the check made just before posting (the
       second `verdictAt` call) still refuses to post if an honoured marker
       **newer than the block being overridden** appeared during the review. It
       does not treat that block as a race. Tests cover both: a newer marker
       stops the post, and the overridden block on its own does not.
-- [ ] **AC-7** — The `beforeAll` hook in `scripts/dispatch/review.test.mjs` that
+- [x] **AC-7** — The `beforeAll` hook in `scripts/dispatch/review.test.mjs` that
       builds the git fixtures has an explicit timeout of at least 60 000 ms, set
       on that hook. `vite.config.js` and every other file's timeouts are
       unchanged.
-- [ ] **AC-8** — `dispatchCoder` runs `npm ci` in the new worktree after
+- [x] **AC-8** — `dispatchCoder` runs `npm ci` in the new worktree after
       creating it and before spawning the coder. The install uses the
       environment the coder session gets (`coderEnv` applied to `baseEnv`, as
       `spawnSession` does), not the dispatcher's own, for the same reason as
       AC-1. A test asserts the install's working directory is the worktree, and
       that its environment holds none of the GitHub credentials `coderEnv`
       removes.
-- [ ] **AC-9** — A failed install in `dispatchCoder` ends the dispatch with its
+- [x] **AC-9** — A failed install in `dispatchCoder` ends the dispatch with its
       own `status`, spawns no coder and opens no pull request. The worktree and
       local branch are cleaned up as on every other path (OQ-70's AC-9), and the
       CLI treats it as a failure (non-zero exit). A test covers it.
-- [ ] **AC-10** — `dispatchCoder` chooses its story from the queue as it stands
+- [x] **AC-10** — `dispatchCoder` chooses its story from the queue as it stands
       on the freshly fetched `origin/main`, not from the dispatcher's local
       `stories/`. Today it reads the local checkout before fetching
       (`loadQueue(repoDir)`), so a checkout that is behind can pick a story that
