@@ -52,13 +52,26 @@ but cannot be reviewed against.
       all. A story whose `Open questions` section holds only such a placeholder is
       therefore reported as `ready`, not `draft`. Both forms are covered by
       fixtures, and the equivalence is asserted for `Constraints` as well.
+- [ ] **AC-7** — The lint also reads `docs/*.md` and fails on a
+      `**Planned (OQ-n, …)**` marker that names a story whose file is in
+      `stories/done/`, or that names no existing story. Only numeric ids are
+      read, so the illustrative `OQ-n` in the design doc's note is ignored,
+      and a marker must sit on one line. Fixtures cover a marker naming an
+      open story (passes), a marker naming a done story (fails), and a marker
+      naming no story (fails). The convention is in
+      `docs/agent-workflow-design.md`, "Reading this document".
+- [ ] **AC-8** — Every `**Planned (…)**` marker in
+      `docs/agent-workflow-design.md` that names OQ-61 is resolved as that
+      document's "Reading this document" note says.
 
 ## Out of scope
 
 - **Cross-file duplicate `id` detection.** It needs its own story: the rule is
   cross-file rather than per-file, and the cause is upstream — the design documents
   spend real OQ numbers on illustrative examples, which is how `OQ-49` came to be
-  assigned twice. This lint validates one file at a time.
+  assigned twice. This lint validates each story one file at a time. AC-7's
+  marker check is the one exception: it reads the `stories/` and
+  `stories/done/` listings to resolve each marker's ids, and it is in scope.
 - Any judgment about whether a story is *good* — sizing, AC quality, whether the
   intent is coherent. Schema only. The readiness test stays human.
 - `AC`↔test traceability. Separate check, separate story.

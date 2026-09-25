@@ -68,9 +68,10 @@ one pull request.
 - [ ] **AC-8** — Each statement that triggering `land-approved.yml` is the
       owner's alone is updated to say the owner or `land.mjs` may trigger it, and
       that no agent session does. That includes `CLAUDE.md` ("Branches and pull
-      requests"), `docs/agent-workflow-design.md` ("Credential minimalism" and
-      "Merging"), and any other copy a grep finds. Model sessions still never
-      trigger it.
+      requests") and any other copy a grep finds. Model sessions still never
+      trigger it. Every `**Planned (…)**` marker in
+      `docs/agent-workflow-design.md` that names OQ-50 is resolved as that
+      document's "Reading this document" note says.
 
 ## Out of scope
 
