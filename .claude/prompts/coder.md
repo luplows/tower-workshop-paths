@@ -88,8 +88,9 @@ denial, it is the absence of a usable credential.** `coderEnv` in
 already carries. That holds against `gh api` directly, against `node -e`
 spawning `gh` or `curl` through `child_process`, and against an `npm`/`npx`
 script doing either — none of them can conjure a token that was never in the
-environment to begin with, whichever command reads it. Push keeps working
-because it authenticates over SSH, which `coderEnv` never touches, so the push is not yours to make.
+environment to begin with, whichever command reads it. Git's own SSH
+authentication is left in place, but pushing is not yours to do: `git push` is
+denied, and the dispatcher pushes your branch after your session ends.
 
 The coder still needs a way to get its branch out and its work reviewed. It
 commits, and the dispatcher pushes its branch; it does not open the pull request itself.
