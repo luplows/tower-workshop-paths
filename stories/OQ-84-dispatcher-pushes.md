@@ -43,8 +43,14 @@ it was refused, without digging out a transcript.
       - the push rejected: `push-failed`, with git's error;
       - a session that did not end `completed`: no push, as today.
 
-      In each case a branch holding commits is kept locally, as now. Tests
-      cover each status.
+      In each case a branch holding commits is kept locally, as now. **One
+      exception:** untracked files under `e2e/__screenshots__/` do not count as
+      uncommitted changes. They are listed in the result and never pushed.
+      Playwright writes a missing screenshot baseline there on a local run, and
+      `CLAUDE.md` forbids committing a locally generated one, so a coder that
+      follows `CLAUDE.md` must not be stopped for leaving it. Tests cover each
+      status, and the exception: a new baseline left untracked still pushes,
+      while any other untracked file stops the push.
 - [ ] **AC-4** — The push is an exported function that the retry path uses too.
       `invocation.mjs`'s retry block no longer tells the coder to push: today it
       says ``Push with exactly `git push origin <branch>` ``. It says to commit on
@@ -65,20 +71,21 @@ it was refused, without digging out a transcript.
       applied by the runner, as `coder.md` describes for any `.claude/prompts/`
       change. The coder leaves this AC unticked and says `ready` if everything
       else is done.
-- [ ] **AC-7** — Every statement that the coder pushes, or needs to push, is
-      updated to say the dispatcher pushes. That covers the design doc's "Happy
-      path" step 3, its invocation-shape and "Credential minimalism" passages
-      (including "The coder cannot be given the same treatment, because it
-      legitimately needs to push"), and `REVIEW.md`'s "For the coder: opening a
-      PR". Find them with `grep -n -i push`, and cite the code rather than
-      restating it where it is enforced.
+- [ ] **AC-7** — Every `**Planned (…)**` marker in
+      `docs/agent-workflow-design.md` that names OQ-84 is resolved as that
+      document's "Reading this document" note says. Every other statement that
+      the coder pushes, or needs to push, is updated to say the dispatcher
+      pushes. That includes the design doc's invocation-shape passages,
+      `REVIEW.md`'s "For the coder: opening a PR", and any other copy
+      `grep -n -i push` finds. Cite the code rather than restating it where the
+      code enforces it.
 
 ## Out of scope
 
-- **Removing the coder's access to SSH keys and the agent.** Once the coder no
-  longer pushes, it could run without an SSH agent or keyring, as the design
-  doc says the reviewer should. That is a separate story, and the coder's twin
-  of OQ-62.
+- **Removing the coder's access to the owner's stored credentials.** Once the
+  coder no longer pushes, it needs none of them. OQ-73 covers the GitHub token
+  and git credential helpers. SSH keys are named in OQ-73's Out of scope, and
+  are left for a later story.
 - **`review.mjs`.** The reviewer never pushed.
 - **The loop's retry cycle.** OQ-48 calls the AC-4 function.
 
@@ -93,8 +100,8 @@ it was refused, without digging out a transcript.
   chained `git push -q -u origin <branch>` onto its commit (#140). OQ-78's coder
   ran `git push -q origin HEAD`, then `git push origin HEAD` (#145). Neither is
   an allowed form, and both sessions stopped and asked for a draft. In both
-  cases the runner pushed the unchanged commit by hand, and it passed review
-  (#140) or went to review (#145).
+  cases the runner pushed the unchanged commit by hand, and both passed review
+  and landed (#140, #145).
 - **#145 lost its report.** `coder.mjs` returned only `{status, storyId, branch,
   headSha, reason}` for `nothing-pushed`. The PR block, cost and refusals were
   recovered only from Claude Code's transcript, under `~/.claude/projects/`.
