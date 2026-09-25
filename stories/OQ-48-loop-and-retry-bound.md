@@ -131,10 +131,12 @@ follow it is the problem this story began with.
 - [ ] **AC-14** — **Only a `failure` is retried.** A red CI run whose
       conclusion is anything other than `failure` (`cancelled`, `timed_out`,
       or any other), and OQ-79's `timed-out` result (the run did not finish
-      within OQ-79's bounded wait), stop the story with a status of their
+      within `CI_WAIT_TIMEOUT_MS`), stop the story with a status of their
       own. They are not retried and do not count as red CI rounds. To tell
-      them apart, `ci.mjs`'s `red` result carries the run's `conclusion`,
-      which is added here if OQ-79 did not add it. A test covers each: a
+      them apart, `waitForCi`'s `red` result in `scripts/dispatch/ci.mjs`
+      gains the run's `conclusion`: today it carries `failedJobs`, `jobNames`
+      and `findings`, and names the conclusion only inside the findings
+      text. A test covers each: a
       `failure` is retried, while `cancelled`, `timed_out` and `timed-out`
       each stop without a retry.
 - [ ] **AC-15** — **The retry says where its findings came from.** A CI
