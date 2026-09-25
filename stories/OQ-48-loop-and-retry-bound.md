@@ -110,9 +110,9 @@ queue this way, one story after another, is OQ-86's.
 - **Running the retry itself**: the coder on the existing branch, the retry
   prompt, and replacing the PR body. That is OQ-85's. This story decides
   when a retry happens and with which findings.
-- **Running the queue**: choosing the next story, skipping stories already in
-  flight, keeping the checkout current between stories, and running until
-  nothing is ready. That is OQ-86's.
+- **Running the queue**: choosing the next story, skipping stories that are
+  `in-progress`, keeping the checkout current between stories, and running
+  until nothing is ready. That is OQ-86's.
 - **Running stories in parallel.** Sequential is deliberate for now (OQ-86).
   Parallel dispatch needs a merge queue first (`docs/agent-workflow-design.md`,
   "Merge queue") and is OQ-66's. The Constraints below keep the way open.

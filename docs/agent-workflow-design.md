@@ -298,7 +298,10 @@ than relaxed.
    `story/OQ-<n>-*` branch already exists on `origin` (`stories/README.md`'s `in-progress`), so a
    story stopped after its PR was opened, which still reads `ready` on `main`, is never dispatched
    again. A story that stops before it has a PR stops the loop instead, since nothing on `origin`
-   would keep it from being dispatched again.
+   would keep it from being dispatched again. **Planned (OQ-86):** before picking, and only between
+   stories, the loop fast-forwards its own checkout to `origin/main` (`git merge --ff-only`), so
+   its code, prompts and queue include everything already landed. If that is not a fast-forward, it
+   stops and dispatches nothing. A story stopped with its PR open does not hold the update back.
 3. Coder implements, tests green, commits, and emits the PR title/body and a
    draft-or-ready decision in its report. The dispatcher pushes the branch (`pushBranch` in
    `scripts/dispatch/coder.mjs`), so a model session has no write access to the remote, then opens

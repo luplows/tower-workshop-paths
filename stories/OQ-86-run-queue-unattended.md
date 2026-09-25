@@ -18,14 +18,17 @@ before it, until nothing is ready.
 ## Acceptance criteria
 
 - [ ] **AC-1** — Each story is dispatched from the latest `origin/main`,
-      including the loop's own code, prompts and queue. Before starting a
-      story, and only while no story is in flight, the loop fetches and
-      fast-forwards its own checkout to `origin/main`
+      including the loop's own code, prompts and queue. **Between stories**,
+      meaning before it starts one and while it is not running one itself,
+      the loop fetches and fast-forwards its own checkout to `origin/main`
       (`git merge --ff-only`). If that is not a fast-forward (a local edit or a
       diverged branch), the loop stops with its own status and dispatches
-      nothing. It never updates mid-story, so every round of one story runs
-      the same dispatcher code. Tests cover a fast-forward, a refusal, and no
-      update while a story is in flight.
+      nothing. It never updates while it is running a story, so every round of
+      one story runs the same dispatcher code. Stories that are `in-progress`
+      (AC-4), such as one stopped with its pull request open, do not prevent
+      the update: the loop is not running them. Tests cover a fast-forward, a
+      refusal, no update while a story is running, and an update that still
+      happens while another story's branch is on `origin`.
 - [ ] **AC-2** — Stories run one at a time, each through OQ-48's entry point.
       The next story starts only after the previous one is merged or stopped,
       so every story starts from a `main` that includes everything the loop
@@ -41,8 +44,8 @@ before it, until nothing is ready.
         returns anything other than `opened`. `dispatchCoder` in
         `scripts/dispatch/coder.mjs` returns `install-failed`,
         `session-failed`, `nothing-committed`, `uncommitted-changes`,
-        `push-failed`, `pr-block-invalid`, `story-unreadable` and
-        `branch-exists` today. This **stops the loop**, which reports the
+        `push-failed`, `pr-block-invalid`, `story-unreadable`,
+        `branch-exists` and `not-ready` today. This **stops the loop**, which reports the
         story and its status. OQ-48 records nothing for such a stop (its AC-8
         needs a pull request), and in most of these cases `coder.mjs`'s
         clean-up leaves no branch on `origin`, or none at all. So nothing
@@ -53,7 +56,7 @@ before it, until nothing is ready.
       Tests: a story stopped after its pull request was opened is followed by
       the next story, and a story stopped before one exists stops the loop
       with no second coder session spawned.
-- [ ] **AC-4** — **A story already in flight is skipped, never dispatched
+- [ ] **AC-4** — **A story that is `in-progress` is skipped, never dispatched
       again.** The loop chooses the story itself and passes its id to OQ-48's
       entry point. It takes the first story `dispatchable()` returns whose
       `story/OQ-<n>-*` branch does not exist on `origin`. That is
@@ -74,7 +77,7 @@ before it, until nothing is ready.
 - **Running one story**: dispatch, CI, review, retries, bounds, landing, and
   recording a stop. That is OQ-48's.
 - **Ordering the queue.** `queue.mjs`, read from `origin/main` by `coder.mjs`
-  (OQ-78's AC-10). The loop only skips stories already in flight (AC-4).
+  (OQ-78's AC-10). The loop only skips stories that are `in-progress` (AC-4).
 - **Running stories in parallel.** Sequential is deliberate for now. Parallel
   dispatch needs a merge queue first (`docs/agent-workflow-design.md`, "Merge
   queue") and is OQ-66's.
@@ -89,9 +92,11 @@ before it, until nothing is ready.
 - Node, ESM, no new runtime dependencies.
 - **Keep the way open to running stories in parallel.** The loop keeps no
   state that spans stories other than its checkout, and AC-1 updates that
-  only while nothing is in flight. Whether a story is in flight is derived
-  from its branch (AC-4). So running several stories at once later changes
-  how many are started, not how any one of them is tracked.
+  only between stories. Whether a story is `in-progress` is derived from its
+  branch (AC-4), and is a different thing from the loop running it: a story
+  stopped with its pull request open stays `in-progress` indefinitely. So
+  running several stories at once later changes how many are started, not
+  how any one of them is tracked.
 
 ## Context
 
