@@ -40,14 +40,16 @@ me on the current version rather than a superseded copy of it.
       Authorities: OQ-48's AC-6 for the number of blocking verdicts, and OQ-80
       for applying the label (OQ-80 took over what were OQ-48's AC-6b and AC-6c
       on 2026-09-25), until each is implemented; after that, the code it names.
-      #143 brought `docs/agent-workflow-design.md` into line: it now points at
-      both rather than restating either. This AC holds every other copy to
-      AC-2. `REVIEW.md` ("What the workflow enforces", item 3) and OQ-80's
-      Constraints each carry a marked restatement of the number, and any other
-      statement of the bound, or of who applies the label, links or is marked.
-      Historical records are exempt, because they record what was true then:
-      `Completed-Questions.md`, `stories/done/`, OQ-48's Context, and the
-      migration plan's "Overtaken" note.
+      Every statement of the bound, or of who applies the label, links to its
+      authority or is marked as a restatement per AC-2. That includes
+      `docs/agent-workflow-design.md`, where #143 made the number point at OQ-48
+      but left the label restated: the "Failure paths" row "Still failing at the
+      bound" names `review-gate.yml` without OQ-80. A passage that names OQ-80 as
+      the story building it counts as a link. The marked restatements today are
+      `REVIEW.md` ("What the workflow enforces", item 3) and OQ-80's AC-1, which
+      OQ-80's Constraints mark. Historical records are exempt, because they
+      record what was true then: `Completed-Questions.md`, `stories/done/`,
+      OQ-48's Context, and the migration plan's "Overtaken" notes.
 - [ ] **AC-5** — **The circuit-breaker threshold and its exemptions.**
       Authority: `.github/workflows/land-approved.yml`. No document states the
       numeric threshold; each points at the workflow. A test asserts that, by
