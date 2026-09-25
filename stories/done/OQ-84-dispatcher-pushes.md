@@ -18,13 +18,13 @@ it was refused, without digging out a transcript.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — After a session that ended `completed`, `dispatchCoder` pushes
+- [x] **AC-1** — After a session that ended `completed`, `dispatchCoder` pushes
       the story branch itself, with exactly `git push origin <branch>`, never
       forced, when the branch has at least one commit beyond the base. It then
       opens the pull request as it does today. A test asserts the push's
       arguments, and that no forced push (`--force`, `-f`, `+<ref>`) can be
       constructed.
-- [ ] **AC-2** — The coder can no longer push. The five push patterns come out
+- [x] **AC-2** — The coder can no longer push. The five push patterns come out
       of `coderAllowedTools`, and `Bash(git push:*)` goes into
       `CODER_DISALLOWED_TOOLS` as a second barrier, as the reviewer already has.
       A test asserts that no `git push` pattern is allowed and that the blanket
@@ -32,7 +32,7 @@ it was refused, without digging out a transcript.
       "OQ-63/AC-5 - never denies git push outright". Its reason, that a blanket
       deny would shadow the scoped push patterns, is gone with the patterns, and
       the PR says so under item 9.
-- [ ] **AC-3** — What the session left decides the status, and nothing is
+- [x] **AC-3** — What the session left decides the status, and nothing is
       pushed in any of these cases:
       - `completed` with no commit beyond the base: `nothing-committed`
         (replacing `nothing-pushed`);
@@ -51,19 +51,19 @@ it was refused, without digging out a transcript.
       follows `CLAUDE.md` must not be stopped for leaving it. Tests cover each
       status, and the exception: a new baseline left untracked still pushes,
       while any other untracked file stops the push.
-- [ ] **AC-4** — The push is an exported function that the retry path uses too.
+- [x] **AC-4** — The push is an exported function that the retry path uses too.
       `invocation.mjs`'s retry block no longer tells the coder to push: today it
       says ``Push with exactly `git push origin <branch>` ``. It says to commit on
       the existing branch, and that the dispatcher pushes. A test asserts the
       assembled retry prompt contains no `git push`.
-- [ ] **AC-5** — Every result `dispatchCoder` returns after a session has run
+- [x] **AC-5** — Every result `dispatchCoder` returns after a session has run
       carries that session's output under one key: the report text, the cost,
       the number of turns, the commands it was refused, and the classification
       outcome. It is taken from the envelope `spawnSession` already returns as
       `output`. The CLI prints it as part of the JSON it already prints. Tests
       cover `opened`, `nothing-committed`, `uncommitted-changes`,
       `push-failed`, `session-failed`, and an invalid PR block.
-- [ ] **AC-6** — `coder.md` tells the coder to commit and not push. Its
+- [x] **AC-6** — `coder.md` tells the coder to commit and not push. Its
       allowlist block (the `git push` lines), its "Push your branch, then …"
       instruction, the draft reason "your push failed", and step 2 of "When you
       cannot proceed" change to match. The coder cannot write `.claude/prompts/`,
@@ -71,7 +71,7 @@ it was refused, without digging out a transcript.
       applied by the runner, as `coder.md` describes for any `.claude/prompts/`
       change. The coder leaves this AC unticked and says `ready` if everything
       else is done.
-- [ ] **AC-7** — Every `**Planned (…)**` marker in
+- [x] **AC-7** — Every `**Planned (…)**` marker in
       `docs/agent-workflow-design.md` that names OQ-84 is resolved as that
       document's "Reading this document" note says. Every other statement that
       the coder pushes, or needs to push, is updated to say the dispatcher
