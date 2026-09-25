@@ -275,7 +275,10 @@ than relaxed.
 
 ### Happy path
 
-1. Session A writes a story. Open questions empty.
+1. Session A writes a story, with Open questions empty, and opens it as a pull request from the
+   owner's account. The loop reviews it against `REVIEW.md`'s story-PR items and lands it (OQ-83).
+   Only a pull request from an account with write access can land (OQ-81), and a coder's own pull
+   request cannot change `stories/` beyond its own story (OQ-82).
 2. Dispatcher picks the highest-tier, lowest-id ready story; creates a worktree and the branch
    `story/OQ-49-import-player-info`.
 3. Coder implements, tests green, pushes its branch, and emits the PR title/body and a

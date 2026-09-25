@@ -103,9 +103,8 @@ follow it is the problem this story began with.
 - **Running stories in parallel.** Sequential is deliberate for now (AC-10).
   Parallel dispatch needs a merge queue first (`docs/agent-workflow-design.md`,
   "Merge queue") and is OQ-66's. The Constraints below keep the way open.
-- **Pull requests the loop did not open**, story-writing PRs among them.
-  Whether the loop should review and land those is being discussed with the
-  owner. File it separately if it is wanted.
+- **Pull requests the loop did not open**, story-writing PRs among them. OQ-83
+  adds those, for authors with write access only (OQ-81).
 - **The mechanics of spawning, rendering, or GitHub calls.** OQ-65, OQ-51,
   OQ-68.
 - **Changing the reviewer's calibration.** OQ-64.
