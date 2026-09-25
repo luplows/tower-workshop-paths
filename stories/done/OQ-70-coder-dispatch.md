@@ -16,53 +16,53 @@ costs a command rather than a sequence of steps I have to get right each time.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — One entry point takes the next dispatchable story from
+- [x] **AC-1** — One entry point takes the next dispatchable story from
       `queue.mjs`, creates its branch and a dedicated worktree, spawns the
       coder, and opens a pull request from the `## PR title` / `## PR body` /
       `draft`-or-`ready` block the coder emits. It calls `queue.mjs`,
       `spawn.mjs` (OQ-65, which builds the prompt through OQ-74's
       `invocation.mjs`) and `github.mjs`, and reimplements none of them.
-- [ ] **AC-2** — The branch is `story/OQ-<n>-<slug>` derived from the story
+- [x] **AC-2** — The branch is `story/OQ-<n>-<slug>` derived from the story
       filename, is created from the current `origin/main`, and **carries no
       upstream tracking `main`**. A branch created with `git branch <name>
       origin/main` tracks `origin/main`, which makes a bare `git push` on it aim
       at `main`. A test asserts no upstream is configured.
-- [ ] **AC-3** — The coder's environment and allowlist come from
+- [x] **AC-3** — The coder's environment and allowlist come from
       `coderEnv` and `coderAllowedTools(branch)`, never restated here, and a
       test asserts no credential variable survives into the spawned
       environment.
-- [ ] **AC-4** — A coder that pushed nothing does not get a pull request opened
+- [x] **AC-4** — A coder that pushed nothing does not get a pull request opened
       for it. The branch's existence on the remote is checked rather than
       assumed from a `completed` classification, because OQ-75's AC-2 makes
       those separate questions: a session can report failure having succeeded,
       and can report success having pushed nothing.
-- [ ] **AC-5** — A missing or malformed `## PR title` / `## PR body` block is a
+- [x] **AC-5** — A missing or malformed `## PR title` / `## PR body` block is a
       classified failure, and **no pull request is opened with an invented
       description**. `coder.md` requires that block as the last thing in the
       report; if it is absent the run is reported as such, leaving a pushed
       branch and no PR, which is a visible state someone can resolve.
-- [ ] **AC-6** — The `draft` or `ready` flag the coder emits is honoured
+- [x] **AC-6** — The `draft` or `ready` flag the coder emits is honoured
       exactly. `CLAUDE.md` is explicit that a non-draft PR which goes green will
       be landed whether or not another commit was intended, so defaulting this
       either way is unsafe. Absent, it is AC-5's malformed case.
-- [ ] **AC-7** — This module posts no commit status, and a test asserts it.
+- [x] **AC-7** — This module posts no commit status, and a test asserts it.
       `coder.md` promises the coder that its PR "gets a `review/agent` commit
       status, set pending the moment it opens", and that promise is already kept
       by `review-gate.yml`, which sets `pending` on the `pull_request` opened
       event. Opening the PR is therefore sufficient; posting `pending` from here
       as well would duplicate the workflow and race it, which is what OQ-51's
       hand-run did four times without noticing.
-- [ ] **AC-7b** — A coder that emits a diff for `.claude/prompts/` has that
+- [x] **AC-7b** — A coder that emits a diff for `.claude/prompts/` has that
       **reported, not applied**. The run finishes, the pull request opens, and the
       report says a prompt change is pending manual application, naming the
       emitted diff. A test asserts no code path in this module writes to
       `.claude/` or invokes `git apply`. See **Open questions**'s resolution in
       **Context** for why automating it was rejected.
-- [ ] **AC-8** — A `blocked:` frontmatter value written by the coder is
+- [x] **AC-8** — A `blocked:` frontmatter value written by the coder is
       detected, and the pull request is opened as a draft regardless of what the
       coder said. That is the escape route `coder.md` documents for a story it
       cannot settle, and draft is what keeps the sweep off it.
-- [ ] **AC-9** — The worktree is removed when the run finishes, and a test
+- [x] **AC-9** — The worktree is removed when the run finishes, and a test
       asserts it is removed on the failure paths too. A leaked worktree blocks
       the next run on the same story and is the kind of state that accumulates
       silently.
