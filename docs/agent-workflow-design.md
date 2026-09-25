@@ -296,7 +296,9 @@ than relaxed.
 2. Dispatcher picks the highest-tier, lowest-id ready story; creates a worktree and the branch
    `story/OQ-49-import-player-info`. **Planned (OQ-86):** the loop skips a ready story whose
    `story/OQ-<n>-*` branch already exists on `origin` (`stories/README.md`'s `in-progress`), so a
-   story it stopped, which still reads `ready` on `main`, is never dispatched again.
+   story stopped after its PR was opened, which still reads `ready` on `main`, is never dispatched
+   again. A story that stops before it has a PR stops the loop instead, since nothing on `origin`
+   would keep it from being dispatched again.
 3. Coder implements, tests green, commits, and emits the PR title/body and a
    draft-or-ready decision in its report. The dispatcher pushes the branch (`pushBranch` in
    `scripts/dispatch/coder.mjs`), so a model session has no write access to the remote, then opens
@@ -325,7 +327,7 @@ The majority of the interesting behaviour.
 | Story was wrong, not the code | `blocked:` set with the reason → Session A |
 | Coder hits ambiguity mid-story | `blocked:` + the specific question → Session A |
 | Branch stale | Rebase; if it fails, kick back rather than merge against a moved world |
-| Spawn died / timed out / hit budget | Dispatcher records it and moves on; the watchdog surfaces it |
+| Spawn died / timed out / hit budget | Dispatcher records it and moves on; the watchdog surfaces it. **Planned (OQ-86):** a coder dispatch that ends before a PR exists (a failed install or session, nothing committed, uncommitted changes, a failed push) stops the loop rather than moving on. Nothing records it on `origin`, so moving on would dispatch the same story again. |
 
 **The outlet valve must never prompt.** A spawned session that asks a question with nobody attached
 hangs — one observed instance sat blocked for eight minutes. Invocations pass

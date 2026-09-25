@@ -86,7 +86,7 @@ the runner, or a coder respawned with hand-written prose.
 ## Context
 
 Split out of OQ-48 on 2026-09-25, before dispatch, where these were AC-3,
-AC-4, AC-5 and AC-15. The owner split OQ-48 because it had grown to fifteen
+AC-4, AC-5 and AC-15. The owner split OQ-48 because it had grown to sixteen
 criteria. See OQ-48's Context for the bound this serves.
 
 What exists already:

@@ -92,9 +92,13 @@ queue this way, one story after another, is OQ-86's.
       carries the coder's own reason and gets no second commit. The commit is
       the run's record, not the coder's work, so OQ-84's AC-3 ("The
       dispatcher never commits on the coder's behalf") is not engaged. If the
-      push fails, the stop is still reported, with the push failure. Tests
-      cover each stop's commit, the draft case with no commit, and a failed
-      push.
+      push fails, the stop is still reported, with the push failure. A story
+      that stops before its pull request exists (the coder dispatch returned
+      anything other than `opened`) has nothing to record on: the run
+      reports the dispatch's status and records nothing, and OQ-86's AC-3
+      stops the loop for it. Tests cover each stop's commit, the draft case
+      with no commit, a failed push, and a stop before a pull request with no
+      commit.
 - [ ] **AC-9** — Every `**Planned (…)**` marker in
       `docs/agent-workflow-design.md` that names OQ-48 is resolved as that
       document's "Reading this document" note says.
@@ -245,8 +249,8 @@ runs one story at a time for now, built so that parallel dispatch can follow
   the runner's notes and the review of #149.
 
 **Split 2026-09-25, by the owner, before dispatch.** This story had grown to
-fifteen criteria. It keeps running one story to merged, with the bounds that
-belong to it. OQ-85 took the retry itself, and OQ-86 took running the queue.
+sixteen criteria (AC-1 to AC-15, and AC-6b). It keeps running one story to
+merged, with the bounds that belong to it. OQ-85 took the retry itself, and OQ-86 took running the queue.
 The criteria were renumbered, since the story had not been dispatched. Before
 the split the retry was AC-3, AC-4, AC-5 and AC-15, and the queue was AC-9,
 AC-10 and AC-12. Stories in `stories/done/` that cite those numbers (OQ-79's
