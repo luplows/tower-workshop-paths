@@ -3,7 +3,7 @@ id: OQ-69
 title: Review an open pull request end to end without a human in the middle
 tier: next
 kind: workflow
-depends_on: [OQ-65, OQ-68]
+depends_on: [OQ-65, OQ-68, OQ-77]
 model: sonnet
 blocked: null
 ---
