@@ -48,6 +48,11 @@ never land and that nothing reports.
       job's log, and a PR's commits. A test asserts that every write is
       refused before the network. `github.mjs`'s allowlist and its OQ-68/AC-3
       tests are unchanged.
+- [ ] **AC-6** — Every `**Planned (…)**` marker in
+      `docs/agent-workflow-design.md` that names OQ-79 is resolved as that
+      document's "Reading this document" note says. OQ-79 comes out of the
+      marker (the whole marker, if it names no other story), and the passage is
+      corrected wherever what was built differs from what it describes.
 
 ## Out of scope
 

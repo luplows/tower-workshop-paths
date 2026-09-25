@@ -52,6 +52,19 @@ but cannot be reviewed against.
       all. A story whose `Open questions` section holds only such a placeholder is
       therefore reported as `ready`, not `draft`. Both forms are covered by
       fixtures, and the equivalence is asserted for `Constraints` as well.
+- [ ] **AC-7** — The lint also reads `docs/*.md` and fails on a
+      `**Planned (OQ-n, …)**` marker that names a story whose file is in
+      `stories/done/`, or that names no existing story. Only numeric ids are
+      read, so the illustrative `OQ-n` in the design doc's note is ignored,
+      and a marker must sit on one line. Fixtures cover a marker naming an
+      open story (passes), a marker naming a done story (fails), and a marker
+      naming no story (fails). The convention is in
+      `docs/agent-workflow-design.md`, "Reading this document".
+- [ ] **AC-8** — Every `**Planned (…)**` marker in
+      `docs/agent-workflow-design.md` that names OQ-61 is resolved as that
+      document's "Reading this document" note says. OQ-61 comes out of the
+      marker (the whole marker, if it names no other story), and the passage is
+      corrected wherever what was built differs from what it describes.
 
 ## Out of scope
 

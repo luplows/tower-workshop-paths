@@ -93,6 +93,11 @@ follow it is the problem this story began with.
       until the queue has no ready story, then stops with `nothing-ready`. A
       test runs two stories and asserts the second's worktree base includes the
       first's merge.
+- [ ] **AC-11** — Every `**Planned (…)**` marker in
+      `docs/agent-workflow-design.md` that names OQ-48 is resolved as that
+      document's "Reading this document" note says. OQ-48 comes out of the
+      marker (the whole marker, if it names no other story), and the passage is
+      corrected wherever what was built differs from what it describes.
 
 ## Out of scope
 

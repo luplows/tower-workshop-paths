@@ -45,6 +45,11 @@ requests from anyone without write access are left alone.
       - a block, left with no coder spawned;
       - an outsider's PR, ignored;
       - a PR already carrying a verdict at its head, not reviewed again.
+- [ ] **AC-7** — Every `**Planned (…)**` marker in
+      `docs/agent-workflow-design.md` that names OQ-83 is resolved as that
+      document's "Reading this document" note says. OQ-83 comes out of the
+      marker (the whole marker, if it names no other story), and the passage is
+      corrected wherever what was built differs from what it describes.
 
 ## Out of scope
 
