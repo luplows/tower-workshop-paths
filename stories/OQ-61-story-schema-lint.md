@@ -38,9 +38,14 @@ but cannot be reviewed against.
       `Constraints`, `Context`, `Open questions` must be present as level-2
       headings. Rejection names every missing heading, not just the first.
 - [ ] **AC-5** — Every acceptance criterion is a task-list item carrying
-      `**AC-N**`. The set of N across a story is `1..n` with no gap and no
-      duplicate, and `n >= 1`. A story with an `AC-3` but no `AC-2`, or with two
-      `AC-1`s, or with an empty `Acceptance criteria` section, is rejected.
+      `**AC-N**`, or `**AC-Nx**` with one lowercase letter (an AC inserted after
+      dispatch-stable ids were set, such as `AC-6b`). The set of N across a
+      story is `1..n` with no gap and no duplicate, and `n >= 1`. A suffixed id
+      needs its base `AC-N` in the same story, and is itself unique. A story with
+      an `AC-3` but no `AC-2`, or with two `AC-1`s, or with an `AC-4b` but no
+      `AC-4`, or with an empty `Acceptance criteria` section, is rejected.
+      `stories/done/` already uses suffixes (OQ-68's `AC-3b`, OQ-69's `AC-6b`,
+      OQ-70's `AC-7b`), and they pass.
 - [ ] **AC-6** — A section whose only content is an italic parenthetical —
       `*(none)*`, `*(must be empty to dispatch)*`, or any `*(...)*` alone on its
       line — is treated as **empty**, identically to a section with no content at

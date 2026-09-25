@@ -3,24 +3,36 @@ id: OQ-48
 title: Close the loop, and enforce the retry bound with something other than an agent remembering
 tier: next
 kind: workflow
-depends_on: [OQ-69, OQ-70]
+depends_on: [OQ-50, OQ-69, OQ-70, OQ-78, OQ-79]
 model: sonnet
 blocked: null
 ---
 
 ## Intent
 
-As someone relying on the circuit breaker, I want the loop to run a story from
-dispatch to a recorded verdict and retry it under a bound that is enforced
-mechanically, so that the breaker counts a real signal rather than one applied
-when somebody happens to follow the rule.
+As the owner, I want to add ready stories to `stories/` and have one loop run
+each of them to completion: dispatched from the latest `origin/main`, retried
+on a blocking review or a red CI under a bound that is enforced mechanically,
+and landed once it passes. A bound that holds only when somebody remembers to
+follow it is the problem this story began with.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — One entry point runs the loop for one story: dispatch the coder
-      (OQ-70), review the resulting pull request (OQ-69), and on a `block`
-      verdict retry the coder on the same branch with the findings, up to the
-      bound in AC-6. It composes those two modules and reimplements neither.
+- [ ] **AC-1** — One entry point runs the loop for one story, in this order:
+      1. dispatch the coder (OQ-70);
+      2. wait for CI on the head (OQ-79). If it is red, retry the coder with
+         OQ-79's findings;
+      3. if it is green, review the pull request (OQ-69). On a `block`
+         verdict, retry the coder with the reviewer's findings;
+      4. on a pass, land it (OQ-50).
+
+      Both retries are bounded (AC-6, AC-6b). CI comes before review so that no
+      review is spent on a head that cannot land. A pull request the coder
+      opened as a draft stops the story and is reported: the coder stopped
+      short and has said why. If a retry replaces the PR body without pushing a
+      commit, as for a block on the description alone, the re-review uses
+      OQ-78's re-review option. The loop composes those modules and
+      reimplements none of them.
 - [ ] **AC-2** — **The round count is derived, never stored**: it is the number
       of blocking verdict markers already on the pull request, read through
       `github.mjs`. A test asserts the bound still holds when the loop is
@@ -28,7 +40,8 @@ when somebody happens to follow the rule.
       when a process dies is not a bound. This is what the migration plan
       settled and it answers the first of this story's original open questions.
 - [ ] **AC-3** — A retry happens on the **existing branch and pull request**,
-      as a new commit, and never opens a second PR. `CLAUDE.md` requires that in
+      as new commits (or only a new PR body, for a block on the description
+      alone), and never opens a second PR. `CLAUDE.md` requires that in
       as many words. A test asserts no PR-creation request is constructed on a
       retry path.
 - [ ] **AC-4** — The retry prompt carries the findings as a **bounded injected
@@ -45,37 +58,53 @@ when somebody happens to follow the rule.
       loop sets `blocked:` on the story file with a reason naming the unresolved
       findings, and stops. It **does not write the `review-blocked` label**, and a
       test asserts no label-write request is constructible from this module —
-      AC-6b puts that in the workflow instead. The loop *reads* the label, so a
-      pull request already carrying one is not retried.
-- [ ] **AC-6b** — `.github/workflows/review-gate.yml` counts the blocking verdict
-      markers on a pull request and applies `review-blocked` once there are three.
-      This is where the rule lives, because the workflow sees **every** pull
-      request — including ones no dispatcher ran, which is OQ-48's original
-      complaint: the label is applied only when somebody remembers, so the
-      breaker counts a signal nothing reliably produces. Applying it here also
-      means the bound survives a dispatcher that dies mid-story. The workflow's
-      `permissions:` widens from `pull-requests: read` to `write` for this, which
-      is the cost and should be stated in the workflow's own comment.
-- [ ] **AC-6c** — The label is applied **once** and is never removed by anything
-      automated. Removing it is a deliberate human act meaning "I have seen the
-      cost, proceed" — so a fourth round dispatched by hand still works, and the
-      pull request stays out of the sweep until someone decides otherwise. A test
-      asserts the workflow does not remove the label and does not re-apply it to a
-      pull request that already carries it.
-- [ ] **AC-7** — The loop never triggers `land-approved.yml`, and a test asserts
-      no workflow-dispatch request is constructible from this module. A loop that
-      could land its own output is the failure `CLAUDE.md` names explicitly.
-- [ ] **AC-8** — A `pass` or `pass-with-observations` verdict ends the loop
-      successfully with the gate set to `success` and the PR left for the sweep.
+      OQ-80 puts that in `review-gate.yml` instead. The loop *reads* the label,
+      so a pull request already carrying one is not retried.
+- [ ] **AC-6b** — A red CI is retried like a blocking review, and is bounded
+      separately at **three** red CI rounds. The count is derived by OQ-79's
+      AC-4 and never stored, so AC-2's restart test covers it too. When the
+      bound is reached the loop sets `blocked:` on the story with a reason
+      naming the failing jobs, and stops. It applies no label: `review-blocked`
+      means the review bound (OQ-80), and the workflow that applies it does not
+      see CI rounds.
+- [ ] **AC-7** — The loop never merges and never dispatches a workflow itself.
+      It lands a pull request only by calling OQ-50's `land.mjs`, which is the
+      only module allowed to trigger `land-approved.yml`. A test asserts that no
+      merge request and no workflow-dispatch request can be built from the
+      loop's own module. Every safety check on landing stays in the sweep.
+- [ ] **AC-8** — A `pass` or `pass-with-observations` verdict hands the pull
+      request to `land.mjs`. The story is finished when that reports it merged.
       Observations are recorded and are **not** retried — `REVIEW.md` is clear
       that the middle verdict exists precisely for findings deliberately not
-      blocked on.
+      blocked on. Any other `land.mjs` result stops the story and is reported
+      with its reason.
+- [ ] **AC-9** — Each story is dispatched from the latest `origin/main`,
+      including the loop's own code, prompts and queue. Before starting a
+      story, and only while no story is in flight, the loop fetches and
+      fast-forwards its own checkout to `origin/main`
+      (`git merge --ff-only`). If that is not a fast-forward (a local edit or a
+      diverged branch), the loop stops with its own status and dispatches
+      nothing. It never updates mid-story, so every round of one story runs
+      the same dispatcher code. Tests cover a fast-forward, a refusal, and no
+      update between rounds.
+- [ ] **AC-10** — Stories run one at a time. The next story starts only after
+      the previous one is merged or stopped, so every story starts from a
+      `main` that includes everything the loop landed before it. The loop runs
+      until the queue has no ready story, then stops with `nothing-ready`. A
+      test runs two stories and asserts the second's worktree base includes the
+      first's merge.
 
 ## Out of scope
 
-- **Triggering the landing sweep.** AC-7 makes this a tested prohibition rather
-  than an omission.
-- **Choosing the story.** `queue.mjs`.
+- **Merging, or triggering the sweep other than through `land.mjs`.** AC-7 makes
+  this a tested prohibition rather than an omission.
+- **Choosing the story.** `queue.mjs`, read from `origin/main` by `coder.mjs`
+  (OQ-78's AC-10).
+- **Running stories in parallel.** Sequential is deliberate for now (AC-10).
+  Parallel dispatch needs a merge queue first (`docs/agent-workflow-design.md`,
+  "Merge queue") and is OQ-66's. The Constraints below keep the way open.
+- **Pull requests the loop did not open**, story-writing PRs among them. OQ-83
+  adds those, for authors with write access only (OQ-81).
 - **The mechanics of spawning, rendering, or GitHub calls.** OQ-65, OQ-51,
   OQ-68.
 - **Changing the reviewer's calibration.** OQ-64.
@@ -84,6 +113,12 @@ when somebody happens to follow the rule.
 ## Constraints
 
 - Node, ESM, no new runtime dependencies.
+- **Keep the way open to running stories in parallel.** Everything the loop
+  knows about a story's progress is derived from that story's own branch and
+  pull request (AC-2, AC-6b). The loop keeps no state that spans stories other
+  than its checkout, and AC-9 updates that only while nothing is in flight. So
+  running several stories at once later changes how many are started, not
+  how any one of them is tracked.
 - The `review-blocked` label string and the `review/agent` context must stay
   exactly as they are; `land-approved.yml` and the `SessionStart` hook both read
   them.
@@ -176,6 +211,16 @@ Three further things that hand-run established, all feeding the ACs above:
    chose the rewrite. A loop that only ever relays findings verbatim would have
    got a fourth point-fix.
 
+**Decided 2026-09-25, by the owner.** The loop's job is to take any ready story
+to merged without anyone in between. So it lands (AC-7, AC-8, through OQ-50's
+trigger rather than by merging), retries a red CI (AC-6b, reading it through
+OQ-79), and dispatches every story from the latest `origin/main` (AC-9,
+AC-10). It runs one story at a time for now, built so that parallel dispatch
+can follow (Constraints). AC-9 came out of #142's review. `coder.mjs` read its
+queue from a possibly stale local checkout, and the queue is only one of the
+things the loop's own checkout supplies: prompts, `render.mjs` and the dispatch
+modules come from it too, and each landing leaves it further behind.
+
 - `docs/migration-plan.md`, "Order within Phase 1" step 6 and the Phase 1 exit
   criteria — this story's scope, and the restart test AC-2 implements
 - `REVIEW.md`, "The three verdicts" — AC-8
@@ -199,7 +244,7 @@ than here:
   "rounds that find nothing new" variant was set aside for want of a
   machine-applicable definition of "new"; a spend ceiling is a plausible second
   limit, not the primary one.
-- **Where the labelling lives.** `review-gate.yml` — AC-6b — because it sees every
+- **Where the labelling lives.** `review-gate.yml` — split out on 2026-09-25 as OQ-80 — because it sees every
   pull request including ones no dispatcher ran, which is what the original
   complaint was about. This module only reads the label (AC-6), so exactly one
   place knows the rule.
