@@ -58,10 +58,25 @@ function with a known contract rather than a command line retyped per round.
       compare or interpret them: the round count belongs to the loop (OQ-48),
       and keeping the parse here is what lets the count be tested against
       fixtures.
-- [x] **AC-6** — A malformed or absent marker is reported as such rather than
-      skipped or defaulted, matching how `queue.mjs` treats malformed
-      frontmatter. A comment with two markers, or a marker whose verdict is
-      unrecognised, is a classified result and not silently the last one.
+- [ ] **AC-6** — A comment's verdict is read by the gate's own rule, so the
+      module never reports a verdict the gate did not apply or withholds one it
+      did. A marker counts only if it is **well-formed** by the pattern
+      `review-gate.yml` greps for, line by line: on one line, a full
+      40-character hex head, and a verdict of `pass`, `pass-with-observations`,
+      `block` or `fail`. When a comment carries more than one well-formed
+      marker, **the last one wins**, as `REVIEW.md` states. Marker-like text
+      that is not well-formed is reported alongside, never skipped silently,
+      but it neither prevents nor replaces the verdict of a well-formed marker.
+      A comment with no well-formed marker has no verdict. It is reported as
+      malformed if it holds marker-like text, and as absent otherwise. A test
+      covers a comment that quotes a malformed marker before a real one, and
+      asserts the real one's verdict.
+      *(Revised 2026-09-24 by the owner, during #133's review. It previously
+      read: "A comment with two markers, or a marker whose verdict is
+      unrecognised, is a classified result and not silently the last one."
+      Round 2's parser followed that literally, and reported no verdict for a
+      real review comment on #133 that the gate had passed. Unticked by the
+      runner until delivered.)*
 - [x] **AC-7** — No function in this module spawns a session, renders a prompt,
       reads a story, or decides anything about the loop's progress, and a test
       asserts the module surface. `spawn.mjs`, `invocation.mjs` and
