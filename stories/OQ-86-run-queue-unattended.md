@@ -75,12 +75,19 @@ before it, until nothing is ready.
       branch. Without this, a story OQ-48 stopped still reads `ready` on
       `main`, `coder.mjs` returns `branch-exists` for it when called without
       an id, and the loop halts or re-picks it rather than reaching AC-2's
-      `nothing-ready`. A story whose run was interrupted (the loop's process
-      was killed) is `in-progress` too, and is skipped. The loop never resumes
-      a story; resuming one is OQ-48's AC-9, run by the owner. Tests: a ready
-      story with a branch on `origin` is skipped and the next ready story is
-      dispatched, and a queue whose only ready stories all have branches stops
-      with `nothing-ready`.
+      `nothing-ready`. A story whose run was interrupted (its process was
+      killed) after its first push is `in-progress` too, and is skipped.
+      Killed before that push, it has no branch on `origin`, so a restarted
+      loop picks it again. `dispatchCoder` creates the local branch before
+      the install or the session, and the killed run's clean-up never ran, so
+      that branch is still there, and `dispatchCoder` returns `branch-exists`
+      for it, which stops the loop (AC-3). A run killed before it created the
+      branch had spent nothing, and is dispatched again as new. The loop never resumes a story;
+      resuming one is OQ-48's AC-9, run by the owner. Tests: a ready story
+      with a branch on `origin` is skipped and the next ready story is
+      dispatched; a queue whose only ready stories all have branches stops
+      with `nothing-ready`; and a ready story with only a local branch stops
+      the loop with `branch-exists`.
 - [ ] **AC-5** — Every `**Planned (…)**` marker in
       `docs/agent-workflow-design.md` that names OQ-86 is resolved as that
       document's "Reading this document" note says.
@@ -147,6 +154,10 @@ draft). Second, AC-2 runs each story in its own process. As first written,
 AC-1 promised the loop's own code was current, but a Node process keeps the
 modules it has already loaded. `coder.mjs` reads its prompt from disk on each
 dispatch, so prompts would have updated while code would not.
+
+The fourth review of #151 found that AC-4 overstated the interrupted case. A
+story killed before its first push has no branch on `origin`, so it is picked
+again, and the loop stops on `branch-exists` rather than skipping it.
 
 ## Open questions
 

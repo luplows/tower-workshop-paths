@@ -37,9 +37,15 @@ GraphQL call and no other.
       - any GraphQL query;
       - the allowed mutation with an extra variable or an extra body key;
       - the allowed mutation sent to any other URL.
-- [ ] **AC-3** — Nothing else in `github.mjs` changes. Its other allowlist
-      entries, the OQ-68/AC-3 test and the tests for the workflow-dispatch
-      prohibition are unchanged, and pass. The new tests are additions.
+- [ ] **AC-3** — Nothing else in `github.mjs`'s behaviour changes. AC-1 and
+      AC-2 need three changes to existing code, and are allowed them:
+      `parsePullRequestState` (or a parser of the new function's own) keeps
+      the pull request's `node_id`; `assertAllowedRequest`, which today
+      refuses any URL outside `repoPath(repo)`, admits the one GraphQL URL for
+      AC-2's request only; and the module's header comment lists the new
+      operation. Its other allowlist entries, the OQ-68/AC-3 test and the
+      tests for the workflow-dispatch prohibition are unchanged, and pass. The
+      new tests are additions.
 - [ ] **AC-4** — Every `**Planned (…)**` marker in
       `docs/agent-workflow-design.md` that names OQ-87 is resolved as that
       document's "Reading this document" note says.
@@ -83,6 +89,11 @@ docs.github.com on 2026-09-25).
 This is split from OQ-48 because it is the first GraphQL request on
 `github.mjs`'s allowlist, and a change to that allowlist deserves a review of
 its own. It depends on nothing unbuilt, so it can be built alongside OQ-85.
+
+The runner's notes on the fourth review of #151 found that AC-3, as first
+written ("Nothing else in `github.mjs` changes"), forbade the changes to
+`parsePullRequestState` and `assertAllowedRequest` that AC-1 and AC-2 need.
+AC-3 now names them.
 
 ## Open questions
 

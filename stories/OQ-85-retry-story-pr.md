@@ -34,22 +34,30 @@ the runner, or a coder respawned with hand-written prose.
       before spawning anything, each with a status of its own. A retry that
       pushed a commit and replaced the body is `retried`.
 - [ ] **AC-2** — **Only `retried` and `body-replaced` mean the retry
-      completed.** A retry that emits a valid PR block but pushes no commit is
-      `body-replaced`: the body is replaced, and no commit was pushed. That is
-      the answer to a block on the description alone. The body is replaced
-      only when the push succeeded or there was nothing to push. Every other
-      result is a status that means the retry did not complete:
+      completed.** A retry that emits a valid PR block, makes no commit and
+      leaves the worktree clean is `body-replaced`: the body is replaced, and
+      no commit was pushed. That is the answer to a block on the description
+      alone. The body is replaced only when the push succeeded or there was
+      nothing to push, meaning no commit and no uncommitted change. Every
+      other result is a status that means the retry did not complete:
       - AC-1's refusals;
       - `install-failed` and `session-failed`;
-      - `nothing-committed` (no commit and no valid PR block);
+      - `nothing-committed` (no commit, a clean worktree, and no valid PR
+        block);
       - `uncommitted-changes` and `push-failed`, as OQ-84 defines them;
+      - `uncommitted-changes` also for no commit with uncommitted changes,
+        whether or not the PR block is valid. `pushBranch` reports that case
+        as `nothing-committed` with the changes in `paths` (its "No commit
+        wins over uncommitted changes"), so the retry names the paths, which
+        are the only record of that work once the worktree is removed;
       - `pr-block-invalid` (with or without a pushed commit, and the body left
         as it was);
       - `replace-failed` (the commit was pushed, and replacing the body
         failed).
 
       Tests cover `retried`, `body-replaced`, `nothing-committed`,
-      `pr-block-invalid` after a push, and `replace-failed`.
+      `uncommitted-changes` with no commit and a valid PR block (the body is
+      not replaced), `pr-block-invalid` after a push, and `replace-failed`.
 - [ ] **AC-3** — The retry prompt carries the findings as a **bounded injected
       block**, with the same guarantee `{{STORY}}` and `{{PR_BODY}}` get. A test
       through this entry point uses a findings fixture that quotes marker
@@ -150,6 +158,11 @@ AC-2, and AC-6's reporting of `blocked:` and draft on every completed
 session, came from the third review of #151. OQ-48 continues only on
 `retried` or `body-replaced` with neither reported, and stops on everything
 else.
+
+The fourth review of #151 found AC-2 ambiguous for a retry that makes no
+commit but leaves uncommitted changes. Read literally, it would have replaced
+the body and lost the work with the worktree. That case is now
+`uncommitted-changes`.
 
 ## Open questions
 

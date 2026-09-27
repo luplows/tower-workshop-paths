@@ -35,8 +35,11 @@ queue this way, one story after another, is OQ-86's.
       nothing else.** A result continues only where this list says so. Every
       other result stops the story, including a status a module adds later.
       - **Coder dispatch:** `opened`, not a draft, continues to CI. `opened`
-        as a draft stops the story: the coder set `blocked:` and said why. Any
-        other status stops the story before its pull request exists (AC-8).
+        as a draft stops the story. The coder asked for the draft, which
+        `coder.md` ("Open as") allows when it set `blocked:`, could not
+        commit its work, or left work undone. So `blocked:` may not be set:
+        AC-8 records it then. Any other status stops the story before its pull
+        request exists (AC-8).
       - **CI:** `green` continues to review. `red` whose run concluded
         `failure` continues to a CI retry, unless AC-4's bound is reached.
         Anything else stops (AC-5).
@@ -318,6 +321,10 @@ every result of every step then found more of the same kind. So:
   test possible, since a first dispatch returns `branch-exists` once the
   branch exists.
 - AC-6 defines the round numbers a retry is given.
+
+**Corrected 2026-09-27 after the fourth review of #151.** AC-2 had said a
+first-dispatch draft means the coder set `blocked:`. `coder.md` also allows a
+draft for work not committed or left undone, so AC-8 records `blocked:` then.
 
 ## Open questions
 
