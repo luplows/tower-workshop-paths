@@ -290,7 +290,7 @@ than relaxed.
 
 1. Session A writes a story, with Open questions empty, and opens it as a pull request from the
    owner's account. Today it is reviewed on request, and the owner, or the dispatcher session
-   running `land.mjs` with the owner's go-ahead, triggers the sweep.
+   running `land.mjs`, triggers the sweep.
    **Planned (OQ-83):** the loop reviews it against `REVIEW.md`'s story-PR items and lands it.
    **Planned (OQ-81, OQ-82):** only a pull request from an account with write access can land, and
    a coder's own pull request cannot change `stories/` beyond its own story.
