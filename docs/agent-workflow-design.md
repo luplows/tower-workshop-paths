@@ -432,7 +432,8 @@ Why this is safe enough:
 - **The sweep lands the oldest landable pull request**, not the one `land.mjs` was run for
   (`land-approved.yml`, "One PR per run, oldest first"). So before running it, the session checks
   that no older open pull request is landable that it may not land, such as one waiting for the
-  owner's go-ahead.
+  owner's go-ahead. **Planned (OQ-93):** `land.mjs` names its pull request to the sweep, which then
+  considers only that one, and this check goes.
 
 The owner can require a go-ahead before the session lands particular pull requests, for example
 ones that change `CLAUDE.md`, `REVIEW.md`, `.github/`, `.claude/` or this document. That is an
