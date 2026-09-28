@@ -20,7 +20,7 @@ the owner is holding back.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — `land-approved.yml`'s `workflow_dispatch` takes an optional
+- [x] **AC-1** — `land-approved.yml`'s `workflow_dispatch` takes an optional
       string input, `pr`. **Given** a number, the sweep considers only that
       pull request:
       - If it is not open, is a draft, or does not target `main`, the run
@@ -36,7 +36,7 @@ the owner is holding back.
       as today: the oldest landable non-draft pull request against `main`,
       one per run. That is the owner's `gh workflow run land-approved.yml`,
       and the form the `land.mjs` on `main` sends until this story lands.
-- [ ] **AC-2** — Choosing the candidates moves out of the workflow's shell
+- [x] **AC-2** — Choosing the candidates moves out of the workflow's shell
       into a module, `scripts/land/select-candidates.mjs`. The workflow
       calls it, as it calls `delete-merged-heads.mjs` (OQ-52). It takes the
       open pull requests as the sweep lists them (created, ascending) and
@@ -49,12 +49,12 @@ the owner is holding back.
       - a named pull request that is a draft, targets another base, or is not
         in the list: no candidates;
       - invalid values `0`, `-1`, `7 8`, `7;x` and `07`: each is refused.
-- [ ] **AC-3** — The input reaches the module only through `env:`. No `run:`
+- [x] **AC-3** — The input reaches the module only through `env:`. No `run:`
       block in `land-approved.yml` contains `${{ inputs.` or
       `${{ github.event.inputs.`. A test reads the workflow and asserts both
       that and that the landing step runs `select-candidates.mjs`, as
       `delete-merged-heads.test.mjs` reads the workflow for OQ-52.
-- [ ] **AC-4** — `land.mjs` names its pull request on every trigger.
+- [x] **AC-4** — `land.mjs` names its pull request on every trigger.
       `buildDispatchSweep(repo, number)` builds
       `{ ref: 'main', inputs: { pr: '<number>' } }`, and `landPullRequest`
       passes its own `number`. `assertAllowedRequest` admits the dispatch
@@ -75,7 +75,7 @@ the owner is holding back.
       write, before the network" may gain entries for the new refusals. This
       criterion authorises those changes and no others to OQ-50's tests; each
       test still asserts what it asserted before.
-- [ ] **AC-5** — The documents say what was built:
+- [x] **AC-5** — The documents say what was built:
       - Every `**Planned (…)**` marker in `docs/agent-workflow-design.md`
         that names OQ-93 is resolved as that document's "Reading this
         document" note says.
