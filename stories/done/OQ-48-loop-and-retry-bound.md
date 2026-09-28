@@ -18,7 +18,7 @@ queue this way, one story after another, is OQ-86's.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — One entry point runs one story, named by its id, in this
+- [x] **AC-1** — One entry point runs one story, named by its id, in this
       order:
       1. dispatch the coder (OQ-70);
       2. wait for CI on the head (OQ-79);
@@ -31,7 +31,7 @@ queue this way, one story after another, is OQ-86's.
       a head that cannot land. This story composes those modules and
       reimplements none of them. It is runnable by hand for one story id, and
       resumes an existing pull request as AC-9 says.
-- [ ] **AC-2** — **Every result either continues the run or stops the story;
+- [x] **AC-2** — **Every result either continues the run or stops the story;
       nothing else.** A result continues only where this list says so. Every
       other result stops the story, including a status a module adds later.
       - **Coder dispatch:** `opened`, not a draft, continues to CI. `opened`
@@ -63,7 +63,7 @@ queue this way, one story after another, is OQ-86's.
 
       A table-driven test covers each named result and, for each step, a
       status it does not name.
-- [ ] **AC-3** — **The review bound is three blocking verdicts, and the count
+- [x] **AC-3** — **The review bound is three blocking verdicts, and the count
       is derived, never stored.** The count is the number of blocking verdict
       markers on the pull request whose authors' association is in
       `review.mjs`'s `HONOURED_ASSOCIATIONS` (the gate's set, OQ-78's AC-3),
@@ -75,14 +75,14 @@ queue this way, one story after another, is OQ-86's.
       one is not retried. A test kills the run after a block and resumes it
       (AC-9) with no memory of earlier rounds, and asserts the bound still
       holds: a bound that resets when a process dies is not a bound.
-- [ ] **AC-4** — A red CI whose run concluded `failure` is retried like a
+- [x] **AC-4** — A red CI whose run concluded `failure` is retried like a
       blocking review, and is bounded separately at **three** red CI rounds.
       The count is derived by OQ-79's AC-4, which counts exactly those runs,
       and never stored, so AC-3's restart test covers it too. At the bound
       the run stops the story (AC-8) with a reason naming the failing jobs.
       It applies no label: `review-blocked` means the review bound (OQ-80),
       and the workflow that applies it does not see CI rounds.
-- [ ] **AC-5** — **Only a `failure` is retried.** A red CI run whose
+- [x] **AC-5** — **Only a `failure` is retried.** A red CI run whose
       conclusion is anything other than `failure` (`cancelled`, `timed_out`,
       or any other), and OQ-79's `timed-out` result (the run did not finish
       within `CI_WAIT_TIMEOUT_MS`), stop the story with a status of their
@@ -92,12 +92,12 @@ queue this way, one story after another, is OQ-86's.
       and `findings`, and names the conclusion only inside the findings
       text. A test covers each: a `failure` is retried, while `cancelled`,
       `timed_out` and `timed-out` each stop without a retry.
-- [ ] **AC-6** — **The round numbers a retry is given are derived the same
+- [x] **AC-6** — **The round numbers a retry is given are derived the same
       way.** A review retry's round is the review count (AC-3) plus one, and
       a CI retry's is the red CI count (AC-4) plus one. Rounds remaining is
       three minus that round. A test asserts what OQ-85 is passed on rounds 2
       and 3 of each kind.
-- [ ] **AC-7** — The run never merges and never dispatches a workflow itself.
+- [x] **AC-7** — The run never merges and never dispatches a workflow itself.
       It lands a pull request only by calling OQ-50's `land.mjs`, which is the
       only module allowed to trigger `land-approved.yml`. A test asserts that no
       merge request and no workflow-dispatch request can be built from this
@@ -105,7 +105,7 @@ queue this way, one story after another, is OQ-86's.
       Observations on a passing verdict are recorded and **not** retried —
       `REVIEW.md` is clear that the middle verdict exists precisely for
       findings deliberately not blocked on.
-- [ ] **AC-8** — **How a stop is recorded.** When the run stops a story whose
+- [x] **AC-8** — **How a stop is recorded.** When the run stops a story whose
       pull request exists, it does these, in this order:
       1. **Makes the pull request a draft**, through OQ-87, unless it already
          is one. That comes first, so nothing can land the story while the
@@ -130,7 +130,7 @@ queue this way, one story after another, is OQ-86's.
       commits, a stop where the coder's `blocked:` is already on the branch
       (draft, no commit), a pull request already a draft, a failed conversion,
       a failed push, and a stop before a pull request.
-- [ ] **AC-9** — **Resuming.** Given the number of the story's open pull
+- [x] **AC-9** — **Resuming.** Given the number of the story's open pull
       request, the entry point resumes it instead of dispatching the coder.
       It first checks that the pull request is open and that its head branch
       is the story's, and stops with its own status otherwise. If the pull
@@ -143,7 +143,7 @@ queue this way, one story after another, is OQ-86's.
       stopped story be resumed: the deliberate act that says the cost has been
       seen. The run never does either. Tests cover resuming at each of those
       points, a draft, and `blocked:` at the head.
-- [ ] **AC-10** — Every `**Planned (…)**` marker in
+- [x] **AC-10** — Every `**Planned (…)**` marker in
       `docs/agent-workflow-design.md` that names OQ-48 is resolved as that
       document's "Reading this document" note says.
 
