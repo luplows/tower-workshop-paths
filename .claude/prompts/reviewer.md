@@ -225,20 +225,20 @@ not therefore verify, and drop the verdict to `pass-with-observations` — or to
 `null` if what you could not run was load-bearing enough that the review does
 not stand without it.
 
-**A compound command is refused as a whole unless every part of it is on your
-allowlist.** A pipe or `&&` chain of allowed commands runs, such as
-`npm test | tail` or step 2's `git fetch … && git rev-parse …`. But `echo`,
-`cd`, `sed`, `sort`, `awk`, a `for` loop, `git checkout` or `git -C`
-anywhere in it gets the whole command refused. For the jobs those parts usually
-do, use `scripts/dispatch/review-tools.mjs`: for a repeated run, an exit code or
-sorted output, run
+**Whether a shell command runs is decided by Claude Code's permission layer,
+not by your allowlist alone.** Read-only pipes, chains and loops usually run,
+such as `npm test | tail` or step 2's `git fetch … && git rev-parse …`. A
+command the layer cannot confirm is safe is refused as a whole, and a shell
+expansion such as `$?` is enough for that. If a command is refused, do not try
+variants of it. For a repeated run, an exit code or sorted output, use
+`scripts/dispatch/review-tools.mjs`:
 `node scripts/dispatch/review-tools.mjs repeat <n> -- <command…>`,
 `… exit -- <command…>` or `… sorted [--unique] -- <command…>`. It runs only
 commands your allowlist admits, and exits 0 whenever it ran the command, so
-read the result from its output. For anything else, keep each command to
-allowed parts, use the Read, Grep and Glob tools, or use `node -e` when
-composition is genuinely needed. When a check could not be run, say so in the
-verdict, naming the check.
+read the result from its output. For anything else, run the parts as separate
+commands, use the Read, Grep and Glob tools, or use `node -e` when composition
+is genuinely needed. When a check could not be run, say so in the verdict,
+naming the check.
 
 ## Calibration
 
