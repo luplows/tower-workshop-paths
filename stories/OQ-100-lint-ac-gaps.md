@@ -24,26 +24,32 @@ the function behind it.
       AC-5 requires the ids to run `1..n`, and the gap check today starts at
       1, so nothing rejects 0. A test lints a story with `AC-0`, `AC-1` and
       `AC-2` and asserts one blocking `AC-5` violation, on the `AC-0` line.
-- [ ] **AC-2** — In the `Acceptance criteria` section, a list item at the
-      start of a line that begins with `*` or `+` is a blocking `AC-5`
-      violation, the same as a malformed `-` item is today. Indented lines,
-      such as an AC's continuation lines and nested sub-bullets, are still
-      not checked as items. Tests cover:
+- [ ] **AC-2** — In the `Acceptance criteria` section, a list item marked
+      with `*` or `+` is a blocking `AC-5` violation, the same as a malformed
+      `-` item is today. A list item here is a line that starts, at its
+      first character, with `*` or `+` followed by a space. A line such as
+      `*Barebones: to be refined in a planning session.*`, where the `*`
+      opens italic text, is not a list item and stays unchecked. So do
+      indented lines, such as an AC's continuation lines and nested
+      sub-bullets. Tests cover:
       - a story whose last AC is written `* [ ] **AC-2** — …` fails, on that
         line;
       - the same with `+`;
-      - `lintAll` over the repository still reports no blocking violation,
-        so indented `-` sub-bullets such as OQ-99's are unaffected.
+      - a story whose section holds an italic line starting with `*` and no
+        space, beside well-formed ACs, has no `AC-5` violation;
+      - `lintAll` over the repository still reports no blocking violation.
+        That covers the four italic lines named in Context and indented `-`
+        sub-bullets such as OQ-99's.
 - [ ] **AC-3** — A test runs `node scripts/lint-stories.mjs` as a child
       process, by the script's absolute path, with its working directory set
       to a temporary fixture root, and asserts:
       - with a story that has a blocking violation: exit code 1, and stderr
         has a line of the form `stories/<file>:<line>: <rule> <message>` for
         that violation;
-      - with a clean story, and with only a non-blocking violation: exit code
-        0;
-      - a run that prints nothing at all fails the test, so a script that
-        silently does nothing cannot pass.
+      - with a clean story: exit code 0;
+      - with only a non-blocking violation: exit code 0, and stderr has that
+        violation's line. So a script that silently does nothing cannot pass
+        either case that expects output.
 
 ## Out of scope
 
@@ -76,6 +82,12 @@ the function behind it.
     `process.argv[1] === fileURLToPath(import.meta.url)`.
     `scripts/report/review-verdicts.mjs` compares `realpathSync` of both
     instead. AC-3 tests the behaviour, not which comparison is used.
+- Four stories on `main` have a line in `Acceptance criteria` that starts
+  with `*` and is italic text, not a list item (AC-2):
+  `stories/OQ-66-parallel-flows.md:19` (`*(provisional — …`), and line 19 of
+  `OQ-95-gold-box-max-level.md`, `OQ-96-deprioritize-enhancements.md` and
+  `OQ-97-clear-leading-zeros.md` (`*Barebones: to be refined in a planning
+  session.*`). No story in `stories/done/` has such a line.
 - `scripts/lint-stories.test.mjs` builds fixture roots with `mkdtemp` under
   `tmpdir()` (`tmpRoot`), and calls `lintAll` directly.
 - `stories/done/OQ-61-story-schema-lint.md`, AC-5: "The set of N across a
