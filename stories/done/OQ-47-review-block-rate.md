@@ -16,28 +16,28 @@ rather than on faith.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — A script reports the verdict tally across all gated pull
+- [x] **AC-1** — A script reports the verdict tally across all gated pull
       requests, computed from the marker comments already on them. It adds no
       instrumentation and stores nothing: every verdict is already recorded twice,
       as a `review/agent` commit status and as an
       `<!-- agent-review head=… verdict=… -->` comment.
-- [ ] **AC-2** — The report distinguishes all four recorded verdicts —
+- [x] **AC-2** — The report distinguishes all four recorded verdicts —
       `pass`, `pass-with-observations`, `block`, and `fail` as the deprecated
       spelling of `block` — and does **not** collapse `pass-with-observations`
       into `pass`. That distinction is the whole point: reviewers here repeatedly
       found real problems and recorded them as observations, and a tally that
       merges the two understates what review catches.
-- [ ] **AC-3** — It reports both a per-verdict count and a per-pull-request count,
+- [x] **AC-3** — It reports both a per-verdict count and a per-pull-request count,
       because they answer different questions. A pull request with three blocking
       verdicts is one story that went long, not three defective changes.
-- [ ] **AC-4** — Counting is driven by the same marker pattern
+- [x] **AC-4** — Counting is driven by the same marker pattern
       `.github/workflows/review-gate.yml` matches, so a verdict the gate acted on
       is a verdict this counts. A test asserts the two agree on a fixture set
       including a deprecated `fail` and a malformed marker.
-- [ ] **AC-5** — The parsing and tallying are pure exported functions tested
+- [x] **AC-5** — The parsing and tallying are pure exported functions tested
       against fixtures, with the API fetch behind an injectable boundary. Tests
       must not reach the network.
-- [ ] **AC-6** — The report is run and its output recorded in the PR body, with
+- [x] **AC-6** — The report is run and its output recorded in the PR body, with
       the owner's read on the question the story exists to answer: is the gate
       worth its cost. That conclusion is a human judgement and belongs in the pull
       request, not in the script.
