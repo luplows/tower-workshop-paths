@@ -66,7 +66,7 @@ everything else has a stated fallback.
       starter: `repeat` with a mix of exit codes, `exit` with a non-zero
       code, `sorted` with and without `--unique`, and `repeat` refusing `0`
       and `11`.
-- [ ] **AC-5** — The PR body proposes, under `### Proposed prompt edit` as
+- [x] **AC-5** — The PR body proposes, under `### Proposed prompt edit` as
       `coder.md` requires, an addition to `.claude/prompts/reviewer.md` that
       says:
       - use `review-tools.mjs` for a repeated run, an exit code or sorted
