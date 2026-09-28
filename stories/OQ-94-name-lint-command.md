@@ -1,6 +1,6 @@
 ---
 id: OQ-94
-title: Name the command for each CI check in CLAUDE.md, so a session runs the real linter
+title: Name the command for each CI check where the coder and the reviewer read, so both run the real linter
 tier: normal
 kind: workflow
 depends_on: []
@@ -14,7 +14,9 @@ As the owner, I want every session to run the same checks CI runs, by the
 same commands, so that a pull request's **Verification** reports the project's
 real lint result. `CLAUDE.md`'s Testing section names the commands for Vitest
 and Playwright but not for lint or the build. The coder for OQ-90 (#159) guessed
-`npx eslint`, found no ESLint config, and skipped linting.
+`npx eslint`, found no ESLint config, and skipped linting. The reviewer of
+OQ-91 (#161) did the same. The reviewer reads `REVIEW.md`, not `CLAUDE.md`, so
+the commands have to be reachable from there too.
 
 ## Acceptance criteria
 
@@ -33,12 +35,18 @@ and Playwright but not for lint or the build. The coder for OQ-90 (#159) guessed
       It also fails if it finds no such `run:` step, so the check cannot pass
       by reading nothing. `npm ci` counts as setup, not a check, and is
       exempt, so the test names that exemption.
+- [ ] **AC-3** — `REVIEW.md` item 12 says that a check is run by the command
+      `CLAUDE.md`'s **Testing** section names for it, and that lint is
+      `npm run lint`, not `npx eslint`. It points at that section for the rest
+      rather than copying the list, so AC-2's test still has only one list to
+      check. No other item is renumbered or reworded.
 
 ## Out of scope
 
 - **`.claude/prompts/coder.md` and `reviewer.md`.** The coder reads
   `CLAUDE.md` before it writes anything (`coder.md`, "Before you write
-  anything"), so naming the commands there reaches it. A spawned session
+  anything"), and the reviewer reads `REVIEW.md` first (`reviewer.md`, step
+  1, "Read `REVIEW.md`"), so AC-1 and AC-3 reach both. A spawned session
   also cannot edit `.claude/prompts/`.
 - **Running lint for the coder**, for example in `coder.mjs` before the push.
   CI runs `npm run lint` as a required check, so a lint failure is already
@@ -68,6 +76,12 @@ and Playwright but not for lint or the build. The coder for OQ-90 (#159) guessed
   could not run ("couldn't find an eslint.config.*"), so those files were not
   linted." Its review's one observation was that the project's linter is
   oxlint. Raised by the owner on 2026-09-28.
+- #161 (OQ-91), review comment: "npx eslint on the changed files found no
+  eslint.config.* and did not run, so lint was not checked locally".
+- `REVIEW.md` item 12 today: "The **Verification** section reports real
+  results — actual numbers, taken the same way across a before/after
+  comparison — rather than an assertion that checks passed."
+- `.claude/prompts/reviewer.md` does not mention `CLAUDE.md`.
 
 ## Open questions
 
