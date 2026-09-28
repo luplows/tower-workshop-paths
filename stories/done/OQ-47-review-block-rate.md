@@ -37,7 +37,7 @@ rather than on faith.
 - [x] **AC-5** — The parsing and tallying are pure exported functions tested
       against fixtures, with the API fetch behind an injectable boundary. Tests
       must not reach the network.
-- [ ] **AC-6** — The report is run and its output recorded in the PR body, with
+- [x] **AC-6** — The report is run and its output recorded in the PR body, with
       the owner's read on the question the story exists to answer: is the gate
       worth its cost. That conclusion is a human judgement and belongs in the pull
       request, not in the script.
