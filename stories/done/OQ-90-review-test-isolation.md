@@ -18,15 +18,15 @@ failure like that counts as one of OQ-48's three red-CI rounds.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — `reviewPullRequest` in `scripts/dispatch/review.mjs` takes a
+- [x] **AC-1** — `reviewPullRequest` in `scripts/dispatch/review.mjs` takes a
       `scratchRoot` option, the directory its `tw-review-*` scratch directory
       is made in. It defaults to `os.tmpdir()`, so a dispatch behaves as
       today. The CLI does not expose it.
-- [ ] **AC-2** — The test "leaves no review scratch directory behind in the
+- [x] **AC-2** — The test "leaves no review scratch directory behind in the
       temp directory" passes a `scratchRoot` of its own, made for that test,
       and asserts that the directory is empty afterwards. No test in
       `review.test.mjs` lists or compares the contents of `os.tmpdir()`.
-- [ ] **AC-3** — The tests that run a whole review through the file's
+- [x] **AC-3** — The tests that run a whole review through the file's
       `review(...)` helper get a timeout of 30 s. The value is defined once,
       as one named constant with a comment giving the reason (as the file's
       `beforeAll` does for its 60 s), and passed to those tests only. That
@@ -34,7 +34,7 @@ failure like that counts as one of OQ-48's three red-CI rounds.
       the verdict as a marker comment only". Tests that do not call
       `review(...)` keep the 5 s default, so no file-level or global setting
       such as `vi.setConfig` is used. No other timeout in the suite changes.
-- [ ] **AC-4** — **A one-off check, in this pull request only.** The PR
+- [x] **AC-4** — **A one-off check, in this pull request only.** The PR
       body's **Verification** reports running
       `npx vitest run scripts/dispatch/review.test.mjs` as two processes at
       once, five times, with the number of runs that failed. The expected
