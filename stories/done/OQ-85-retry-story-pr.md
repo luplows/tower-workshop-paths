@@ -18,7 +18,7 @@ the runner, or a coder respawned with hand-written prose.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — An exported entry point in `scripts/dispatch/coder.mjs`
+- [x] **AC-1** — An exported entry point in `scripts/dispatch/coder.mjs`
       retries one story's pull request. It takes the story id, the pull request
       number, the findings, their source (`review` or `ci`), the round and the
       rounds remaining. It is also runnable from the CLI with the findings read
@@ -33,7 +33,7 @@ the runner, or a coder respawned with hand-written prose.
       pull request that is not open, or whose head branch is not the story's,
       before spawning anything, each with a status of its own. A retry that
       pushed a commit and replaced the body is `retried`.
-- [ ] **AC-2** — **Only `retried` and `body-replaced` mean the retry
+- [x] **AC-2** — **Only `retried` and `body-replaced` mean the retry
       completed.** A retry that emits a valid PR block, makes no commit and
       leaves the worktree clean is `body-replaced`: the body is replaced, and
       no commit was pushed. That is the answer to a block on the description
@@ -58,18 +58,18 @@ the runner, or a coder respawned with hand-written prose.
       Tests cover `retried`, `body-replaced`, `nothing-committed`,
       `uncommitted-changes` with no commit and a valid PR block (the body is
       not replaced), `pr-block-invalid` after a push, and `replace-failed`.
-- [ ] **AC-3** — The retry prompt carries the findings as a **bounded injected
+- [x] **AC-3** — The retry prompt carries the findings as a **bounded injected
       block**, with the same guarantee `{{STORY}}` and `{{PR_BODY}}` get. A test
       through this entry point uses a findings fixture that quotes marker
       syntax and heading syntax as its subject matter, because that is what
       real findings do — see **Context** — and asserts exactly one begin and
       one end marker in the assembled prompt.
-- [ ] **AC-4** — The retry tells the coder what it cannot otherwise know: which
+- [x] **AC-4** — The retry tells the coder what it cannot otherwise know: which
       round this is, how many remain, that its branch and pull request already
       exist, that the story file has already been moved if it has, and that the
       PR body it emits **replaces** the existing one rather than appending to it.
       A test asserts each of those appears in the assembled prompt.
-- [ ] **AC-5** — **The retry says where its findings came from.** A CI
+- [x] **AC-5** — **The retry says where its findings came from.** A CI
       retry's findings are introduced as CI failure output, not as review
       findings. `retrySection` in `scripts/dispatch/invocation.mjs` today
       introduces every retry's findings with "The review findings to address
@@ -77,7 +77,7 @@ the runner, or a coder respawned with hand-written prose.
       rather than review". A test asserts that an assembled CI retry prompt
       does not call its findings review findings, and that a review retry's
       prompt still does.
-- [ ] **AC-6** — The result reports what the coder decided, and changes nothing
+- [x] **AC-6** — The result reports what the coder decided, and changes nothing
       about it: its draft-or-ready choice, and any `blocked:` it set in the
       story file, read from the branch's committed tip in the worktree (the
       pushed tip, when there was a push) as `dispatchCoder` reads it. It
@@ -88,7 +88,7 @@ the runner, or a coder respawned with hand-written prose.
       a session carries that session's output under the same key and shape as
       OQ-84's AC-5. Tests cover a retry whose coder set `blocked:` and asked
       for a draft, with a push and without one.
-- [ ] **AC-7** — Every `**Planned (…)**` marker in
+- [x] **AC-7** — Every `**Planned (…)**` marker in
       `docs/agent-workflow-design.md` that names OQ-85 is resolved as that
       document's "Reading this document" note says.
 
