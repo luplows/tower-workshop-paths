@@ -21,7 +21,6 @@ citations that point here for entries which are not here.
 | OQ-45 — Enhancement drift detection | [`stories/OQ-45-verify-enhancement-costs.md`](stories/OQ-45-verify-enhancement-costs.md) |
 | OQ-46 — Batch walkthrough every ~10 PRs | [`stories/OQ-46-batch-walkthrough.md`](stories/OQ-46-batch-walkthrough.md) |
 | OQ-47 — Review block rate | [`stories/OQ-47-review-block-rate.md`](stories/OQ-47-review-block-rate.md) |
-| OQ-48 — Loop and retry bound | [`stories/OQ-48-loop-and-retry-bound.md`](stories/OQ-48-loop-and-retry-bound.md) |
 
 Numbers are unchanged, as they always are. `Completed-Questions.md` remains the
 archive of everything resolved before this queue existed, looked up by OQ number.
