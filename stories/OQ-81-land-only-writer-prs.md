@@ -36,7 +36,9 @@ open a pull request. Only a pass marker stands between them and the sweep.
 - [ ] **AC-4** — Every other eligibility and safety rule of the sweep is
       unchanged: one PR per run, oldest first, `--match-head-commit`,
       `review/agent` re-checked directly, and the circuit breaker with its
-      exemptions. A pull request from outside that carries `breaker-override`
+      exemptions. If OQ-93 has landed, "oldest first" applies to a run given
+      no pull request, and a run given one considers only that one; the
+      author check applies to both. A pull request from outside that carries `breaker-override`
       is still skipped: this check comes before the breaker's exemptions.
 - [ ] **AC-5** — Every `**Planned (…)**` marker in
       `docs/agent-workflow-design.md` that names OQ-81 is resolved as that

@@ -3,7 +3,7 @@ id: OQ-86
 title: Run the story queue unattended, one story at a time, from the latest main
 tier: next
 kind: workflow
-depends_on: [OQ-48]
+depends_on: [OQ-48, OQ-93]
 model: sonnet
 blocked: null
 ---
@@ -119,6 +119,11 @@ before it, until nothing is ready.
   how any one of them is tracked.
 
 ## Context
+
+Depends on OQ-93 since 2026-09-28, by the owner's decision. Until OQ-93 is
+built, `land.mjs` triggers a sweep that lands the oldest landable pull request,
+not necessarily the story's own. Unattended, that would land pull requests
+nobody asked the loop to land, and could stop a story that passed.
 
 Split out of OQ-48 on 2026-09-25, before dispatch, where AC-1, AC-2 and AC-4
 were AC-9, AC-10 and AC-12. The owner split OQ-48 because it had grown to
