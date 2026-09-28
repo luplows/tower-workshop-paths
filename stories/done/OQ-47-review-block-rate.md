@@ -5,7 +5,7 @@ tier: next
 kind: workflow
 depends_on: []
 model: sonnet
-blocked: "retry-draft: the retried coder asked for a draft"
+blocked: null
 ---
 
 ## Intent
