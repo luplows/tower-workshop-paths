@@ -54,11 +54,13 @@ but cannot be reviewed against.
       fixtures, and the equivalence is asserted for `Constraints` as well.
 - [ ] **AC-7** — The lint also reads `docs/*.md` and fails on a
       `**Planned (OQ-n, …)**` marker that names a story whose file is in
-      `stories/done/`, or that names no existing story. Only numeric ids are
-      read, so the illustrative `OQ-n` in the design doc's note is ignored,
-      and a marker must sit on one line. Fixtures cover a marker naming an
-      open story (passes), a marker naming a done story (fails), and a marker
-      naming no story (fails). The convention is in
+      `stories/done/`, or that names a numeric id with no story file. Only
+      numeric ids are read, and a marker must sit on one line. A marker with
+      no numeric id at all, such as the illustrative `**Planned (OQ-n)**` in
+      the design doc's note, is not checked and passes. Fixtures cover a
+      marker naming an open story (passes), a marker naming a done story
+      (fails), a marker naming an id with no story file (fails), and
+      `**Planned (OQ-n)**` (passes). The convention is in
       `docs/agent-workflow-design.md`, "Reading this document".
 - [ ] **AC-8** — Every `**Planned (…)**` marker in
       `docs/agent-workflow-design.md` that names OQ-61 is resolved as that
