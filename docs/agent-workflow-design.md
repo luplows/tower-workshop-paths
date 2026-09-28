@@ -438,15 +438,18 @@ Both argument lists, both allowlists, the coder's environment and the rendered p
 returned separately and never becomes an argument. `reviewerAllowedTools()` is the reviewer's
 allowlist: the read-only `git` verbs plus `git merge-tree`, `Read Glob Grep TodoWrite`,
 `npm`/`npx`/`node`, and `READ_ONLY_SHELL_UTILS` imported from `coder-env.mjs`, with no `git push`
-and no `gh`. **Planned (OQ-92):** `scripts/dispatch/review-tools.mjs` does the jobs that
-refused shell forms were doing in reviews: a command repeated N times, a command's exit code, and
-sorted output. It runs only commands the reviewer's allowlist admits, without a shell. For anything
-else the reviewer runs one allowed command per call, or uses `node -e`. `git merge-tree` is the one `git` verb there that writes: it adds unreferenced tree
+and no `gh`. `git merge-tree` is the one `git` verb there that writes: it adds unreferenced tree
 and blob objects and moves no ref, and it is kept in its own list in `invocation.mjs` so that the
 rest stays read-only. Each list is
 complete on its own, because `permissions.allow` in `.claude/settings.json` is ignored when the
 workspace is not trusted. Untrusted values (`STORY`, `PR_BODY`, a retry's findings) are bounded with
 `wrapInjectedBlock` by placeholder name: everything not declared a trusted inline token is wrapped.
+
+**Planned (OQ-92):** `scripts/dispatch/review-tools.mjs` does the jobs that refused shell forms were
+doing in reviews: a command repeated N times, a command's exit code, and sorted output. It runs only
+commands the reviewer's allowlist admits, without a shell, starting `npm` and `npx` through `node`
+and npm's own CLI scripts so that they run on Windows. For anything else the reviewer runs one
+allowed command per call, or uses `node -e`.
 
 Three flags are load-bearing:
 

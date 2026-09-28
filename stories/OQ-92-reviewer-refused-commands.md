@@ -45,11 +45,22 @@ everything else has a stated fallback.
       process: `git push`, `gh`, `sed -i`, `sort -o`, `node -e`, and a command
       whose first word is not on the allowlist. Another test asserts that an
       argument `;` reaches the child as a literal argument.
-- [ ] **AC-3** — Tests cover each subcommand's output with an injected process
+- [ ] **AC-3** — **`npm` and `npx` start on Windows too.** On Windows they
+      are a shell script and a `.cmd`, which `execFile` cannot start without a
+      shell (**Context**). So the helper, not the caller, starts an allowed
+      `npm` or `npx` command as `process.execPath` running npm's own CLI
+      script, `npm-cli.js` or `npx-cli.js`. It finds that script from where
+      the running `node` is installed. The caller still cannot name `node`,
+      and no shell is used. A test asserts, with the platform and paths
+      injected, the program and arguments started for `npx vitest run x` on
+      Windows and elsewhere. The PR body reports one real
+      `repeat 2 -- npx vitest run scripts/dispatch/queue.test.mjs` on the
+      machine that runs reviews.
+- [ ] **AC-4** — Tests cover each subcommand's output with an injected process
       starter: `repeat` with a mix of exit codes, `exit` with a non-zero
       code, `sorted` with and without `--unique`, and `repeat` refusing `0`
       and `11`.
-- [ ] **AC-4** — The PR body proposes, under `### Proposed prompt edit` as
+- [ ] **AC-5** — The PR body proposes, under `### Proposed prompt edit` as
       `coder.md` requires, an addition to `.claude/prompts/reviewer.md` that
       says:
       - use `review-tools.mjs` for a repeated run, an exit code or sorted
@@ -59,7 +70,7 @@ everything else has a stated fallback.
         needed;
       - when a check could not be run, say so in the verdict, naming the
         check.
-- [ ] **AC-5** — Every `**Planned (…)**` marker in
+- [ ] **AC-6** — Every `**Planned (…)**` marker in
       `docs/agent-workflow-design.md` that names OQ-92 is resolved as that
       document's "Reading this document" note says.
 
@@ -104,6 +115,16 @@ The reviewer's tools are `reviewerAllowedTools()` in
 git lists, `Bash(npm:*)`, `Bash(npx:*)`, `Bash(node:*)`, and
 `READ_ONLY_SHELL_UTILS` (`ls`, `cat`, `head`, `tail`, `wc`, `grep`, `diff`,
 `cut`, `pwd`) from `scripts/dispatch/coder-env.mjs`.
+
+**Starting `npm` and `npx` without a shell on Windows**, where reviews are
+hand-run (Node v24.19.0), per the runner's notes on #156's review, rechecked
+2026-09-28:
+- `execFile('npx', …)` and `execFile('npm', …)` fail with `spawn … ENOENT`,
+  and `execFile('npx.cmd', …)` throws `spawn EINVAL`;
+- `execFile(process.execPath, [<node dir>/node_modules/npm/bin/npx-cli.js,
+  '--version'])` works, and printed `11.17.0`;
+- `install.mjs` records the same limit: "On Windows `npm` is `npm.cmd`, which
+  Node will not spawn without a shell".
 
 **Decided 2026-09-28 by the owner:** a helper script plus a line in the
 reviewer's prompt, over a prompt-only change (which relies on the reviewer

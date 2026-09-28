@@ -32,7 +32,8 @@ heading without saying why, and two stale comments in `github.mjs`.
         `draft` and `blocked` (OQ-85's AC-6);
       - a coder that sets `blocked:` and asks for a draft **without a push**,
         with both reported. This is the combination OQ-85's AC-6 names; the
-        existing "without a push" test has a coder that sets neither.
+        existing "without a push" test has a coder that asks for a draft but
+        sets no `blocked:`.
 - [ ] **AC-3** — A retry whose only uncommitted files are untracked screenshot
       baselines counts as a clean worktree, as `pushBranch` already treats
       them: with a valid PR block and no commit it is `body-replaced`, and

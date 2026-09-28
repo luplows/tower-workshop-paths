@@ -27,11 +27,13 @@ failure like that counts as one of OQ-48's three red-CI rounds.
       and asserts that the directory is empty afterwards. No test in
       `review.test.mjs` lists or compares the contents of `os.tmpdir()`.
 - [ ] **AC-3** — The tests that run a whole review through the file's
-      `review(...)` helper get a timeout of 30 s. It is set once for them, not
-      per test, with a comment giving the reason, as the file's `beforeAll`
-      does for its 60 s. That includes "OQ-69/AC-1: resolves the head, spawns
-      the reviewer and records the verdict as a marker comment only". No other
-      timeout in the suite changes.
+      `review(...)` helper get a timeout of 30 s. The value is defined once,
+      as one named constant with a comment giving the reason (as the file's
+      `beforeAll` does for its 60 s), and passed to those tests only. That
+      includes "OQ-69/AC-1: resolves the head, spawns the reviewer and records
+      the verdict as a marker comment only". Tests that do not call
+      `review(...)` keep the 5 s default, so no file-level or global setting
+      such as `vi.setConfig` is used. No other timeout in the suite changes.
 - [ ] **AC-4** — **A one-off check, in this pull request only.** The PR
       body's **Verification** reports running
       `npx vitest run scripts/dispatch/review.test.mjs` as two processes at
@@ -39,7 +41,9 @@ failure like that counts as one of OQ-48's three red-CI rounds.
       result is none. Before the fix, the scratch-directory test failed in 6
       of 10 such runs (**Context**), so five clean pairs is fair evidence.
       Compound shell commands are refused, so the pairs can be started from a
-      `node -e` script. The reviewer may repeat the check once. It is not
+      `node -e` script. On Windows that script must start `npx` with
+      `shell: true`, or as `node` running npm's `npx-cli.js`, because
+      `execFile` cannot start `npx` there without a shell. The reviewer may repeat the check once. It is not
       added to CI, to `REVIEW.md` or to any recurring check: AC-2 removes the
       cause, and that can be checked from the diff alone.
 
