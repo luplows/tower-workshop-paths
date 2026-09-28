@@ -58,13 +58,10 @@ describe('OQ-47/AC-5: parsing and tallying are pure, fetch is injectable, no net
       expect.objectContaining({ pullRequestsScanned: 2, gatedPullRequests: 1, verdictsRecorded: 1 }),
     )
     expect(
-      actedOnVerdicts(
-        [
-          { marker: { kind: 'marker', headSha: SHA, verdict: 'pass', deprecatedSpelling: false }, authorAssociation: 'OWNER' },
-          { marker: { kind: 'absent' }, authorAssociation: 'OWNER' },
-        ],
-        SHA,
-      ),
+      actedOnVerdicts([
+        { marker: { kind: 'marker', headSha: SHA, verdict: 'pass', deprecatedSpelling: false }, authorAssociation: 'OWNER' },
+        { marker: { kind: 'absent' }, authorAssociation: 'OWNER' },
+      ]),
     ).toEqual([{ verdict: 'pass', deprecatedSpelling: false }])
   })
 
@@ -166,7 +163,7 @@ describe('OQ-47/AC-4: counting agrees with the pattern review-gate.yml matches',
     // All fixture authors are privileged, so actedOnVerdicts counts exactly the
     // well-formed ones -- four, matching the story's "a deprecated fail and a
     // malformed marker" fixture set.
-    const acted = actedOnVerdicts(comments, SHA)
+    const acted = actedOnVerdicts(comments)
     expect(acted).toHaveLength(4)
     expect(acted.filter((v) => v.deprecatedSpelling)).toHaveLength(1)
   })
@@ -177,17 +174,26 @@ describe('OQ-47/AC-4: counting agrees with the pattern review-gate.yml matches',
       comment({ id: 1, body: marker('block'), association: 'NONE' }),
       comment({ id: 2, body: marker('pass'), association: 'OWNER' }),
     ])
-    expect(actedOnVerdicts(comments, SHA)).toEqual([{ verdict: 'pass', deprecatedSpelling: false }])
+    expect(actedOnVerdicts(comments)).toEqual([{ verdict: 'pass', deprecatedSpelling: false }])
   })
 
-  it('a well-formed, privileged marker about a superseded head is not counted, as review-gate.yml leaves the status alone for it', async () => {
+  it('a well-formed, privileged marker naming an earlier round\'s head is still counted, because review-gate.yml acted on it when that head was current', async () => {
+    // review-gate.yml compares a marker's head against the pull request's head
+    // *at the moment the comment event fires*, not against wherever the pull
+    // request ends up (see the module header). A marker from an earlier round
+    // named the head that was current when it was posted, so the gate acted
+    // on it then -- e.g. #117's three blocking rounds, each on a distinct
+    // head, each one the gate actually failed the run for.
     const { parseComments } = await import('../dispatch/github.mjs')
-    const oldSha = 'c'.repeat(40)
+    const earlierRoundSha = 'c'.repeat(40)
     const comments = parseComments([
-      comment({ id: 1, body: marker('block', oldSha), association: 'OWNER' }),
+      comment({ id: 1, body: marker('block', earlierRoundSha), association: 'OWNER' }),
       comment({ id: 2, body: marker('pass', SHA), association: 'OWNER' }),
     ])
-    expect(actedOnVerdicts(comments, SHA)).toEqual([{ verdict: 'pass', deprecatedSpelling: false }])
+    expect(actedOnVerdicts(comments)).toEqual([
+      { verdict: 'block', deprecatedSpelling: false },
+      { verdict: 'pass', deprecatedSpelling: false },
+    ])
   })
 })
 

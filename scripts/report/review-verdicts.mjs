@@ -14,12 +14,20 @@
  * `github.mjs`, and this module never re-derives it.
  *
  * A marker also counts only from an account the gate itself would honour
- * (`OWNER`, `MEMBER`, `COLLABORATOR` -- see review-gate.yml's `ASSOC` check),
- * and only when its `head=` matches the pull request's current head sha --
- * review-gate.yml discards a marker about any other commit as stale (see its
- * "A verdict about an older commit says nothing about this one"). Either
- * check failing means the gate never acted on that marker, so counting it
- * would count a verdict the gate did not.
+ * (`OWNER`, `MEMBER`, `COLLABORATOR` -- see review-gate.yml's `ASSOC` check).
+ * It does *not* filter by the pull request's current head sha. review-gate.yml
+ * compares a marker's `head=` against the head *at the moment that comment's
+ * event fires* (`head="$(gh pr view ...headRefOid)"`, run inside the
+ * `issue_comment` job) -- not against wherever the pull request ends up. A
+ * reviewer only ever posts a marker naming the commit it just reviewed, which
+ * is the head at that moment, so the gate acts on it and sets `review/agent`
+ * from it there and then. A later commit resets the gate to pending and
+ * leaves that status on the record; it does not retroactively make the gate's
+ * earlier action not have happened. Filtering by the pull request's *current*
+ * head would silently drop every verdict from an earlier round once the pull
+ * request moves on -- exactly the multi-round blocking verdicts (#117's three
+ * rounds, this story's own round 1 and round 2) that AC-3's per-pull-request
+ * count exists to distinguish from a single blocking verdict.
  *
  * Read-only. This module's own allowlist (`assertAllowedRequest`) admits two
  * GET shapes -- list pull requests, list a pull request's comments -- and
@@ -128,25 +136,19 @@ async function listAllComments(ctx, number) {
 
 /**
  * The verdicts `review-gate.yml` actually acted on among one pull request's
- * comments (AC-4): a well-formed marker (`comment.marker.kind === 'marker'`,
- * from `parseMarkerComment` in `github.mjs`) from a privileged account,
- * *whose `headSha` matches the pull request's current head*. review-gate.yml
- * discards a marker about any other commit ("A verdict about an older commit
- * says nothing about this one") rather than acting on it, so a marker left
- * over from an earlier head is not counted here either -- otherwise a PR that
- * went through several rounds would have its superseded verdicts counted
- * alongside the one the gate actually set the status from. Every marker that
- * passes both checks counts once, so a pull request reviewed three times at
- * its current head contributes three entries here.
+ * comments (AC-4): every well-formed marker (`comment.marker.kind ===
+ * 'marker'`, from `parseMarkerComment` in `github.mjs`) from a privileged
+ * account. There is deliberately no filter against the pull request's
+ * *current* head sha -- see the module header for why that would discard
+ * exactly the multi-round blocking verdicts AC-3 exists to count. A marker's
+ * own `head=` is read (`c.marker.headSha`) but not compared against anything
+ * here, because the head it should be compared against is the one that was
+ * current when that comment's event fired, which this module -- reading only
+ * the two listings in `ALLOWED` -- has no way to recover.
  */
-export function actedOnVerdicts(comments, headSha) {
+export function actedOnVerdicts(comments) {
   return comments
-    .filter(
-      (c) =>
-        c.marker.kind === 'marker' &&
-        PRIVILEGED_ASSOCIATIONS.includes(c.authorAssociation) &&
-        c.marker.headSha === headSha,
-    )
+    .filter((c) => c.marker.kind === 'marker' && PRIVILEGED_ASSOCIATIONS.includes(c.authorAssociation))
     .map((c) => ({ verdict: c.marker.verdict, deprecatedSpelling: c.marker.deprecatedSpelling }))
 }
 
@@ -156,7 +158,7 @@ export async function gatherVerdicts(ctx, { limit = DEFAULT_LIMIT } = {}) {
   const perPullRequest = []
   for (const pr of prs) {
     const comments = await listAllComments(ctx, pr.number)
-    perPullRequest.push({ number: pr.number, verdicts: actedOnVerdicts(comments, pr.headSha) })
+    perPullRequest.push({ number: pr.number, verdicts: actedOnVerdicts(comments) })
   }
   return perPullRequest
 }
