@@ -225,16 +225,20 @@ not therefore verify, and drop the verdict to `pass-with-observations` — or to
 `null` if what you could not run was load-bearing enough that the review does
 not stand without it.
 
-**Shell forms such as `|`, `for`, `$?` and `&&` are refused, so use
-`scripts/dispatch/review-tools.mjs` for the jobs they were doing.** For a
-repeated run, an exit code or sorted output, run
+**A compound command is refused as a whole unless every part of it is on your
+allowlist.** A pipe or `&&` chain of allowed commands runs, such as
+`npm test | tail` or step 2's `git fetch … && git rev-parse …`. But `echo`,
+`cd`, `sed`, `sort`, `awk`, a `for` loop, `git checkout` or `git -C`
+anywhere in it gets the whole command refused. For the jobs those parts usually
+do, use `scripts/dispatch/review-tools.mjs`: for a repeated run, an exit code or
+sorted output, run
 `node scripts/dispatch/review-tools.mjs repeat <n> -- <command…>`,
 `… exit -- <command…>` or `… sorted [--unique] -- <command…>`. It runs only
 commands your allowlist admits, and exits 0 whenever it ran the command, so
-read the result from its output. For anything else, run one allowed command per
-call, use the Read, Grep and Glob tools, or use `node -e` when composition is
-genuinely needed. When a check could not be run, say so in the verdict, naming
-the check.
+read the result from its output. For anything else, keep each command to
+allowed parts, use the Read, Grep and Glob tools, or use `node -e` when
+composition is genuinely needed. When a check could not be run, say so in the
+verdict, naming the check.
 
 ## Calibration
 

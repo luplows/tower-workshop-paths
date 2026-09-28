@@ -485,8 +485,9 @@ workspace is not trusted. Untrusted values (`STORY`, `PR_BODY`, a retry's findin
 doing in reviews: a command repeated N times, a command's exit code, and sorted output. It runs only
 commands the reviewer's allowlist admits, without a shell. On Windows it starts `npm` and `npx` as
 `node` running npm's own CLI scripts, since they cannot start there without a shell; elsewhere it
-starts them by name. For anything else the reviewer runs one allowed command per call, or uses
-`node -e`.
+starts them by name. For anything else the reviewer keeps each command to parts its allowlist
+admits, or uses `node -e`: a pipe or `&&` chain of allowed commands runs, and a command with any
+part outside the allowlist is refused as a whole.
 
 Three flags are load-bearing:
 
