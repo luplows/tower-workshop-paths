@@ -234,6 +234,18 @@ describe('OQ-61/AC-5: acceptance-criterion numbering', () => {
     expect(violations.some((v) => v.rule === 'AC-5')).toBe(false)
   })
 
+  it('rejects an AC item that is not a task-list checkbox at all', () => {
+    const ac = ['- [ ] **AC-1** — first.', '- **AC-2** — not a checkbox.'].join('\n')
+    const violations = lintStory('OQ-9001-fixture.md', storySource(undefined, { acceptanceCriteria: ac }))
+    expect(violations.some((v) => v.rule === 'AC-5' && /not a well-formed/.test(v.message))).toBe(true)
+  })
+
+  it('rejects an AC item whose id is not bolded', () => {
+    const ac = ['- [ ] **AC-1** — first.', '- [ ] AC-2 — id not bolded.'].join('\n')
+    const violations = lintStory('OQ-9001-fixture.md', storySource(undefined, { acceptanceCriteria: ac }))
+    expect(violations.some((v) => v.rule === 'AC-5' && /not a well-formed/.test(v.message))).toBe(true)
+  })
+
   it("stories/done/OQ-68, OQ-69 and OQ-70's real suffixed ids (AC-3b, AC-6b, AC-7b) pass", async () => {
     for (const filename of ['OQ-68-github-operations.md', 'OQ-69-reviewer-dispatch.md', 'OQ-70-coder-dispatch.md']) {
       const filePath = path.join(repoRoot, 'stories', 'done', filename)
@@ -323,7 +335,7 @@ describe('OQ-61/AC-7: **Planned (OQ-n, ...)** markers in docs/*.md', () => {
 describe('OQ-61/AC-8: docs/agent-workflow-design.md resolves its own OQ-61 markers', () => {
   it('no **Planned (...)** marker in the real repo still names OQ-61', async () => {
     const source = await readFile(path.join(repoRoot, 'docs', 'agent-workflow-design.md'), 'utf8')
-    const markers = [...source.matchAll(/\*\*Planned \(([^)]*)\)\*\*/g)]
+    const markers = [...source.matchAll(/\*\*Planned \(([^)]*)\)(?::\*\*|\*\*)/g)]
     const namesOQ61 = markers.some((m) =>
       m[1]
         .split(',')

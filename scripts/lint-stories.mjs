@@ -5,8 +5,8 @@
  * markers in docs/*.md that name a story. A malformed story previously
  * failed silently at dispatch (or produced a story that dispatches but
  * cannot be reviewed against); this surfaces the defect in the PR that
- * introduced it. See stories/OQ-61-story-schema-lint.md for the acceptance
- * criteria this implements.
+ * introduced it. See stories/done/OQ-61-story-schema-lint.md for the
+ * acceptance criteria this implements.
  *
  * Collects every violation across every file in one run rather than
  * stopping at the first (AC-1). Each violation names the file, the
@@ -168,8 +168,13 @@ function lintAcceptanceCriteria(filePath, section) {
   const violations = []
   const items = []
   for (const { text, line } of section.lines) {
+    if (!/^-/.test(text)) continue
     const match = text.match(AC_ITEM_RE)
-    if (match) items.push({ n: Number(match[1]), suffix: match[2] ?? '', line })
+    if (match) {
+      items.push({ n: Number(match[1]), suffix: match[2] ?? '', line })
+    } else {
+      violations.push(violation(filePath, line, 'AC-5', `list item is not a well-formed '- [ ] **AC-N**' task-list item: ${JSON.stringify(text.trim())}`))
+    }
   }
 
   if (items.length === 0) {
