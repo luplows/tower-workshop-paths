@@ -14,9 +14,12 @@
  * `github.mjs`, and this module never re-derives it.
  *
  * A marker also counts only from an account the gate itself would honour
- * (`OWNER`, `MEMBER`, `COLLABORATOR` -- see review-gate.yml's `ASSOC` check):
- * a marker from anyone else is ignored by the gate, so counting it would
- * count a verdict the gate never acted on.
+ * (`OWNER`, `MEMBER`, `COLLABORATOR` -- see review-gate.yml's `ASSOC` check),
+ * and only when its `head=` matches the pull request's current head sha --
+ * review-gate.yml discards a marker about any other commit as stale (see its
+ * "A verdict about an older commit says nothing about this one"). Either
+ * check failing means the gate never acted on that marker, so counting it
+ * would count a verdict the gate did not.
  *
  * Read-only. This module's own allowlist (`assertAllowedRequest`) admits two
  * GET shapes -- list pull requests, list a pull request's comments -- and
@@ -126,13 +129,24 @@ async function listAllComments(ctx, number) {
 /**
  * The verdicts `review-gate.yml` actually acted on among one pull request's
  * comments (AC-4): a well-formed marker (`comment.marker.kind === 'marker'`,
- * from `parseMarkerComment` in `github.mjs`) from a privileged account. Every
- * such comment counts once, so a pull request reviewed three times
- * contributes three entries here.
+ * from `parseMarkerComment` in `github.mjs`) from a privileged account,
+ * *whose `headSha` matches the pull request's current head*. review-gate.yml
+ * discards a marker about any other commit ("A verdict about an older commit
+ * says nothing about this one") rather than acting on it, so a marker left
+ * over from an earlier head is not counted here either -- otherwise a PR that
+ * went through several rounds would have its superseded verdicts counted
+ * alongside the one the gate actually set the status from. Every marker that
+ * passes both checks counts once, so a pull request reviewed three times at
+ * its current head contributes three entries here.
  */
-export function actedOnVerdicts(comments) {
+export function actedOnVerdicts(comments, headSha) {
   return comments
-    .filter((c) => c.marker.kind === 'marker' && PRIVILEGED_ASSOCIATIONS.includes(c.authorAssociation))
+    .filter(
+      (c) =>
+        c.marker.kind === 'marker' &&
+        PRIVILEGED_ASSOCIATIONS.includes(c.authorAssociation) &&
+        c.marker.headSha === headSha,
+    )
     .map((c) => ({ verdict: c.marker.verdict, deprecatedSpelling: c.marker.deprecatedSpelling }))
 }
 
@@ -142,7 +156,7 @@ export async function gatherVerdicts(ctx, { limit = DEFAULT_LIMIT } = {}) {
   const perPullRequest = []
   for (const pr of prs) {
     const comments = await listAllComments(ctx, pr.number)
-    perPullRequest.push({ number: pr.number, verdicts: actedOnVerdicts(comments) })
+    perPullRequest.push({ number: pr.number, verdicts: actedOnVerdicts(comments, pr.headSha) })
   }
   return perPullRequest
 }

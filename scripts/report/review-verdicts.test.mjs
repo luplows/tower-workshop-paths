@@ -1,6 +1,9 @@
 // @vitest-environment node
 
 import { describe, expect, it, vi } from 'vitest'
+import { readFile } from 'node:fs/promises'
+import { fileURLToPath } from 'node:url'
+import path from 'node:path'
 import {
   DEFAULT_LIMIT,
   actedOnVerdicts,
@@ -14,6 +17,7 @@ import {
   tallyVerdicts,
 } from './review-verdicts.mjs'
 
+const here = path.dirname(fileURLToPath(import.meta.url))
 const REPO = 'luplows/tower-workshop-paths'
 const SHA = 'a'.repeat(40)
 
@@ -54,10 +58,13 @@ describe('OQ-47/AC-5: parsing and tallying are pure, fetch is injectable, no net
       expect.objectContaining({ pullRequestsScanned: 2, gatedPullRequests: 1, verdictsRecorded: 1 }),
     )
     expect(
-      actedOnVerdicts([
-        { marker: { kind: 'marker', verdict: 'pass', deprecatedSpelling: false }, authorAssociation: 'OWNER' },
-        { marker: { kind: 'absent' }, authorAssociation: 'OWNER' },
-      ]),
+      actedOnVerdicts(
+        [
+          { marker: { kind: 'marker', headSha: SHA, verdict: 'pass', deprecatedSpelling: false }, authorAssociation: 'OWNER' },
+          { marker: { kind: 'absent' }, authorAssociation: 'OWNER' },
+        ],
+        SHA,
+      ),
     ).toEqual([{ verdict: 'pass', deprecatedSpelling: false }])
   })
 
@@ -144,6 +151,11 @@ describe('OQ-47/AC-4: counting agrees with the pattern review-gate.yml matches',
     { id: 6, body: marker('maybe'), association: 'OWNER', expectWellFormed: false },
   ]
 
+  it('the transcription above has not drifted from review-gate.yml itself', async () => {
+    const workflow = await readFile(path.join(here, '..', '..', '.github', 'workflows', 'review-gate.yml'), 'utf8')
+    expect(workflow).toContain('agent-review[[:space:]]+head=[0-9a-f]{40}[[:space:]]+verdict=(pass-with-observations|pass|block|fail)')
+  })
+
   it('every fixture: the workflow pattern matching agrees with parseMarkerComment via actedOnVerdicts', async () => {
     const { parseComments } = await import('../dispatch/github.mjs')
     const comments = parseComments(fixtures.map((f) => comment(f)))
@@ -154,7 +166,7 @@ describe('OQ-47/AC-4: counting agrees with the pattern review-gate.yml matches',
     // All fixture authors are privileged, so actedOnVerdicts counts exactly the
     // well-formed ones -- four, matching the story's "a deprecated fail and a
     // malformed marker" fixture set.
-    const acted = actedOnVerdicts(comments)
+    const acted = actedOnVerdicts(comments, SHA)
     expect(acted).toHaveLength(4)
     expect(acted.filter((v) => v.deprecatedSpelling)).toHaveLength(1)
   })
@@ -165,7 +177,17 @@ describe('OQ-47/AC-4: counting agrees with the pattern review-gate.yml matches',
       comment({ id: 1, body: marker('block'), association: 'NONE' }),
       comment({ id: 2, body: marker('pass'), association: 'OWNER' }),
     ])
-    expect(actedOnVerdicts(comments)).toEqual([{ verdict: 'pass', deprecatedSpelling: false }])
+    expect(actedOnVerdicts(comments, SHA)).toEqual([{ verdict: 'pass', deprecatedSpelling: false }])
+  })
+
+  it('a well-formed, privileged marker about a superseded head is not counted, as review-gate.yml leaves the status alone for it', async () => {
+    const { parseComments } = await import('../dispatch/github.mjs')
+    const oldSha = 'c'.repeat(40)
+    const comments = parseComments([
+      comment({ id: 1, body: marker('block', oldSha), association: 'OWNER' }),
+      comment({ id: 2, body: marker('pass', SHA), association: 'OWNER' }),
+    ])
+    expect(actedOnVerdicts(comments, SHA)).toEqual([{ verdict: 'pass', deprecatedSpelling: false }])
   })
 })
 
