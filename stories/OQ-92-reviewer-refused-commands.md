@@ -1,6 +1,6 @@
 ---
 id: OQ-92
-title: Stop refused read-only commands from reducing what a review verifies
+title: Give the reviewer a helper for the jobs its refused shell commands were doing
 tier: next
 kind: workflow
 depends_on: []
@@ -11,32 +11,75 @@ blocked: null
 ## Intent
 
 As the owner, I want a review to verify what it set out to verify, so that a
-verdict is not weaker because the reviewer's permission layer refused a
-harmless command. Every recent review records at least one refused read-only
-command, and three say the refusal cut short what they checked.
+verdict is not weaker because the permission layer refused a harmless shell
+form. Every recent review records at least one refused command, and three say
+the refusal cut short what they checked. The refusals are about shell syntax
+(`|`, `for`, `$?`, `&&`), not capability, so the reviewer keeps its freedom to
+test as it sees fit. The jobs that recur get a committed helper, and
+everything else has a stated fallback.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — *To be settled with the open question below.* Whichever
-      approach is chosen, the reviewer can get what the refused commands in
-      **Context** were after (sorted output, a repeated test run, a command's
-      exit code) without a refusal, and nothing it is newly allowed can write
-      in any mode (OQ-67's AC-5 rule for `READ_ONLY_SHELL_UTILS`). When the
-      approach is settled, it is recorded in `docs/agent-workflow-design.md`
-      with a `Planned (OQ-92)` marker, and this story gains an AC to resolve
-      it.
+- [ ] **AC-1** — A new module, `scripts/dispatch/review-tools.mjs`, is
+      runnable as `node scripts/dispatch/review-tools.mjs <subcommand> …`
+      and has three subcommands. Each takes the command to run after `--`.
+      - `repeat <n> -- <command…>` runs the command `n` times, from 1 to 10.
+        It prints each run's exit code and a line "`<passed>/<n>` exited 0",
+        plus the last 20 lines of output of any run that exited non-zero.
+      - `exit -- <command…>` runs the command once, and prints its output
+        and then its exit code.
+      - `sorted [--unique] -- <command…>` runs the command once, and prints
+        its output lines sorted, deduplicated with `--unique`, then its exit
+        code.
+
+      The helper exits 0 whenever it ran the command, whatever the command's
+      own exit code, so that the permission layer and the reviewer read the
+      result from its output.
+- [ ] **AC-2** — **The helper can do nothing the reviewer's allowlist cannot.**
+      It runs a command only if the command matches a `Bash(<prefix>:*)`
+      entry of `reviewerAllowedTools()` (imported from `invocation.mjs`, not
+      copied), and is not `node` itself. Otherwise it refuses before starting
+      anything. It starts the command with `execFile` and no shell, so `|`,
+      `;`, `&&` and `>` in its arguments are passed literally. It writes no
+      file. Tests assert that each of these is refused without starting a
+      process: `git push`, `gh`, `sed -i`, `sort -o`, `node -e`, and a command
+      whose first word is not on the allowlist. Another test asserts that an
+      argument `;` reaches the child as a literal argument.
+- [ ] **AC-3** — Tests cover each subcommand's output with an injected process
+      starter: `repeat` with a mix of exit codes, `exit` with a non-zero
+      code, `sorted` with and without `--unique`, and `repeat` refusing `0`
+      and `11`.
+- [ ] **AC-4** — The PR body proposes, under `### Proposed prompt edit` as
+      `coder.md` requires, an addition to `.claude/prompts/reviewer.md` that
+      says:
+      - use `review-tools.mjs` for a repeated run, an exit code or sorted
+        output;
+      - for anything else, run one allowed command per call, use the Read,
+        Grep and Glob tools, or use `node -e` when composition is genuinely
+        needed;
+      - when a check could not be run, say so in the verdict, naming the
+        check.
+- [ ] **AC-5** — Every `**Planned (…)**` marker in
+      `docs/agent-workflow-design.md` that names OQ-92 is resolved as that
+      document's "Reading this document" note says.
 
 ## Out of scope
 
-- The coder's allowlist, except where it shares `READ_ONLY_SHELL_UTILS` with
-  the reviewer.
-- Removing the reviewer's write capability. That is OQ-62.
+- **Changing any allowlist.** `reviewerAllowedTools()`, `coderAllowedTools()`
+  and `READ_ONLY_SHELL_UTILS` are unchanged, and the helper runs under the
+  existing `Bash(node:*)`.
+- **Narrowing the reviewer's `node` access to the helper.** That is possible
+  later, and belongs with OQ-62.
+- **The coder's use of the helper.** Nothing stops it, but nothing here tells
+  it to.
 
 ## Constraints
 
-- No utility is added to `READ_ONLY_SHELL_UTILS` that can write in any mode.
-  `coder-env.mjs` names the ones excluded for that reason: `sed`, `sort`
-  (`-o`), `uniq`, `find`, `awk`, `tee`, `xargs`, `dd` and any interpreter.
+- Node, ESM, no new runtime dependencies.
+- No utility is added to `READ_ONLY_SHELL_UTILS`. `coder-env.mjs` names the
+  ones excluded because they can write: `sed`, `sort` (`-o`), `uniq`, `find`,
+  `awk`, `tee`, `xargs`, `dd` and any interpreter. The helper's own sorting is
+  done in JavaScript.
 
 ## Context
 
@@ -51,10 +94,10 @@ Refusals recorded by the reviews themselves, 2026-09-24 to 2026-09-28:
   in OQ-48's Context unverified.
 - #153: "the GitHub tests three times in a loop, then `npx eslint`" was
   refused, "so the reviewer checked the new tests for stability on a single
-  run only".
+  run only". `repeat` is for this.
 - #154: `npx oxlint` with its exit code, the retry CLI with bad arguments, and
   a `sed` read of `main` were refused. The CLI's refusal of bad arguments was
-  "checked by reading the code, not by running it".
+  "checked by reading the code, not by running it". `exit` is for this.
 
 The reviewer's tools are `reviewerAllowedTools()` in
 `scripts/dispatch/invocation.mjs`: `Read`, `Glob`, `Grep`, `TodoWrite`, its
@@ -62,23 +105,16 @@ git lists, `Bash(npm:*)`, `Bash(npx:*)`, `Bash(node:*)`, and
 `READ_ONLY_SHELL_UTILS` (`ls`, `cat`, `head`, `tail`, `wc`, `grep`, `diff`,
 `cut`, `pwd`) from `scripts/dispatch/coder-env.mjs`.
 
+**Decided 2026-09-28 by the owner:** a helper script plus a line in the
+reviewer's prompt, over a prompt-only change (which relies on the reviewer
+remembering) and over widening the allowlist. Widening depends on how Claude
+Code's permission layer matches compound commands, which is unchecked, and
+risks admitting a write mode. The owner wants the reviewer free to test as it
+sees fit, and `node -e` stays that escape hatch.
+
 Raised by the owner's other session on 2026-09-28: every review in that
 session had a verdict weakened by a refused pipeline or loop.
 
 ## Open questions
 
-- **Which approach?** Candidates, not exclusive:
-  1. **Prompt:** `reviewer.md` tells the reviewer to run one allowed command
-     per call and use the Read, Grep and Glob tools rather than pipelines,
-     and to use `node -e` for anything else. `Bash(node:*)` already allows
-     that, so this needs no allowlist change.
-  2. **Allowlist:** allow specific shell forms, such as `for` loops over
-     allowed commands. This depends on how Claude Code's permission layer
-     matches compound commands, which has not been checked.
-  3. **A helper script:** a committed read-only script the reviewer runs for
-     the repeated jobs: tests N times, a command with its exit code, sorted
-     output.
-
-  `sort` is excluded from the read-only list for `-o`, so option 2 cannot
-  simply add it. Option 1 is cheapest. `Bash(node:*)` already lets the
-  reviewer do anything a pipeline could, which bears on OQ-62.
+*(none)*
