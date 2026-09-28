@@ -41,7 +41,13 @@ looks complete.
 - [ ] **AC-3** — The module header's **Usage** and its paragraph about
       `--limit` say that the default is every pull request and that
       `--limit` caps the scan. Nothing in the module or its tests still
-      describes 60 as the default.
+      describes 60 as the default. The existing test "DEFAULT_LIMIT is a
+      positive integer the CLI falls back to" pins the default this story
+      removes. It is replaced by AC-1's test, or rewritten to assert that the
+      default applies no cap. This criterion authorises that change and no
+      other to what OQ-47's tests assert. An existing test's call may change
+      to a new signature or return shape, as long as it still asserts what it
+      asserted before.
 
 ## Out of scope
 
@@ -73,6 +79,8 @@ looks complete.
     `?state=all&sort=created&direction=desc&per_page=100&page=<n>`.
 - `scripts/report/review-verdicts.test.mjs`: the existing tests call
   `gatherVerdicts` with `limit: 1` and `limit: 3` through an injected `fetch`.
+  The test "DEFAULT_LIMIT is a positive integer the CLI falls back to" asserts
+  only that `DEFAULT_LIMIT` is a positive integer (AC-3).
 - #169's round-4 review, observation 2: "DEFAULT_LIMIT is 60 … so a run
   without --limit reports only the 60 most recent. Full coverage needs
   --limit of at least the PR count." The run recorded in #169 used
