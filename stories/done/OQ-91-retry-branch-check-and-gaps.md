@@ -19,7 +19,7 @@ heading without saying why, and two stale comments in `github.mjs`.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — `retryStory` in `scripts/dispatch/coder.mjs` refuses a pull
+- [x] **AC-1** — `retryStory` in `scripts/dispatch/coder.mjs` refuses a pull
       request, as `wrong-branch` and before any worktree is made, unless its
       head is exactly `story/<name>` for a story file `<name>.md` with the
       story's id that exists at that branch's tip on `origin`, in `stories/`
@@ -31,7 +31,7 @@ heading without saying why, and two stale comments in `github.mjs`.
       `origin` is still `branch-missing`. A test covers a head with the right
       id and the wrong slug, which today throws `ENOENT` after the worktree
       is made.
-- [ ] **AC-2** — Tests through `retryStory` cover:
+- [x] **AC-2** — Tests through `retryStory` cover:
       - `local-branch-exists`, with nothing spawned;
       - `push-failed`, with the body not replaced and the result carrying
         `draft` and `blocked` (OQ-85's AC-6);
@@ -39,18 +39,18 @@ heading without saying why, and two stale comments in `github.mjs`.
         with both reported. This is the combination OQ-85's AC-6 names; the
         existing "without a push" test has a coder that asks for a draft but
         sets no `blocked:`.
-- [ ] **AC-3** — A retry whose only uncommitted files are untracked screenshot
+- [x] **AC-3** — A retry whose only uncommitted files are untracked screenshot
       baselines counts as a clean worktree, as `pushBranch` already treats
       them: with a valid PR block and no commit it is `body-replaced`, and
       the result reports the files as `untrackedScreenshots`. A test pins
       this. The behaviour exists today (`classifyStatus` keeps those files out
       of `paths`); only the test is new.
-- [ ] **AC-4** — A CI retry's prompt still names the `## Response to review`
+- [x] **AC-4** — A CI retry's prompt still names the `## Response to review`
       heading, which `coder.md` defines. It says the heading is also where a
       response to a CI failure goes, and that a failure the coder believes its
       change did not cause, such as a flaky test, belongs there with the
       evidence. A review retry's wording is unchanged. A test asserts both.
-- [ ] **AC-5** — The two comments in `scripts/dispatch/github.mjs` that say
+- [x] **AC-5** — The two comments in `scripts/dispatch/github.mjs` that say
       "one of the six `build*` functions" (lines 241 and 269 at this story's
       writing) describe what the allowlist admits now: the REST requests the
       `build*` functions produce for `repo`, and the one GraphQL request
