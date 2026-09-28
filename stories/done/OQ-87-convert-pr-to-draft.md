@@ -18,7 +18,7 @@ GraphQL call and no other.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — `scripts/dispatch/github.mjs` exports a function that converts
+- [x] **AC-1** — `scripts/dispatch/github.mjs` exports a function that converts
       one pull request, by number, to a draft. It reads the pull request with
       the `GET …/pulls/<n>` request the module already sends, and takes its
       node id and draft state from that response. If the pull request is
@@ -27,7 +27,7 @@ GraphQL call and no other.
       that node id, and returns the draft state the mutation reports. Tests
       cover a ready pull request, one already a draft, and a GraphQL error
       response.
-- [ ] **AC-2** — **Exactly one GraphQL request is allowed.** `github.mjs`'s
+- [x] **AC-2** — **Exactly one GraphQL request is allowed.** `github.mjs`'s
       allowlist, checked before any network call as for every other request,
       admits `POST https://api.github.com/graphql` only when the body's `query`
       is the module's one mutation text, byte for byte, and its `variables`
@@ -37,7 +37,7 @@ GraphQL call and no other.
       - any GraphQL query;
       - the allowed mutation with an extra variable or an extra body key;
       - the allowed mutation sent to any other URL.
-- [ ] **AC-3** — Nothing else in `github.mjs`'s behaviour changes. AC-1 and
+- [x] **AC-3** — Nothing else in `github.mjs`'s behaviour changes. AC-1 and
       AC-2 need three changes to existing code, and are allowed them:
       `parsePullRequestState` (or a parser of the new function's own) keeps
       the pull request's `node_id`; `assertAllowedRequest`, which today
@@ -46,7 +46,7 @@ GraphQL call and no other.
       operation. Its other allowlist entries, the OQ-68/AC-3 test and the
       tests for the workflow-dispatch prohibition are unchanged, and pass. The
       new tests are additions.
-- [ ] **AC-4** — Every `**Planned (…)**` marker in
+- [x] **AC-4** — Every `**Planned (…)**` marker in
       `docs/agent-workflow-design.md` that names OQ-87 is resolved as that
       document's "Reading this document" note says.
 
