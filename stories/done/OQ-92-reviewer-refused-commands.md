@@ -20,7 +20,7 @@ everything else has a stated fallback.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — A new module, `scripts/dispatch/review-tools.mjs`, is
+- [x] **AC-1** — A new module, `scripts/dispatch/review-tools.mjs`, is
       runnable as `node scripts/dispatch/review-tools.mjs <subcommand> …`
       and has three subcommands. Each takes the command to run after `--`.
       - `repeat <n> -- <command…>` runs the command `n` times, from 1 to 10.
@@ -35,7 +35,7 @@ everything else has a stated fallback.
       The helper exits 0 whenever it ran the command, whatever the command's
       own exit code, so that the permission layer and the reviewer read the
       result from its output.
-- [ ] **AC-2** — **The helper can do nothing the reviewer's allowlist cannot.**
+- [x] **AC-2** — **The helper can do nothing the reviewer's allowlist cannot.**
       It runs a command only if the command matches a `Bash(<prefix>:*)`
       entry of `reviewerAllowedTools()` (imported from `invocation.mjs`, not
       copied), and is not `node` itself. Otherwise it refuses before starting
@@ -45,7 +45,7 @@ everything else has a stated fallback.
       process: `git push`, `gh`, `sed -i`, `sort -o`, `node -e`, and a command
       whose first word is not on the allowlist. Another test asserts that an
       argument `;` reaches the child as a literal argument.
-- [ ] **AC-3** — **`npm` and `npx` start on Windows too.** On Windows they
+- [x] **AC-3** — **`npm` and `npx` start on Windows too.** On Windows they
       are a shell script and a `.cmd`, which `execFile` cannot start without a
       shell (**Context**). So the helper, not the caller, starts an allowed
       `npm` or `npx` command on Windows as `process.execPath` running npm's
@@ -62,7 +62,7 @@ everything else has a stated fallback.
       The PR body reports one real
       `repeat 2 -- npx vitest run scripts/dispatch/queue.test.mjs` on the
       machine that runs reviews.
-- [ ] **AC-4** — Tests cover each subcommand's output with an injected process
+- [x] **AC-4** — Tests cover each subcommand's output with an injected process
       starter: `repeat` with a mix of exit codes, `exit` with a non-zero
       code, `sorted` with and without `--unique`, and `repeat` refusing `0`
       and `11`.
@@ -76,7 +76,7 @@ everything else has a stated fallback.
         needed;
       - when a check could not be run, say so in the verdict, naming the
         check.
-- [ ] **AC-6** — Every `**Planned (…)**` marker in
+- [x] **AC-6** — Every `**Planned (…)**` marker in
       `docs/agent-workflow-design.md` that names OQ-92 is resolved as that
       document's "Reading this document" note says.
 
