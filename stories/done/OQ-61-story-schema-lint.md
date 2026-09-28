@@ -17,12 +17,12 @@ but cannot be reviewed against.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — `node scripts/lint-stories.mjs` validates every `stories/*.md` and
+- [x] **AC-1** — `node scripts/lint-stories.mjs` validates every `stories/*.md` and
       `stories/done/*.md`. A conforming set exits `0` and writes nothing to stderr.
       A non-conforming set exits non-zero and writes one line per violation naming
       the file path, the identifier of the rule broken, and the 1-based line number.
       All violations are reported in a single run; it does not stop at the first.
-- [ ] **AC-2** — Frontmatter is rejected when any of `id`, `title`, `tier`,
+- [x] **AC-2** — Frontmatter is rejected when any of `id`, `title`, `tier`,
       `kind`, `depends_on`, `model`, `blocked` is absent; when `id` does not match
       `^OQ-\d+$`; when `tier` is not one of exactly `fix`, `next`, `normal`,
       `later`; when `kind` is not one of exactly `product`, `workflow`; when
@@ -30,14 +30,14 @@ but cannot be reviewed against.
       `^OQ-\d+$`; or when `blocked` is neither null nor a non-empty string. An
       unknown extra key is reported but does **not** fail the run, so the schema
       can be extended without a flag day.
-- [ ] **AC-3** — A story whose `id` does not equal the `OQ-NN` prefix of its own
+- [x] **AC-3** — A story whose `id` does not equal the `OQ-NN` prefix of its own
       filename is rejected. `stories/OQ-9001-anything.md` carrying `id: OQ-9002`
       fails; the slug after the prefix is not otherwise constrained. Fixtures use
       four-digit ids so they cannot collide with a real story.
-- [ ] **AC-4** — All six sections `Intent`, `Acceptance criteria`, `Out of scope`,
+- [x] **AC-4** — All six sections `Intent`, `Acceptance criteria`, `Out of scope`,
       `Constraints`, `Context`, `Open questions` must be present as level-2
       headings. Rejection names every missing heading, not just the first.
-- [ ] **AC-5** — Every acceptance criterion is a task-list item carrying
+- [x] **AC-5** — Every acceptance criterion is a task-list item carrying
       `**AC-N**`, or `**AC-Nx**` with one lowercase letter (an AC inserted after
       dispatch-stable ids were set, such as `AC-6b`). The set of N across a
       story is `1..n` with no gap and no duplicate, and `n >= 1`. A suffixed id
@@ -46,13 +46,13 @@ but cannot be reviewed against.
       `AC-4`, or with an empty `Acceptance criteria` section, is rejected.
       `stories/done/` already uses suffixes (OQ-68's `AC-3b`, OQ-69's `AC-6b`,
       OQ-70's `AC-7b`), and they pass.
-- [ ] **AC-6** — A section whose only content is an italic parenthetical —
+- [x] **AC-6** — A section whose only content is an italic parenthetical —
       `*(none)*`, `*(must be empty to dispatch)*`, or any `*(...)*` alone on its
       line — is treated as **empty**, identically to a section with no content at
       all. A story whose `Open questions` section holds only such a placeholder is
       therefore reported as `ready`, not `draft`. Both forms are covered by
       fixtures, and the equivalence is asserted for `Constraints` as well.
-- [ ] **AC-7** — The lint also reads `docs/*.md` and fails on a
+- [x] **AC-7** — The lint also reads `docs/*.md` and fails on a
       `**Planned (OQ-n, …)**` marker that names a story whose file is in
       `stories/done/`, or that names a numeric id with no story file. Only
       numeric ids are read, and a marker must sit on one line. A marker with
@@ -62,7 +62,7 @@ but cannot be reviewed against.
       (fails), a marker naming an id with no story file (fails), and
       `**Planned (OQ-n)**` (passes). The convention is in
       `docs/agent-workflow-design.md`, "Reading this document".
-- [ ] **AC-8** — Every `**Planned (…)**` marker in
+- [x] **AC-8** — Every `**Planned (…)**` marker in
       `docs/agent-workflow-design.md` that names OQ-61 is resolved as that
       document's "Reading this document" note says.
 
