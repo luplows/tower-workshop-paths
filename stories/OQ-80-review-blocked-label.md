@@ -45,9 +45,9 @@ follow the rule.
 ## Out of scope
 
 - **The dispatch loop**, which reads the label and stops retrying (OQ-48's
-  AC-6). This story only applies it.
+  AC-3). This story only applies it.
 - **Changing the breaker's threshold or exemptions** in `land-approved.yml`.
-- **Counting red CI rounds.** OQ-48's AC-6b bounds those separately and applies
+- **Counting red CI rounds.** OQ-48's AC-4 bounds those separately and applies
   no label.
 
 ## Constraints
@@ -55,7 +55,7 @@ follow the rule.
 - The `review-blocked` label string must stay exactly as it is:
   `land-approved.yml` and the `SessionStart` hook both read it.
 - The bound, three blocking verdicts, is OQ-48's. It is restated in AC-1 for
-  readability, and must not drift from OQ-48's AC-6.
+  readability, and must not drift from OQ-48's AC-3.
 
 ## Context
 
