@@ -63,9 +63,18 @@ the owner is holding back.
       are extra keys, another input name and a non-numeric `pr`. Tests
       assert those refusals before the network, and that a run of
       `landPullRequest({ number: 7 })` sends only dispatches naming `'7'`.
-      The existing OQ-50 tests that expect `body: { ref: 'main' }`
-      (`land.test.mjs`, OQ-50/AC-1 and AC-4) change to the new shape; this
-      criterion authorises that change and no other change to them.
+      Four existing OQ-50 tests in `land.test.mjs` build or expect the old
+      dispatch, and change to the new signature and shape:
+      - "waits through a pending review, triggers once it is landable, then
+        reports the merge", which expects `body: { ref: 'main' }`;
+      - "never builds a merge request: …", "permits the three requests it
+        builds" and "github.mjs is unchanged in what it refuses: …", which
+        call `buildDispatchSweep(REPO)`.
+
+      "refuses any other workflow, any other ref or inputs, and any other
+      write, before the network" may gain entries for the new refusals. This
+      criterion authorises those changes and no others to OQ-50's tests; each
+      test still asserts what it asserted before.
 - [ ] **AC-5** — The documents say what was built:
       - Every `**Planned (…)**` marker in `docs/agent-workflow-design.md`
         that names OQ-93 is resolved as that document's "Reading this
