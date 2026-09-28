@@ -23,9 +23,14 @@ heading without saying why, and two stale comments in `github.mjs`.
       request, as `wrong-branch` and before any worktree is made, unless its
       head is exactly `story/<name>` for a story file `<name>.md` with the
       story's id that exists at that branch's tip on `origin`, in `stories/`
-      or `stories/done/`. That is the name `branchFor` gives the story. A
-      test covers a head with the right id and the wrong slug, which today
-      throws `ENOENT` after the worktree is made.
+      or `stories/done/`. That is the name `branchFor` gives the story. The
+      existing refusals keep their order and statuses: `pr-not-open`, the
+      id-prefix `wrong-branch`, `local-branch-exists` and `branch-missing`
+      are checked first, as today (`coder.mjs:424-439`). The new check runs
+      after the branch has been fetched from `origin`, so a head absent from
+      `origin` is still `branch-missing`. A test covers a head with the right
+      id and the wrong slug, which today throws `ENOENT` after the worktree
+      is made.
 - [ ] **AC-2** — Tests through `retryStory` cover:
       - `local-branch-exists`, with nothing spawned;
       - `push-failed`, with the body not replaced and the result carrying

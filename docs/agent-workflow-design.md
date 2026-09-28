@@ -447,9 +447,10 @@ workspace is not trusted. Untrusted values (`STORY`, `PR_BODY`, a retry's findin
 
 **Planned (OQ-92):** `scripts/dispatch/review-tools.mjs` does the jobs that refused shell forms were
 doing in reviews: a command repeated N times, a command's exit code, and sorted output. It runs only
-commands the reviewer's allowlist admits, without a shell, starting `npm` and `npx` through `node`
-and npm's own CLI scripts so that they run on Windows. For anything else the reviewer runs one
-allowed command per call, or uses `node -e`.
+commands the reviewer's allowlist admits, without a shell. On Windows it starts `npm` and `npx` as
+`node` running npm's own CLI scripts, since they cannot start there without a shell; elsewhere it
+starts them by name. For anything else the reviewer runs one allowed command per call, or uses
+`node -e`.
 
 Three flags are load-bearing:
 

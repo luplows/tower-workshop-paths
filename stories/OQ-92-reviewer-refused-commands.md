@@ -48,12 +48,18 @@ everything else has a stated fallback.
 - [ ] **AC-3** — **`npm` and `npx` start on Windows too.** On Windows they
       are a shell script and a `.cmd`, which `execFile` cannot start without a
       shell (**Context**). So the helper, not the caller, starts an allowed
-      `npm` or `npx` command as `process.execPath` running npm's own CLI
-      script, `npm-cli.js` or `npx-cli.js`. It finds that script from where
-      the running `node` is installed. The caller still cannot name `node`,
-      and no shell is used. A test asserts, with the platform and paths
-      injected, the program and arguments started for `npx vitest run x` on
-      Windows and elsewhere. The PR body reports one real
+      `npm` or `npx` command on Windows as `process.execPath` running npm's
+      own CLI script, `npm-cli.js` or `npx-cli.js`, from
+      `<directory of process.execPath>\node_modules\npm\bin\`. If that script
+      is missing, the helper refuses with a message naming the path. On every
+      other platform it starts `npm` or `npx` by name, as it starts `git`:
+      there they are scripts that `execFile` can start without a shell. The
+      caller still cannot name `node`, and no shell is used. Tests assert,
+      with the platform and paths injected, the program and arguments started
+      for `npx vitest run x` on `win32` (`process.execPath` and the
+      `npx-cli.js` path, then `vitest run x`) and on `linux` (`npx`, then
+      `vitest run x`), and the refusal when the Windows script is missing.
+      The PR body reports one real
       `repeat 2 -- npx vitest run scripts/dispatch/queue.test.mjs` on the
       machine that runs reviews.
 - [ ] **AC-4** — Tests cover each subcommand's output with an injected process
