@@ -52,6 +52,7 @@ const REMOTE = 'origin'
 // The bound on each kind of round (AC-3, AC-4). The round a retry is given is
 // the count so far plus one, and the rounds remaining after it are this minus that.
 export const MAX_ROUNDS = 3
+const FINDINGS_IN_REASON = 600
 // The label OQ-80's `review-gate.yml` applies; this module only reads it.
 const REVIEW_BLOCKED_LABEL = 'review-blocked'
 const PASSING = ['pass', 'pass-with-observations']
@@ -101,14 +102,21 @@ export function decideCi(result, redCount = 0) {
 }
 
 /** What a recorded verdict leads to (AC-2, AC-3). `blocks` is the honoured block count; `labels` the pull request's. */
-export function decideVerdict(verdict, { blocks, labels }) {
+export function decideVerdict(verdict, { blocks, labels, findings = '' }) {
   if (PASSING.includes(verdict)) return { next: 'land' }
   if (verdict !== 'block') return { next: 'stop', status: 'review-unrecognised', reason: `unrecognised verdict ${JSON.stringify(verdict)}` }
   if (labels.includes(REVIEW_BLOCKED_LABEL)) {
     return { next: 'stop', status: 'review-blocked-label', reason: `the pull request carries ${REVIEW_BLOCKED_LABEL}; not retrying it` }
   }
   if (blocks >= MAX_ROUNDS) {
-    return { next: 'stop', status: 'review-round-bound', reason: `${blocks} blocking verdicts, the bound; the findings are unresolved` }
+    // One line, bounded: the reason is written into the story file's frontmatter.
+    const named = findings.replace(/\s+/g, ' ').trim()
+    const shown = named.length > FINDINGS_IN_REASON ? `${named.slice(0, FINDINGS_IN_REASON)}…` : named
+    return {
+      next: 'stop',
+      status: 'review-round-bound',
+      reason: `${blocks} blocking verdicts, the bound; the unresolved findings of the latest: ${shown || 'none recorded'}`,
+    }
   }
   return { next: 'retry', source: 'review', round: blocks + 1 }
 }
@@ -289,7 +297,8 @@ export async function runStory({
   async function stop(status, reason, extra = {}) {
     const record = { draft: false, blocked: null, recorded: false, failed: [] }
     try {
-      await d.convertPullRequestToDraft(ctx, run.pr)
+      const converted = await d.convertPullRequestToDraft(ctx, run.pr)
+      if (converted?.draft !== true) throw new Error('GitHub reports the pull request is still not a draft')
       record.draft = true
     } catch (error) {
       record.failed.push({ step: 'draft', reason: error.message })
@@ -337,7 +346,7 @@ export async function runStory({
     run.headSha = pr.headSha
     if (pr.draft) return { status: 'already-stopped', stopped: true, reason: 'the pull request is a draft', pr: prNumber }
     const at = await d.readBlockedAt({ repoDir, branch: run.branch, ref: run.headSha })
-    if (at.unreadable) return stopped('story-unreadable', at.unreadable, { pr: prNumber })
+    if (at.unreadable) return stop('story-unreadable', at.unreadable)
     if (at.blocked !== null) {
       return { status: 'already-stopped', stopped: true, reason: `the story file at the head has blocked: ${at.blocked}`, pr: prNumber }
     }
@@ -364,6 +373,7 @@ export async function runStory({
       const decision = decideVerdict(phase.verdict, {
         blocks: countBlockingVerdicts(comments),
         labels: await d.getPullRequestLabels(ctx, run.pr),
+        findings: findingsOf(phase.comment),
       })
       if (decision.next === 'stop') return stop(decision.status, decision.reason)
       phase = decision.next === 'land' ? { next: 'land' } : await retry(decision, findingsOf(phase.comment))

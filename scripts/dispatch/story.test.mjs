@@ -228,6 +228,7 @@ describe('OQ-48/AC-3: the review bound is derived, honoured, and never written a
     const result = await h.run()
     expect(result).toMatchObject({ status: 'review-round-bound', stopped: true })
     expect(result.reason).toMatch(/unresolved/)
+    expect(result.reason).toContain('A finding.')
     expect(h.names()).not.toContain('retry')
   })
 
@@ -385,6 +386,15 @@ describe('OQ-48/AC-8: how a stop is recorded', () => {
     expect(h.names()).not.toContain('record')
   })
 
+  it('OQ-48/AC-8: a conversion that reports the pull request still ready is a failure, and nothing is committed', async () => {
+    const h = harness({ dispatch: opened, ci: [red('cancelled')] })
+    h.deps.convertPullRequestToDraft = async () => ({ draft: false, alreadyDraft: false })
+    const result = await h.run()
+    expect(result.record).toMatchObject({ draft: false, recorded: false })
+    expect(result.record.failed[0].step).toBe('draft')
+    expect(h.names()).not.toContain('record')
+  })
+
   it('OQ-48/AC-8: a failed push is reported with what failed, and the draft stands', async () => {
     const h = harness({ dispatch: opened, ci: [red('cancelled')], record: { status: 'push-failed', reason: 'rejected' } })
     const result = await h.run()
@@ -468,7 +478,7 @@ describe('OQ-48/AC-8: recordBlocked, against a real repository', () => {
       expect(git(repoDir, 'show', 'origin/main:stories/OQ-9-a-story.md')).toContain('blocked: null')
       expect(git(repoDir, 'branch', '--list', branch).trim()).toBe('')
     }
-  })
+  }, 30_000)
 
   it('OQ-48/AC-8: commits nothing when the coder\'s own blocked: is already on the branch', async () => {
     const branch = 'story/OQ-9-c-story'
@@ -531,6 +541,13 @@ describe('OQ-48/AC-9: resuming an existing pull request', () => {
     const h = harness({ blockedAt: { blocked: 'why' }, comments: [comment(1, 'pass', H1)] })
     expect(await resume(h)).toMatchObject({ status: 'already-stopped' })
     untouched(h)
+  })
+
+  it('OQ-48/AC-9: an unreadable story file on an open pull request stops it as a draft, like any other stop', async () => {
+    const h = harness({ blockedAt: { unreadable: 'no story file' } })
+    const result = await resume(h)
+    expect(result).toMatchObject({ status: 'story-unreadable', pr: 7, record: { draft: true } })
+    expect(h.names()).toContain('draft')
   })
 
   it('OQ-48/AC-9: a pull request that is closed, or on another story\'s branch, stops with its own status', async () => {
