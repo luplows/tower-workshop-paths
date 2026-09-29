@@ -18,29 +18,29 @@ open a pull request. Only a pass marker stands between them and the sweep.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — The landing sweep lands a pull request only when its
+- [x] **AC-1** — The landing sweep lands a pull request only when its
       `author_association` is one the review gate honours for markers. The set
       lives in `.github/workflows/review-gate.yml`, step "Apply verdict from
       marker". Any other pull request is skipped with a notice naming it and its
       association, and the sweep goes on to the next candidate, as it does for a
       `review-blocked` one. This applies to **every** pull request, not only
       those touching `stories/`.
-- [ ] **AC-2** — The check is testable outside Actions. It lives in a module
+- [x] **AC-2** — The check is testable outside Actions. It lives in a module
       under `scripts/land/` that the workflow calls, as
       `delete-merged-heads.mjs` (OQ-52) does. Tests cover: an `OWNER` pull
       request that is eligible, a `CONTRIBUTOR` one and a `NONE` one that are
       skipped, and a skipped PR followed by an eligible one, which still lands.
-- [ ] **AC-3** — `land-approved.yml` and `review-gate.yml` use the same set of
+- [x] **AC-3** — `land-approved.yml` and `review-gate.yml` use the same set of
       associations, and a test reads both workflows and fails if they differ.
       OQ-78's AC-3 ties `review.mjs` to the same set; the three must agree.
-- [ ] **AC-4** — Every other eligibility and safety rule of the sweep is
+- [x] **AC-4** — Every other eligibility and safety rule of the sweep is
       unchanged: one PR per run, oldest first, `--match-head-commit`,
       `review/agent` re-checked directly, and the circuit breaker with its
       exemptions. If OQ-93 has landed, "oldest first" applies to a run given
       no pull request, and a run given one considers only that one; the
       author check applies to both. A pull request from outside that carries `breaker-override`
       is still skipped: this check comes before the breaker's exemptions.
-- [ ] **AC-5** — Every `**Planned (…)**` marker in
+- [x] **AC-5** — Every `**Planned (…)**` marker in
       `docs/agent-workflow-design.md` that names OQ-81 is resolved as that
       document's "Reading this document" note says. That includes the rule in
       "Merging", which lists it among the sweep's properties with its reason.
