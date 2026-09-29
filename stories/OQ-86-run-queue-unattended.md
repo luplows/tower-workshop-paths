@@ -119,6 +119,9 @@ before it, until nothing is ready.
 - **Running on a schedule, or surviving the machine being off.** The watchdog
   (`docs/agent-workflow-design.md`, "Watchdog") covers the second.
 - **A starvation valve for stories that wait too long.** OQ-59.
+- **Pausing at a usage threshold, and resuming a paused story.** OQ-102
+  extends AC-3 and AC-4 for it: `paused` becomes an outcome the loop goes on
+  from, and a paused story the one `in-progress` story it resumes.
 
 ## Constraints
 

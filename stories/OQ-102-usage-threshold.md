@@ -37,24 +37,39 @@ up again once usage is back under the threshold.
 - [ ] **AC-3** — **A paused story resumes.** On a run under the threshold,
       before it dispatches a new story, the loop resumes each paused story
       through OQ-48's entry point (`story.mjs OQ-<n> --pr <number>`), which
-      retries it from its latest block. A paused story is derived, not
-      stored: an open, non-draft pull request on a `story/OQ-<n>-*` branch
-      whose head has an honoured `block` verdict, with fewer blocking verdicts
-      than the bound (`MAX_ROUNDS` in `scripts/dispatch/story.mjs`), and no
-      `blocked:` in its story file at the head.
-- [ ] **AC-4** — Tests cover:
+      retries it from where it stopped. A paused story is derived, not
+      stored: an open, non-draft pull request on a `story/OQ-<n>-*` branch,
+      with no `blocked:` in its story file at the head, whose head either
+      - has an honoured `block` verdict, with fewer blocking verdicts than
+        the bound (`MAX_ROUNDS` in `scripts/dispatch/story.mjs`), or
+      - has no verdict and a CI run that concluded `failure`, with fewer red
+        rounds than the same bound (`countRedCiRounds`).
+
+      Both are the points at which OQ-48 would have retried, and so the two
+      ways AC-1 can pause a story.
+- [ ] **AC-4** — **This extends OQ-86's loop in two places.** `paused` is
+      an outcome after which the loop goes on, like a merge or a fully
+      recorded stop (OQ-86's AC-3), rather than stopping the loop. And a
+      paused story is the one kind of `in-progress` story the loop resumes;
+      OQ-86's AC-4 otherwise never resumes one. Tests cover both: a pause
+      does not stop the loop, and a paused story is resumed while another
+      `in-progress` story, stopped with `blocked:`, is still skipped.
+- [ ] **AC-5** — Tests cover:
       - over the threshold: no first dispatch and no retry, and a review and
         a landing still happen;
-      - a story paused, then resumed on a later run under the threshold;
+      - a story paused at a block, and one paused at red CI, each resumed on
+        a later run under the threshold;
       - a running coder session left to finish.
-- [ ] **AC-5** — `docs/agent-workflow-design.md`, "Running unattended": every
+- [ ] **AC-6** — `docs/agent-workflow-design.md`, "Running unattended": every
       `**Planned (…)**` marker that names OQ-102 is resolved as that
       document's "Reading this document" note says.
 
 ## Out of scope
 
-- **GitHub's API rate limit.** The loop uses a few calls a run, far under
-  5,000 an hour.
+- **GitHub's API rate limit.** Waiting for CI and for a landing polls every
+  15 seconds (`CI_POLL_INTERVAL_MS` in `scripts/dispatch/ci.mjs`,
+  `POLL_INTERVAL_MS` in `scripts/dispatch/land.mjs`), so a run that waits
+  makes dozens to hundreds of calls. That is still far under 5,000 an hour.
 - **Stopping a session that is running**, which would leave a branch, a
   worktree or a pull request with no verdict half-done.
 - **Notifications.** The run log is the record (OQ-101).
@@ -77,7 +92,8 @@ up again once usage is back under the threshold.
 - `story.mjs --pr` refuses a draft pull request, or one with `blocked:` at
   its head (`already-stopped`). That is why AC-1 pauses without either.
   Resumed on a pull request whose head has a block verdict, it retries
-  (`decideVerdict`).
+  (`decideVerdict`). With no verdict at the head, it waits for CI, and on a
+  `failure` under the bound it retries (`decideCi`).
 
 ## Open questions
 
