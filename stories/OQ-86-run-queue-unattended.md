@@ -91,6 +91,19 @@ before it, until nothing is ready.
 - [ ] **AC-5** — Every `**Planned (…)**` marker in
       `docs/agent-workflow-design.md` that names OQ-86 is resolved as that
       document's "Reading this document" note says.
+- [ ] **AC-6** — **`--max-stories N` caps a run.** With it, the loop starts
+      at most N stories and then stops between stories with its own status,
+      `max-stories`, reporting the stories it ran. A story counts when its
+      OQ-48 process is started. A story AC-4 skips does not count. Without the
+      flag there is no cap, and the loop runs until `nothing-ready` (AC-2).
+      `N` must match `^[1-9][0-9]*$`, and any other value makes the loop exit
+      non-zero before it fetches or dispatches anything. Tests cover:
+      - `--max-stories 1` with two ready stories: one is run, and the loop
+        stops with `max-stories`;
+      - no flag with two ready stories: both are run;
+      - `--max-stories 2` with one ready story: it is run, and the loop
+        stops with `nothing-ready`;
+      - `0`, `-1`, `x` and `07`: each is refused, with no story started.
 
 ## Out of scope
 
@@ -106,6 +119,9 @@ before it, until nothing is ready.
 - **Running on a schedule, or surviving the machine being off.** The watchdog
   (`docs/agent-workflow-design.md`, "Watchdog") covers the second.
 - **A starvation valve for stories that wait too long.** OQ-59.
+- **Pausing at a usage threshold, and resuming a paused story.** OQ-102
+  extends AC-3 and AC-4 for it: `paused` becomes an outcome the loop goes on
+  from, and a paused story the one `in-progress` story it resumes.
 
 ## Constraints
 
@@ -159,6 +175,10 @@ draft). Second, AC-2 runs each story in its own process. As first written,
 AC-1 promised the loop's own code was current, but a Node process keeps the
 modules it has already loaded. `coder.mjs` reads its prompt from disk on each
 dispatch, so prompts would have updated while code would not.
+
+AC-6 was added on 2026-09-28, before dispatch, at the owner's request: the
+owner wants to start the full loop by hand for a set number of stories.
+OQ-101's scheduled runner may pass it too.
 
 The fourth review of #151 found that AC-4 overstated the interrupted case. A
 story killed before its first push has no branch on `origin`, so it is picked
