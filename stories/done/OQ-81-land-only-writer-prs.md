@@ -5,7 +5,7 @@ tier: next
 kind: workflow
 depends_on: []
 model: sonnet
-blocked: null
+blocked: "land-review-failed: landing ended review-failed"
 ---
 
 ## Intent
