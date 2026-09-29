@@ -105,3 +105,12 @@ up again once usage is back under the threshold.
    a flag. Any running total is state the loop would keep, which the design
    otherwise avoids ("Status is derived, not stored"), so the answer should
    say where it lives.
+3. **Should the loop also resume a story whose run was interrupted?** AC-3
+   derives a paused story from GitHub alone. A story whose OQ-48 process was
+   killed at the same two points looks the same, so the loop would resume it
+   too. Today resuming an interrupted story is the owner's: OQ-86's AC-4,
+   OQ-101's Out of scope, and the design doc's failure-table row "The
+   dispatcher is interrupted mid-story". Either accept that the loop resumes
+   both, and say so in those three places, or tell a pause apart, for
+   example by the run log's `paused` entry (OQ-101), which would make the log
+   state the loop reads. Raised by #174's third review.
