@@ -3,7 +3,7 @@ id: OQ-102
 title: Stop starting coder sessions once a usage threshold is reached, and let reviews finish
 tier: next
 kind: workflow
-depends_on: [OQ-86]
+depends_on: [OQ-83, OQ-86, OQ-101]
 model: sonnet
 blocked: null
 ---

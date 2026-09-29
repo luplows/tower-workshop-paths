@@ -17,9 +17,10 @@ requests from anyone without write access are left alone.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — Before dispatching each story, the loop looks for open,
-      non-draft pull requests against `main` whose `author_association` is one
-      the gate honours. For each one with no honoured verdict at its current
+- [ ] **AC-1** — On every run, before dispatching each story, and also on a
+      run with no story to dispatch, the loop looks for open, non-draft pull
+      requests against `main` whose `author_association` is one the gate
+      honours. For each one with no honoured verdict at its current
       head, it runs `review.mjs`. Draft pull requests are skipped, so marking
       one ready is how Session A hands it over. The loop's own story PRs are
       already handled by OQ-48's cycle, and are not reviewed a second time here.
@@ -41,6 +42,9 @@ requests from anyone without write access are left alone.
 - [ ] **AC-6** — Tests cover:
       - a writer's story PR, reviewed and landed before the next story is
         dispatched;
+      - a writer's story PR on a run whose queue has nothing ready, reviewed
+        and landed, and the story it adds then dispatched in that same run
+        when it is `ready`;
       - a draft, skipped;
       - a block, left with no coder spawned;
       - an outsider's PR, ignored;
@@ -71,6 +75,10 @@ requests from anyone without write access are left alone.
   story-writing PR.
 - `scripts/dispatch/review.mjs` already reviews a pull request that implements
   no story (OQ-69's AC-6b).
+- AC-1's "also on a run with no story to dispatch" was added on 2026-09-28,
+  before dispatch, from #174's review. When Session A hands over the only new
+  story, the queue has nothing ready until that pull request lands, so a loop
+  that looked only before dispatching would never review it.
 
 ## Open questions
 
