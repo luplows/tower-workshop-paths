@@ -18,7 +18,7 @@ stay available, so no story needs to be run differently from the rest.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — `buildInvocation` in `scripts/dispatch/invocation.mjs` sets
+- [x] **AC-1** — `buildInvocation` in `scripts/dispatch/invocation.mjs` sets
       `BASH_DEFAULT_TIMEOUT_MS` and `BASH_MAX_TIMEOUT_MS` to `'600000'` in the
       returned `env` of both roles. The values are set after `baseEnv` is
       copied, so they override whatever `baseEnv` holds. Both values come
@@ -28,7 +28,7 @@ stay available, so no story needs to be run differently from the rest.
       - a `baseEnv` carrying different values for both.
 
       In both cases the returned `env` holds `'600000'` for both variables.
-- [ ] **AC-2** — `buildInvocation` removes `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS`
+- [x] **AC-2** — `buildInvocation` removes `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS`
       from the returned `env` of both roles when `baseEnv` carries it, so
       every dispatched session has background commands available. A test
       covers each role.
@@ -48,7 +48,7 @@ stay available, so no story needs to be run differently from the rest.
         until it has finished;
       - a command that times out has been stopped, and is narrowed or split
         rather than started again unchanged.
-- [ ] **AC-4** — Every `**Planned (…)**` marker in
+- [x] **AC-4** — Every `**Planned (…)**` marker in
       `docs/agent-workflow-design.md` that names OQ-107 is resolved as that
       document's "Reading this document" note says.
 
