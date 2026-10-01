@@ -100,12 +100,15 @@ export async function pickStory(repoDir) {
  * its stdout is parsed regardless of exit code. Resolves `{ status: 'ran',
  * result }`, or `{ status: 'process-error', reason }` when the process exited
  * without printing a parseable result (AC-3).
+ *
+ * `scriptPath` defaults to `story.mjs` and exists only so a test can point it
+ * at a stand-in script; production never passes it.
  */
-export async function runStoryProcess({ repoDir, repo, storyId }) {
+export async function runStoryProcess({ repoDir, repo, storyId, scriptPath = STORY_MJS }) {
   let stdout = ''
   let stderr = ''
   try {
-    const out = await execFileAsync('node', [STORY_MJS, storyId, '--repo', repo], { cwd: repoDir, maxBuffer: 64 * 1024 * 1024 })
+    const out = await execFileAsync('node', [scriptPath, storyId, '--repo', repo], { cwd: repoDir, maxBuffer: 64 * 1024 * 1024 })
     stdout = out.stdout
   } catch (error) {
     stdout = error.stdout ?? ''

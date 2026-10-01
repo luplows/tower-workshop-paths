@@ -5,7 +5,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { parseMaxStories, pickStory, runLoop, updateCheckout } from './loop.mjs'
+import { parseMaxStories, pickStory, runLoop, runStoryProcess, updateCheckout } from './loop.mjs'
 
 const git = (cwd, ...args) => execFileSync('git', args, { cwd, encoding: 'utf8' })
 
@@ -122,6 +122,43 @@ describe('OQ-86/AC-1: fetches and fast-forwards the checkout between stories', (
     const result = await updateCheckout(repo.repoDir)
     expect(result).toEqual({ status: 'updated', headSha: advancedSha })
   })
+
+  it('OQ-86/AC-1: runLoop stops with its own status and dispatches nothing when the fast-forward refuses', async () => {
+    const pickStory = async () => { throw new Error('pickStory must not be called') }
+    const runStoryProcess = async () => { throw new Error('runStoryProcess must not be called') }
+    const failingUpdateCheckout = async () => ({ status: 'not-fast-forward', reason: 'local changes would be discarded' })
+
+    const result = await runLoop({ deps: { updateCheckout: failingUpdateCheckout, pickStory, runStoryProcess } })
+    expect(result.status).toBe('update-failed')
+    expect(result.reason).toBe('local changes would be discarded')
+    expect(result.report).toEqual([])
+  })
+
+  it('OQ-86/AC-1: the checkout is not fetched and fast-forwarded again while a story\'s process is running', async () => {
+    const calls = []
+    let running = false
+    const guardedUpdateCheckout = async () => {
+      calls.push('update')
+      if (running) throw new Error('updateCheckout was called while a story was running')
+      return { status: 'updated', headSha: 'deadbeef' }
+    }
+    let picks = 0
+    const pickStory = async () => (picks++ === 0 ? { story: { id: 'OQ-1', branch: 'story/OQ-1-x' }, skipped: [] } : { story: null, skipped: [] })
+    const runStoryProcess = async () => {
+      calls.push('run-start')
+      running = true
+      await new Promise((resolve) => setTimeout(resolve, 10))
+      running = false
+      calls.push('run-end')
+      return { status: 'ran', result: { status: 'merged' } }
+    }
+
+    const result = await runLoop({ deps: { updateCheckout: guardedUpdateCheckout, pickStory, runStoryProcess } })
+    expect(result.status).toBe('nothing-ready')
+    // One update before the story, none while it ran, one more after it
+    // finished before the loop found nothing ready.
+    expect(calls).toEqual(['update', 'run-start', 'run-end', 'update'])
+  })
 })
 
 describe('OQ-86/AC-4: pickStory skips an in-progress story and derives nothing-ready', () => {
@@ -201,17 +238,25 @@ describe('OQ-86/AC-2: two stories run from a checkout that catches up between th
     const headAtCall = []
     let call = 0
     const mergedShas = []
+    // Production merges to origin/main through a separate landing sweep
+    // (land.mjs), never by committing in the dispatcher's own checkout
+    // (repoDir). So this fake lands each story from its own throwaway clone,
+    // pushed straight to origin, and never touches repoDir -- the only way
+    // repoDir's HEAD can include a merge is through runLoop's own
+    // updateCheckout call on the next iteration. If that call were skipped,
+    // repoDir would stay stale, OQ-40 would still read ready in its working
+    // tree, and the second pick would be OQ-40 again instead of OQ-41.
     const runStoryProcess = async ({ repoDir, storyId }) => {
       call++
       headAtCall.push(git(repoDir, 'rev-parse', 'HEAD').trim())
-      // Simulates story.mjs landing the story: its file moves to stories/done/
-      // (so it drops out of the ready queue) in a commit pushed to origin/main.
       const slug = storyId === 'OQ-40' ? 'first' : 'second'
-      mkdirSync(path.join(repoDir, 'stories', 'done'), { recursive: true })
-      git(repoDir, 'mv', `stories/${storyId}-${slug}.md`, `stories/done/${storyId}-${slug}.md`)
-      git(repoDir, 'commit', '-m', `merge ${storyId}`)
-      git(repoDir, 'push', 'origin', 'main')
-      const sha = git(repoDir, 'rev-parse', 'HEAD').trim()
+      const landingClone = path.join(sub, `land-${storyId}`)
+      git(sub, 'clone', repo.origin, landingClone)
+      mkdirSync(path.join(landingClone, 'stories', 'done'), { recursive: true })
+      git(landingClone, 'mv', `stories/${storyId}-${slug}.md`, `stories/done/${storyId}-${slug}.md`)
+      git(landingClone, 'commit', '-m', `merge ${storyId}`)
+      git(landingClone, 'push', 'origin', 'main')
+      const sha = git(landingClone, 'rev-parse', 'HEAD').trim()
       mergedShas.push(sha)
       return { status: 'ran', result: { status: 'merged', pr: call } }
     }
@@ -222,8 +267,45 @@ describe('OQ-86/AC-2: two stories run from a checkout that catches up between th
     expect(result.report.every((r) => r.outcome === 'merged')).toBe(true)
 
     // The second story's process started from a checkout whose HEAD was the
-    // first story's merge -- the fast-forward between them picked it up.
+    // first story's merge -- only the fast-forward between the two calls
+    // (runLoop's own updateCheckout, not this test's fake) could have put it
+    // there, since runStoryProcess never touches repoDir.
     expect(headAtCall[1]).toBe(mergedShas[0])
+  })
+})
+
+describe('OQ-86/AC-2, AC-3: runStoryProcess as a real child process', () => {
+  const originalEnv = { ...process.env }
+  let root
+
+  beforeAll(() => {
+    root = mkdtempSync(path.join(tmpdir(), 'tw-loop-process-'))
+  })
+
+  afterAll(() => {
+    process.env = originalEnv
+    rmSync(root, { recursive: true, force: true })
+  })
+
+  it('OQ-86/AC-2: stdout is parsed as JSON even when the child process exits non-zero', async () => {
+    const scriptPath = path.join(root, 'prints-and-fails.mjs')
+    writeFileSync(
+      scriptPath,
+      "console.log(JSON.stringify({ status: 'nothing-committed', stopped: true })); process.exitCode = 1\n",
+    )
+
+    const result = await runStoryProcess({ repoDir: root, repo: 'x/y', storyId: 'OQ-1', scriptPath })
+    expect(result).toEqual({ status: 'ran', result: { status: 'nothing-committed', stopped: true } })
+  })
+
+  it('OQ-86/AC-3: a process-error is reported when nothing parseable is printed', async () => {
+    const scriptPath = path.join(root, 'prints-nothing.mjs')
+    writeFileSync(scriptPath, "console.error('killed by signal SIGKILL'); process.exitCode = 1\n")
+
+    const result = await runStoryProcess({ repoDir: root, repo: 'x/y', storyId: 'OQ-1', scriptPath })
+    expect(result.status).toBe('process-error')
+    expect(result.reason).toMatch(/OQ-1/)
+    expect(result.reason).toMatch(/SIGKILL/)
   })
 })
 
