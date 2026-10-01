@@ -17,7 +17,7 @@ before it, until nothing is ready.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — Each story runs on the latest `origin/main`: the dispatcher
+- [x] **AC-1** — Each story runs on the latest `origin/main`: the dispatcher
       code that runs it, its prompts and the queue. **Between stories**,
       meaning before it starts one and while it is not running one itself,
       the loop fetches and fast-forwards its own checkout to `origin/main`
@@ -29,7 +29,7 @@ before it, until nothing is ready.
       the update: the loop is not running them. Tests cover a fast-forward, a
       refusal, no update while a story is running, and an update that still
       happens while another story's branch is on `origin`.
-- [ ] **AC-2** — Stories run one at a time. Each runs as **its own child
+- [x] **AC-2** — Stories run one at a time. Each runs as **its own child
       process** of OQ-48's entry point, started after AC-1's fast-forward, so
       it loads the dispatch modules and prompts as they are on `origin/main`
       at that moment. A module the loop's own process has already loaded does
@@ -41,7 +41,7 @@ before it, until nothing is ready.
       branch on `origin` (AC-4), then stops with `nothing-ready`. Tests: two
       stories run, and the second's worktree base includes the first's merge;
       each story's process starts after that story's fast-forward.
-- [ ] **AC-3** — **The loop goes on only after a story merged, or stopped
+- [x] **AC-3** — **The loop goes on only after a story merged, or stopped
       with its stop fully recorded.** Fully recorded means OQ-48's AC-8
       reported `recorded`: the pull request is a draft, and `blocked:` is on
       the story's branch. Such a story is also skipped from then on (AC-4).
@@ -66,7 +66,7 @@ before it, until nothing is ready.
       while a stop before a pull request, a stop whose recording failed and a
       process that exits with an error each stop the loop, with no further
       coder session spawned.
-- [ ] **AC-4** — **A story that is `in-progress` is skipped, never dispatched
+- [x] **AC-4** — **A story that is `in-progress` is skipped, never dispatched
       again.** The loop chooses the story itself and passes its id to OQ-48's
       entry point. It takes the first story `dispatchable()` returns whose
       `story/OQ-<n>-*` branch does not exist on `origin`. That is
@@ -88,10 +88,10 @@ before it, until nothing is ready.
       dispatched; a queue whose only ready stories all have branches stops
       with `nothing-ready`; and a ready story with only a local branch stops
       the loop with `branch-exists`.
-- [ ] **AC-5** — Every `**Planned (…)**` marker in
+- [x] **AC-5** — Every `**Planned (…)**` marker in
       `docs/agent-workflow-design.md` that names OQ-86 is resolved as that
       document's "Reading this document" note says.
-- [ ] **AC-6** — **`--max-stories N` caps a run.** With it, the loop starts
+- [x] **AC-6** — **`--max-stories N` caps a run.** With it, the loop starts
       at most N stories and then stops between stories with its own status,
       `max-stories`, reporting the stories it ran. A story counts when its
       OQ-48 process is started. A story AC-4 skips does not count. Without the
