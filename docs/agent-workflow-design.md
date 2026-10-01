@@ -1348,8 +1348,11 @@ guarantee. **Planned (OQ-107):** `buildInvocation` pins `BASH_DEFAULT_TIMEOUT_MS
 `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS` if the dispatcher's environment carries it (items 2 to 4,
 with the default changed as item 6 says). `coder.md` and `reviewer.md` tell a session never to end
 its turn while a command runs (item 5). **Planned (OQ-108):** a coder session that completes with
-work left uncommitted is resumed once, told so, and pushed as usual if it then commits. That is the
-backstop for a session that ends its turn anyway, whatever the story.
+work left uncommitted is resumed once and told so. The resumed session's outcome, report and
+commits are then used exactly as a first session's would be, so its report supplies the PR. That is the
+backstop for a session that ends its turn anyway, whatever the story. Items 4 and 6 describe
+OQ-76's AC-5 as it stood when the trials ran. The two pins have since moved to OQ-107, and OQ-76's
+AC-5 keeps only the `DEFAULT_STALL_MS` derivation, now from OQ-107's maximum.
 
 ### GitHub mechanics
 

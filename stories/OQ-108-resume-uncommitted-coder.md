@@ -30,8 +30,20 @@ one backstop for every story, with no special case for any of them.
         spawn, plus the CLI's resume flag;
       - with the fixed resume message of AC-3 as the prompt.
 
-      It then runs `pushBranch` again and continues exactly as if that result
-      had come from the first session.
+      After a resume, everything the dispatcher reads from "the session"
+      comes from the **resumed** session, not the first:
+      - its outcome. One other than `completed` gives `session-failed`, as
+        today;
+      - its final report, which supplies the PR block (`prText`), `draft` and
+        `findPromptChange`;
+      - `pushBranch` run again.
+
+      From there the dispatcher continues exactly as it does after a first
+      session today. The first session's report is not used for any of these.
+      A test covers a first session whose report has no PR block, resumed
+      into one that commits and ends with a valid block: the result is
+      `opened` (or `retried` for `retryStory`), with the resumed session's
+      title and body.
 - [ ] **AC-2** — No other case resumes:
       - an outcome other than `completed`;
       - `nothing-committed` with no `paths`;

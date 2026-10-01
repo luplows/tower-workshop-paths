@@ -75,7 +75,7 @@ stay available, so no story needs to be run differently from the rest.
   the foreground. T6 shows `600000` capping even an explicit larger `timeout`.
   The Recommendation's item 6 gives the values this story pins.
 - `scripts/dispatch/invocation.mjs`, `buildInvocation`: the coder's `env` is
-  `coderEnv(baseEnv, emptyGhConfigDir)`, and the reviewer's is
+  `coderEnv(baseEnv ?? {}, emptyGhConfigDir)`, and the reviewer's is
   `{ ...(baseEnv ?? {}) }`.
 - OQ-76's AC-5 planned these pins at `120000` and `600000`. It is edited in the
   pull request that adds this story, so it keeps only the `DEFAULT_STALL_MS`
