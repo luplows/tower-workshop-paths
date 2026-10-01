@@ -447,9 +447,10 @@ dispatcher session in between.
 - **Planned (OQ-101):** a Windows scheduled task starts the loop every 15 minutes while the machine
   is on, on mains power only. The task is a script: a run with nothing ready starts no model
   session. GitHub's cron is not used (**Watchdog**, below).
-- **Planned (OQ-101):** a run takes a lock that a dead holder does not keep, stops and reports if it
-  finds what an interrupted run left behind, and appends one line to a local run log. That log is
-  how the owner hears about the loop's own stops. A blocked story pull request is also reported by
+- **Planned (OQ-101):** a run takes a lock that a dead holder does not keep, and appends one line to
+  a local run log. That log is how the owner hears about the loop's own stops. A leftover
+  `tw-coder-*` worktree from an interrupted run is raised as a GitHub issue, as OQ-110 raises a
+  stuck story, and the run goes on (decided 2026-10-01 by the owner). A blocked story pull request is also reported by
   GitHub's failure email, since a blocking verdict fails the gate's run.
 - **Planned (OQ-109):** the loop runs from a worktree of its own, beside the repository and at a
   detached `origin/main`, created by `loop.mjs --init`. Between stories it stops if that worktree
