@@ -106,6 +106,20 @@ removed the uncommitted work.
   `DEFAULT_TIMEOUT_MS` 30 minutes, in `spawn.mjs`) leave room for the Q4
   trial.
 - Each trial runs in a scratch directory outside this repository's tree.
+- **The coder running this spike is exposed to the problem it studies.** Each
+  trial outlasts its own 120-second shell timeout. Its session is silent until
+  it ends, so `spawn.mjs` stops it as stalled after `DEFAULT_STALL_MS` (20
+  minutes), and the trials run one after another add up to at least that.
+  So the coder:
+  - starts every trial at once, from one `node` script run with
+    `run_in_background`, which writes each trial's result to a file outside the
+    tree;
+  - waits for those files with `node -e` calls that each return within 100
+    seconds;
+  - does not end its turn while any trial is still running.
+
+  If `Write` is refused outside the tree, the script is written there with
+  `node -e`.
 
 ## Context
 
