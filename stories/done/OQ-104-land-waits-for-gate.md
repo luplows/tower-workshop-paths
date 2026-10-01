@@ -21,7 +21,7 @@ That stopped OQ-81 (#176) on 2026-09-29, after its code had passed.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — `landPullRequest` in `scripts/dispatch/land.mjs` accepts an
+- [x] **AC-1** — `landPullRequest` in `scripts/dispatch/land.mjs` accepts an
       optional `passedAt`: a head SHA at which the caller holds an honoured
       `pass` or `pass-with-observations` verdict.
       - When the pull request's head equals `passedAt` and `review/agent`
@@ -33,11 +33,11 @@ That stopped OQ-81 (#176) on 2026-09-29, after its code had passed.
         status, `gate-lag`, not `review-failed`.
       - When the head differs from `passedAt`, or `passedAt` is not given,
         `failure` and `error` stay final (`review-failed`), as today.
-- [ ] **AC-2** — `scripts/dispatch/story.mjs` passes `passedAt: run.headSha`
+- [x] **AC-2** — `scripts/dispatch/story.mjs` passes `passedAt: run.headSha`
       whenever it lands after a passing verdict. `decideLand` treats
       `gate-lag` like every other status that is not `merged`: the story
       stops, as `land-gate-lag`, and the stop is recorded as usual.
-- [ ] **AC-3** — Tests, with `land.test.mjs`'s fake GitHub and clock (`now`,
+- [x] **AC-3** — Tests, with `land.test.mjs`'s fake GitHub and clock (`now`,
       `sleep`), cover:
       - `passedAt` equal to the head, `failure` for two polls, then `success`:
         the sweep is triggered and the result is `merged`;
