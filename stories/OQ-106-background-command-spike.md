@@ -1,7 +1,7 @@
 ---
 id: OQ-106
 title: "Spike: find out what stops a headless session ending while its shell command runs in the background"
-tier: next
+tier: fix
 kind: workflow
 depends_on: []
 model: sonnet
