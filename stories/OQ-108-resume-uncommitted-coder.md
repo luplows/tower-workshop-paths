@@ -58,7 +58,8 @@ one backstop for every story, with no special case for any of them.
       `scripts/dispatch/coder.mjs`, not a prompt file. It says that the
       session ended with its changes uncommitted, that any command it left
       running in the background has stopped, and that it should finish its
-      task and commit as its original instructions say. A test asserts the
+      task, commit, and end with its PR block, as its original instructions
+      say. A test asserts the
       resumed invocation's prompt is that constant.
 - [ ] **AC-4** — The result records the resume. `session` describes the first
       session as today. A `resumed` field, present only when a resume ran,
