@@ -5,7 +5,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { parseMaxStories, pickStory, runLoop, runStoryProcess, updateCheckout } from './loop.mjs'
+import { parseArgs, parseMaxStories, pickStory, runLoop, runStoryProcess, updateCheckout } from './loop.mjs'
 
 const git = (cwd, ...args) => execFileSync('git', args, { cwd, encoding: 'utf8' })
 
@@ -455,5 +455,21 @@ describe('OQ-86/AC-6: --max-stories caps how many stories a run starts', () => {
     expect(parseMaxStories(undefined)).toBeUndefined()
     expect(parseMaxStories('1')).toBe(1)
     expect(parseMaxStories('12')).toBe(12)
+  })
+
+  it('OQ-86/AC-6: a trailing --max-stories with no value is refused by the CLI parser, not silently uncapped', () => {
+    // Exercises parseArgs, the function main() calls before touching repoDir
+    // or the network -- not parseMaxStories alone, which a value of undefined
+    // (indistinguishable from the flag being absent) would pass straight
+    // through as "uncapped".
+    expect(() => parseArgs(['--max-stories'])).toThrow()
+    // --repo takes its value first, leaving --max-stories trailing with
+    // nothing of its own -- the flag must not silently steal --repo's value.
+    expect(() => parseArgs(['--max-stories', '--repo', 'x/y'])).toThrow()
+  })
+
+  it('OQ-86/AC-6: parseArgs accepts a well-formed invocation', () => {
+    expect(parseArgs(['--max-stories', '3', '--repo', 'x/y'])).toEqual({ repo: 'x/y', maxStories: 3 })
+    expect(parseArgs([])).toEqual({ repo: 'luplows/tower-workshop-paths', maxStories: undefined })
   })
 })

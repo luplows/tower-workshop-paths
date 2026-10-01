@@ -197,17 +197,31 @@ export async function runLoop({ repoDir = DISPATCHER_ROOT, repo = DEFAULT_REPO, 
 
 // --------------------------------------------------------------------- CLI
 
-async function main(argv) {
+/**
+ * Parses the CLI's argv into `{ repo, maxStories }`, or throws -- for a
+ * missing value (a trailing `--max-stories`, or one followed only by another
+ * flag whose own value has already been taken), an unrecognised flag, or a
+ * `--max-stories` value `parseMaxStories` rejects. Throws before `main` ever
+ * touches `repoDir` or the network, so a bad invocation starts nothing (AC-6).
+ */
+export function parseArgs(argv) {
   const args = [...argv]
   const take = (name) => {
     const at = args.indexOf(name)
-    return at === -1 ? undefined : args.splice(at, 2)[1]
+    if (at === -1) return undefined
+    if (at === args.length - 1) throw new Error(`${name} requires a value`)
+    return args.splice(at, 2)[1]
   }
   const repo = take('--repo') ?? DEFAULT_REPO
   const maxStoriesRaw = take('--max-stories')
   const usage = 'usage: node scripts/dispatch/loop.mjs [--repo owner/name] [--max-stories N]'
   if (args.length > 0) throw new Error(usage)
   const maxStories = parseMaxStories(maxStoriesRaw)
+  return { repo, maxStories }
+}
+
+async function main(argv) {
+  const { repo, maxStories } = parseArgs(argv)
 
   const result = await runLoop({ repo, maxStories })
   console.log(JSON.stringify(result, null, 2))
