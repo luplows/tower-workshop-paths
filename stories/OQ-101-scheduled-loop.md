@@ -119,8 +119,8 @@ what each run did.
   `tw-coder-*` directory under the system temp directory.
 - AC-3 cannot tell a leftover worktree from one a hand-run on the same
   machine is using at that moment. The lock (AC-2) covers only runs of the
-  loop. Such a run's worktree is reported too. The owner accepted that on
-  2026-10-01, as hand-runs alongside the scheduled loop are rare.
+  loop. Such a run's worktree is reported too. This is a known limit,
+  expected to be rare, since hand-runs seldom overlap the scheduled loop.
 - OQ-86's AC-6 adds `--max-stories N`, which AC-1 passes through.
 - The owner's hand-run review scheduler, `scheduled-reviews.mjs` with a
   one-off Windows task, is the precedent for starting a script from Task
