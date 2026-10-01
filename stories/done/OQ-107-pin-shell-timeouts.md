@@ -32,7 +32,7 @@ stay available, so no story needs to be run differently from the rest.
       from the returned `env` of both roles when `baseEnv` carries it, so
       every dispatched session has background commands available. A test
       covers each role.
-- [ ] **AC-3** — A passage is added to `.claude/prompts/coder.md` and to
+- [x] **AC-3** — A passage is added to `.claude/prompts/coder.md` and to
       `.claude/prompts/reviewer.md`. A spawned session cannot edit those files
       (`docs/agent-workflow-design.md`, "A spawned session cannot edit
       `.claude/prompts/`"), so the coder delivers this as the diff under
