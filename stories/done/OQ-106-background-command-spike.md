@@ -25,12 +25,12 @@ removed the uncommitted work.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — **Only findings are committed.** The pull request's diff
+- [x] **AC-1** — **Only findings are committed.** The pull request's diff
       changes `docs/agent-workflow-design.md`, plus this story's move to
       `stories/done/` and its ticks, and nothing else. Any script used to run
       the trials lives outside the repository's tree and is not committed. Its
       full text is given in the pull request body.
-- [ ] **AC-2** — A new subsection under "Platform constraints" in
+- [x] **AC-2** — A new subsection under "Platform constraints" in
       `docs/agent-workflow-design.md`, titled "A long shell command in a
       headless session", records the trials. For each trial it gives:
       - the Claude Code version (`claude --version`);
@@ -39,7 +39,7 @@ removed the uncommitted work.
       - what the shell tool returned to the session, quoted verbatim;
       - whether the session ended before the command finished;
       - the trial session's `total_cost_usd`.
-- [ ] **AC-3** — The trials answer each of these, and the subsection states
+- [x] **AC-3** — The trials answer each of these, and the subsection states
       each answer next to the trial that shows it:
       - **Q1, baseline:** with nothing added, is a command that runs past
         120 seconds moved to the background, and does the session then end
@@ -59,13 +59,13 @@ removed the uncommitted work.
 
       If a question cannot be answered, the subsection says so and why. That
       AC is then ticked only if the reason is stated.
-- [ ] **AC-4** — The subsection ends with a **Recommendation**: which
+- [x] **AC-4** — The subsection ends with a **Recommendation**: which
       variables, at which values, `coderEnv` (and the reviewer's environment,
       if Q5 shows it is exposed) should set, and whether `coder.md` also needs
       a line about background commands. Each point names the trial it rests
       on. It is a recommendation only. Acting on it is a later story, written
       by Session A.
-- [ ] **AC-5** — The Recommendation addresses OQ-76's AC-5, which plans to
+- [x] **AC-5** — The Recommendation addresses OQ-76's AC-5, which plans to
       pin `BASH_DEFAULT_TIMEOUT_MS=120000` and `BASH_MAX_TIMEOUT_MS=600000` for
       both roles in `buildInvocation`, and to derive `DEFAULT_STALL_MS` from
       that maximum. For each of the three, it says whether the trials support
