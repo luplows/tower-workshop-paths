@@ -3,7 +3,7 @@ id: OQ-76
 title: Stream a session's output so the stall check can see it working
 tier: normal
 kind: workflow
-depends_on: [OQ-65]
+depends_on: [OQ-65, OQ-107]
 model: sonnet
 blocked: null
 ---
@@ -39,18 +39,14 @@ one that is busy, rather than only from one that has run past the timeout.
       session, not written by hand. The PR says which session it came from.
       The existing `json`-envelope fixtures are kept or converted, and no
       existing classification test is deleted to make room.
-- [ ] **AC-5** — The longest single Bash tool call a session can make, during
-      which it emits no event, is pinned by the invocation rather than
-      inherited: `buildInvocation` sets `BASH_MAX_TIMEOUT_MS` to 10 minutes
-      (`600000`) and `BASH_DEFAULT_TIMEOUT_MS` to 2 minutes (`120000`) in the
-      environment of both roles, overriding whatever the dispatcher's
-      environment holds, and a test asserts both for each role. Both are
-      pinned because the CLI's effective maximum depends on both (see
-      **Context**).
-      `DEFAULT_STALL_MS` in `scripts/dispatch/spawn.mjs` is lowered to 12
-      minutes, defined from the pinned maximum plus a margin rather than as a
-      separate literal, so the two cannot drift apart. `DEFAULT_TIMEOUT_MS` is
-      unchanged.
+- [ ] **AC-5** — `DEFAULT_STALL_MS` in `scripts/dispatch/spawn.mjs` is lowered
+      to 12 minutes, defined from the shell-timeout maximum that OQ-107 pins in
+      `scripts/dispatch/invocation.mjs` plus a margin, rather than as a
+      separate literal, so the two cannot drift apart. A test asserts the
+      derivation. `DEFAULT_TIMEOUT_MS` is unchanged. (Until 2026-10-01 this AC
+      also pinned `BASH_DEFAULT_TIMEOUT_MS` and `BASH_MAX_TIMEOUT_MS`. OQ-107
+      took that over, at `600000` for both, after the OQ-106 spike showed a
+      `120000` default loses commands between 2 and 10 minutes long.)
 - [ ] **AC-6** — `spawnSession`'s return value keeps its shape. `output` is
       still the result object, not the stream, so OQ-69 and OQ-70 callers are
       unaffected. A test asserts this through the stand-in, which gains a
@@ -92,8 +88,8 @@ and the classifier rather than to OQ-65.
   timeout. A session running one long command emits no event until the
   command returns, so a stall interval below that would kill a working
   session.
-- **Why AC-5 pins it rather than assuming it.** #132's review found that the
-  installed CLI (2.1.281) reads `BASH_MAX_TIMEOUT_MS` and
+- **Why the bound is pinned rather than assumed.** The pins are OQ-107's now.
+  #132's review found that the installed CLI (2.1.281) reads `BASH_MAX_TIMEOUT_MS` and
   `BASH_DEFAULT_TIMEOUT_MS` from its environment. The runner found this by
   searching the binary; `claude --help` does not document either. Both roles
   inherit the dispatcher's environment: the reviewer gets a copy of
@@ -109,7 +105,7 @@ and the classifier rather than to OQ-65.
   above `600000` raises the maximum even with `BASH_MAX_TIMEOUT_MS` pinned. An
   earlier revision of this story said the default "needs no pin". That was
   reasoned, not checked, and wrong. The code is minified and version-specific,
-  which is a further reason to pin both. With both set to the values above,
+  which is a further reason to pin both. With both set to `600000` (OQ-107),
   2.1.281's maximum is `600000`, and no inherited value reaches a later
   version whatever rule it uses. Whether a later version's rule still gives
   `600000` is for whoever upgrades the CLI to check.
