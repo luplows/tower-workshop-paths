@@ -18,12 +18,12 @@ that nobody asked for.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — A check, run in CI's existing `test` job, reads the pull
+- [x] **AC-1** — A check, run in CI's existing `test` job, reads the pull
       request's diff against its base and decides whether it **implements a
       story**. It does if the diff moves `stories/OQ-<n>-<slug>.md` to
       `stories/done/`, or if the head branch is named `story/OQ-<n>-<slug>`.
       Either one is enough, so a coder that skips the move is still caught.
-- [ ] **AC-2** — For a pull request that implements story OQ-n, the only
+- [x] **AC-2** — For a pull request that implements story OQ-n, the only
       changes allowed under `stories/` are:
       - that story's move to `stories/done/`;
       - in that file, acceptance-criterion lines changing from `- [ ]` to
@@ -35,10 +35,10 @@ that nobody asked for.
       each offending file and line: another story added, edited, moved or
       deleted, or any other change to its own story, including an unticked box
       or a reworded AC.
-- [ ] **AC-3** — A pull request that implements no story is not restricted by
+- [x] **AC-3** — A pull request that implements no story is not restricted by
       this check. That is how Session A adds and edits stories. Who may land
       such a PR is OQ-81's rule, not this one's.
-- [ ] **AC-4** — The logic is a tested module; the CI step only calls it.
+- [x] **AC-4** — The logic is a tested module; the CI step only calls it.
       Fixtures cover:
       - a conforming move with ticks;
       - a conforming `blocked:` edit;
@@ -48,9 +48,9 @@ that nobody asked for.
       - a tick removed;
       - a story branch with no move that adds a story;
       - a story-writing PR, which is not restricted.
-- [ ] **AC-5** — `REVIEW.md` item 18 (Containment) notes that CI now enforces
+- [x] **AC-5** — `REVIEW.md` item 18 (Containment) notes that CI now enforces
       the `stories/` part of containment. Items 16–19 are otherwise unchanged.
-- [ ] **AC-6** — Every `**Planned (…)**` marker in
+- [x] **AC-6** — Every `**Planned (…)**` marker in
       `docs/agent-workflow-design.md` that names OQ-82 is resolved as that
       document's "Reading this document" note says.
 
