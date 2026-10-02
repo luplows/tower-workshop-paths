@@ -517,8 +517,8 @@ describe('OQ-109/AC-1: --init creates a worktree of the loop\'s own, detached at
   })
 
   it('OQ-109/AC-1: the default path is a sibling of the repository root, named after it with -loop appended', () => {
-    const repoDir = path.join('C:', 'Source', 'tower-workshop-paths')
-    expect(defaultWorktreePath(repoDir)).toBe(path.join('C:', 'Source', 'tower-workshop-paths-loop'))
+    const repoDir = path.resolve(path.sep, 'Source', 'tower-workshop-paths')
+    expect(defaultWorktreePath(repoDir)).toBe(path.resolve(path.sep, 'Source', 'tower-workshop-paths-loop'))
   })
 
   it('OQ-109/AC-1: creates a worktree at the given path, with a detached HEAD at origin/main', async () => {
