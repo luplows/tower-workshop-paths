@@ -17,7 +17,7 @@ repository's main checkout can quietly run in every story it dispatches.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — **Creating the worktree.**
+- [x] **AC-1** — **Creating the worktree.**
       `node scripts/dispatch/loop.mjs --init [path]` fetches `origin`, then
       creates a worktree at `path` with a detached HEAD at `origin/main`
       (`git worktree add --detach`), and exits.
@@ -30,14 +30,14 @@ repository's main checkout can quietly run in every story it dispatches.
 
       Tests cover the default path's derivation, creation in a fixture
       repository, and the refusal.
-- [ ] **AC-2** — **Refusing the wrong checkout.** The loop's command-line
+- [x] **AC-2** — **Refusing the wrong checkout.** The loop's command-line
       entry (`main`, not `--init`) exits non-zero before it calls `runLoop`,
       fetches or dispatches anything when its own checkout has a branch
       checked out (`git symbolic-ref -q HEAD` succeeds). The message names the checkout
       and says to run the loop from its own worktree (AC-1). Tests cover a
       checkout on a branch, which is refused, and a detached one, which goes
       on.
-- [ ] **AC-3** — **Updating between stories.** `updateCheckout` in
+- [x] **AC-3** — **Updating between stories.** `updateCheckout` in
       `scripts/dispatch/loop.mjs` fetches `origin`, then:
       - if `git status --porcelain --untracked-files=all` prints anything,
         returns a new status, `dirty`, naming the paths, and changes
@@ -60,7 +60,7 @@ repository's main checkout can quietly run in every story it dispatches.
       replaces. They are replaced by these tests, not kept alongside them.
       Every other OQ-86 test still passes. One may change only where its
       fixture checkout has to be detached, and the PR body lists each one.
-- [ ] **AC-4** — Every `**Planned (…)**` marker that names OQ-109, in
+- [x] **AC-4** — Every `**Planned (…)**` marker that names OQ-109, in
       `docs/agent-workflow-design.md` and in `docs/session-a.md`, is resolved
       as the design document's "Reading this document" note says.
 
