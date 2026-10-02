@@ -305,7 +305,7 @@ than relaxed.
    is never dispatched again. A story that stops before it has a PR stops the loop instead, since
    nothing on `origin` would keep it from being dispatched again. **Planned (OQ-110):** the
    dispatch first pushes the story's branch to `origin` as a claim, so the next run skips that
-   story and opens a `Loop: OQ-n is stuck` issue for it. Before picking, and only between
+   story, and the stop opens a `Loop: OQ-n is stuck` issue for it. Before picking, and only between
    stories, the loop fetches `origin` and checks out `origin/main`, detached, in its own worktree
    (`updateCheckout`, OQ-109), so its code, prompts and queue include everything already landed.
    If that worktree has anything uncommitted, it stops with status `dirty` and dispatches nothing.
