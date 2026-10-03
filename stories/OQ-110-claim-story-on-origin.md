@@ -22,8 +22,8 @@ request leaves a branch both machines can see, rather than nothing at all.
       `dispatchCoder` in `scripts/dispatch/coder.mjs`:
       - makes one empty commit on it (`git commit --allow-empty`), the
         **claim commit**, with the message
-        `Claim <OQ-n> on <hostname> at <ISO time>`, where the hostname is
-        `os.hostname()`;
+        `Claim <OQ-n> on <machine label> at <ISO time>`, with the label from
+        AC-8;
       - pushes the branch to `origin` with a push that fails when the branch
         already exists there:
         `git push --force-with-lease=refs/heads/<branch>: origin <branch>`,
@@ -86,6 +86,17 @@ request leaves a branch both machines can see, rather than nothing at all.
 - [ ] **AC-7** — Every `**Planned (…)**` marker in
       `docs/agent-workflow-design.md` that names OQ-110 is resolved as that
       document's "Reading this document" note says.
+- [ ] **AC-8** — **A machine label, never the hostname.** An exported
+      function in `scripts/dispatch/coder.mjs` returns the machine's label
+      from the environment variable `TW_MACHINE_LABEL`:
+      - set and matching `^[A-Za-z0-9._-]{1,32}$`: that value;
+      - unset or empty: `unlabelled`;
+      - set and not matching: the dispatch returns a new status,
+        `bad-machine-label`, before it creates the branch, so nothing is
+        claimed, installed or spawned.
+
+      Nothing in `scripts/dispatch/` calls `os.hostname()`. Tests cover each
+      case, and the label in the claim commit's message.
 
 ## Out of scope
 
@@ -111,6 +122,9 @@ request leaves a branch both machines can see, rather than nothing at all.
   runs the loop on two machines, usually not at once. A local branch is
   invisible to the other machine, so the other machine would dispatch the
   story again.
+- AC-8: the repository is public, so a claim commit names the machine by a
+  label the owner sets on each machine, never by its hostname (decided by
+  the owner on 2026-10-03). OQ-112's issues and OQ-101's use the same label.
 - Split on 2026-10-03 from the first OQ-110, which also covered OQ-111 and
   OQ-112. Its dispatch on 2026-10-02 was stopped by the stall check after 20
   minutes (`DEFAULT_STALL_MS` in `scripts/dispatch/spawn.mjs`; OQ-76). The

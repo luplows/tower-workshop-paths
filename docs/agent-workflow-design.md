@@ -466,7 +466,11 @@ dispatcher session in between.
   (decided 2026-10-01 by the owner).
 - **Planned (OQ-112):** stuck stories reach the owner as GitHub issues, one per story, so a
   leftover on one machine is seen from any (decided 2026-10-01 by the owner, who runs the loop on
-  two machines).
+  two machines). An issue names the machine by a label the owner sets, never its hostname, since
+  the repository is public. With two or more open `loop-stuck` issues the queue stops completely:
+  a run starts no coder session, review or landing (decided 2026-10-03 by the owner). One stuck
+  story can be its own fault, while two suggest the loop's. **Planned (OQ-110):** the claim
+  commit names the machine by the same label.
 - `--max-stories N` caps how many stories one run starts (`scripts/dispatch/loop.mjs`, OQ-86); a
   story the loop skips as `in-progress` does not count against it.
 - **Planned (OQ-102):** past a usage threshold, the loop starts no coder session, first dispatch or

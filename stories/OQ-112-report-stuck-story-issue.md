@@ -1,6 +1,6 @@
 ---
 id: OQ-112
-title: Open a GitHub issue for a story the loop cannot progress
+title: Open a GitHub issue for a story the loop cannot progress, and stop the queue when too many are open
 tier: next
 kind: workflow
 depends_on: [OQ-110, OQ-111]
@@ -13,7 +13,9 @@ blocked: null
 As the owner, running the loop on more than one machine, I want a story the
 loop cannot progress to be raised with me as a GitHub issue, one per story,
 so I hear about it from any machine rather than finding it in one machine's
-run output when I happen to look.
+run output when I happen to look. And when enough stories are stuck that
+the loop itself is probably at fault, I want the queue to stop rather than
+use up story after story.
 
 ## Acceptance criteria
 
@@ -53,15 +55,16 @@ run output when I happen to look.
       not: the pull request already shows it (OQ-48's AC-8).
 - [ ] **AC-4** — **The issue.** Its title is exactly `Loop: <OQ-n> is stuck`,
       and it has the label `loop-stuck`. Its body names the story, the
-      branch, the machine (`os.hostname()`), the time, and the reason: no
+      branch, the machine label (OQ-110's AC-8), the time, and the reason: no
       pull request, local-only, or the stop's status and reason. If an open
       issue with that exact title already exists, the loop creates no
       second one, and does not comment on it.
-- [ ] **AC-5** — **An issue never changes what the loop does.** A story
-      skipped under AC-3 is still skipped, and the loop goes on to the next
-      ready story. A stop still ends the run, as OQ-86's AC-3 says. If
-      listing or creating fails, the error is part of that story's report
-      entry, and the loop does exactly what it would have done otherwise.
+- [ ] **AC-5** — **Opening an issue does not change what happens to the
+      story.** A story skipped under AC-3 is still skipped, and the loop goes
+      on to the next ready story, unless AC-6's limit is now reached. A stop
+      still ends the run, as OQ-86's AC-3 says. If listing or creating fails,
+      the error is part of that story's report entry, and the loop does
+      exactly what it would have done otherwise.
 
       Tests, with an injected `fetch` as `github.test.mjs`'s `fakeFetch`
       does, cover:
@@ -72,7 +75,24 @@ run output when I happen to look.
       - a stop with `branch-exists`, which gets no issue;
       - a failed issue creation, after which the loop goes on to the next
         story.
-- [ ] **AC-6** — Every `**Planned (…)**` marker in
+- [ ] **AC-6** — **Too many stuck stories stop the queue.** A new exported
+      constant, `STUCK_ISSUE_LIMIT`, is 2. At the start of every run, and
+      again before each story is picked, the loop counts the open issues
+      labelled `loop-stuck`. When there are `STUCK_ISSUE_LIMIT` or more, the
+      run starts nothing further, whether a coder session, a review or a
+      landing. It ends with a new status, `stuck-limit`, that names the
+      count and each issue's number. Every open `loop-stuck` issue counts,
+      whoever opened it and whatever it is about. If the count cannot be
+      read, the run treats that as the limit reached and ends with
+      `stuck-limit`, naming the error.
+
+      Tests, with an injected `fetch`, cover:
+      - a run that starts at the limit, which picks nothing;
+      - a run that reaches it partway, after a skip opens the second issue,
+        which picks nothing more;
+      - a run below it, which goes on as usual;
+      - a failed count, which picks nothing.
+- [ ] **AC-7** — Every `**Planned (…)**` marker in
       `docs/agent-workflow-design.md` that names OQ-112 is resolved as that
       document's "Reading this document" note says.
 
@@ -110,16 +130,19 @@ run output when I happen to look.
   gets an issue from that stop (AC-3's third case). Later runs skip it
   through its claim, and AC-3's first case finds the same issue already
   open once the claim is older than `STUCK_AFTER_MS`.
-- The repository is public, so an issue's body, like a claim commit's
-  message (OQ-110), shows the machine's hostname.
+- The repository is public, so the body names a machine label (OQ-110's
+  AC-8), never the hostname (decided by the owner on 2026-10-03).
+- **Why AC-6** (decided by the owner on 2026-10-03). Once OQ-110 is built
+  and OQ-101 runs the loop every 15 minutes, a fault that stops every
+  dispatch before its pull request lets each run claim and stop one more
+  story. Examples are a failing install, or the stall check killing working
+  sessions, as on 2026-10-02. One issue per story would still use up the
+  queue, one story per run. So the owner chose to stop the queue completely
+  at a number of open issues. The runner proposed 2: one stuck story can be
+  that story's own fault, while two suggest a fault in the loop. A failed
+  count stops the run, because a run that cannot see the issues cannot know
+  the limit has not been reached.
 
 ## Open questions
 
-- **A breaker for repeated stops.** Once OQ-110 is built and OQ-101 runs
-  the loop every 15 minutes, a fault that stops every dispatch before its
-  pull request lets each run claim and stop one more story. Examples are a
-  failing install, or the stall check killing working sessions, as on
-  2026-10-02. Each story gets an issue, but the queue is used up one story
-  per run. Should the loop start no coder session while any `loop-stuck`
-  issue for a stop (AC-3's third case) is open, while reviews and landing
-  go on, as OQ-102 plans for its usage threshold? Or is an issue per story enough?
+*(none)*

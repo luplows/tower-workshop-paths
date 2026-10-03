@@ -49,7 +49,7 @@ what each run did.
         the same title, label and no-duplicate rule as OQ-112's AC-4. The
         title is `Loop: <OQ-n> is stuck` when the worktree is on a
         `story/OQ-<n>-*` branch, and `Loop: leftover worktree <directory
-        name> is stuck` otherwise. The body names the machine, the worktree's
+        name> is stuck` otherwise. The body names the machine label (OQ-110's AC-8), the worktree's
         path, its branch, and the paths `git status --porcelain` reports in
         it;
       - records it as an action in the run log (AC-4);
