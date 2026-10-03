@@ -1373,8 +1373,17 @@ its turn while a command runs (item 5). **Planned (OQ-108):** a coder session th
 work left uncommitted is resumed once and told so. The resumed session's outcome, report and
 commits are then used exactly as a first session's would be, so its report supplies the PR. That is the
 backstop for a session that ends its turn anyway, whatever the story. Items 4 and 6 describe
-OQ-76's AC-5 as it stood when the trials ran. The two pins have since moved to OQ-107, and OQ-76's
-AC-5 keeps only the `DEFAULT_STALL_MS` derivation, now from OQ-107's maximum.
+OQ-76's AC-5 as it stood when the trials ran. The two pins have since moved to OQ-107. OQ-76's
+AC-5 now holds the `DEFAULT_STALL_MS` derivation, from OQ-107's maximum, and the timeout below.
+
+**Decided 2026-10-03 by the owner: a session's timeout rises to 60 minutes.** On 2026-10-02 the
+20-minute stall interval stopped a working coder, the first OQ-110, about halfway through its
+story. Its output was `--output-format json`, which is silent until the session ends.
+**Planned (OQ-76):** `DEFAULT_TIMEOUT_MS` in `scripts/dispatch/spawn.mjs` goes from 30 to 60
+minutes, together with the 12-minute stall interval that streamed output makes possible. Once a
+session's output shows it working, the stall interval catches one that has hung, and
+`--max-budget-usd` caps its spending. That leaves the timeout to stop a session that is busy but
+not finishing, and 30 minutes is shorter than a real story needs.
 
 ### GitHub mechanics
 

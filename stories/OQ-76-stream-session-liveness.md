@@ -53,6 +53,9 @@ one that is busy, rather than only from one that has run past the timeout.
       still the result object, not the stream, so OQ-69 and OQ-70 callers are
       unaffected. A test asserts this through the stand-in, which gains a
       mode that emits a short event stream ending in a `result` event.
+- [ ] **AC-7** — Every `**Planned (…)**` marker in
+      `docs/agent-workflow-design.md` that names OQ-76 is resolved as that
+      document's "Reading this document" note says.
 
 ## Out of scope
 

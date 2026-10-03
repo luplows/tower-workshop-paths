@@ -132,8 +132,8 @@ request leaves a branch both machines can see, rather than nothing at all.
   claim and OQ-112's GitHub operations had been written but not committed.
   In that run, adding the claim failed 11 distinct existing
   `coder.test.mjs` tests across its test runs. They included OQ-84/AC-1's
-  push-rule test and OQ-70/AC-2's "the branch is made from origin/main as
-  it is", and most of the rest were OQ-84/AC-3 and AC-5 stops that assert
+  push-rule test and "OQ-70/AC-2: the branch is made from origin/main as
+  it is now and tracks nothing", and most of the rest were OQ-84/AC-3 and AC-5 stops that assert
   what is on `origin`. Hence AC-6. The run
   left nothing on `origin`, which is the case this story closes.
 - `scripts/dispatch/coder.mjs`: `dispatchCoder` checks for the branch locally
