@@ -1,7 +1,7 @@
 ---
 id: OQ-76
 title: Stream a session's output so the stall check can see it working
-tier: normal
+tier: fix
 kind: workflow
 depends_on: [OQ-65, OQ-107]
 model: sonnet
@@ -78,6 +78,15 @@ slowest measured spawn, and so it only ever fires in the window before the
 30-minute timeout. The coder that built OQ-65 stated this reading in its PR
 body. The reviewer and the runner agreed the fix belonged to the invocation
 and the classifier rather than to OQ-65.
+
+- **Why the `fix` tier** (the owner, 2026-10-03). On 2026-10-02 the stall
+  check killed a working coder: the first OQ-110's dispatch. Its transcript
+  shows edits and test runs throughout, the last a `coder.test.mjs` run that
+  finished at 18:52:23Z, 20 minutes after the session's first event at
+  18:32:40Z. The dispatch ended `session-failed`, outcome `stalled`, and
+  its uncommitted work was discarded. So the 20-minute interval does not
+  only fire near the timeout: it ends any session that runs past 20
+  minutes, healthy or not. OQ-110 was then split into OQ-110 to OQ-112.
 
 - `claude --help` (CLI as installed on 2026-09-24) lists `stream-json` as
   "realtime streaming" and says `--include-partial-messages` only works with

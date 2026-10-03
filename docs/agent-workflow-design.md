@@ -305,7 +305,9 @@ than relaxed.
    is never dispatched again. A story that stops before it has a PR stops the loop instead, since
    nothing on `origin` would keep it from being dispatched again. **Planned (OQ-110):** the
    dispatch first pushes the story's branch to `origin` as a claim, so the next run skips that
-   story, and the stop opens a `Loop: OQ-n is stuck` issue for it. Before picking, and only between
+   story. **Planned (OQ-111):** a story whose branch is only local is skipped too, after the branch
+   is pushed. **Planned (OQ-112):** the stop opens a `Loop: OQ-n is stuck` issue for the story.
+   Before picking, and only between
    stories, the loop fetches `origin` and checks out `origin/main`, detached, in its own worktree
    (`updateCheckout`, OQ-109), so its code, prompts and queue include everything already landed.
    If that worktree has anything uncommitted, it stops with status `dirty` and dispatches nothing.
@@ -340,11 +342,11 @@ The majority of the interesting behaviour.
 | CI red on the head | A run that concluded `failure` → failure output → coder respawned on the same branch. Bounded separately at three (OQ-48's AC-4), derived from the PR's failed CI runs (`countRedCiRounds`); then `blocked:` on the branch, no label. |
 | CI cancelled, timed out, or not finished within the dispatcher's wait | Not retried and not counted. The story stops, with `blocked:` on the branch naming the outcome. None of these is something a coder can fix (OQ-48's AC-5); `waitForCi`'s `red` result carries the run's `conclusion` to tell them apart. |
 | A retry reports the coder's `blocked:`, a draft request or a failure; a review records no verdict; a retry after red CI pushes no commit; landing fails | The story stops. Only the results OQ-48's AC-2 names continue the run (the `decide*` functions of `story.mjs`); every other result stops it. Every stop with an open PR makes the PR a draft first, so nothing can land it, which keeps the rule that a `blocked:` story is always a draft. Then it records `blocked:` on the branch. |
-| The dispatcher is interrupted mid-story | The owner resumes it from its PR number (`story.mjs OQ-n --pr <number>`, OQ-48's AC-9), which derives where it was from GitHub alone. Once the run has pushed, the story's branch on `origin` keeps it `in-progress`, so the loop (OQ-86) skips it; a run killed between its push and opening the PR leaves a branch with no PR, which the owner handles by hand. Killed before its first push, the story has no branch on `origin` and the loop picks it again, but the killed run's local branch makes the dispatch return `branch-exists`, which stops the loop (OQ-86's AC-3 and AC-4). **Planned (OQ-110):** the dispatch pushes the story's branch to `origin` before the install or the session, as a claim that fails if the branch already exists, so a killed run always leaves a branch every machine sees. The loop skips a story whose branch is only local, after pushing it, and opens a `Loop: OQ-n is stuck` issue for a story branch with no open pull request. |
+| The dispatcher is interrupted mid-story | The owner resumes it from its PR number (`story.mjs OQ-n --pr <number>`, OQ-48's AC-9), which derives where it was from GitHub alone. Once the run has pushed, the story's branch on `origin` keeps it `in-progress`, so the loop (OQ-86) skips it; a run killed between its push and opening the PR leaves a branch with no PR, which the owner handles by hand. Killed before its first push, the story has no branch on `origin` and the loop picks it again, but the killed run's local branch makes the dispatch return `branch-exists`, which stops the loop (OQ-86's AC-3 and AC-4). **Planned (OQ-110):** the dispatch pushes the story's branch to `origin` before the install or the session, as a claim that fails if the branch already exists, so a killed run almost always leaves a branch every machine sees. **Planned (OQ-111):** the loop skips a story whose branch is only local, after pushing it. **Planned (OQ-112):** it opens a `Loop: OQ-n is stuck` issue for a story branch with no open pull request. |
 | Story was wrong, not the code | `blocked:` set with the reason → Session A |
 | Coder hits ambiguity mid-story | `blocked:` + the specific question → Session A |
 | Branch stale | Rebase; if it fails, kick back rather than merge against a moved world |
-| Spawn died / timed out / hit budget | Dispatcher records it and moves on; the watchdog surfaces it. A coder dispatch that ends before a PR exists (a failed install or session, nothing committed, uncommitted changes, a failed push) stops the loop (OQ-86) rather than moving on. Nothing records it on `origin`, so moving on would dispatch the same story again. **Planned (OQ-110):** the claim pushed before the session stays on `origin`, so the next run skips the story, and the stop opens a `Loop: OQ-n is stuck` issue. |
+| Spawn died / timed out / hit budget | Dispatcher records it and moves on; the watchdog surfaces it. A coder dispatch that ends before a PR exists (a failed install or session, nothing committed, uncommitted changes, a failed push) stops the loop (OQ-86) rather than moving on. Nothing records it on `origin`, so moving on would dispatch the same story again. **Planned (OQ-110):** the claim pushed before the session stays on `origin`, so the next run skips the story. **Planned (OQ-112):** the stop opens a `Loop: OQ-n is stuck` issue. |
 
 **The outlet valve must never prompt.** A spawned session that asks a question with nobody attached
 hangs — one observed instance sat blocked for eight minutes. Invocations pass
@@ -452,7 +454,7 @@ dispatcher session in between.
   session. GitHub's cron is not used (**Watchdog**, below).
 - **Planned (OQ-101):** a run takes a lock that a dead holder does not keep, and appends one line to
   a local run log. That log is how the owner hears about the loop's own stops. A leftover
-  `tw-coder-*` worktree from an interrupted run is raised as a GitHub issue, as OQ-110 raises a
+  `tw-coder-*` worktree from an interrupted run is raised as a GitHub issue, as OQ-112 raises a
   stuck story, and the run goes on (decided 2026-10-01 by the owner). A blocked story pull request is also reported by
   GitHub's failure email, since a blocking verdict fails the gate's run.
 - The loop runs from a worktree of its own, beside the repository and at a detached `origin/main`,
@@ -462,7 +464,7 @@ dispatcher session in between.
   detached. `main` refuses, before fetching or dispatching anything, to run from a checkout that has
   a branch checked out (`requireOwnWorktree`). Hand-runs from a dispatcher session are unchanged
   (decided 2026-10-01 by the owner).
-- **Planned (OQ-110):** stuck stories reach the owner as GitHub issues, one per story, so a
+- **Planned (OQ-112):** stuck stories reach the owner as GitHub issues, one per story, so a
   leftover on one machine is seen from any (decided 2026-10-01 by the owner, who runs the loop on
   two machines).
 - `--max-stories N` caps how many stories one run starts (`scripts/dispatch/loop.mjs`, OQ-86); a
