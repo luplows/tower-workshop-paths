@@ -49,6 +49,9 @@ too and the leftover is visible from anywhere.
       `describe` title, "a local-only branch stops the loop rather than
       looping on branch-exists", is no longer true and is retitled. The PR
       body says so.
+- [ ] **AC-4** — Every `**Planned (…)**` marker in
+      `docs/agent-workflow-design.md` that names OQ-111 is resolved as that
+      document's "Reading this document" note says.
 
 ## Out of scope
 

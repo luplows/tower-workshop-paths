@@ -68,7 +68,8 @@ request leaves a branch both machines can see, rather than nothing at all.
         `git push origin <branch>`, and refuses every input the current test
         lists;
       - the claim push is exactly the form in AC-1, built by its own
-        function, which refuses the same inputs;
+        exported function, which refuses the same inputs. OQ-111's
+        `pickStory` calls it;
       - `coder.mjs` builds no other push. No `+` refspec, `--force` or `-f`
         can be constructed.
 
