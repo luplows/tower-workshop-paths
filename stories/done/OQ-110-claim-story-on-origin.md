@@ -5,7 +5,7 @@ tier: next
 kind: workflow
 depends_on: [OQ-109]
 model: sonnet
-blocked: "review-round-bound: 3 blocking verdicts, the bound; the unresolved findings of the latest: **Review verdict: block** Head confirmed. All eight ACs are genuinely delivered and tested, with no out-of-scope work, AC-7's 4 markers resolved to 0, the story moved and ticked, the changed-test list accurate, lint clean, and the full suite at 846/846 (the first of three full runs had one failure I could not identify that did not recur). It blocks only on item 12: Verification presents a 120-test, two-file run as the full `npm test` suite. - **Item 12** (block): Verification states \"`npm test` (Vitest, full suite including scripts/dispatch/coder.test.mjs and scripts/dispatch/loop.test.mjs): 1…"
+blocked: null
 ---
 
 ## Intent
