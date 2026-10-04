@@ -16,31 +16,31 @@ one that is busy, rather than only from one that has run past the timeout.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — `buildInvocation` in `scripts/dispatch/invocation.mjs` passes
+- [x] **AC-1** — `buildInvocation` in `scripts/dispatch/invocation.mjs` passes
       `--output-format stream-json --verbose` for both roles, in place of
       `--output-format json`. A test asserts the argument list. The runner
       established that print mode needs `--verbose` by running the CLI
       (Context). The invocation sketch in
       `docs/agent-workflow-design.md`, "Invocation shape", is updated to
       match.
-- [ ] **AC-2** — `classifySession` in `scripts/dispatch/outcome.mjs` reads
+- [x] **AC-2** — `classifySession` in `scripts/dispatch/outcome.mjs` reads
       stream output: one JSON event per line, where the session's result is
       the last event whose `type` is `"result"`. That event is classified by
       exactly the rules that classify a `json` envelope today, and it is what
       is returned as the envelope and parsed for the coder's PR block. Output
       holding no `result` event is classified by the existing rules for
       absent output. It is never `completed`.
-- [ ] **AC-3** — A line that is not valid JSON does not make an otherwise
+- [x] **AC-3** — A line that is not valid JSON does not make an otherwise
       complete stream `malformed-output` unless it is the line the result
       would be read from. A test covers a stream with a truncated final line
       and one with a stray non-JSON line before the result.
-- [ ] **AC-4** — At least one classification test reads
+- [x] **AC-4** — At least one classification test reads
       `scripts/dispatch/fixtures/oq76-stream-session.jsonl`, a stream
       recorded from a real session (Context), unedited by the PR, and
       asserts it is `completed`, with the result event's `result` text
       returned. The existing `json`-envelope fixtures are kept or converted,
       and no existing classification test is deleted to make room.
-- [ ] **AC-5** — `DEFAULT_STALL_MS` in `scripts/dispatch/spawn.mjs` is lowered
+- [x] **AC-5** — `DEFAULT_STALL_MS` in `scripts/dispatch/spawn.mjs` is lowered
       to 12 minutes, defined from the shell-timeout maximum that OQ-107 pins in
       `scripts/dispatch/invocation.mjs` plus a margin, rather than as a
       separate literal, so the two cannot drift apart. A test asserts the
@@ -49,11 +49,11 @@ one that is busy, rather than only from one that has run past the timeout.
       also pinned `BASH_DEFAULT_TIMEOUT_MS` and `BASH_MAX_TIMEOUT_MS`. OQ-107
       took that over, at `600000` for both, after the OQ-106 spike showed a
       `120000` default loses commands between 2 and 10 minutes long.)
-- [ ] **AC-6** — `spawnSession`'s return value keeps its shape. `output` is
+- [x] **AC-6** — `spawnSession`'s return value keeps its shape. `output` is
       still the result object, not the stream, so OQ-69 and OQ-70 callers are
       unaffected. A test asserts this through the stand-in, which gains a
       mode that emits a short event stream ending in a `result` event.
-- [ ] **AC-7** — Every `**Planned (…)**` marker in
+- [x] **AC-7** — Every `**Planned (…)**` marker in
       `docs/agent-workflow-design.md` that names OQ-76 is resolved as that
       document's "Reading this document" note says.
 
