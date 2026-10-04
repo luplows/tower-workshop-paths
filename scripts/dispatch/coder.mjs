@@ -345,7 +345,14 @@ export async function dispatchCoder({
     // claim beat us to `origin`) or a genuine push failure (AC-2); either way
     // nothing below this is installed or spawned, and `cleanUp` below removes
     // the local branch and worktree since their tip is still this claim.
-    await git(tree, ['commit', '--allow-empty', '-m', `Claim ${chosen.id} on ${label} at ${new Date().toISOString()}`])
+    // `-c user.name`/`-c user.email`: the claim commit is the dispatcher's own
+    // action, not an authored change, so it must not depend on whichever git
+    // identity happens to be configured on the machine running it (CI's
+    // runners have none at all).
+    await git(tree, [
+      '-c', 'user.name=tw-dispatch', '-c', 'user.email=dispatch@tower-workshop-paths.invalid',
+      'commit', '--allow-empty', '-m', `Claim ${chosen.id} on ${label} at ${new Date().toISOString()}`,
+    ])
     baseSha = (await git(tree, ['rev-parse', 'HEAD'])).trim()
     try {
       await git(tree, claimPushArgs(branch))
