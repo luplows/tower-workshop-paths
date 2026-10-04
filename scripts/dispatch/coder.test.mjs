@@ -178,6 +178,27 @@ const REFUSE_UPDATE_HOOK = [
   'fi',
   'exit 0',
 ].join('\n')
+// Simulates a second machine's claim landing at the instant this one's push
+// arrives: creates `branch` on origin itself, then refuses the update, so a
+// single dispatchCoder call deterministically hits the claim push's catch
+// branch with the ref already there -- never the early `remoteTip` check
+// before the worktree is made, which runs before this hook does anything.
+// `env -u GIT_QUARANTINE_PATH ...`: a pre-receive hook otherwise runs inside
+// the pushed objects' quarantine, where git refuses any `update-ref` outright
+// ("ref updates forbidden inside quarantine environment"); the env it is
+// unset from is a real ref update, so it must leave the quarantine first.
+const raceClaimIntoExistence = (branch) => [
+  '#!/bin/sh',
+  'while read old new ref; do',
+  `  if [ "$ref" = "refs/heads/${branch}" ]; then`,
+  '    new_tip="$(env -u GIT_QUARANTINE_PATH git rev-parse HEAD)"',
+  '    env -u GIT_QUARANTINE_PATH -u GIT_OBJECT_DIRECTORY -u GIT_ALTERNATE_OBJECT_DIRECTORIES git update-ref "$ref" "$new_tip"',
+  '    echo "refused by test hook (raced)" >&2',
+  '    exit 1',
+  '  fi',
+  'done',
+  'exit 0',
+].join('\n')
 
 // ------------------------------------------------------------------- tests
 
@@ -829,6 +850,21 @@ describe('OQ-110/AC-1: a second claim of the same branch is refused', () => {
     git(cloneB, 'commit', '-q', '--allow-empty', '-m', 'Claim OQ-98 on machine-b at t')
     expect(() => git(cloneB, ...claimPushArgs(branch))).toThrow()
   })
+
+  it('OQ-110/AC-1: dispatchCoder makes the claim commit visible on origin before install is called', async () => {
+    const world = makeWorld()
+    let sawClaimAtInstall = false
+    const { result } = await dispatch(world, ({ cwd }) => { finishStory(cwd); return block() }, {
+      install: async () => {
+        // Observed from inside the install stub: if the claim were not pushed
+        // first, origin would hold nothing here.
+        remoteClaimOnly(world)
+        sawClaimAtInstall = true
+      },
+    })
+    expect(sawClaimAtInstall).toBe(true)
+    expect(result.status).toBe('opened')
+  })
 })
 
 describe('OQ-110/AC-2: a failed claim spends nothing', () => {
@@ -877,6 +913,26 @@ describe('OQ-110/AC-2: a failed claim spends nothing', () => {
     const loser = resultA.status === 'branch-exists' ? resultA : resultB
     expect(loser.reason).toContain('already exists on origin')
     expect(remoteBranch(world, 'story/OQ-98-first')).not.toBeNull()
+  })
+
+  it('OQ-110/AC-2: a claim push refused because the ref landed on origin first is branch-exists, deterministically', async () => {
+    const world = makeWorld()
+    // Unlike the race above (two real concurrent calls, and either could in
+    // principle be the one stopped by the early pre-worktree remoteTip check),
+    // this is one dispatchCoder call: the branch does not exist when that
+    // early check runs, so it is the claim push itself that is refused, with
+    // the ref already there by the time its catch handler looks again.
+    installHook(world, raceClaimIntoExistence('story/OQ-98-first'))
+    const { result, fake } = await dispatch(world, () => { throw new Error('must not spawn') }, {
+      install: async () => { throw new Error('must not install') },
+    })
+    expect(result.status).toBe('branch-exists')
+    expect(result.storyId).toBe('OQ-98')
+    expect(result.reason).toContain('already exists on origin')
+    expect(fake.calls).toHaveLength(0)
+    expect(remoteBranch(world, 'story/OQ-98-first')).not.toBeNull()
+    expect(worktrees(world.repoDir)).toEqual([path.resolve(world.repoDir)])
+    expect(gitOk(world.repoDir, 'rev-parse', '--verify', '--quiet', 'refs/heads/story/OQ-98-first')).toBeNull()
   })
 })
 
