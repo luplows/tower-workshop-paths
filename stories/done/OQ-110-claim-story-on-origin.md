@@ -17,7 +17,7 @@ request leaves a branch both machines can see, rather than nothing at all.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — **Claiming.** Straight after creating the story's branch,
+- [x] **AC-1** — **Claiming.** Straight after creating the story's branch,
       and before the dependency install and the coder session,
       `dispatchCoder` in `scripts/dispatch/coder.mjs`:
       - makes one empty commit on it (`git commit --allow-empty`), the
@@ -34,31 +34,31 @@ request leaves a branch both machines can see, rather than nothing at all.
       with the claim commit on `origin` before the install is called, and a
       second claim of the same branch, made from the same `origin/main`,
       which is refused.
-- [ ] **AC-2** — **A failed claim spends nothing.** When the claim push
+- [x] **AC-2** — **A failed claim spends nothing.** When the claim push
       fails, nothing is installed or spawned, and the local branch and the
       worktree are removed. The dispatch returns `branch-exists` when the
       branch is then on `origin`, and otherwise a new status,
       `claim-failed`, carrying git's error. Tests cover both.
-- [ ] **AC-3** — **The claim is not the coder's work.** From the claim on,
+- [x] **AC-3** — **The claim is not the coder's work.** From the claim on,
       the claim commit, not `origin/main`, is the base the dispatch measures
       "committed beyond" from: `pushBranch`'s `baseSha`, and `cleanUp`'s.
       `cleanUp`'s rule is unchanged: it deletes the local branch only when
       its tip is that base or what `origin` holds. A session that commits
       nothing after the claim ends `nothing-committed`, as today. A test
       covers it.
-- [ ] **AC-4** — **A claim outlives a stop.** When a dispatch whose claim
+- [x] **AC-4** — **A claim outlives a stop.** When a dispatch whose claim
       succeeded ends before a pull request is opened (any status other than
       `opened`), the branch stays on `origin`. `cleanUp` never deletes a remote branch. A test
       covers `nothing-committed` after a successful claim, with the claim
       still on `origin` afterwards.
-- [ ] **AC-5** — **The next run skips it.** A story's run that stops before a
+- [x] **AC-5** — **The next run skips it.** A story's run that stops before a
       pull request exists still ends the current run, as OQ-86's AC-3 says.
       The next `runLoop` call skips that story through `pickStory`'s
       existing check for a branch on `origin`, and goes on to the next ready
       story. A test, using the real `pickStory` against a fixture
       repository holding a claimed branch on `origin`, covers that skip
       followed by the next story's dispatch.
-- [ ] **AC-6** — **The push rule admits exactly two forms.** OQ-84's AC-1
+- [x] **AC-6** — **The push rule admits exactly two forms.** OQ-84's AC-1
       says the dispatcher's push is never forced, and its test asserts that
       `coder.mjs` contains a single push and never the text
       `force-with-lease`. The claim needs a second push, spelled with
@@ -84,10 +84,10 @@ request leaves a branch both machines can see, rather than nothing at all.
 
       No assertion is dropped. The PR body lists each changed test and what
       about the claim it allows for.
-- [ ] **AC-7** — Every `**Planned (…)**` marker in
+- [x] **AC-7** — Every `**Planned (…)**` marker in
       `docs/agent-workflow-design.md` that names OQ-110 is resolved as that
       document's "Reading this document" note says.
-- [ ] **AC-8** — **A machine label, never the hostname.** An exported
+- [x] **AC-8** — **A machine label, never the hostname.** An exported
       function in `scripts/dispatch/coder.mjs` returns the machine's label
       from the environment variable `TW_MACHINE_LABEL`:
       - set and matching `^[A-Za-z0-9._-]{1,32}$`: that value;
