@@ -63,6 +63,23 @@ A judgment nobody can find later is a judgment nobody can be shown to have skipp
 
 ## Context
 
+**Retired on 2026-10-07 by the owner, unbuilt.** Reviewed with Session A, it
+did not earn its cost at the time:
+- Sizing had been caught and recorded three times without it: OQ-65 into
+  OQ-65, OQ-74 and OQ-75 (#124), OQ-48 into four (#151), and OQ-110 into three
+  (#189). Each split is written in the split stories and their PRs.
+- By its own Out of scope test, nothing had yet gone wrong that the declaration
+  would have caught.
+- AC-3's update of every story could not pass CI as written. Story containment
+  (`scripts/dispatch/story-containment.mjs`, OQ-82, which postdates this story)
+  fails a story PR that changes any other file under `stories/`.
+- It was imported from a planning session held without the repository (#107),
+  and its empty Open questions was filled in by inference there.
+
+The `mechanisms:` lines on OQ-56 to OQ-60 were removed when it was retired.
+Revive it, reworked, if a story turns out to have been oversized in a way a
+declared list would have shown.
+
 - `stories/OQ-61-story-schema-lint.md` — the lint this extends. AC-2 there
   enumerates the frontmatter rules this adds to.
 - `stories/OQ-54-coder-model-default.md` — also amends the same frontmatter

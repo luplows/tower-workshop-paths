@@ -6,8 +6,6 @@ kind: product
 depends_on: []
 model: sonnet
 blocked: null
-mechanisms:
-  - the share payload format and its codec
 ---
 
 ## Intent
