@@ -43,8 +43,10 @@ of them time out in a full run. OQ-90 fixed the same failure for
       the fix, Session A's four full runs on 2026-10-07 had a timeout in one
       of these two files in three of them (**Context**), so five clean runs is
       fair evidence. A failure in another file is reported, not fixed here,
-      and does not stop AC-4 being ticked. The check is not added to CI,
-      `REVIEW.md` or any recurring check.
+      and does not stop AC-4 being ticked. **Verification** lists each such
+      failure after a line reading "For Session A:", and Session A turns each
+      one into a new story. The check is not added to CI, `REVIEW.md` or any
+      recurring check.
 
 ## Out of scope
 
