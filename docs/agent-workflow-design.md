@@ -1525,6 +1525,8 @@ Stated 2026-10-07 by the owner, while discussing the new repository's name (R10)
 - **A project takes the workflow as a package pinned by git tag**, with no npm publishing planned,
   runs the loop from its own worktree, and keeps thin gate workflow files written by an `init`
   command (decided 2026-10-07 by the owner). See R2.
+- **The workflow's repository is public** (decided 2026-10-07 by the owner). If its stories come
+  from issues, only issues a writer created or labelled may enter its queue. See R8.
 
 ### What ties the workflow to one company today
 
@@ -1681,9 +1683,11 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   [Status is derived, not stored](#status-is-derived-not-stored), where a board's columns are
   stored status; and [Tier is priority](#tier-is-priority-and-nothing-else), where a board's order
   is set by hand rather than derived from a field.
-- **R8. Whether the workflow's repository is public or private.** Leaning public (owner,
-  2026-10-07): the work is exploratory, the code is already public in this repository, and private
-  brings no benefit the owner needs.
+- **R8. Whether the workflow's repository is public or private.** **Decided 2026-10-07 by the
+  owner: public**, with the condition below. The owner had leaned that way: the work is
+  exploratory, the code is already public in this repository, and private brings no benefit the
+  owner needs. R2's git-tag pin also assumes it, since installing from a private repository would
+  need a credential on every runner and machine that installs it.
   Public makes it simple for any project to use, and keeps Actions minutes free. Private keeps it
   to the owner, but a project using it then needs access to it, by package registry
   authentication or GitHub's settings for sharing workflows from a private repository, and that
