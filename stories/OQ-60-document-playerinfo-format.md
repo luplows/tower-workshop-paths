@@ -6,8 +6,6 @@ kind: product
 depends_on: []
 model: sonnet
 blocked: "Run by the owner, by hand, against a sample kept outside the repository. Never dispatched by the loop."
-mechanisms:
-  - the format investigation and its write-up
 ---
 
 ## Intent
