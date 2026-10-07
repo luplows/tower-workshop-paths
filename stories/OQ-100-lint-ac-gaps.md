@@ -60,8 +60,8 @@ the function behind it.
 - **Running the command in CI.** CI enforces the lint through the Vitest
   case that calls `lintAll(repoRoot)`, and that stays as it is. AC-3's test
   runs inside that suite.
-- **Any other rule of OQ-61's lint**, and the non-blocking `mechanisms` lines
-  it prints today for OQ-55 to OQ-60.
+- **Any other rule of OQ-61's lint**, including its non-blocking warning for an
+  unknown frontmatter field.
 
 ## Constraints
 
