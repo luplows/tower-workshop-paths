@@ -1,6 +1,8 @@
-# Harness outline
+# Steward: harness outline
 
 **Status:** draft, being refined with the owner from 2026-10-07, in pull request #199.
+
+The harness is named **steward** (decided 2026-10-07 by the owner; R10 in the design document).
 
 This is the harness's product outline: who it is for, what it is for, and what matters most. It is
 to the harness what `Project-Outline.md` is to tower-workshop-paths. It lives here until the
@@ -76,4 +78,3 @@ the owner decides (readiness, priority) keeps both.
 
 - **What matters most, in order.** The answers above suggest: the review-and-land pipeline first,
   then keeping going and surfacing problems, then the view. Not yet confirmed by the owner.
-- **The name** (R10 in the design document).

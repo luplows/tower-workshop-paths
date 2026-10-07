@@ -1518,6 +1518,8 @@ deciding what is next. It is the harness's product outline, and moves with this 
   command (decided 2026-10-07 by the owner). See R2.
 - **The workflow's repository is public** (decided 2026-10-07 by the owner). If its stories come
   from issues, only issues a writer created or labelled may enter its queue. See R8.
+- **The workflow is named `steward`**: the repository `luplows/steward` and the package `steward`
+  (decided 2026-10-07 by the owner). See R10.
 
 ### What ties the workflow to one company today
 
@@ -1696,8 +1698,13 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   for good, against goal 4. The prefix touches everything that matches `OQ-<n>` today: the queue
   reader's and lint's filename patterns, branch names (`story/OQ-<n>-…`), test names
   (`OQ-<n>/AC-<n>`) and the design doc's markers.
-- **R10. The name of the repository and the package.** Open. The owner wanted the future state
-  settled first ([`harness-outline.md`](harness-outline.md)). With the git-tag pin (R2), only the
+- **R10. The name of the repository and the package.** **Decided 2026-10-07 by the owner:
+  `steward`**, the repository `luplows/steward` (no repository by that name existed under `luplows`
+  on that date, by `gh repo view`) and the package `steward`. It looks after the work on the
+  owner's behalf while the owner keeps the decisions, which is the "why" in
+  [`harness-outline.md`](harness-outline.md). The owner wanted that future state settled first.
+
+  The question as it stood: with the git-tag pin (R2), only the
   repository name is needed at the move; the package name is whatever its `package.json` says. The
   name should not name a model company (goal 3), and need not say "story" if units of work come
   from issues (R7).
