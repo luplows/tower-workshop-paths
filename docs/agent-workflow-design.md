@@ -1522,8 +1522,9 @@ Stated 2026-10-07 by the owner, while discussing the new repository's name (R10)
   stays on GitHub. Moving the hosting would be a far larger migration, and would depend on the
   target platform's rules much more than switching models does.
 - **The move comes after OQ-73 and before OQ-101** (decided 2026-10-07 by the owner). See R5.
-- **A project takes the workflow as a package pinned by git tag**, with no npm publishing planned
-  (decided 2026-10-07 by the owner). See R2.
+- **A project takes the workflow as a package pinned by git tag**, with no npm publishing planned,
+  runs the loop from its own worktree, and keeps thin gate workflow files written by an `init`
+  command (decided 2026-10-07 by the owner). See R2.
 
 ### What ties the workflow to one company today
 
@@ -1615,7 +1616,8 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   neutral one. `Project-Outline.md` stays the product's design of record. Once moved, a workflow
   design change lands in the workflow's repository, and this one sees it only as a version it
   chooses to take, which is goal 4.
-- **R2. How a project uses it.** Proposed by Session A, 2026-10-07:
+- **R2. How a project uses it.** Proposed by Session A, 2026-10-07; **decided 2026-10-07 by the
+  owner, as proposed, with the git-tag pin** (below):
   - **A Node package with a command-line entry point**, added as a development dependency of each
     project and pinned to a tagged version. To begin with it is installed straight from the
     workflow's public repository by git tag, so no package registry account is needed; publishing
@@ -1633,8 +1635,8 @@ Checked on 2026-10-07 against `main` at `66c578d`:
     prompts from the package.
 
   **Decided 2026-10-07 by the owner: the git-tag pin**, to keep it simple. Publishing to npm is not
-  planned. The rest of R2 (the loop in the project's worktree, thin gate files written by `init`)
-  is still a proposal.
+  planned. The rest of R2 was accepted as proposed the same day: the loop runs from the project's
+  own worktree, and thin gate files written by `init`, not GitHub's reusable workflows.
 - **R3. What a project configures.** At least its repository, its CI commands (OQ-94), its own
   review items, and where its stories live.
 - **R4. The workflow's own stories.** The new repository needs a queue of its own. Which of this
