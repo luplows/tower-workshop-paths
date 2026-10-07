@@ -1470,6 +1470,96 @@ readiness test, whether the gate works at all. Both arguments point at Session A
 
 ---
 
+## Portability: other projects, other companies' models
+
+Being refined with the owner, from 2026-10-07. The goals are decided; how to reach them is not, and
+the questions below hold the decisions as they are made. Each answer is recorded here, dated, in
+the pull request that makes it.
+
+### Goals
+
+Decided 2026-10-07 by the owner.
+
+1. **The owner can use the workflow in other projects.**
+2. **Models from other companies can be used**, so that the work is not all done by similar
+   models. This is the [reviewer-on-a-different-model](#quality-beyond-the-gate) hedge taken
+   further: a different company's model decorrelates more than a different model from the same one.
+3. **The workflow is insulated from any one company** folding or pricing the owner out.
+4. **This repository stays focused on the product**, not on the workflow.
+
+**Planned (OQ-114):** coder and reviewer sessions run through an adapter per agent tool, so that a
+role can be given another company's model. **Planned (OQ-115):** the workflow moves to a repository
+of its own, and this repository uses it. Both are drafts, to be split before either is dispatched.
+
+### What ties the workflow to one company today
+
+Checked on 2026-10-07 against `main` at `66c578d`:
+
+- **The agent tool is the Claude Code CLI.** `spawn.mjs` finds its binary (`resolveClaudeExecutable`,
+  or `CLAUDE_EXECUTABLE`). `invocation.mjs` builds the `claude -p` arguments, including Claude
+  Code's tool-allowlist syntax (`Bash(git diff:*)` and so on, here and in `coder-env.mjs`).
+  `outcome.mjs` classifies a session from the CLI's JSON result.
+- **The guarantees on each role are enforced through that CLI.** The coder holds no credential and
+  may not push or run `gh` (OQ-63, OQ-67, OQ-84; OQ-73 still planned). The reviewer cannot write
+  (OQ-62 still planned). Those rest on Claude Code's allowlists and permission modes. Another tool
+  has to provide each guarantee again, and show it holds, rather than inherit it.
+- **The models are Claude model names.** The coder's is the story's `model:` field (`sonnet` in
+  `stories/_TEMPLATE.md`). The reviewer's is `opus` (`ROLE_DEFAULTS`, `invocation.mjs`), unless
+  that matches the story's model by name, in which case it is `sonnet` (`chooseReviewerModel`,
+  `review.mjs`). "Different" is decided by comparing those names.
+- **The prompts are written for that CLI.** `.claude/prompts/coder.md` and `reviewer.md` name its
+  tools and its allowlist behaviour.
+
+### What ties the workflow to this repository today
+
+- `DEFAULT_REPO` is `luplows/tower-workshop-paths` in `coder.mjs`, `land.mjs`, `loop.mjs`,
+  `review.mjs` and `story.mjs`. Each also takes `--repo`.
+- The scripts run against the checkout they are loaded from (`DISPATCHER_ROOT`), and read this
+  repository's `stories/` and `.claude/prompts/`.
+- The gate is this repository's own workflows. `ci.yml` runs `scripts/dispatch/story-containment.mjs`.
+  `land-approved.yml` runs `scripts/land/select-candidates.mjs`, `check-author.mjs` and
+  `delete-merged-heads.mjs`. `review-gate.yml` derives `review/agent`.
+- The rules the gate enforces mix the general with this project's own: `REVIEW.md`, `CLAUDE.md`,
+  `stories/README.md`, `stories/_TEMPLATE.md` and this document.
+
+### Open questions
+
+**Models (OQ-114)**
+
+- **M1. Which tools and models.** The owner named Sol and Luna. Which company makes each, and what
+  tool runs it headless? An adapter needs, from the tool: a non-interactive run from a prompt, a
+  machine-readable result, restrictions on what the session may run, confinement to its working
+  directory, and a time or cost bound.
+- **M2. Which role first.** Proposed: the reviewer. Goal 2's value is largest there, and a
+  reviewer that cannot write is a smaller guarantee to re-establish than a coder's.
+- **M3. Guarantees before use.** Proposed: no tool runs a role until that role's guarantees are
+  shown to hold for it by tests, in the way OQ-73's AC-1 tests the coder's.
+- **M4. How a story or role names its model.** Today a bare Claude model name. It needs the tool as
+  well. OQ-54 (one declared default coder model) would be reworked or folded in.
+- **M5. Prompts.** One prompt per role with per-tool parts, or one per tool?
+- **M6. Switching away (goal 3).** Proposed: replacing a tool for a role is a configuration change,
+  with no code change beyond its adapter.
+
+**A repository of its own (OQ-115)**
+
+- **R1. What moves.** Candidates: `scripts/dispatch/`, `scripts/land/`, the prompts, the gate's
+  workflows or the parts of them that are not project-specific, the story lint and containment,
+  the general parts of `REVIEW.md`, the story schema and template, and this document.
+- **R2. How a project uses it.** For example, an npm package, a CLI installed once per machine,
+  reusable GitHub workflows, or a combination of these.
+- **R3. What a project configures.** At least its repository, its CI commands (OQ-94), its own
+  review items, and where its stories live.
+- **R4. The workflow's own stories.** The new repository needs a queue of its own. Which of this
+  repository's workflow stories move with it?
+- **R5. When.** Proposed: after the owner's current build order (OQ-73, OQ-80, OQ-83, then
+  OQ-101), so that what moves is known to work unattended.
+- **R6. GitHub.** Goal 3 names companies folding or pricing the owner out. Does that cover GitHub,
+  which the gate is built on, or only the model companies?
+- **Order of the two.** Proposed: OQ-114 first, inside this repository, where the tests and the
+  loop already run. That way the adapter work is not done in a new repository that has never run.
+
+---
+
 ## Deliberately excluded
 
 - **More agent roles.** Two roles plus a script is the right complexity.
@@ -1495,3 +1585,5 @@ readiness test, whether the gate works at all. Both arguments point at Session A
 | 8 | What CI runs | **Resolved:** current suite plus schema lint, AC traceability, existing-test flag. No tiering at 70 s. |
 | 9 | Production deployment target | Open. None today; Pages is alpha. Tags are checkpoints until one exists. |
 | 10 | Second GitHub identity | Open. The only thing that fully closes self-marking. Cost: a machine account or App. |
+| 11 | Other companies' models | Open. Goals decided 2026-10-07; questions M1–M6 under [Portability](#portability-other-projects-other-companies-models). OQ-114. |
+| 12 | The workflow in a repository of its own | Open. Goals decided 2026-10-07; questions R1–R6 under [Portability](#portability-other-projects-other-companies-models). OQ-115. |
