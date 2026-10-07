@@ -5,7 +5,7 @@ tier: next
 kind: workflow
 depends_on: []
 model: sonnet
-blocked: null
+blocked: "review-malformed-verdict: no JSON verdict object found in the reviewer output"
 ---
 
 ## Intent
