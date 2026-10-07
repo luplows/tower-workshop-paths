@@ -1506,6 +1506,7 @@ repository.
 - **Goal 3 is about AI model companies, not GitHub** (decided 2026-10-07 by the owner). The gate
   stays on GitHub. Moving the hosting would be a far larger migration, and would depend on the
   target platform's rules much more than switching models does.
+- **The move comes after OQ-73 and before OQ-101** (decided 2026-10-07 by the owner). See R5.
 
 ### What ties the workflow to one company today
 
@@ -1613,13 +1614,22 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   - The scripts stop finding the project relative to their own location (`DISPATCHER_ROOT`).
     They take the project from the working directory and its configuration (R3), and their
     prompts from the package.
+
+  **The owner's leaning** (2026-10-07): the git-tag pin, as a step towards publishing to npm. Not
+  yet decided; the owner wants more time on R2.
 - **R3. What a project configures.** At least its repository, its CI commands (OQ-94), its own
   review items, and where its stories live.
 - **R4. The workflow's own stories.** The new repository needs a queue of its own. Which of this
   repository's workflow stories move with it?
-- **R5. When.** Earlier proposal: after the owner's current build order (OQ-73, OQ-80, OQ-83, then
-  OQ-101), so that what moves is known to work unattended. Against that, the second project's
-  planning has started, and every workflow story built here first is one more thing to move.
+- **R5. When.** **Decided 2026-10-07 by the owner: after OQ-73, before OQ-101.** The owner's build
+  order is OQ-80 (in review as #203), then OQ-73, then OQ-101, so the move comes after OQ-80 and
+  OQ-73 land and OQ-101 is built in the workflow's repository. OQ-101's `install` registers a
+  scheduled task per machine, and the second project needs one too, so building it once there
+  avoids building it here and then moving it. Which repository's queue OQ-101 then sits in is R4.
+
+  The question as it stood: the earlier proposal was to move after the whole build order, so that
+  what moves is known to work unattended. Against that, the second project's planning has started,
+  and every workflow story built here first is one more thing to move.
 - **R6. The second project.** What it needs from the workflow decides how general R2 and R3 must
   be. Answered so far (owner, 2026-10-07): it is also a Node project on GitHub, in a **private**
   repository. Open: whether it needs the whole loop from the start or only part of it.
