@@ -5,7 +5,7 @@ tier: next
 kind: workflow
 depends_on: [OQ-110, OQ-111]
 model: sonnet
-blocked: "review-session-failed: exit code 1"
+blocked: null
 ---
 
 ## Intent
