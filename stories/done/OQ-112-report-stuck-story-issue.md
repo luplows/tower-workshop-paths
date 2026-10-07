@@ -19,7 +19,7 @@ use up story after story.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — **`github.mjs` admits only what this needs.** Its allowlist
+- [x] **AC-1** — **`github.mjs` admits only what this needs.** Its allowlist
       gains:
       - listing open pull requests for one head branch;
       - listing open issues with the `loop-stuck` label;
@@ -30,14 +30,14 @@ use up story after story.
       is added. The PR body states, from running against GitHub or from its
       documentation with a link, whether creating an issue with a label that
       does not yet exist creates the label.
-- [ ] **AC-2** — **A claim's age.** A branch's claim commit is the commit
+- [x] **AC-2** — **A claim's age.** A branch's claim commit is the commit
       OQ-110's AC-1 makes: on the branch, not on `origin/main`, with a
       subject beginning `Claim <OQ-n> on `. Its age is measured from its
       committer date. A branch with no claim commit has no age. A new
       exported constant, `STUCK_AFTER_MS`, is 2 hours. Tests, against
       fixture repositories, cover a claimed branch, an unclaimed one, and a
       claim older and younger than `STUCK_AFTER_MS`.
-- [ ] **AC-3** — **When a story is stuck.** The loop makes sure there is one
+- [x] **AC-3** — **When a story is stuck.** The loop makes sure there is one
       open issue for a story in exactly these cases:
       - `pickStory` skips a story whose branch is on `origin` and has no
         open pull request, unless its claim is younger than
@@ -53,13 +53,13 @@ use up story after story.
 
       A skipped story with an open pull request gets no issue, draft or
       not: the pull request already shows it (OQ-48's AC-8).
-- [ ] **AC-4** — **The issue.** Its title is exactly `Loop: <OQ-n> is stuck`,
+- [x] **AC-4** — **The issue.** Its title is exactly `Loop: <OQ-n> is stuck`,
       and it has the label `loop-stuck`. Its body names the story, the
       branch, the machine label (OQ-110's AC-8), the time, and the reason: no
       pull request, local-only, or the stop's status and reason. If an open
       issue with that exact title already exists, the loop creates no
       second one, and does not comment on it.
-- [ ] **AC-5** — **Opening an issue does not change what happens to the
+- [x] **AC-5** — **Opening an issue does not change what happens to the
       story.** A story skipped under AC-3 is still skipped, and the loop goes
       on to the next ready story, unless AC-6's limit is now reached. A stop
       still ends the run, as OQ-86's AC-3 says. If listing or creating fails,
@@ -75,7 +75,7 @@ use up story after story.
       - a stop with `branch-exists`, which gets no issue;
       - a failed issue creation, after which the loop goes on to the next
         story.
-- [ ] **AC-6** — **Too many stuck stories stop the queue.** A new exported
+- [x] **AC-6** — **Too many stuck stories stop the queue.** A new exported
       constant, `STUCK_ISSUE_LIMIT`, is 2. At the start of every run, and
       again before each story is picked, the loop counts the open issues
       labelled `loop-stuck`. When there are `STUCK_ISSUE_LIMIT` or more, the
@@ -92,7 +92,7 @@ use up story after story.
         which picks nothing more;
       - a run below it, which goes on as usual;
       - a failed count, which picks nothing.
-- [ ] **AC-7** — Every `**Planned (…)**` marker in
+- [x] **AC-7** — Every `**Planned (…)**` marker in
       `docs/agent-workflow-design.md` that names OQ-112 is resolved as that
       document's "Reading this document" note says.
 
