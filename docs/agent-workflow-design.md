@@ -1577,9 +1577,10 @@ Checked on 2026-10-07 against `main` at `66c578d`:
     makes protected branches available for private repositories only on GitHub Pro, Team or
     Enterprise, not GitHub Free. This repository's gate relies on them: `test` and `review/agent`
     are required checks, with `enforce_admins: true` (**Mechanics**, under **Branching and
-    releases**, above). `land.mjs` and the sweep
-    re-check `review/agent` themselves rather than trusting `clean`, but nothing else stops a
-    direct push to `main`. Which plan the second project's account is on is open.
+    releases**, above). `land.mjs` and the sweep re-check `review/agent` themselves rather than
+    trusting `clean`, but nothing else stops a direct push to `main`. The second project's account
+    is on **GitHub Free** (owner, 2026-10-07), so on that project the gate is kept by the
+    workflow's own checks and by rule, not by GitHub. Open: whether that is acceptable there.
   - **Actions minutes.** **Costs**, below, says minutes are not a constraint *because the
     repository is public*. Private repositories draw on the plan's included minutes.
   - **Privacy choices made because this repository is public**, such as naming a machine by a
@@ -1588,11 +1589,22 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   under `stories/`. The queue could take either, by a per-project setting. Not yet refined: the
   file-based design leans on things an issue does not give for free, such as frontmatter the lint
   checks, `git mv` to `stories/done/` as completion, ticks in the diff, and story containment.
-- **R8. Whether the workflow's repository is public or private.** Undecided (owner, 2026-10-07).
+
+  Further out, the owner wants to explore a project board rather than a simple queue for managing
+  stories and priority, and is trying a GitHub Project for that on the second project. That is not
+  a requirement of the move (owner, 2026-10-07). It meets two principles here head on:
+  [Status is derived, not stored](#status-is-derived-not-stored), where a board's columns are
+  stored status; and [Tier is priority](#tier-is-priority-and-nothing-else), where a board's order
+  is set by hand rather than derived from a field.
+- **R8. Whether the workflow's repository is public or private.** Leaning public (owner,
+  2026-10-07): the work is exploratory, the code is already public in this repository, and private
+  brings no benefit the owner needs.
   Public makes it simple for any project to use, and keeps Actions minutes free. Private keeps it
   to the owner, but a project using it then needs access to it, by package registry
   authentication or GitHub's settings for sharing workflows from a private repository, and that
-  bears on R2.
+  bears on R2. One condition if public: anyone can open an issue or a pull request on a public
+  repository. If its stories come from issues (R7), only issues a writer created or labelled may
+  enter its queue, the same stance OQ-81 takes for landing pull requests.
 
 ---
 
