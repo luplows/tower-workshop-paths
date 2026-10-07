@@ -17,7 +17,7 @@ too and the leftover is visible from anywhere.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — **Skipping and pushing a local-only branch.** `pickStory` in
+- [x] **AC-1** — **Skipping and pushing a local-only branch.** `pickStory` in
       `scripts/dispatch/loop.mjs` also skips a ready story whose branch,
       named by `branchFor` as today, exists locally (`refs/heads/<branch>`)
       and not on `origin`. Before skipping, it pushes that branch to
@@ -25,12 +25,12 @@ too and the leftover is visible from anywhere.
       claim, calling the function `coder.mjs` exports for it.
       `loop.mjs` builds no push of its own. If that push fails, the story is
       still skipped, and git's error is part of the skip's report entry.
-- [ ] **AC-2** — **The report says where the branch was found.** Every skip
+- [x] **AC-2** — **The report says where the branch was found.** Every skip
       entry `pickStory` returns says whether the branch was on `origin` or
       only local, and for a local one, whether the push succeeded. A branch
       that exists both locally and on `origin` counts as on `origin`, and
       nothing is pushed for it, whatever its local tip.
-- [ ] **AC-3** — **The queue keeps moving.** A story skipped under AC-1 does
+- [x] **AC-3** — **The queue keeps moving.** A story skipped under AC-1 does
       not stop the loop: `runLoop` goes on to the next ready story.
 
       Tests use the real `pickStory` against fixture repositories with a
@@ -49,7 +49,7 @@ too and the leftover is visible from anywhere.
       `describe` title, "a local-only branch stops the loop rather than
       looping on branch-exists", is no longer true and is retitled. The PR
       body says so.
-- [ ] **AC-4** — Every `**Planned (…)**` marker in
+- [x] **AC-4** — Every `**Planned (…)**` marker in
       `docs/agent-workflow-design.md` that names OQ-111 is resolved as that
       document's "Reading this document" note says.
 
