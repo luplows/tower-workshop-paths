@@ -17,29 +17,29 @@ requests from anyone without write access are left alone.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — On every run, before dispatching each story, and also on a
+- [x] **AC-1** — On every run, before dispatching each story, and also on a
       run with no story to dispatch, the loop looks for open, non-draft pull
       requests against `main` whose `author_association` is one the gate
       honours. For each one with no honoured verdict at its current
       head, it runs `review.mjs`. Draft pull requests are skipped, so marking
       one ready is how Session A hands it over. The loop's own story PRs are
       already handled by OQ-48's cycle, and are not reviewed a second time here.
-- [ ] **AC-2** — On `pass` or `pass-with-observations`, the loop lands the pull
+- [x] **AC-2** — On `pass` or `pass-with-observations`, the loop lands the pull
       request through OQ-50's `land.mjs`, then goes on. That way a story that
       has just landed is in the queue for the loop's next pick.
-- [ ] **AC-3** — On `block`, the loop records the verdict and leaves the pull
+- [x] **AC-3** — On `block`, the loop records the verdict and leaves the pull
       request. It **never spawns a coder** for a pull request it did not open,
       and never pushes to its branch. The pull request is reviewed again when
       its head moves: someone pushed a fix. `review-blocked` still applies at
       the round bound (OQ-80).
-- [ ] **AC-4** — A pull request from an author outside the gate's set is not
+- [x] **AC-4** — A pull request from an author outside the gate's set is not
       reviewed at all. No reviewer spend goes on it, and its body is never put
       into a reviewer prompt. A test asserts `review.mjs` is not called for a
       `CONTRIBUTOR` or `NONE` pull request.
-- [ ] **AC-5** — The set of associations is the gate's, read from the same place
+- [x] **AC-5** — The set of associations is the gate's, read from the same place
       OQ-81 and OQ-78's AC-3 read it, and the test that ties them together
       covers this module too.
-- [ ] **AC-6** — Tests cover:
+- [x] **AC-6** — Tests cover:
       - a writer's story PR, reviewed and landed before the next story is
         dispatched;
       - a writer's story PR on a run whose queue has nothing ready, reviewed
@@ -49,7 +49,7 @@ requests from anyone without write access are left alone.
       - a block, left with no coder spawned;
       - an outsider's PR, ignored;
       - a PR already carrying a verdict at its head, not reviewed again.
-- [ ] **AC-7** — Every `**Planned (…)**` marker in
+- [x] **AC-7** — Every `**Planned (…)**` marker in
       `docs/agent-workflow-design.md` and `docs/session-a.md` that names OQ-83
       is resolved as the design document's "Reading this document" note says.
 

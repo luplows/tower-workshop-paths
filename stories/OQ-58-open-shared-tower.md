@@ -6,9 +6,6 @@ kind: product
 depends_on: [OQ-56]
 model: sonnet
 blocked: null
-mechanisms:
-  - share link detection and decoding on load
-  - the read-only tower view
 ---
 
 ## Intent

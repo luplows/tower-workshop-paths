@@ -58,6 +58,11 @@ function makeRepo(root) {
   }
 }
 
+// OQ-113: a test that calls makeRepo builds a bare origin plus a clone with
+// real git commands, which a machine running anything else has pushed past
+// the 5 s default. Passed to those tests, and to no other.
+const LOOP_TEST_TIMEOUT = 30_000
+
 describe('OQ-109/AC-3: fetches origin and stops on anything uncommitted, rather than fast-forwarding', () => {
   const originalEnv = { ...process.env }
   let root
@@ -90,7 +95,7 @@ describe('OQ-109/AC-3: fetches origin and stops on anything uncommitted, rather 
     expect(result).toEqual({ status: 'updated', headSha: advancedSha })
     expect(repo.headSha()).toBe(advancedSha)
     expect(await hasCheckedOutBranch(repo.repoDir)).toBe(false)
-  })
+  }, LOOP_TEST_TIMEOUT)
 
   it('OQ-109/AC-3: a modified tracked file stops the update, naming the path and changing nothing', async () => {
     const sub = path.join(root, 'dirty-tracked')
@@ -113,7 +118,7 @@ describe('OQ-109/AC-3: fetches origin and stops on anything uncommitted, rather 
     // Nothing was dispatched: the checkout is untouched.
     expect(repo.headSha()).toBe(localSha)
     expect(execFileSync('git', ['status', '--porcelain'], { cwd: repo.repoDir, encoding: 'utf8' }).trim()).not.toBe('')
-  })
+  }, LOOP_TEST_TIMEOUT)
 
   it('OQ-109/AC-3: an untracked file stops the update, naming the path and changing nothing', async () => {
     const sub = path.join(root, 'dirty-untracked')
@@ -128,7 +133,7 @@ describe('OQ-109/AC-3: fetches origin and stops on anything uncommitted, rather 
     expect(result.paths).toEqual(['scratch.txt'])
     expect(repo.headSha()).toBe(localSha)
     expect(existsSync(path.join(repo.repoDir, 'scratch.txt'))).toBe(true)
-  })
+  }, LOOP_TEST_TIMEOUT)
 
   it('OQ-109/AC-3: a story branch on origin does not affect the update', async () => {
     const sub = path.join(root, 'other-branch')
@@ -150,7 +155,7 @@ describe('OQ-109/AC-3: fetches origin and stops on anything uncommitted, rather 
 
     const result = await updateCheckout(repo.repoDir)
     expect(result).toEqual({ status: 'updated', headSha: advancedSha })
-  })
+  }, LOOP_TEST_TIMEOUT)
 
   it('OQ-109/AC-3: runLoop stops with its own status and dispatches nothing when the checkout is dirty', async () => {
     const pickStory = async () => { throw new Error('pickStory must not be called') }
@@ -218,7 +223,7 @@ describe('OQ-86/AC-4: pickStory skips an in-progress story and derives nothing-r
     const picked = await pickStory(repo.repoDir)
     expect(picked.skipped).toEqual([{ id: 'OQ-20', branch: 'story/OQ-20-already-running', location: 'origin' }])
     expect(picked.story).toEqual({ id: 'OQ-21', branch: 'story/OQ-21-next-up' })
-  })
+  }, LOOP_TEST_TIMEOUT)
 
   it('OQ-86/AC-4: a queue whose only ready stories all have branches on origin yields no story', async () => {
     const sub = path.join(root, 'all-skipped')
@@ -237,7 +242,7 @@ describe('OQ-86/AC-4: pickStory skips an in-progress story and derives nothing-r
       { id: 'OQ-30', branch: 'story/OQ-30-running-one', location: 'origin' },
       { id: 'OQ-31', branch: 'story/OQ-31-running-two', location: 'origin' },
     ])
-  })
+  }, LOOP_TEST_TIMEOUT)
 })
 
 describe('OQ-86/AC-2: two stories run from a checkout that catches up between them', () => {
@@ -300,7 +305,7 @@ describe('OQ-86/AC-2: two stories run from a checkout that catches up between th
     // (runLoop's own updateCheckout, not this test's fake) could have put it
     // there, since runStoryProcess never touches repoDir.
     expect(headAtCall[1]).toBe(mergedShas[0])
-  })
+  }, LOOP_TEST_TIMEOUT)
 })
 
 describe('OQ-86/AC-2, AC-3: runStoryProcess as a real child process', () => {
@@ -467,7 +472,7 @@ describe('OQ-111: a story whose branch exists only locally is pushed to origin a
     expect(picked.story).toEqual({ id: 'OQ-51', branch: 'story/OQ-51-next-up' })
     // The claim push landed the branch's tip exactly as it was, not a new commit.
     expect(repo.remoteTip(branch)).toBe(localSha)
-  })
+  }, LOOP_TEST_TIMEOUT)
 
   it('OQ-111/AC-1: a local-only branch whose push fails is still skipped, with git\'s error reported', async () => {
     const sub = path.join(root, 'local-only-push-fails')
@@ -491,7 +496,7 @@ describe('OQ-111: a story whose branch exists only locally is pushed to origin a
     expect(picked.skipped[0]).toMatchObject({ id: 'OQ-52', branch, location: 'local', pushed: false })
     expect(picked.skipped[0].error).toBeTruthy()
     expect(repo.remoteTip(branch)).toBeNull()
-  })
+  }, LOOP_TEST_TIMEOUT)
 
   it('OQ-111/AC-2: a branch on origin only is skipped as on origin, with nothing pushed', async () => {
     const sub = path.join(root, 'origin-only')
@@ -509,7 +514,7 @@ describe('OQ-111: a story whose branch exists only locally is pushed to origin a
     expect(picked.skipped).toEqual([{ id: 'OQ-53', branch, location: 'origin' }])
     expect(picked.story).toEqual({ id: 'OQ-54', branch: 'story/OQ-54-after' })
     expect(repo.remoteTip(branch)).toBe(originSha)
-  })
+  }, LOOP_TEST_TIMEOUT)
 
   it('OQ-111/AC-2: a branch both local and on origin at different tips is skipped as on origin, with nothing pushed', async () => {
     const sub = path.join(root, 'local-and-origin')
@@ -532,7 +537,7 @@ describe('OQ-111: a story whose branch exists only locally is pushed to origin a
     expect(picked.story).toBeNull()
     expect(picked.skipped).toEqual([{ id: 'OQ-55', branch, location: 'origin' }])
     expect(repo.remoteTip(branch)).toBe(originSha)
-  })
+  }, LOOP_TEST_TIMEOUT)
 
   it('OQ-111/AC-3: runLoop goes on to dispatch the next ready story after pickStory pushes and skips a local-only branch', async () => {
     const sub = path.join(root, 'loop-continues')
@@ -557,7 +562,7 @@ describe('OQ-111: a story whose branch exists only locally is pushed to origin a
     expect(result.report[0]).toEqual({ id: 'OQ-60', branch, outcome: 'skipped' })
     expect(result.report[1]).toEqual({ id: 'OQ-61', outcome: 'merged' })
     expect(repo.remoteTip(branch)).not.toBeNull()
-  })
+  }, LOOP_TEST_TIMEOUT)
 })
 
 describe('OQ-86/AC-6: --max-stories caps how many stories a run starts', () => {
@@ -660,7 +665,7 @@ describe('OQ-109/AC-1: --init creates a worktree of the loop\'s own, detached at
     expect(existsSync(target)).toBe(true)
     expect(git(target, 'rev-parse', 'HEAD').trim()).toBe(repo.headSha())
     expect(await hasCheckedOutBranch(target)).toBe(false)
-  })
+  }, LOOP_TEST_TIMEOUT)
 
   it('OQ-109/AC-1: refuses, exiting non-zero and creating nothing, when the path already exists', async () => {
     const sub = path.join(root, 'refuse')
@@ -674,7 +679,7 @@ describe('OQ-109/AC-1: --init creates a worktree of the loop\'s own, detached at
     // Refusal left the pre-existing directory exactly as it was -- no worktree was added.
     expect(existsSync(path.join(target, 'marker.txt'))).toBe(true)
     expect(git(repo.repoDir, 'worktree', 'list')).not.toContain('already-there')
-  })
+  }, LOOP_TEST_TIMEOUT)
 })
 
 describe('OQ-109/AC-2: the loop refuses to run from a checkout that has a branch checked out', () => {
@@ -708,7 +713,7 @@ describe('OQ-109/AC-2: the loop refuses to run from a checkout that has a branch
     expect(caught).toBeDefined()
     expect(caught.message).toContain(repo.repoDir)
     expect(caught.message).toContain('--init')
-  })
+  }, LOOP_TEST_TIMEOUT)
 
   it('OQ-109/AC-2: a detached checkout goes on', async () => {
     const sub = path.join(root, 'detached')
@@ -718,7 +723,7 @@ describe('OQ-109/AC-2: the loop refuses to run from a checkout that has a branch
     expect(await hasCheckedOutBranch(repo.repoDir)).toBe(false)
 
     await expect(requireOwnWorktree(repo.repoDir)).resolves.toBeUndefined()
-  })
+  }, LOOP_TEST_TIMEOUT)
 })
 
 // ---------------------------------------------------- OQ-112: stuck stories
@@ -938,4 +943,157 @@ describe('OQ-112/AC-6: two or more open loop-stuck issues stop the queue complet
     expect(result.status).toBe('stuck-limit')
     expect(result.reason).toMatch(/503/)
   })
+})
+
+// --------------------------------------------- OQ-83: writer pull requests
+
+describe('OQ-83/AC-1: the writer-pull-request scan runs only with both a ctx and a landCtx', () => {
+  it('OQ-83/AC-1: with a ctx but no landCtx, the scan does not run', async () => {
+    let called = false
+    const scan = async () => { called = true; return { landed: false, report: [] } }
+    const result = await runLoop({
+      ctx: {},
+      deps: {
+        updateCheckout: async () => ({ status: 'updated' }),
+        pickStory: async () => ({ story: null, skipped: [] }),
+        runStoryProcess: neverCalled('runStoryProcess'), listIssuesByLabels: async () => [],
+        reviewAndLandWriterPullRequests: scan,
+      },
+    })
+    expect(called).toBe(false)
+    expect(result.status).toBe('nothing-ready')
+  })
+
+  it('OQ-83/AC-1: with neither a ctx nor a landCtx, the scan does not run', async () => {
+    let called = false
+    const scan = async () => { called = true; return { landed: false, report: [] } }
+    const result = await runLoop({
+      deps: {
+        updateCheckout: async () => ({ status: 'updated' }),
+        pickStory: async () => ({ story: null, skipped: [] }),
+        runStoryProcess: neverCalled('runStoryProcess'), reviewAndLandWriterPullRequests: scan,
+      },
+    })
+    expect(called).toBe(false)
+    expect(result.status).toBe('nothing-ready')
+  })
+})
+
+describe('OQ-83/AC-6: a writer\'s pull request is reviewed and landed as part of the loop', () => {
+  const originalEnv = { ...process.env }
+  let root
+
+  beforeAll(() => {
+    process.env.GIT_AUTHOR_NAME = process.env.GIT_COMMITTER_NAME = 'Test'
+    process.env.GIT_AUTHOR_EMAIL = process.env.GIT_COMMITTER_EMAIL = 'test@example.com'
+    root = mkdtempSync(path.join(tmpdir(), 'tw-loop-writer-'))
+  })
+
+  afterAll(() => {
+    process.env = originalEnv
+    rmSync(root, { recursive: true, force: true })
+  })
+
+  it('OQ-83/AC-6: a writer\'s story pull request is reviewed and landed before the next story is dispatched', async () => {
+    const sub = path.join(root, 'before-dispatch')
+    mkdirSync(sub)
+    const repo = makeRepo(sub)
+    writeStory(repo.repoDir, 'OQ-50', 'next')
+    repo.commit('add story')
+    repo.push()
+
+    let scanCalls = 0
+    // Simulates land.mjs's merge: a commit pushed straight to origin from a
+    // throwaway clone, never through repoDir -- the dispatcher's own
+    // checkout only sees it once runLoop's own updateCheckout runs again.
+    const reviewAndLandWriterPullRequests = async () => {
+      scanCalls++
+      if (scanCalls > 1) return { landed: false, report: [] }
+      const clone = path.join(sub, 'land-writer')
+      git(sub, 'clone', repo.origin, clone)
+      writeFileSync(path.join(clone, 'WRITER.md'), 'landed\n')
+      git(clone, 'add', '.')
+      git(clone, 'commit', '-m', 'writer pr landed')
+      git(clone, 'push', 'origin', 'main')
+      return { landed: true, report: [{ number: 99, outcome: 'merged' }] }
+    }
+    // Mirrors OQ-86/AC-2's fake: a real move-to-done pushed straight to
+    // origin, since production merges only through the landing sweep, never
+    // by committing in repoDir. Without this, OQ-50 would still read ready
+    // on the next pass and the loop would dispatch it forever.
+    let storyCalls = 0
+    const runStoryProcess = async ({ storyId }) => {
+      storyCalls++
+      const clone = path.join(sub, `land-story-${storyCalls}`)
+      git(sub, 'clone', repo.origin, clone)
+      mkdirSync(path.join(clone, 'stories', 'done'), { recursive: true })
+      git(clone, 'mv', `stories/${storyId}-next.md`, `stories/done/${storyId}-next.md`)
+      git(clone, 'commit', '-m', `merge ${storyId}`)
+      git(clone, 'push', 'origin', 'main')
+      return { status: 'ran', result: { status: 'merged', pr: storyCalls, storyId } }
+    }
+
+    const result = await runLoop({
+      repoDir: repo.repoDir,
+      ctx: {},
+      landCtx: {},
+      deps: { reviewAndLandWriterPullRequests, runStoryProcess, listIssuesByLabels: async () => [] },
+    })
+
+    expect(result.status).toBe('nothing-ready')
+    expect(result.report).toEqual([
+      { number: 99, outcome: 'merged' },
+      { id: 'OQ-50', outcome: 'merged' },
+    ])
+    expect(scanCalls).toBe(2)
+  }, LOOP_TEST_TIMEOUT)
+
+  it('OQ-83/AC-6: a writer\'s story pull request landed on a run with nothing ready has the story it adds dispatched in the same run', async () => {
+    const sub = path.join(root, 'nothing-ready')
+    mkdirSync(sub)
+    const repo = makeRepo(sub)
+    // The queue starts with nothing ready: no story file at all.
+
+    let scanCalls = 0
+    const reviewAndLandWriterPullRequests = async () => {
+      scanCalls++
+      if (scanCalls > 1) return { landed: false, report: [] }
+      // The writer's pull request's merge adds a new ready story, the way a
+      // Session A hand-off would.
+      const clone = path.join(sub, 'land-writer')
+      git(sub, 'clone', repo.origin, clone)
+      writeStory(clone, 'OQ-60', 'added-by-writer-pr')
+      git(clone, 'add', '.')
+      git(clone, 'commit', '-m', 'writer pr landed, adding OQ-60')
+      git(clone, 'push', 'origin', 'main')
+      return { landed: true, report: [{ number: 100, outcome: 'merged' }] }
+    }
+    // See the sibling test above: a real move-to-done, pushed straight to
+    // origin, so OQ-60 does not read ready again on the next pass.
+    let storyCalls = 0
+    const runStoryProcess = async ({ storyId }) => {
+      storyCalls++
+      const clone = path.join(sub, `land-story-${storyCalls}`)
+      git(sub, 'clone', repo.origin, clone)
+      mkdirSync(path.join(clone, 'stories', 'done'), { recursive: true })
+      git(clone, 'mv', `stories/${storyId}-added-by-writer-pr.md`, `stories/done/${storyId}-added-by-writer-pr.md`)
+      git(clone, 'commit', '-m', `merge ${storyId}`)
+      git(clone, 'push', 'origin', 'main')
+      return { status: 'ran', result: { status: 'merged', pr: storyCalls, storyId } }
+    }
+
+    const result = await runLoop({
+      repoDir: repo.repoDir,
+      ctx: {},
+      landCtx: {},
+      deps: { reviewAndLandWriterPullRequests, runStoryProcess, listIssuesByLabels: async () => [] },
+    })
+
+    expect(result.status).toBe('nothing-ready')
+    expect(result.report).toEqual([
+      { number: 100, outcome: 'merged' },
+      { id: 'OQ-60', outcome: 'merged' },
+    ])
+    expect(scanCalls).toBe(2)
+  }, LOOP_TEST_TIMEOUT)
 })

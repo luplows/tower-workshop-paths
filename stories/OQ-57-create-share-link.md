@@ -6,9 +6,6 @@ kind: product
 depends_on: [OQ-56]
 model: sonnet
 blocked: null
-mechanisms:
-  - share URL construction
-  - the share control and clipboard handling
 ---
 
 ## Intent

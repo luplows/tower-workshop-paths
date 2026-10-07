@@ -20,28 +20,33 @@ of them time out in a full run. OQ-90 fixed the same failure for
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — `scripts/dispatch/story-containment.test.mjs` defines one
+- [x] **AC-1** — `scripts/dispatch/story-containment.test.mjs` defines one
       named constant of 30 000 ms, with a comment giving the reason, as
       `review.test.mjs` does for `REVIEW_TEST_TIMEOUT`. Each of the file's
       tests is passed it as its timeout. Every test in the file runs git,
       through `scenario`, `MAIN` or `git` directly.
-- [ ] **AC-2** — `scripts/dispatch/loop.test.mjs` defines one named constant
+- [x] **AC-2** — `scripts/dispatch/loop.test.mjs` defines one named constant
       of 30 000 ms in the same way. It is passed as the timeout to every test
       that calls `makeRepo`, including those OQ-111 added, and to no other
       test. A test that does not call `makeRepo` keeps the 5 s default.
-- [ ] **AC-3** — No other timeout changes. Vitest's global `testTimeout` stays
+- [x] **AC-3** — No other timeout changes. Vitest's global `testTimeout` stays
       unset in `vite.config.js`, neither file uses `vi.setConfig`, and no other
       test file is edited. No assertion in either file changes.
-- [ ] **AC-4** — **A one-off check, in this pull request only.** The PR body's
+- [x] **AC-4** — **A one-off check, in this pull request only.** The PR body's
       **Verification** reports running the full suite, `npx vitest run`, five
       times one after another at the pull request's head, with the number of
       runs that had any failure and, for each failure, the test's name and the
-      reason Vitest gave. The expected result is no timeout in either file.
-      Before the fix, Session A's four full runs on 2026-10-07 had a timeout
-      in one of these two files in three of them (**Context**), so five clean
-      runs is fair evidence. A failure in another file is reported, not
-      fixed here. The check is not added to CI, `REVIEW.md` or any recurring
-      check.
+      reason Vitest gave. **AC-4 is delivered only if none of the five runs
+      has a timeout in either file.** If one does, AC-4 stays unticked and the
+      PR body says so. The timeout is not raised beyond AC-1's and AC-2's
+      30 000 ms, and runs are not repeated until five come out clean. Before
+      the fix, Session A's four full runs on 2026-10-07 had a timeout in one
+      of these two files in three of them (**Context**), so five clean runs is
+      fair evidence. A failure in another file is reported, not fixed here,
+      and does not stop AC-4 being ticked. **Verification** lists each such
+      failure after a line reading "For Session A:", and Session A turns each
+      one into a new story. The check is not added to CI, `REVIEW.md` or any
+      recurring check.
 
 ## Out of scope
 
