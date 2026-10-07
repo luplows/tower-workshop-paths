@@ -1559,6 +1559,20 @@ Checked on 2026-10-07 against `main` at `66c578d`:
 - **R1. What moves.** Candidates: `scripts/dispatch/`, `scripts/land/`, the prompts, the gate's
   workflows or the parts of them that are not project-specific, the story lint and containment,
   the general parts of `REVIEW.md`, the story schema and template, and this document.
+
+  **This document** (proposed by Session A, owner agreed to record it, 2026-10-07): it moves with
+  the workflow and stays the workflow's design of record. At `66c578d` most of its 1,640 lines are
+  about the workflow. The passages about this project stay here, in a short document of this
+  repository's own on how it uses the workflow:
+  - "Branching and releases": Pages as the alpha channel, and tags as checkpoints;
+  - items 4 and 5 of "Quality beyond the gate": buy-order invariants, and validating scraped data;
+  - open question 9, the production deployment target;
+  - mentions of `mytower.app` as an example of network egress.
+
+  The example story under "The story artifact" (a `playerInfo.dat` import) is replaced with a
+  neutral one. `Project-Outline.md` stays the product's design of record. Once moved, a workflow
+  design change lands in the workflow's repository, and this one sees it only as a version it
+  chooses to take, which is goal 4.
 - **R2. How a project uses it.** For example, an npm package, a CLI installed once per machine,
   reusable GitHub workflows, or a combination of these.
 - **R3. What a project configures.** At least its repository, its CI commands (OQ-94), its own
@@ -1608,7 +1622,17 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   bears on R2. One condition if public: anyone can open an issue or a pull request on a public
   repository. If its stories come from issues (R7), only issues a writer created or labelled may
   enter its queue, the same stance OQ-81 takes for landing pull requests.
-
+- **R9. Story numbering in the new repository, and the old references.** This document cites OQ
+  numbers 150 times, across 43 distinct ids (`main` at `66c578d`), and every one is this
+  repository's story, in `stories/done/` or `Completed-Questions.md`. If the new repository also
+  numbered its stories OQ-1 onwards, "OQ-73" would become ambiguous. Proposed (Session A,
+  2026-10-07): the new repository's stories take a prefix of their own, for example `WF-<n>`.
+  The OQ references this document carries over keep their numbers, with one note saying they mean
+  tower-workshop-paths' stories, and where to find them. Continuing OQ numbering in the new
+  repository was considered and set aside: it would tie the two repositories' numbering together
+  for good, against goal 4. The prefix touches everything that matches `OQ-<n>` today: the queue
+  reader's and lint's filename patterns, branch names (`story/OQ-<n>-…`), test names
+  (`OQ-<n>/AC-<n>`) and the design doc's markers.
 ---
 
 ## Deliberately excluded
@@ -1637,4 +1661,4 @@ Checked on 2026-10-07 against `main` at `66c578d`:
 | 9 | Production deployment target | Open. None today; Pages is alpha. Tags are checkpoints until one exists. |
 | 10 | Second GitHub identity | Open. The only thing that fully closes self-marking. Cost: a machine account or App. |
 | 11 | Other companies' models | Open. Goals decided 2026-10-07, and comes after the move; questions M1–M6 under [Portability](#portability-other-projects-other-companies-models). OQ-114. |
-| 12 | The workflow in a repository of its own | Open. Goals decided 2026-10-07, and comes first; questions R1–R8 under [Portability](#portability-other-projects-other-companies-models). OQ-115. |
+| 12 | The workflow in a repository of its own | Open. Goals decided 2026-10-07, and comes first; questions R1–R9 under [Portability](#portability-other-projects-other-companies-models). OQ-115. |
