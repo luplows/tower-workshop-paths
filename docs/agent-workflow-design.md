@@ -1565,7 +1565,8 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   about the workflow. The passages about this project stay here, in a short document of this
   repository's own on how it uses the workflow:
   - "Branching and releases": Pages as the alpha channel, and tags as checkpoints;
-  - items 4 and 5 of "Quality beyond the gate": buy-order invariants, and validating scraped data;
+  - in "Quality beyond the gate", the buy-order examples given for items 3 and 4 (property-based
+    and golden tests; the techniques themselves move), and item 5, validating scraped data;
   - open question 9, the production deployment target;
   - mentions of `mytower.app` as an example of network egress.
 
