@@ -5,7 +5,7 @@ tier: normal
 kind: product
 depends_on: []
 model: sonnet
-blocked: null
+blocked: "Owner-only: the work is done on a physical phone, by hand. Never dispatched by the loop."
 ---
 
 ## Intent

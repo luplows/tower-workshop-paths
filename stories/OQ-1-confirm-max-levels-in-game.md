@@ -5,7 +5,7 @@ tier: normal
 kind: product
 depends_on: []
 model: sonnet
-blocked: null
+blocked: "Owner-only: the work is done in the live game, by hand. Never dispatched by the loop."
 ---
 
 ## Intent
