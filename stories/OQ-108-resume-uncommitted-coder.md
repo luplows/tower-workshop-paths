@@ -5,7 +5,7 @@ tier: normal
 kind: workflow
 depends_on: [OQ-107]
 model: sonnet
-blocked: null
+blocked: "Parked by the owner. Session A clears this when the owner says to dispatch it."
 ---
 
 ## Intent
