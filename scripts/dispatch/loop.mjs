@@ -122,7 +122,9 @@ async function reportStuck(ctx, d, { id, branch, reason, baseEnv }) {
  */
 async function stuckReasonForSkip(ctx, d, repoDir, skip) {
   if (skip.location === 'local') {
-    return 'the branch exists only locally, and was just pushed to origin'
+    return skip.pushed
+      ? 'the branch existed only locally, and was just pushed to origin'
+      : `the branch exists only locally, and pushing it to origin failed: ${skip.error}`
   }
   const openPRs = await d.listOpenPullRequestsForHead(ctx, skip.branch)
   if (openPRs.length > 0) return null

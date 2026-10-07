@@ -786,6 +786,25 @@ describe('OQ-112/AC-3, AC-4, AC-5: a stuck story opens exactly one GitHub issue'
     expect(result.report[0].stuck).toEqual({ opened: true, issue: { number: 12, url: 'https://x/issues/12' } })
   })
 
+  it('OQ-112/AC-4: a local-only branch whose push failed names the real push error, not a false claim that it was pushed', async () => {
+    const { ctx, fetch } = makeCtx([noIssuesOpen, noIssuesOpen, issueCreated(21), noIssuesOpen])
+    const pickStory = async () => ({
+      story: null,
+      skipped: [{ id: 'OQ-5', branch: 'story/OQ-5-x', location: 'local', pushed: false, error: 'remote rejected' }],
+    })
+    const result = await runLoop({
+      ctx,
+      deps: {
+        updateCheckout: updated, pickStory, runStoryProcess: neverCalled('runStoryProcess'),
+        listOpenPullRequestsForHead: neverCalled('listOpenPullRequestsForHead'), claimAgeMs: neverCalled('claimAgeMs'),
+      },
+    })
+    expect(result.report[0].stuck).toEqual({ opened: true, issue: { number: 21, url: 'https://x/issues/21' } })
+    const createCall = fetch.calls.find((c) => c.method === 'POST')
+    expect(createCall.body.body).toContain('pushing it to origin failed: remote rejected')
+    expect(createCall.body.body).not.toContain('was just pushed to origin')
+  })
+
   it('OQ-112/AC-3: a dispatch that stopped before a pull request existed opens an issue; branch-exists does not', async () => {
     const { ctx: stuckCtx } = makeCtx([noIssuesOpen, noIssuesOpen, noIssuesOpen, issueCreated(13)])
     const pickStory = async () => ({ story: { id: 'OQ-3', branch: 'story/OQ-3-x' }, skipped: [] })
