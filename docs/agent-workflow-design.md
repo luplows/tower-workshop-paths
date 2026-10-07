@@ -1497,20 +1497,11 @@ The owner is starting to plan another project and wants to work the same way in 
 what makes goal 1 near-term: the second project is the workflow's first user outside this
 repository.
 
-### What the workflow is, in the owner's words
+### What the workflow is for
 
-Stated 2026-10-07 by the owner, while discussing the new repository's name (R10):
-
-- **A harness that takes units of work through a code, review and merge loop.** It picks up work
-  marked ready, codes it, reviews it, and merges it into the mainline branch.
-- **It surfaces problems**, probably as GitHub issues, as OQ-112 does for a stuck story.
-- **It keeps working while other ready work remains**, up to a point where too much has stopped
-  without merging. Today two separate limits come closest: two or more open `loop-stuck` issues
-  stop the queue (`STUCK_ISSUE_LIMIT`, `scripts/dispatch/loop.mjs`), and five or more open
-  `review-blocked` pull requests narrow what the sweep lands (the circuit breaker in
-  `land-approved.yml`). Whether "too much stopped" should be one measure is open (R10's note).
-- **Future state:** a visual view to quickly prioritise units of work and mark them ready, and
-  probably more not yet thought of. This is the project board in R7, from the other side.
+[`harness-outline.md`](harness-outline.md) holds the owner's own account of it (from
+2026-10-07): what it is, who it is for, why, the three things it must never do, and the view for
+deciding what is next. It is the harness's product outline, and moves with this document.
 
 ### Decided so far
 
@@ -1592,7 +1583,7 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   | `REVIEW.md` except items 8 and 10, which name Vitest, Playwright, the buy-order algorithm and screenshot baselines | `REVIEW.md` items 8 and 10, as this project's own review items |
   | The workflow rules in `CLAUDE.md` ("Branches and pull requests", "Claims about this repository", "Stories") | `CLAUDE.md`'s project rules ("Testing", screenshot baselines), plus a pointer to the workflow's rules |
   | `stories/README.md` and `_TEMPLATE.md`, as the story schema of record | A short `stories/README.md` pointing at the schema |
-  | This document, `docs/session-a.md`, `docs/migration-plan.md`, `docs/gap-analysis.md` | `Project-Outline.md`, `README.md`, and the short document on how this project uses the workflow |
+  | This document, `docs/harness-outline.md`, `docs/session-a.md`, `docs/migration-plan.md`, `docs/gap-analysis.md` | `Project-Outline.md`, `README.md`, and the short document on how this project uses the workflow |
   | The logic of `review-gate.yml` and `land-approved.yml`, and the containment step in `ci.yml` | Thin workflow files that call it (R2), `ci.yml`'s product checks, `deploy-pages.yml`, `detect-drift.yml`, `update-screenshots.yml` |
 
   The prompts' project-specific lines are few. In `coder.md`: the repository name, the testing
@@ -1706,15 +1697,10 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   reader's and lint's filename patterns, branch names (`story/OQ-<n>-…`), test names
   (`OQ-<n>/AC-<n>`) and the design doc's markers.
 - **R10. The name of the repository and the package.** Open. The owner wanted the future state
-  settled first (**What the workflow is, in the owner's words**, above). With the git-tag pin (R2),
-  only the repository name is needed at the move; the package name is whatever its `package.json`
-  says. The name should not name a model company (goal 3), and need not say "story" if units of
-  work come from issues (R7).
-
-  Note for this question: the owner described one point at which "too much has stopped". Today
-  there are two limits that count different things. Neither counts a story stopped for a reason
-  other than the review round bound, such as red CI at its own bound, which leaves `blocked:` on a
-  draft pull request with no label and no issue.
+  settled first ([`harness-outline.md`](harness-outline.md)). With the git-tag pin (R2), only the
+  repository name is needed at the move; the package name is whatever its `package.json` says. The
+  name should not name a model company (goal 3), and need not say "story" if units of work come
+  from issues (R7).
 ---
 
 ## Deliberately excluded
