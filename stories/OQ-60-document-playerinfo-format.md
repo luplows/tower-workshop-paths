@@ -5,9 +5,7 @@ tier: next
 kind: product
 depends_on: []
 model: sonnet
-blocked: null
-mechanisms:
-  - the format investigation and its write-up
+blocked: "Run by the owner, by hand, against a sample kept outside the repository. Never dispatched by the loop."
 ---
 
 ## Intent
@@ -51,11 +49,18 @@ complete level set, or only the levels a player has bought?
   repository is public, and a save file may carry account identifiers. Only a
   synthetic or redacted fixture may ever be committed, and building one needs
   AC-4's answer first.
+- **The sample is not the owner's own save.** No value read from it appears in
+  the repository, a commit message, the pull request or a review comment: not a
+  level, an identifier, a timestamp or a byte sequence. The document describes
+  structure (field names, types, encodings, order), and any example in it is
+  invented. AC-4 names the identifying fields and never gives their values.
+- **The story is run by hand, not by the loop** (`blocked:`, above, and
+  `stories/README.md`). The owner starts the session and tells it where the
+  sample is. That location is not written into the repository, the pull request
+  or a commit message. The format cannot be derived from the app's own source,
+  which today has no reader for it.
 - The deliverable is documentation. No parser, no test, no change to application
   code.
-- If no sample file is available at dispatch, **set `blocked:` and exit.** The
-  format cannot be derived from the app's own source, which today has no reader
-  for it.
 
 ## Context
 

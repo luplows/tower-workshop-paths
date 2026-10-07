@@ -1,7 +1,7 @@
 ---
 id: OQ-55
 title: Declare a story's mechanisms and lint that they exist
-tier: next
+tier: normal
 kind: workflow
 depends_on: [OQ-61]
 model: sonnet
