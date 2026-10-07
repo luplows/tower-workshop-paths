@@ -5,7 +5,7 @@ tier: next
 kind: workflow
 depends_on: []
 model: sonnet
-blocked: "ci-wait-timed-out: CI did not finish within the wait; a coder cannot fix that"
+blocked: null
 ---
 
 ## Intent
