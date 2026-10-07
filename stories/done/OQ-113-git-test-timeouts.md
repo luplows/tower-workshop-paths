@@ -20,19 +20,19 @@ of them time out in a full run. OQ-90 fixed the same failure for
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — `scripts/dispatch/story-containment.test.mjs` defines one
+- [x] **AC-1** — `scripts/dispatch/story-containment.test.mjs` defines one
       named constant of 30 000 ms, with a comment giving the reason, as
       `review.test.mjs` does for `REVIEW_TEST_TIMEOUT`. Each of the file's
       tests is passed it as its timeout. Every test in the file runs git,
       through `scenario`, `MAIN` or `git` directly.
-- [ ] **AC-2** — `scripts/dispatch/loop.test.mjs` defines one named constant
+- [x] **AC-2** — `scripts/dispatch/loop.test.mjs` defines one named constant
       of 30 000 ms in the same way. It is passed as the timeout to every test
       that calls `makeRepo`, including those OQ-111 added, and to no other
       test. A test that does not call `makeRepo` keeps the 5 s default.
-- [ ] **AC-3** — No other timeout changes. Vitest's global `testTimeout` stays
+- [x] **AC-3** — No other timeout changes. Vitest's global `testTimeout` stays
       unset in `vite.config.js`, neither file uses `vi.setConfig`, and no other
       test file is edited. No assertion in either file changes.
-- [ ] **AC-4** — **A one-off check, in this pull request only.** The PR body's
+- [x] **AC-4** — **A one-off check, in this pull request only.** The PR body's
       **Verification** reports running the full suite, `npx vitest run`, five
       times one after another at the pull request's head, with the number of
       runs that had any failure and, for each failure, the test's name and the
