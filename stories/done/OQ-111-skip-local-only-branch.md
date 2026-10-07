@@ -81,7 +81,7 @@ too and the leftover is visible from anywhere.
   `{ id, branch }` today.
 - Local branches are shared by every worktree of a repository. So the
   loop's own worktree (OQ-109) sees `story/` branches a hand-run makes from
-  the main checkout. A hand-run caught between creating its branch and
+  any other worktree of the same repository. A hand-run caught between creating its branch and
   pushing its claim would have that branch pushed by this story, and its
   claim then fails as `branch-exists` (OQ-110's AC-2). This is a known
   limit, expected to be rare, as in OQ-101's Context.
