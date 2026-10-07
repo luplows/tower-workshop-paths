@@ -1569,8 +1569,30 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   OQ-101), so that what moves is known to work unattended. Against that, the second project's
   planning has started, and every workflow story built here first is one more thing to move.
 - **R6. The second project.** What it needs from the workflow decides how general R2 and R3 must
-  be. Is it also a Node project on GitHub, and does it need the whole loop from the start or only
-  part of it?
+  be. Answered so far (owner, 2026-10-07): it is also a Node project on GitHub, in a **private**
+  repository. Open: whether it needs the whole loop from the start or only part of it.
+
+  A private repository changes things this design assumes about this public one:
+  - **Branch protection.** GitHub's documentation ("About protected branches", read 2026-10-07)
+    makes protected branches available for private repositories only on GitHub Pro, Team or
+    Enterprise, not GitHub Free. This repository's gate relies on them: `test` and `review/agent`
+    are required checks, with `enforce_admins: true` (**Mechanics**, under **Branching and
+    releases**, above). `land.mjs` and the sweep
+    re-check `review/agent` themselves rather than trusting `clean`, but nothing else stops a
+    direct push to `main`. Which plan the second project's account is on is open.
+  - **Actions minutes.** **Costs**, below, says minutes are not a constraint *because the
+    repository is public*. Private repositories draw on the plan's included minutes.
+  - **Privacy choices made because this repository is public**, such as naming a machine by a
+    label rather than its hostname (OQ-112), may be relaxed per project, but do not have to be.
+- **R7. Where stories come from.** The second project keeps its stories as GitHub issues, not files
+  under `stories/`. The queue could take either, by a per-project setting. Not yet refined: the
+  file-based design leans on things an issue does not give for free, such as frontmatter the lint
+  checks, `git mv` to `stories/done/` as completion, ticks in the diff, and story containment.
+- **R8. Whether the workflow's repository is public or private.** Undecided (owner, 2026-10-07).
+  Public makes it simple for any project to use, and keeps Actions minutes free. Private keeps it
+  to the owner, but a project using it then needs access to it, by package registry
+  authentication or GitHub's settings for sharing workflows from a private repository, and that
+  bears on R2.
 
 ---
 
@@ -1600,4 +1622,4 @@ Checked on 2026-10-07 against `main` at `66c578d`:
 | 9 | Production deployment target | Open. None today; Pages is alpha. Tags are checkpoints until one exists. |
 | 10 | Second GitHub identity | Open. The only thing that fully closes self-marking. Cost: a machine account or App. |
 | 11 | Other companies' models | Open. Goals decided 2026-10-07, and comes after the move; questions M1–M6 under [Portability](#portability-other-projects-other-companies-models). OQ-114. |
-| 12 | The workflow in a repository of its own | Open. Goals decided 2026-10-07, and comes first; questions R1–R6 under [Portability](#portability-other-projects-other-companies-models). OQ-115. |
+| 12 | The workflow in a repository of its own | Open. Goals decided 2026-10-07, and comes first; questions R1–R8 under [Portability](#portability-other-projects-other-companies-models). OQ-115. |
