@@ -1556,9 +1556,26 @@ Checked on 2026-10-07 against `main` at `66c578d`:
 
 **A repository of its own (OQ-115)**
 
-- **R1. What moves.** Candidates: `scripts/dispatch/`, `scripts/land/`, the prompts, the gate's
-  workflows or the parts of them that are not project-specific, the story lint and containment,
-  the general parts of `REVIEW.md`, the story schema and template, and this document.
+- **R1. What moves.** Proposed by Session A, 2026-10-07, from `main` at `21fdb52`:
+
+  | Moves to the workflow's repository | Stays here |
+  |---|---|
+  | `scripts/dispatch/` (with `story-containment.mjs`), `scripts/land/`, `scripts/lint-stories.mjs`, `scripts/report/review-verdicts.mjs`, and their tests | The product, its data scripts (`scripts/extract-*`, `generate-*`, `verify-workshop-costs.mjs`, `scripts/lib/`) |
+  | `.claude/prompts/coder.md` and `reviewer.md`, with their project-specific lines turned into slots (below) | This project's stories: `stories/`, `stories/done/`, `stories/retired/`, `Completed-Questions.md`, `Open-Questions.md` |
+  | `REVIEW.md` except items 8 and 10, which name Vitest, Playwright, the buy-order algorithm and screenshot baselines | `REVIEW.md` items 8 and 10, as this project's own review items |
+  | The workflow rules in `CLAUDE.md` ("Branches and pull requests", "Claims about this repository", "Stories") | `CLAUDE.md`'s project rules ("Testing", screenshot baselines), plus a pointer to the workflow's rules |
+  | `stories/README.md` and `_TEMPLATE.md`, as the story schema of record | A short `stories/README.md` pointing at the schema |
+  | This document, `docs/session-a.md`, `docs/migration-plan.md`, `docs/gap-analysis.md` | `Project-Outline.md`, `README.md`, and the short document on how this project uses the workflow |
+  | The logic of `review-gate.yml` and `land-approved.yml`, and the containment step in `ci.yml` | Thin workflow files that call it (R2), `ci.yml`'s product checks, `deploy-pages.yml`, `detect-drift.yml`, `update-screenshots.yml` |
+
+  The prompts' project-specific lines are few. In `coder.md`: the repository name, the testing
+  frameworks and screenshot-baseline rules, and `mytower.app` being reachable. In `reviewer.md`:
+  the repository name. They become a `{{REPO}}` slot and a project section the project supplies,
+  rendered by the same bounded injection as the story (`render.mjs`).
+
+  A side effect worth having: in the workflow's repository the prompts need not live under
+  `.claude/`, so a coder there could edit them directly, instead of through the emit-a-diff route
+  (**A spawned session cannot edit `.claude/prompts/`**, above).
 
   **This document** (proposed by Session A, owner agreed to record it, 2026-10-07): it moves with
   the workflow and stays the workflow's design of record. At `66c578d` most of its 1,640 lines are
@@ -1574,8 +1591,22 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   neutral one. `Project-Outline.md` stays the product's design of record. Once moved, a workflow
   design change lands in the workflow's repository, and this one sees it only as a version it
   chooses to take, which is goal 4.
-- **R2. How a project uses it.** For example, an npm package, a CLI installed once per machine,
-  reusable GitHub workflows, or a combination of these.
+- **R2. How a project uses it.** Proposed by Session A, 2026-10-07:
+  - **A Node package with a command-line entry point**, added as a development dependency of each
+    project and pinned to a tagged version. To begin with it is installed straight from the
+    workflow's public repository by git tag, so no package registry account is needed; publishing
+    to npm can come later.
+  - **The loop runs from the project's own worktree, as now** (`loop.mjs --init`). Today every story
+    runs the dispatch code as it is on `origin/main` (OQ-86). With a pinned dependency, that becomes
+    the engine version `origin/main` pins, so a project takes a new workflow version only through
+    a pull request of its own that changes the pin.
+  - **The gate's workflow files stay in each project, but thin**: the triggers and permissions,
+    then one step running the package's command. An `init` command writes them. This is preferred
+    over GitHub's reusable workflows because the gate's logic already lives in scripts, and because
+    each project keeps control of its own triggers, permissions and secrets.
+  - The scripts stop finding the project relative to their own location (`DISPATCHER_ROOT`).
+    They take the project from the working directory and its configuration (R3), and their
+    prompts from the package.
 - **R3. What a project configures.** At least its repository, its CI commands (OQ-94), its own
   review items, and where its stories live.
 - **R4. The workflow's own stories.** The new repository needs a queue of its own. Which of this
