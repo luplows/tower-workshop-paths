@@ -1580,7 +1580,10 @@ Checked on 2026-10-07 against `main` at `66c578d`:
     releases**, above). `land.mjs` and the sweep re-check `review/agent` themselves rather than
     trusting `clean`, but nothing else stops a direct push to `main`. The second project's account
     is on **GitHub Free** (owner, 2026-10-07), so on that project the gate is kept by the
-    workflow's own checks and by rule, not by GitHub. Open: whether that is acceptable there.
+    workflow's own checks and by rule, not by GitHub. **Accepted for now** (owner, 2026-10-07):
+    the owner works alone. Contributors will be added only if they are trusted and understand the
+    process and this limitation. Before bringing in anyone less trusted, the owner will upgrade to
+    GitHub Pro or make the repository public, so that the guardrails are enforced by GitHub.
   - **Actions minutes.** **Costs**, below, says minutes are not a constraint *because the
     repository is public*. Private repositories draw on the plan's included minutes.
   - **Privacy choices made because this repository is public**, such as naming a machine by a
