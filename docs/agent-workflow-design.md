@@ -1484,12 +1484,22 @@ Decided 2026-10-07 by the owner.
 2. **Models from other companies can be used**, so that the work is not all done by similar
    models. This is the [reviewer-on-a-different-model](#quality-beyond-the-gate) hedge taken
    further: a different company's model decorrelates more than a different model from the same one.
-3. **The workflow is insulated from any one company** folding or pricing the owner out.
+3. **The workflow is insulated from any one AI model company** folding or pricing the owner out.
 4. **This repository stays focused on the product**, not on the workflow.
 
-**Planned (OQ-114):** coder and reviewer sessions run through an adapter per agent tool, so that a
-role can be given another company's model. **Planned (OQ-115):** the workflow moves to a repository
-of its own, and this repository uses it. Both are drafts, to be split before either is dispatched.
+The owner is starting to plan another project and wants to work the same way in both. That is
+what makes goal 1 near-term: the second project is the workflow's first user outside this
+repository.
+
+### Decided so far
+
+- **The move comes first** (decided 2026-10-07 by the owner). **Planned (OQ-115):** the workflow
+  moves to a repository of its own, and this repository uses it. **Planned (OQ-114):** once moved,
+  coder and reviewer sessions run through an adapter per agent tool, so that a role can be given
+  another company's model. Both are drafts, to be split before either is dispatched.
+- **Goal 3 is about AI model companies, not GitHub** (decided 2026-10-07 by the owner). The gate
+  stays on GitHub. Moving the hosting would be a far larger migration, and would depend on the
+  target platform's rules much more than switching models does.
 
 ### What ties the workflow to one company today
 
@@ -1526,10 +1536,14 @@ Checked on 2026-10-07 against `main` at `66c578d`:
 
 **Models (OQ-114)**
 
-- **M1. Which tools and models.** The owner named Sol and Luna. Which company makes each, and what
-  tool runs it headless? An adapter needs, from the tool: a non-interactive run from a prompt, a
-  machine-readable result, restrictions on what the session may run, confinement to its working
-  directory, and a time or cost bound.
+- **M1. Which tools and models.** The owner's examples are OpenAI's GPT models. An adapter needs,
+  from the tool: a non-interactive run from a prompt, a machine-readable result, restrictions on
+  what the session may run, confinement to its working directory, and a time or cost bound.
+  OpenAI's own documentation (developers.openai.com/codex/noninteractive, read 2026-10-07)
+  describes the Codex CLI's `codex exec` for this: the prompt as an argument, `--json` for JSON
+  Lines output, and `--sandbox read-only | workspace-write | danger-full-access`. Not yet run here.
+  Its restrictions are a sandbox policy, not a per-command allowlist like Claude Code's, so M3
+  applies in full.
 - **M2. Which role first.** Proposed: the reviewer. Goal 2's value is largest there, and a
   reviewer that cannot write is a smaller guarantee to re-establish than a coder's.
 - **M3. Guarantees before use.** Proposed: no tool runs a role until that role's guarantees are
@@ -1551,12 +1565,12 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   review items, and where its stories live.
 - **R4. The workflow's own stories.** The new repository needs a queue of its own. Which of this
   repository's workflow stories move with it?
-- **R5. When.** Proposed: after the owner's current build order (OQ-73, OQ-80, OQ-83, then
-  OQ-101), so that what moves is known to work unattended.
-- **R6. GitHub.** Goal 3 names companies folding or pricing the owner out. Does that cover GitHub,
-  which the gate is built on, or only the model companies?
-- **Order of the two.** Proposed: OQ-114 first, inside this repository, where the tests and the
-  loop already run. That way the adapter work is not done in a new repository that has never run.
+- **R5. When.** Earlier proposal: after the owner's current build order (OQ-73, OQ-80, OQ-83, then
+  OQ-101), so that what moves is known to work unattended. Against that, the second project's
+  planning has started, and every workflow story built here first is one more thing to move.
+- **R6. The second project.** What it needs from the workflow decides how general R2 and R3 must
+  be. Is it also a Node project on GitHub, and does it need the whole loop from the start or only
+  part of it?
 
 ---
 
@@ -1585,5 +1599,5 @@ Checked on 2026-10-07 against `main` at `66c578d`:
 | 8 | What CI runs | **Resolved:** current suite plus schema lint, AC traceability, existing-test flag. No tiering at 70 s. |
 | 9 | Production deployment target | Open. None today; Pages is alpha. Tags are checkpoints until one exists. |
 | 10 | Second GitHub identity | Open. The only thing that fully closes self-marking. Cost: a machine account or App. |
-| 11 | Other companies' models | Open. Goals decided 2026-10-07; questions M1–M6 under [Portability](#portability-other-projects-other-companies-models). OQ-114. |
-| 12 | The workflow in a repository of its own | Open. Goals decided 2026-10-07; questions R1–R6 under [Portability](#portability-other-projects-other-companies-models). OQ-115. |
+| 11 | Other companies' models | Open. Goals decided 2026-10-07, and comes after the move; questions M1–M6 under [Portability](#portability-other-projects-other-companies-models). OQ-114. |
+| 12 | The workflow in a repository of its own | Open. Goals decided 2026-10-07, and comes first; questions R1–R6 under [Portability](#portability-other-projects-other-companies-models). OQ-115. |

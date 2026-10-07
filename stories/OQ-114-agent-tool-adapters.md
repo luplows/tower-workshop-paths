@@ -3,7 +3,7 @@ id: OQ-114
 title: Run coder and reviewer sessions through an adapter per agent tool, so a role can use another company's model
 tier: normal
 kind: workflow
-depends_on: []
+depends_on: [OQ-115]
 model: sonnet
 blocked: null
 ---
@@ -55,6 +55,6 @@ the real ones come from the answers to the open questions.
 
 ## Open questions
 
-M1 to M6, and the order of OQ-114 and OQ-115, in
+M1 to M6, in
 `docs/agent-workflow-design.md`, "Portability", "Open questions". Answers are
 recorded there as they are made.
