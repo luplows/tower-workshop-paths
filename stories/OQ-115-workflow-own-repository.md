@@ -55,6 +55,6 @@ the real ones come from the answers to the open questions.
 
 ## Open questions
 
-R1 to R9, in
+R1 to R10, in
 `docs/agent-workflow-design.md`, "Portability", "Open questions". Answers are
 recorded there as they are made.

@@ -1497,6 +1497,21 @@ The owner is starting to plan another project and wants to work the same way in 
 what makes goal 1 near-term: the second project is the workflow's first user outside this
 repository.
 
+### What the workflow is, in the owner's words
+
+Stated 2026-10-07 by the owner, while discussing the new repository's name (R10):
+
+- **A harness that takes units of work through a code, review and merge loop.** It picks up work
+  marked ready, codes it, reviews it, and merges it into the mainline branch.
+- **It surfaces problems**, probably as GitHub issues, as OQ-112 does for a stuck story.
+- **It keeps working while other ready work remains**, up to a point where too much has stopped
+  without merging. Today two separate limits come closest: two or more open `loop-stuck` issues
+  stop the queue (`STUCK_ISSUE_LIMIT`, `scripts/dispatch/loop.mjs`), and five or more open
+  `review-blocked` pull requests narrow what the sweep lands (the circuit breaker in
+  `land-approved.yml`). Whether "too much stopped" should be one measure is open (R10's note).
+- **Future state:** a visual view to quickly prioritise units of work and mark them ready, and
+  probably more not yet thought of. This is the project board in R7, from the other side.
+
 ### Decided so far
 
 - **The move comes first** (decided 2026-10-07 by the owner). **Planned (OQ-115):** the workflow
@@ -1507,6 +1522,8 @@ repository.
   stays on GitHub. Moving the hosting would be a far larger migration, and would depend on the
   target platform's rules much more than switching models does.
 - **The move comes after OQ-73 and before OQ-101** (decided 2026-10-07 by the owner). See R5.
+- **A project takes the workflow as a package pinned by git tag**, with no npm publishing planned
+  (decided 2026-10-07 by the owner). See R2.
 
 ### What ties the workflow to one company today
 
@@ -1615,8 +1632,9 @@ Checked on 2026-10-07 against `main` at `66c578d`:
     They take the project from the working directory and its configuration (R3), and their
     prompts from the package.
 
-  **The owner's leaning** (2026-10-07): the git-tag pin, as a step towards publishing to npm. Not
-  yet decided; the owner wants more time on R2.
+  **Decided 2026-10-07 by the owner: the git-tag pin**, to keep it simple. Publishing to npm is not
+  planned. The rest of R2 (the loop in the project's worktree, thin gate files written by `init`)
+  is still a proposal.
 - **R3. What a project configures.** At least its repository, its CI commands (OQ-94), its own
   review items, and where its stories live.
 - **R4. The workflow's own stories.** The new repository needs a queue of its own. Which of this
@@ -1681,6 +1699,16 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   for good, against goal 4. The prefix touches everything that matches `OQ-<n>` today: the queue
   reader's and lint's filename patterns, branch names (`story/OQ-<n>-…`), test names
   (`OQ-<n>/AC-<n>`) and the design doc's markers.
+- **R10. The name of the repository and the package.** Open. The owner wanted the future state
+  settled first (**What the workflow is, in the owner's words**, above). With the git-tag pin (R2),
+  only the repository name is needed at the move; the package name is whatever its `package.json`
+  says. The name should not name a model company (goal 3), and need not say "story" if units of
+  work come from issues (R7).
+
+  Note for this question: the owner described one point at which "too much has stopped". Today
+  there are two limits that count different things. Neither counts a story stopped for a reason
+  other than the review round bound, such as red CI at its own bound, which leaves `blocked:` on a
+  draft pull request with no label and no issue.
 ---
 
 ## Deliberately excluded
@@ -1709,4 +1737,4 @@ Checked on 2026-10-07 against `main` at `66c578d`:
 | 9 | Production deployment target | Open. None today; Pages is alpha. Tags are checkpoints until one exists. |
 | 10 | Second GitHub identity | Open. The only thing that fully closes self-marking. Cost: a machine account or App. |
 | 11 | Other companies' models | Open. Goals decided 2026-10-07, and comes after the move; questions M1–M6 under [Portability](#portability-other-projects-other-companies-models). OQ-114. |
-| 12 | The workflow in a repository of its own | Open. Goals decided 2026-10-07, and comes first; questions R1–R9 under [Portability](#portability-other-projects-other-companies-models). OQ-115. |
+| 12 | The workflow in a repository of its own | Open. Goals decided 2026-10-07, and comes first; questions R1–R10 under [Portability](#portability-other-projects-other-companies-models). OQ-115. |
