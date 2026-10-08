@@ -1519,7 +1519,7 @@ deciding what is next. It is the harness's product outline, and moves with this 
 - **Goal 3 is about AI model companies, not GitHub** (decided 2026-10-07 by the owner). The gate
   stays on GitHub. Moving the hosting would be a far larger migration, and would depend on the
   target platform's rules much more than switching models does.
-- **The move comes after OQ-73 and before OQ-101** (decided 2026-10-07 by the owner). See R5.
+- **The move comes before OQ-73 and before OQ-101** (decided 2026-10-07, revised 2026-10-08 by the owner). See R5.
 - **A project takes the workflow as a package pinned by git tag**, with no npm publishing planned,
   runs the loop from its own worktree, and keeps thin gate workflow files written by an `init`
   command (decided 2026-10-07 by the owner). See R2.
@@ -1643,7 +1643,15 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   review items, and where its stories live.
 - **R4. The workflow's own stories.** The new repository needs a queue of its own. Which of this
   repository's workflow stories move with it?
-- **R5. When.** **Decided 2026-10-07 by the owner: after OQ-73, before OQ-101.** The owner's build
+- **R5. When.** **Revised 2026-10-08 by the owner: the move comes before OQ-73**, once the story
+  pull requests #204 to #208 (OQ-117 to OQ-121) have landed, and still before OQ-101. OQ-73's coder
+  (#209) found that its candidate mechanism, a separate Windows account for spawns, needs an
+  administrator to create the account, a separate Claude Code login, a way to start a process as
+  that account from node, and access to the worktree. That makes OQ-73 three or four stories, and
+  the owner chose not to hold the move for them. The credential isolation is built in the
+  workflow's repository, where the second project gets it too.
+
+  Superseded: **decided 2026-10-07 by the owner: after OQ-73, before OQ-101.** The owner's build
   order is OQ-80 (landed as #203 on 2026-10-07), then OQ-73, then OQ-101, so the move comes after OQ-80 and
   OQ-73 land and OQ-101 is built in the workflow's repository. OQ-101's `install` registers a
   scheduled task per machine, and the second project needs one too, so building it once there

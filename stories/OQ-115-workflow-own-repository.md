@@ -3,7 +3,7 @@ id: OQ-115
 title: Move the dispatch workflow to a repository of its own, and use it from this one
 tier: normal
 kind: workflow
-depends_on: [OQ-73, OQ-80]
+depends_on: [OQ-80]
 model: sonnet
 blocked: null
 ---
@@ -49,8 +49,8 @@ the real ones come from the answers to the open questions.
   `scripts/land/`: the gate as this repository's own workflows.
 - OQ-94: naming each CI check's command where the coder and reviewer read it.
   It bears on R3.
-- OQ-101: the scheduled task the loop runs from. R5 (decided 2026-10-07):
-  the move comes after OQ-73 and before OQ-101, so OQ-101 is built in the
+- OQ-101: the scheduled task the loop runs from. R5 (revised 2026-10-08):
+  the move comes before OQ-73 and OQ-101, so both are built in the
   workflow's repository.
 
 ## Open questions

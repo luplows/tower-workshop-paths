@@ -50,7 +50,9 @@ readability and must not drift from the files named.
 2. **Never push directly to main.** Every push the dispatcher makes is built by `pushArgs` or
    `claimPushArgs` in `scripts/dispatch/coder.mjs`, and both refuse `main`
    (`assertPlainBranch`). A coder session may not run `git push` (its allowlist grants none and
-   denies it), but it can still reach the owner's SSH key; closing that is OQ-73. This matters more
+   denies it), but it can still reach the owner's SSH key. OQ-73 is scoped to the GitHub token and names SSH
+   keys out of scope, but its candidate mechanism, a separate operating-system account for coder
+   sessions, would close this too (#209). This matters more
    on the second project: its account is on GitHub Free, so nothing on GitHub stops a push to
    `main` there (R6 in the design document).
 3. **Always bound the sessions it spawns.** Each session has a spend ceiling (`--max-budget-usd`,
