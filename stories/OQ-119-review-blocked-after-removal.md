@@ -43,10 +43,13 @@ should count towards applying it again.
       `pull-requests: write` (`review-gate.yml` lines 57–59, "Nothing here
       removes a label or reads anything the `read` scope did not already
       cover") is corrected if it no longer holds.
-- [ ] **AC-5** — The two comments that say the label is never reapplied are
+- [ ] **AC-5** — The three places that say the label is never reapplied are
       corrected to say what AC-1 does: the header of
-      `scripts/land/apply-review-blocked.mjs` (lines 18–20) and
-      `review-gate.yml` (lines 38–39).
+      `scripts/land/apply-review-blocked.mjs` (lines 18–20), the comment in
+      `review-gate.yml` (lines 38–39), and the title of the
+      `describe` block in `scripts/land/apply-review-blocked.test.mjs`
+      (line 65, "OQ-80/AC-2: applied once, never removed or reapplied"), whose
+      `OQ-80/AC-2` id stays.
 - [ ] **AC-6** — The **Planned (OQ-119)** sentence in
       `docs/agent-workflow-design.md`, "Merging", is resolved as that
       document's "Reading this document" note says.
