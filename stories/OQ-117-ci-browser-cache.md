@@ -90,7 +90,8 @@ have held CI for GitHub's default of 360 minutes.
     and the run concluded `failure`.
   - #203's hang outlasted `story.mjs`'s 30-minute CI wait
     (`CI_WAIT_TIMEOUT_MS`, `scripts/dispatch/ci.mjs`), so OQ-80 stopped
-    with `ci-wait-timed-out` (commit `1dc706a` on its branch).
+    with `ci-wait-timed-out` (commit `1dc706a` in #203,
+    which later landed as `a0361cb`).
 - How long things take, over the last 40 green `ci.yml` runs: the job took
   60 to 171 s (median 82 s), and the install step 16 to 111 s (median 22 s).
   Over the last 5 green `update-screenshots.yml` runs: the job took 51 to
