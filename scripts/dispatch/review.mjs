@@ -266,6 +266,11 @@ export async function reviewPullRequest({
   const scratch = await mkdtemp(path.join(scratchRoot, 'tw-review-'))
   const tree = path.join(scratch, 'tree')
   let worktreeAdded = false
+  // AC-1b: set when a first session leaves the checkout changed, so the
+  // `finally` below leaves the worktree and scratch directory in place
+  // instead of cleaning them away -- a reviewer that wrote to its checkout is
+  // itself worth seeing.
+  let keepCheckout = false
   try {
     await git(repoDir, ['fetch', REMOTE, pr.headRef, pr.baseRef])
     const fetchedTip = (await git(repoDir, ['rev-parse', `${REMOTE}/${pr.headRef}`])).trim()
@@ -345,6 +350,7 @@ export async function reviewPullRequest({
       try {
         await assertReviewableCheckout(tree, pr.headSha, repoDir)
       } catch (error) {
+        keepCheckout = true
         return {
           status: 'malformed-verdict',
           reason: `first session: ${firstReason}; no second session: the checkout was changed (${error.message})`,
@@ -395,8 +401,10 @@ export async function reviewPullRequest({
     const { id } = await postComment(ctx, number, body)
     return { status: 'recorded', headSha: verdict.head, verdict: verdict.verdict, commentId: id, sessions }
   } finally {
-    if (worktreeAdded) await git(repoDir, ['worktree', 'remove', '--force', tree]).catch(() => {})
-    await rm(scratch, { recursive: true, force: true })
+    if (!keepCheckout) {
+      if (worktreeAdded) await git(repoDir, ['worktree', 'remove', '--force', tree]).catch(() => {})
+      await rm(scratch, { recursive: true, force: true })
+    }
   }
 }
 

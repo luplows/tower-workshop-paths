@@ -740,6 +740,8 @@ describe('OQ-121: a malformed verdict is tried once more before the story stops'
     expect(result.reason).toContain('uncommitted changes')
     expect(calls).toHaveLength(1)
     expect(github.posted).toEqual([])
+    // AC-1b: the checkout itself is not cleaned away, so the file is still there.
+    expect(existsSync(path.join(calls[0].cwd, 'left-behind.txt'))).toBe(true)
   })
 })
 
