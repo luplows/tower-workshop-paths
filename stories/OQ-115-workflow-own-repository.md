@@ -3,7 +3,7 @@ id: OQ-115
 title: Move the dispatch workflow to a repository of its own, and use it from this one
 tier: normal
 kind: workflow
-depends_on: [OQ-80]
+depends_on: [OQ-80, OQ-117, OQ-118]
 model: sonnet
 blocked: null
 ---

@@ -51,8 +51,8 @@ readability and must not drift from the files named.
    `claimPushArgs` in `scripts/dispatch/coder.mjs`, and both refuse `main`
    (`assertPlainBranch`). A coder session may not run `git push` (its allowlist grants none and
    denies it), but it can still reach the owner's SSH key. OQ-73 is scoped to the GitHub token and names SSH
-   keys out of scope, but its candidate mechanism, a separate operating-system account for coder
-   sessions, would close this too (#209). This matters more
+   keys out of scope, but its chosen mechanism, a container for coder sessions (decided 2026-10-08,
+   built after the move), would close this too. This matters more
    on the second project: its account is on GitHub Free, so nothing on GitHub stops a push to
    `main` there (R6 in the design document).
 3. **Always bound the sessions it spawns.** Each session has a spend ceiling (`--max-budget-usd`,

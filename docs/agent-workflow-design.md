@@ -1522,7 +1522,10 @@ deciding what is next. It is the harness's product outline, and moves with this 
 - **Goal 3 is about AI model companies, not GitHub** (decided 2026-10-07 by the owner). The gate
   stays on GitHub. Moving the hosting would be a far larger migration, and would depend on the
   target platform's rules much more than switching models does.
-- **The move comes before OQ-73 and before OQ-101** (decided 2026-10-07, revised 2026-10-08 by the owner). See R5.
+- **The move comes before OQ-73 and before OQ-101, after OQ-118 and OQ-117 are built** (decided
+  2026-10-07, revised 2026-10-08 by the owner). See R5.
+- **Coder sessions are isolated in a container** (decided 2026-10-08 by the owner), built after the
+  move as OQ-73's rewrite. See R5.
 - **A project takes the workflow as a package pinned by git tag**, with no npm publishing planned,
   runs the loop from its own worktree, and keeps thin gate workflow files written by an `init`
   command (decided 2026-10-07 by the owner). See R2.
@@ -1653,6 +1656,22 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   that account from node, and access to the worktree. That makes OQ-73 three or four stories, and
   the owner chose not to hold the move for them. The credential isolation is built in the
   workflow's repository, where the second project gets it too.
+
+  **Clarified 2026-10-08 by the owner:** OQ-118 and then OQ-117 are *built* before the move, not
+  only written, because they fix CI itself and the move's own pull requests go through CI. The
+  move does not wait for OQ-119, OQ-120 or OQ-121: whichever are built first move with the
+  workflow, and the rest go to its queue (R4).
+
+  **OQ-73's mechanism is a container** (decided 2026-10-08 by the owner, replacing the separate
+  Windows account in OQ-73's Context). **Planned (OQ-73):** coder sessions run in a container whose
+  image the workflow's repository defines, with only the work and the agent tool's own login passed
+  in, so no host keyring, `~/.ssh` or user profile is reachable. The reason is portability: a new
+  machine needs one standard install (a container runtime) rather than account management, and
+  the same image runs on Windows, macOS and Linux. It may also give the reviewer its read-only
+  mount (OQ-62). OQ-73 is parked until after the move: #209 stays a draft with its `blocked:`, and
+  the story is rewritten in the workflow's repository as a spike, a build, and OQ-73's own checks
+  as the proof. Known questions for the spike: a git worktree's `.git` file holds an absolute host
+  path, and `node_modules` on a bind mount from Windows is slow.
 
   Superseded: **decided 2026-10-07 by the owner: after OQ-73, before OQ-101.** The owner's build
   order is OQ-80 (landed as #203 on 2026-10-07), then OQ-73, then OQ-101, so the move comes after OQ-80 and
