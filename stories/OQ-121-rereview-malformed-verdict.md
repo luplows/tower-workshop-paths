@@ -25,6 +25,14 @@ story that is otherwise fine and leave it for me. Today `reviewPullRequest`
       story, pull request, environment and model, and without installing
       dependencies again. The second session's output is then handled exactly
       as a first session's is: recorded, `no-verdict`, `head-moved` and so on.
+- [ ] **AC-1b** — Before the second session, `reviewPullRequest` runs
+      `assertReviewableCheckout` on the worktree again. If the first session
+      left it changed (not at the head SHA, or with anything uncommitted),
+      there is no second session and nothing is reset: `reviewPullRequest`
+      returns `malformed-verdict`, with one session counted, and its `reason`
+      gives the first session's parse failure and says the checkout was
+      changed. A reviewer that wrote to its checkout is itself worth seeing,
+      so it is not cleaned away.
 - [ ] **AC-2** — If the second session's output does not parse either,
       `reviewPullRequest` returns `malformed-verdict`, as today, and its
       `reason` gives both sessions' parse failures. There is never a third
@@ -41,7 +49,10 @@ story that is otherwise fine and leave it for me. Today `reviewPullRequest`
       - two malformed replies: `malformed-verdict`, two sessions, nothing
         posted, both reasons in `reason`;
       - a `session-failed` first session: one session;
-      - a `no-verdict` first reply: one session.
+      - a `no-verdict` first reply: one session;
+      - a malformed reply from a first session that also leaves an untracked
+        file in the checkout: `malformed-verdict`, one session, nothing
+        posted, and the file is still there afterwards (AC-1b).
       The existing "OQ-69/AC-1: output that is not a verdict records nothing"
       and "a pass carrying a block-severity finding is not recorded" tests
       still expect `malformed-verdict` and nothing posted.
@@ -82,8 +93,15 @@ story that is otherwise fine and leave it for me. Today `reviewPullRequest`
 - Cost, from "What a spawn actually costs" in
   `docs/agent-workflow-design.md`: a reviewer session has cost $0.95 to
   $1.88.
+- `assertReviewableCheckout` (`review.mjs`, line 199) throws unless the
+  checkout is at the head SHA with a clean `git status --porcelain`.
+  `reviewPullRequest` calls it once, straight after `git worktree add`
+  (line 271), before the install. The reviewer's allowlist includes `npm`,
+  `npx` and `node`, so a session can change its checkout.
 - Raised by the dispatcher. The owner decided on 2026-10-08:
-  tier `next`, malformed verdicts only, at most one re-run.
+  tier `next`, malformed verdicts only, at most one re-run. Also decided by
+  the owner on 2026-10-08, after the dispatcher's review: the checkout is
+  checked again before the second session and never reset (AC-1b).
 
 ## Open questions
 

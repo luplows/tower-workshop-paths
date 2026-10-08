@@ -26,9 +26,10 @@ regression.
       "OQ-68/AC-3: no request this module can build targets a commit status,
       check or workflow", and "OQ-68/AC-3: send itself refuses a status or
       workflow-dispatch request before any network call", whose last part
-      sends every built request through the allowlist. That last test's count
-      of sent requests is not a hand-written number; it is
-      `allBuiltRequests().length`.
+      sends every built request through the allowlist. That last test's two
+      counts, the responses its fake `fetch` is given and the sent requests
+      it expects, are not hand-written numbers: each is the number of
+      requests `allBuiltRequests()` holds, however AC-2 has it store them.
 - [ ] **AC-2** — A new test fails when any function `github.mjs` exports
       whose name starts with `build` is not represented in
       `allBuiltRequests()`. `allBuiltRequests()` may become a structure keyed
@@ -77,8 +78,9 @@ regression.
   The module's header explains the build/parse/send split.
 - `scripts/dispatch/github.test.mjs` at `21fdb52`: `allBuiltRequests()`
   (line 48) lists 9 requests, not including `buildListOpenPullRequests`. It is
-  used by the tests at lines 138, 196 and 203, and line 219 expects exactly 9
-  sent requests. "OQ-112/AC-1: three more operations" (line 409) is the house
+  used by the tests at lines 138, 196 and 203. In the last of those, line 204
+  gives the fake `fetch` 9 responses and line 219 expects exactly 9 sent
+  requests. "OQ-112/AC-1: three more operations" (line 412) is the house
   style for AC-3 and AC-4.
 - #201, OQ-83: the review's observation that raised this.
 - OQ-68: the module's safety tests. OQ-87: the GraphQL request and its tests.
