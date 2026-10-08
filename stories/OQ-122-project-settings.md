@@ -124,9 +124,8 @@ moved code could not read a single `ST-<n>` story.
   `loop.mjs`, `review.mjs` and `story.mjs`; `loadQueue(rootDir)` and
   `lintAll(rootDir)` take it as a parameter, and `lintStory(filePath, source)`
   takes none.
-- The decisions: `docs/agent-workflow-design.md` on #199's branch
-  (`write-story/OQ-114-portable-workflow`), "Portability", R3 and "The move,
-  in order".
+- The decisions: `docs/agent-workflow-design.md` on `main` (landed with #199),
+  "Portability", R3 and "The move, in order".
 
 ## Open questions
 
