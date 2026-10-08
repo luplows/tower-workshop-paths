@@ -1533,6 +1533,9 @@ deciding what is next. It is the harness's product outline, and moves with this 
   from issues, only issues a writer created or labelled may enter its queue. See R8.
 - **The workflow is named `steward`**: the repository `luplows/steward` and the package `steward`
   (decided 2026-10-07 by the owner). See R10.
+- **Its stories are numbered `ST-<n>`**, and every unbuilt workflow story moves except this
+  repository's own, with its history (decided 2026-10-08 by the owner). See R1, R4 and R9.
+- **The second project starts with the gate only** (decided 2026-10-08 by the owner). See R6.
 
 ### What ties the workflow to one company today
 
@@ -1624,6 +1627,10 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   neutral one. `Project-Outline.md` stays the product's design of record. Once moved, a workflow
   design change lands in the workflow's repository, and this one sees it only as a version it
   chooses to take, which is goal 4.
+
+  **The history moves with the code** (decided 2026-10-08 by the owner): the moved paths are
+  extracted with their git history, for example with `git filter-repo`, so `git log` on a moved
+  file in the workflow's repository still shows the commits and stories that shaped it.
 - **R2. How a project uses it.** Proposed by Session A, 2026-10-07; **decided 2026-10-07 by the
   owner, as proposed, with the git-tag pin** (below):
   - **A Node package with a command-line entry point**, added as a development dependency of each
@@ -1648,7 +1655,13 @@ Checked on 2026-10-07 against `main` at `66c578d`:
 - **R3. What a project configures.** At least its repository, its CI commands (OQ-94), its own
   review items, and where its stories live.
 - **R4. The workflow's own stories.** The new repository needs a queue of its own. Which of this
-  repository's workflow stories move with it?
+  repository's workflow stories move with it? **Decided 2026-10-08 by the owner: every unbuilt
+  `kind: workflow` story moves, except those about this repository's own files**: OQ-117 and OQ-118
+  (this repository's CI, built before the move, R5), OQ-72 (retiring this repository's
+  `Open-Questions.md`) and OQ-94 (this repository's `CLAUDE.md`). OQ-71 moves: the claims it
+  consolidates are in the workflow's documents. A story built before the move stays in
+  `stories/done/` here, as history. A moved story takes the new repository's next number (R9) and
+  names its old OQ id.
 - **R5. When.** **Revised 2026-10-08 by the owner: the move comes before OQ-73**, once the story
   pull requests #204 to #208 (OQ-117 to OQ-121) have landed, and still before OQ-101. OQ-73's coder
   (#209) found that its candidate mechanism, a separate Windows account for spawns, needs an
@@ -1684,7 +1697,11 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   and every workflow story built here first is one more thing to move.
 - **R6. The second project.** What it needs from the workflow decides how general R2 and R3 must
   be. Answered so far (owner, 2026-10-07): it is also a Node project on GitHub, in a **private**
-  repository. Open: whether it needs the whole loop from the start or only part of it.
+  repository. **Decided 2026-10-08 by the owner: the gate only, at first.** The workflow reviews
+  and lands the pull requests the owner or the owner's interactive sessions open there, each
+  against the issue it closes, and runs no unattended coder until coder sessions are isolated
+  (OQ-73's containers, R5). That is the review-and-land pipeline the owner called worth having on
+  its own (`docs/harness-outline.md`, "Why"). The issue-as-story design it needs is R7.
 
   A private repository changes things this design assumes about this public one:
   - **Branch protection.** GitHub's documentation ("About protected branches", read 2026-10-07)
@@ -1735,6 +1752,8 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   for good, against goal 4. The prefix touches everything that matches `OQ-<n>` today: the queue
   reader's and lint's filename patterns, branch names (`story/OQ-<n>-…`), test names
   (`OQ-<n>/AC-<n>`) and the design doc's markers.
+
+  **Decided 2026-10-08 by the owner: `ST-<n>`**, for steward (R10), not `WF-<n>`.
 - **R10. The name of the repository and the package.** **Decided 2026-10-07 by the owner:
   `steward`**, the repository `luplows/steward` (no repository by that name existed under `luplows`
   on that date, by `gh repo view`) and the package `steward`. It looks after the work on the
