@@ -70,6 +70,10 @@ have held CI for GitHub's default of 360 minutes.
   baselines.
 - **Playwright's own test retries** (`retries` in `playwright.config.js`).
 - **Upgrading Playwright.**
+- **`.github/workflows/detect-drift.yml`**, whose line 60 runs the same
+  `npx playwright install --with-deps chromium` with no time limit. It runs
+  once a week on a schedule and gates no pull request, so a hang there costs
+  only Actions minutes and a failure email (decided 2026-10-08 by the owner).
 
 ## Constraints
 

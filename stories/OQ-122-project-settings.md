@@ -35,18 +35,21 @@ moved code could not read a single `ST-<n>` story.
 - [ ] **AC-3** — Every story-id pattern takes its prefix from the settings,
       in each of these, all written for `OQ` today:
       - `scripts/dispatch/queue.mjs`: `STORY_FILENAME_RE`, the frontmatter
-        `id` check, and `numericId`;
+        `id` check and its error message, and `numericId`;
       - `scripts/lint-stories.mjs`: its own `STORY_FILENAME_RE`, the `id` and
-        `depends_on` checks and their messages, the filename-prefix match, the
-        `stories/done/` id collection, and the ids read from `**Planned (…)**`
-        markers;
+        `depends_on` checks and their messages, the filename-prefix match and
+        its message, the `stories/done/` id collection, and the ids read from
+        `**Planned (…)**` markers;
       - `scripts/dispatch/coder.mjs`: the story-id checks in `retryStory` and
-        in its command line;
+        in its command line, and its usage text (`USAGE`, and the usage error
+        its command line throws);
       - `scripts/dispatch/story.mjs`: the checks in `runStory` and its command
-        line;
+        line, and its usage text;
       - `scripts/dispatch/review.mjs`: the id taken from a moved story file and
         from a `story/<prefix>-<n>-…` branch (`resolveStory`), which
         `scripts/dispatch/story-containment.mjs` also relies on.
+      A message or usage text names the configured prefix (for example
+      `ST-<n>`) or a neutral `<story-id>`; which one is the coder's choice.
 - [ ] **AC-4** — Tests show the prefix is honoured, using a project root whose
       settings say `ST`:
       - the queue loads `stories/ST-3-thing.md` and ignores
@@ -56,11 +59,17 @@ moved code could not read a single `ST-<n>` story.
       - `resolveStory` reads `ST-3` from a branch `story/ST-3-thing` and from a
         moved `stories/done/ST-3-thing.md`;
       - `runStory` and `retryStory` accept `ST-3` and refuse `OQ-3`.
-      With this repository's own settings, every existing test passes
-      unchanged.
-- [ ] **AC-5** — A test reads each module AC-3 names and fails if a regular
-      expression or string literal outside a comment still spells `OQ-` as a
-      story-id pattern, so a later edit cannot quietly reintroduce one.
+      With this repository's own settings, every existing test passes. The
+      only change made to an existing test is supplying the settings: a
+      `steward.config.json` written into its temporary root, or the settings
+      passed in. No existing assertion or expected value changes. How the
+      settings reach `buildStory`, `loadQueue`, `lintStory` and `lintAll` is the coder's
+      choice, within AC-1: nothing falls back to a default when they are
+      missing.
+- [ ] **AC-5** — A test reads each module AC-3 names and fails if `OQ-`
+      appears anywhere in it outside a comment: in a regular expression
+      literal, a string literal or a template literal. So a later edit cannot
+      quietly reintroduce the prefix, in a pattern or in text.
 - [ ] **AC-6** — AC-1's settings tests: each invalid case named in AC-1
       throws, with the file named in the message.
 - [ ] **AC-7** — The **Planned (OQ-122)** sentence in
@@ -93,6 +102,20 @@ moved code could not read a single `ST-<n>` story.
   `queue.mjs` lines 21, 181 and 205; `lint-stories.mjs` lines 26, 252–253,
   273–274, 296, 340 and 381; `coder.mjs` lines 539, 670 and 697; `story.mjs`
   lines 288 and 416; `review.mjs` lines 101 and 103.
+- Text that spells `OQ-`, found on `main` at `909ad17` in the same modules
+  and added to AC-3 after the dispatcher's review: the error message at
+  `queue.mjs` line 182; the filename-prefix message at `lint-stories.mjs`
+  line 299; `coder.mjs`'s `USAGE` (lines 654–655) and the usage error at line
+  698; `story.mjs`'s usage text at line 415. No existing test asserts on any
+  of them.
+- Existing tests that run without a settings file, which AC-4 lets be given
+  one: `loadQueue` on temporary roots in `queue.test.mjs` (lines 78, 131 and
+  187, among others); `lintAll` on temporary roots in `lint-stories.test.mjs`
+  (lines 110 and 114); and 24 `lintStory(…)` calls in `lint-stories.test.mjs`,
+  23 of them on `OQ-9001-…` file names, which pass no root at all.
+  The 8 `buildStory(…)` calls in `queue.test.mjs` also pass no root;
+  `buildStory` is also called by `coder.mjs` (line 87), on stories read from
+  git.
 - `DEFAULT_REPO`: `coder.mjs` line 55, `land.mjs` line 45, `loop.mjs` line 63,
   `review.mjs` line 58, `story.mjs` line 49; used at `coder.mjs` lines 692 and
   695, `land.mjs` line 317, `loop.mjs` lines 318 and 488, `review.mjs` line
