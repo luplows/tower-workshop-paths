@@ -19,13 +19,13 @@ story that is otherwise fine and leave it for me. Today `reviewPullRequest`
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — When the first reviewer session completes and
+- [x] **AC-1** — When the first reviewer session completes and
       `parseReviewerVerdict` rejects its output, `reviewPullRequest` runs one
       more reviewer session, in the same worktree, with the same prompt,
       story, pull request, environment and model, and without installing
       dependencies again. The second session's output is then handled exactly
       as a first session's is: recorded, `no-verdict`, `head-moved` and so on.
-- [ ] **AC-1b** — Before the second session, `reviewPullRequest` runs
+- [x] **AC-1b** — Before the second session, `reviewPullRequest` runs
       `assertReviewableCheckout` on the worktree again. If the first session
       left it changed (not at the head SHA, or with anything uncommitted),
       there is no second session and nothing is reset: `reviewPullRequest`
@@ -33,17 +33,17 @@ story that is otherwise fine and leave it for me. Today `reviewPullRequest`
       gives the first session's parse failure and says the checkout was
       changed. A reviewer that wrote to its checkout is itself worth seeing,
       so it is not cleaned away.
-- [ ] **AC-2** — If the second session's output does not parse either,
+- [x] **AC-2** — If the second session's output does not parse either,
       `reviewPullRequest` returns `malformed-verdict`, as today, and its
       `reason` gives both sessions' parse failures. There is never a third
       session.
-- [ ] **AC-3** — No other result runs a second session: a session that did
+- [x] **AC-3** — No other result runs a second session: a session that did
       not complete (`session-failed`), a `null` verdict (`no-verdict`), and
       every result before the session (install, story, head checks) behave as
       today, with one session or none.
-- [ ] **AC-4** — Every result `reviewPullRequest` returns after running a
+- [x] **AC-4** — Every result `reviewPullRequest` returns after running a
       session says how many reviewer sessions it ran (1 or 2).
-- [ ] **AC-5** — Tests with a fake session:
+- [x] **AC-5** — Tests with a fake session:
       - a malformed reply, then a valid `pass`: recorded, two sessions, one
         comment posted;
       - two malformed replies: `malformed-verdict`, two sessions, nothing
@@ -56,7 +56,7 @@ story that is otherwise fine and leave it for me. Today `reviewPullRequest`
       The existing "OQ-69/AC-1: output that is not a verdict records nothing"
       and "a pass carrying a block-severity finding is not recorded" tests
       still expect `malformed-verdict` and nothing posted.
-- [ ] **AC-6** — The **Planned (OQ-121)** row in
+- [x] **AC-6** — The **Planned (OQ-121)** row in
       `docs/agent-workflow-design.md`'s "Failure paths" table is resolved as
       that document's "Reading this document" note says.
 
