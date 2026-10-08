@@ -46,6 +46,7 @@ jobs:
     # A fork's GITHUB_TOKEN is read-only, so there would be nothing to push to.
     if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
@@ -55,7 +56,33 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      - name: Resolve Playwright version
+        id: playwright-version
+        run: |
+          version="$(node -p "require('./package-lock.json').packages['node_modules/@playwright/test'].version")"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - name: 'Setup: cache Playwright browsers'
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ steps.playwright-version.outputs.version }}
+      - name: 'Setup: Playwright browsers'
+        timeout-minutes: 5
+        run: |
+          for attempt in 1 2; do
+            echo "Playwright install attempt $attempt of 2"
+            if [ "${{ steps.playwright-cache.outputs.cache-hit }}" = "true" ]; then
+              cmd="npx playwright install-deps chromium"
+            else
+              cmd="npx playwright install --with-deps chromium"
+            fi
+            if timeout 2m $cmd; then
+              exit 0
+            fi
+            echo "Playwright install attempt $attempt failed or timed out"
+          done
+          exit 1
 
       # Writing a baseline that was missing is reported as a test failure
       # ("A snapshot doesn't exist ..., writing actual"), which is the normal
