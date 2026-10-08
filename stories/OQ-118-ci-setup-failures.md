@@ -44,11 +44,15 @@ red round.
       **setup failure**, and names the failed setup steps. A run is a setup
       failure when its failed jobs report at least one failed step, and every
       failed step of every failed job is a setup step (AC-2). A failed step
-      is one whose `conclusion` is neither `success` nor `skipped`; the
-      `steps` that `failedJobsOf` collects use the same rule, so the findings
-      name a step that was cancelled or timed out as well as one that failed.
-      A failed job that reports no failed step makes the run not a setup
-      failure.
+      is one whose `conclusion` is neither `success` nor `skipped`. This
+      changes `failedJobsOf`: its step filter (`ci.mjs` line 222) is
+      `s.conclusion === 'failure'` today, and becomes that rule, the same one
+      its job filter (line 211) already uses, so the findings of every red
+      run also name a step that was cancelled or timed out. A test shows a
+      step with each of the conclusions `failure`, `cancelled` and
+      `timed_out` named in `failedJobs` and the findings, and `success` and
+      `skipped` steps left out. A failed job that reports no failed step
+      makes the run not a setup failure.
 - [ ] **AC-5** — `decideCi` returns a stop for a `red` result that concluded
       `failure` and is a setup failure: status `ci-setup-failed`, and a reason
       that names each failed setup step and says a coder retry cannot fix
@@ -94,8 +98,9 @@ red round.
   `cdn.playwright.dev` returned 403 AccessDenied ("this service is not
   available in your location") to five attempts, and the run concluded
   `failure`. Under `decideCi`, a `failure` like that is a coder retry.
-- `scripts/dispatch/ci.mjs`: `failedJobsOf` collects each failed job's
-  failed step names (`.filter((s) => s.conclusion === 'failure')`);
+- `scripts/dispatch/ci.mjs`: `failedJobsOf` keeps jobs whose conclusion is
+  neither `success` nor `skipped` (line 211), and collects their steps whose
+  conclusion is `failure` (line 222, which AC-4 changes);
   `waitForCi` returns `{ result: 'red', conclusion, failedJobs, jobNames,
   findings }`; `countRedCiRounds` counts commits whose latest run concluded
   `failure`; `buildListRunJobs` and `assertAllowedCiRequest`.
