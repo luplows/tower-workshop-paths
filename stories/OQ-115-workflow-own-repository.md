@@ -3,7 +3,7 @@ id: OQ-115
 title: Move the dispatch workflow to a repository of its own, and use it from this one
 tier: normal
 kind: workflow
-depends_on: [OQ-80, OQ-117, OQ-118]
+depends_on: [OQ-80, OQ-117, OQ-118, OQ-122, OQ-123]
 model: sonnet
 blocked: null
 ---
@@ -17,6 +17,10 @@ Goals 1 and 4 in `docs/agent-workflow-design.md`, "Portability".
 **This is a placeholder for refinement, not a dispatchable story.** It will be
 split before anything here is `ready`. The ACs below state the outcome only;
 the real ones come from the answers to the open questions.
+
+Narrowed 2026-10-08 (`docs/agent-workflow-design.md`, "The move, in order"): creating
+`luplows/steward` and extracting the code is a bootstrap the owner and Session A do by hand, and
+this story becomes adopting steward from this repository once that exists.
 
 ## Acceptance criteria
 

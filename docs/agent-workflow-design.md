@@ -1537,6 +1537,26 @@ deciding what is next. It is the harness's product outline, and moves with this 
   repository's own, with its history (decided 2026-10-08 by the owner). See R1, R4 and R9.
 - **The second project starts with the gate only** (decided 2026-10-08 by the owner). See R6.
 
+### The move, in order
+
+Decided 2026-10-08 by the owner. The engine is made project-neutral here first, where the loop
+and gate already work, so that the workflow's repository can dispatch its own `ST-<n>` stories
+from the day it exists. Today the `OQ` prefix is hardcoded in five modules, so it could not.
+
+1. **Here, built by the loop:** OQ-118 then OQ-117 (CI), OQ-122 (a settings file with the
+   repository and the story prefix), OQ-123 (a package with a command-line entry point, finding
+   the project from the working directory and its prompts from the package).
+2. **By hand, the owner with Session A (a bootstrap, not a story):** create `luplows/steward`,
+   public; extract the moved paths with their history (`git filter-repo`, not installed here yet);
+   renumber the moved stories `ST-<n>`, each naming its old OQ id; push `main`, the one direct
+   push, made before any protection exists; then protect `main`, and give the repository its own
+   CI, review gate and landing, running the engine from its own checkout.
+3. **In steward:** `init` and the thin gate workflow files (R2); the second project's gate-only
+   start (R6, R7); then OQ-73 as containers, and OQ-101.
+4. **Here:** OQ-115, narrowed to adopting steward: pin it, switch to the thin workflow files,
+   remove the moved code and documents, and retire the moved stories with a note naming each one's
+   `ST-<n>`.
+
 ### What ties the workflow to one company today
 
 Checked on 2026-10-07 against `main` at `66c578d`:
@@ -1653,7 +1673,14 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   planned. The rest of R2 was accepted as proposed the same day: the loop runs from the project's
   own worktree, and thin gate files written by `init`, not GitHub's reusable workflows.
 - **R3. What a project configures.** At least its repository, its CI commands (OQ-94), its own
-  review items, and where its stories live.
+  review items, and where its stories live. **Decided 2026-10-08 by the owner: for now, only what
+  differs between the projects: the repository and the story id prefix**, in a settings file at
+  the project root (OQ-122). The base branch, the remote, the stories directory and the CI workflow
+  path are the same in all three repositories (`main`, `origin`, `stories/`,
+  `.github/workflows/ci.yml`), so they stay constants until a project needs something else. The
+  prompts' project section, a project's own review items, models and commit attribution come
+  later; attribution matters once the second project has a coder, since its `AGENTS.md` forbids AI
+  attribution.
 - **R4. The workflow's own stories.** The new repository needs a queue of its own. Which of this
   repository's workflow stories move with it? **Decided 2026-10-08 by the owner: every unbuilt
   `kind: workflow` story moves, except those about this repository's own files**: OQ-117 and OQ-118
@@ -1730,6 +1757,11 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   [Status is derived, not stored](#status-is-derived-not-stored), where a board's columns are
   stored status; and [Tier is priority](#tier-is-priority-and-nothing-else), where a board's order
   is set by hand rather than derived from a field.
+
+  **Decided 2026-10-08 by the owner: for the gate-only start (R6), only the reviewer's input.** The
+  reviewer of a second-project pull request reads the issue it closes (`Closes #n`) as its story.
+  The queue from issues (ready state, priority and dependencies, which that project keeps in its
+  GitHub Project, labels and "blocked by" relationships) waits until that project gets a coder.
 - **R8. Whether the workflow's repository is public or private.** **Decided 2026-10-07 by the
   owner: public**, with the condition below. The owner had leaned that way: the work is
   exploratory, the code is already public in this repository, and private brings no benefit the
