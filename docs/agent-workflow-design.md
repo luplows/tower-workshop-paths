@@ -1489,8 +1489,8 @@ readiness test, whether the gate works at all. Both arguments point at Session A
 ## Portability: other projects, other companies' models
 
 Refined with the owner from 2026-10-07. The goals, the move's shape and its order are decided;
-M1, M4 and M5 (which tool first, how a role names its model, and the prompts) and R7's issue
-queue are still open. Each answer is recorded here, dated, in the pull request that makes it.
+M4 (how a role names its model) and R7's issue queue are still
+open, and both wait for the workflow's own repository. Each answer is recorded here, dated, in the pull request that makes it.
 
 ### Goals
 
@@ -1600,14 +1600,20 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   describes the Codex CLI's `codex exec` for this: the prompt as an argument, `--json` for JSON
   Lines output, and `--sandbox read-only | workspace-write | danger-full-access`. Not yet run here.
   Its restrictions are a sandbox policy, not a per-command allowlist like Claude Code's, so M3
-  applies in full.
+  applies in full. **Decided 2026-10-08 by the owner: the Codex CLI is the first adapter, for the
+  reviewer (M2), after a spike** that runs it here and shows it can run `npm test` inside its
+  read-only sandbox and return a verdict the gate can parse.
 - **M2. Which role first.** **Decided 2026-10-08 by the owner: the reviewer.** Goal 2's value is largest there, and a
   reviewer that cannot write is a smaller guarantee to re-establish than a coder's.
 - **M3. Guarantees before use.** **Decided 2026-10-08 by the owner:** no tool runs a role until that role's guarantees are
   shown to hold for it by tests, in the way OQ-73's AC-1 tests the coder's.
 - **M4. How a story or role names its model.** Today a bare Claude model name. It needs the tool as
-  well. OQ-54 (one declared default coder model) would be reworked or folded in.
-- **M5. Prompts.** One prompt per role with per-tool parts, or one per tool?
+  well. OQ-54 (one declared default coder model) would be reworked or folded in. **Left open for
+  the workflow's own repository** (owner, 2026-10-08): it works best as configurable for the
+  specific job, rather than fixed per project.
+- **M5. Prompts.** One prompt per role with per-tool parts, or one per tool? **Decided 2026-10-08
+  by the owner: one prompt per role**, holding the role's rules once, with a small section per tool
+  for that tool's specifics, so the rules cannot drift between tools.
 - **M6. Switching away (goal 3).** **Decided 2026-10-08 by the owner:** replacing a tool for a role is a configuration change,
   with no code change beyond its adapter.
 
