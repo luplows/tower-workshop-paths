@@ -1488,9 +1488,9 @@ readiness test, whether the gate works at all. Both arguments point at Session A
 
 ## Portability: other projects, other companies' models
 
-Being refined with the owner, from 2026-10-07. The goals are decided; how to reach them is not, and
-the questions below hold the decisions as they are made. Each answer is recorded here, dated, in
-the pull request that makes it.
+Refined with the owner from 2026-10-07. The goals, the move's shape and its order are decided;
+the models' questions (M1 to M6) and some of the move's (R1's table, R7's issue queue) are still
+open. Each answer is recorded here, dated, in the pull request that makes it.
 
 ### Goals
 
@@ -1544,8 +1544,9 @@ and gate already work, so that the workflow's repository can dispatch its own `S
 from the day it exists. Today the `OQ` prefix is hardcoded in five modules, so it could not.
 
 1. **Here, built by the loop:** OQ-118 then OQ-117 (CI), OQ-122 (a settings file with the
-   repository and the story prefix), OQ-123 (a package with a command-line entry point, finding
-   the project from the working directory and its prompts from the package).
+   repository and the story prefix, #210), OQ-123 (one command-line entry point, finding the
+   project from the working directory and the scripts and prompts from wherever the engine is
+   installed, #211).
 2. **By hand, the owner with Session A (a bootstrap, not a story):** create `luplows/steward`,
    public; extract the moved paths with their history (`git filter-repo`, not installed here yet);
    renumber the moved stories `ST-<n>`, each naming its old OQ id; push `main`, the one direct
@@ -1703,7 +1704,7 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   workflow, and the rest go to its queue (R4).
 
   **OQ-73's mechanism is a container** (decided 2026-10-08 by the owner, replacing the separate
-  Windows account in OQ-73's Context). **Planned (OQ-73):** coder sessions run in a container whose
+  Windows account in OQ-73's Context). Decided, not yet built: coder sessions run in a container whose
   image the workflow's repository defines, with only the work and the agent tool's own login passed
   in, so no host keyring, `~/.ssh` or user profile is reachable. The reason is portability: a new
   machine needs one standard install (a container runtime) rather than account management, and
@@ -1712,6 +1713,8 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   the story is rewritten in the workflow's repository as a spike, a build, and OQ-73's own checks
   as the proof. Known questions for the spike: a git worktree's `.git` file holds an absolute host
   path, and `node_modules` on a bind mount from Windows is slow.
+  This passage carries no **Planned** marker yet: OQ-73 is in flight (#209), so its story file
+  cannot be given the acceptance criterion that would resolve one. Its rewrite adds both.
 
   Superseded: **decided 2026-10-07 by the owner: after OQ-73, before OQ-101.** The owner's build
   order is OQ-80 (landed as #203 on 2026-10-07), then OQ-73, then OQ-101, so the move comes after OQ-80 and
