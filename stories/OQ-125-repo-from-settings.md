@@ -46,7 +46,7 @@ modules.
 
 - **The story prefix** (OQ-126, OQ-127, OQ-128).
 - **Finding the project from the working directory**, and `DISPATCHER_ROOT`
-  itself. That is OQ-123.
+  itself. That is OQ-123 and OQ-130.
 - **A test that fails if `tower-workshop-paths` comes back** into these
   modules. That is OQ-129.
 - **`scripts/land/`** and the workflow files, which take the repository from

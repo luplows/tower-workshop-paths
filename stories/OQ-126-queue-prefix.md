@@ -54,7 +54,7 @@ them could see an `ST-<n>` story.
 - **Merging `queue.mjs`'s and `lint-stories.mjs`'s `STORY_FILENAME_RE`** into
   one. Whether they become one is the coder's choice in OQ-127, not here.
 - **The repository default** (OQ-125) and **where the project root is found**
-  (OQ-123).
+  (OQ-123 and OQ-130).
 - **A test that fails if `OQ-` comes back** into these modules (OQ-129).
 - **The prompts**, which mention `OQ-` only in examples and history.
 

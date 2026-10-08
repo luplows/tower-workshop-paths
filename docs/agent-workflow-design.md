@@ -441,11 +441,13 @@ Not a Haiku agent — **a script, with no model in it at all.** It reads the sto
 state from git and `gh`, invokes `claude -p`, parses structured output, and posts a commit status.
 Every one of those is deterministic.
 
-**Planned (OQ-123):** the script works on the project in the working directory, not on the
-checkout it is loaded from: the engine (the scripts and the prompts) and the project (its settings,
-stories and repository) can be in different places, so a project can run the workflow installed as
-a dependency. One entry point, `scripts/dispatch/cli.mjs`, runs each command (decided 2026-10-08 by
-the owner, as a step of moving the workflow to its own repository).
+**Planned (OQ-123, OQ-130, OQ-131):** the script works on the project in the working directory,
+not on the checkout it is loaded from: the engine (the scripts and the prompts) and the project
+(its settings, stories and repository) can be in different places, so a project can run the
+workflow installed as a dependency. One entry point, `scripts/dispatch/cli.mjs`, runs each command
+(decided 2026-10-08 by the owner, as a step of moving the workflow to its own repository). OQ-123
+does it for `coder.mjs`, `review.mjs`, `story.mjs` and `land.mjs`, OQ-130 for `loop.mjs`, and
+OQ-131 adds `cli.mjs` (split from OQ-123 on 2026-10-08 by the owner).
 
 This also materially improves the self-marking problem. The thing that posts a verdict is
 version-controlled, reviewable, testable code that can only report what the reviewer returned.
@@ -690,10 +692,11 @@ OQ-122's first coder spent its whole `6`, $6.03 over 119 turns, and committed no
 covered seven modules (`coder.mjs`, `land.mjs`, `loop.mjs`, `review.mjs`, `story.mjs`, `queue.mjs`
 and `lint-stories.mjs`) and their tests. The owner chose to split it into smaller stories, OQ-122
 and OQ-125 to OQ-129, rather than raise the budget: smaller stories are cheaper to run and to
-review.)* A **retry round is markedly cheaper than a first pass**, because the findings do the searching the coder would otherwise pay
-for, so the expensive spawn is the first one rather than the loop. And a reviewer costs about what a
-retry round does, so review is not the expensive half of a retry either. A timeout wants to be well
-clear of 16 minutes, not tuned to the median.
+review. OQ-123 was split the same way, into OQ-123, OQ-130 and OQ-131.)* A **retry round is
+markedly cheaper than a first pass**, because the findings do the searching the coder would
+otherwise pay for, so the expensive spawn is the first one rather than the loop. And a reviewer
+costs about what a retry round does, so review is not the expensive half of a retry either. A
+timeout wants to be well clear of 16 minutes, not tuned to the median.
 
 **The reviewer range widened on contact with a real story.** These figures originally read
 $0.95 – $1.38 and 1.8 – 2.7 min, taken from two reviews of docs-shaped PRs. OQ-51's four rounds ran
@@ -1566,8 +1569,9 @@ deciding what is next. It is the harness's product outline, and moves with this 
 - **OQ-122 is split as small as it sensibly goes**, into OQ-122 and OQ-125 to OQ-129 (decided
   2026-10-08 by the owner, after its first coder spent its whole budget and committed nothing):
   smaller stories are cheaper to run and to review. All six are built here before the move, ahead
-  of OQ-123 ("The move, in order", step 1). The test and CI follow-ups raised by that day's
-  dispatch batch become one story, written after the move (decided 2026-10-08 by the owner).
+  of OQ-123, which is split the same way into OQ-123, OQ-130 and OQ-131 ("The move, in order",
+  step 1). The test and CI follow-ups raised by that day's dispatch batch become one story,
+  written after the move (decided 2026-10-08 by the owner).
 - **The bootstrap checklist gains D-7 and D-8** (decided 2026-10-08 by the owner): a rewritten `#N`
   is checked at the real run, and steward's `ci.test.mjs` drops OQ-117's tests. See R1.
 - **The bootstrap checklist is agreed**, [`steward-bootstrap.md`](steward-bootstrap.md), with its
@@ -1586,10 +1590,10 @@ from the day it exists. Today the `OQ` prefix is hardcoded in five modules, so i
    repository and the story prefix, #210) and the stories split from it on 2026-10-08: OQ-125
    (the default repository from the settings), OQ-126, OQ-127 and OQ-128 (the story prefix from
    the settings, in the queue reader, the story lint, and `coder.mjs` and `story.mjs`) and OQ-129
-   (a test that keeps both out of the code); then OQ-123 (one command-line entry point, finding the
-   project from the working directory and the scripts and prompts from wherever the engine is
-   installed, #211). OQ-124 (CI and the Pages deploy on `main` after each landing) is also built
-   here first, as a `fix` story.
+   (a test that keeps both out of the code); then OQ-123 and OQ-130 (finding the project from the
+   working directory and the scripts and prompts from wherever the engine is installed, #211, split
+   on 2026-10-08) and OQ-131 (one command-line entry point). OQ-124 (CI and the Pages deploy on
+   `main` after each landing) is also built here first, as a `fix` story.
 2. **By hand, the owner with Session A (a bootstrap, not a story):** create `luplows/steward`,
    public; extract the moved paths with their history (`git filter-repo`, installed on the
    owner's machine on 2026-10-08 and tried in a dry run); renumber the moved stories `ST-<n>`, each
@@ -1780,7 +1784,7 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   `Open-Questions.md`) and OQ-94 (this repository's `CLAUDE.md`). OQ-71 moves: the claims it
   consolidates are in the workflow's documents. A story built before the move stays in
   `stories/done/` here, as history. A moved story takes the new repository's next number (R9) and
-  names its old OQ id. OQ-124 to OQ-129, written on 2026-10-08, are built here before the move
+  names its old OQ id. OQ-124 to OQ-131, written on 2026-10-08, are built here before the move
   ("The move, in order", step 1), so they stay, as OQ-117 and OQ-118 do.
 
   **OQ-115 stays, and OQ-114 moves** (decided 2026-10-08 by the owner). OQ-115 is this
@@ -1790,10 +1794,10 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   [OQ-115]` only meant "after the move", so it is dropped when the story is renumbered.
 
   **Held here until the move** (decided 2026-10-08 by the owner): the moving workflow stories
-  that the loop would otherwise reach after OQ-123 carry `blocked:` saying so, so that they are
-  built in steward rather than here. They are OQ-54, OQ-59, OQ-62, OQ-88, OQ-89, OQ-98, OQ-100,
-  OQ-103, OQ-105, OQ-119 and OQ-120 (`normal` tier) and OQ-99 (`later`). The steward copies are
-  renumbered with `blocked:` cleared; the copies here are retired by OQ-115.
+  that the loop would otherwise reach after step 1's stories carry `blocked:` saying so, so that
+  they are built in steward rather than here. They are OQ-54, OQ-59, OQ-62, OQ-88, OQ-89, OQ-98,
+  OQ-100, OQ-103, OQ-105, OQ-119 and OQ-120 (`normal` tier) and OQ-99 (`later`). The steward
+  copies are renumbered with `blocked:` cleared; the copies here are retired by OQ-115.
 
   **In steward, two exceptions and an order** (decided 2026-10-08 by the owner, agreeing the
   bootstrap checklist). ST-8, the copy of OQ-73, carries `blocked:` saying it is to be rewritten

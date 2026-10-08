@@ -1,6 +1,6 @@
 ---
 id: OQ-123
-title: Run the dispatch scripts on the project in the working directory, through one command-line entry point
+title: Take the project from the working directory and the prompts from the engine, in coder.mjs, review.mjs, story.mjs and land.mjs
 tier: next
 kind: workflow
 depends_on: [OQ-122, OQ-125, OQ-126, OQ-127, OQ-128, OQ-129]
@@ -11,49 +11,46 @@ blocked: null
 ## Intent
 
 As the owner, I want the dispatch scripts to work on whichever project they are
-run in, through one command, so that after the move another repository can
-install the workflow as a dependency and run it on itself. Today the scripts
-assume the checkout they are loaded from is the project (`DISPATCHER_ROOT`, two
-directories above `scripts/dispatch/`). Once the workflow is a package in a
-project's `node_modules`, that checkout is the package, not the project.
+run in, so that after the move another repository can install the workflow as a
+dependency and run it on itself. Today the scripts assume the checkout they are
+loaded from is the project (`DISPATCHER_ROOT`, two directories above
+`scripts/dispatch/`). Once the workflow is a package in a project's
+`node_modules`, that checkout is the package, not the project. This story does
+it for `coder.mjs`, `review.mjs`, `story.mjs` and `land.mjs`; OQ-130 does it
+for `loop.mjs`, and OQ-131 adds the one command-line entry point.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — The dispatch modules distinguish two directories:
+- [ ] **AC-1** — `coder.mjs`, `review.mjs` and `story.mjs` distinguish two
+      directories:
       - the **engine root**, where the scripts and the prompts are, found from
         the module's own location as `DISPATCHER_ROOT` is today;
       - the **project root**, where `steward.config.json` (OQ-122), the
         `stories/` directory and the git repository are, which is the current
         working directory.
-      `DISPATCHER_ROOT` is gone from `coder.mjs`, `loop.mjs`, `review.mjs` and
-      `story.mjs`. Every default that used it for the repository
-      (`repoDir`, `loop.mjs`'s `--init` and `requireOwnWorktree`) uses the
-      project root, and the prompts (`CODER_PROMPT`, `REVIEWER_PROMPT`) are read
-      from the engine root.
-- [ ] **AC-2** — A new `scripts/dispatch/cli.mjs` is one entry point:
-      `node scripts/dispatch/cli.mjs <command> [arguments]`, where `<command>`
-      is `loop`, `story`, `coder`, `review`, `land`, `queue`, `lint` or
-      `verdicts`. Each runs what `node scripts/dispatch/<module>.mjs`
-      (`scripts/lint-stories.mjs` for `lint`,
-      `scripts/report/review-verdicts.mjs` for `verdicts`) runs today, with the
-      same arguments, output and exit code. An unknown or missing command
-      prints the list of commands and exits non-zero. Running each module
-      directly still works.
-- [ ] **AC-3** — The loop starts each story's child process from the engine
-      root (`STORY_MJS`), with the project root as its working directory.
-- [ ] **AC-4** — A test runs `cli.mjs` from this checkout with a different
-      project as the working directory: a temporary git repository holding its
-      own `steward.config.json` (prefix `ST`) and a `stories/ST-1-thing.md`.
-      `queue` lists `ST-1` and nothing from this repository, and `lint`
-      checks that project's stories, not this repository's.
-- [ ] **AC-5** — A test shows the coder's and the reviewer's prompts are read
-      from the engine root when the working directory is another project.
-- [ ] **AC-6** — The **Planned (OQ-123)** sentence in
-      `docs/agent-workflow-design.md`, "The dispatcher is a script", is resolved
-      as that document's "Reading this document" note says.
+      `DISPATCHER_ROOT` is gone from these three modules. Every default that
+      used it for the repository (each `repoDir` default) uses the project
+      root, and the prompts (`CODER_PROMPT`, `REVIEWER_PROMPT`) are read from
+      the engine root.
+- [ ] **AC-2** — The settings these three modules and `land.mjs` read (OQ-125's
+      default repository, and OQ-126's and OQ-128's prefix) are read from the
+      project root, not from the directory two levels above the module.
+- [ ] **AC-3** — Tests, with a temporary git repository holding its own
+      `steward.config.json` (`repo` `owner/other`, prefix `ST`) as the project
+      root: the coder's and the reviewer's prompts are still read from the
+      engine root, and the settings and the default `repoDir` come from the
+      project root. How a test sets the project root is the coder's choice
+      (Context: `process.chdir` is not available in this repository's test
+      pool).
+- [ ] **AC-4** — With this repository as the working directory, every existing
+      test passes, and no existing assertion or expected value changes.
+- [ ] **AC-5** — `OQ-123` is taken out of the **Planned (…)** marker in
+      `docs/agent-workflow-design.md`, "The dispatcher is a script", as that
+      document's "Reading this document" note says.
 
 ## Out of scope
 
+- **`loop.mjs`** (OQ-130) and **`scripts/dispatch/cli.mjs`** (OQ-131).
 - **A `package.json` `bin` entry, and publishing.** The package is created in
   the workflow's own repository when it is extracted; this repository's
   `package.json` does not become it.
@@ -75,23 +72,26 @@ project's `node_modules`, that checkout is the package, not the project.
 
 ## Context
 
+- Split on 2026-10-08, at the owner's decision, so that no coder session has
+  to carry the whole of it. This story keeps the old AC-1 (for these modules,
+  with `land.mjs`'s settings added) and the old AC-6 (the marker), and gains
+  a test for them; OQ-130 takes the old AC-1 for `loop.mjs` and the old AC-3,
+  and OQ-131 the old AC-2 and AC-4. The old AC-5 (prompts from the engine
+  root) is AC-3 here.
 - `DISPATCHER_ROOT` on `main` at `0a9254b`: `coder.mjs` lines 52–53 (with
-  `CODER_PROMPT`), 314 and 536; `loop.mjs` lines 60, 318, 500 and 505;
-  `review.mjs` lines 55–56 (with `REVIEWER_PROMPT`) and 242; `story.mjs` lines
-  48, 184, 218 and 294.
-- `loop.mjs` line 61: `STORY_MJS = path.join(DISPATCH_DIR, 'story.mjs')`, the
-  child process each story runs in (OQ-86).
-- The modules that run as commands today, by their
-  `process.argv[1]` checks: `coder.mjs`, `land.mjs`, `loop.mjs`, `queue.mjs`,
-  `review.mjs`, `story.mjs`, `review-tools.mjs`, `story-containment.mjs`,
-  `scripts/lint-stories.mjs` and `scripts/report/review-verdicts.mjs`.
-  `review-tools.mjs` is run by the reviewer session, and
-  `story-containment.mjs` by CI, so neither is a command here.
-- OQ-122 adds `steward.config.json` and the settings module this story reads
-  the project from. OQ-125 to OQ-128 make the scripts take the repository and
-  the story prefix from it, reading it from the root they find today, and
-  OQ-129 guards against either coming back. This story moves that root to the
-  working directory.
+  `CODER_PROMPT`), 314 and 536; `review.mjs` lines 55–56 (with
+  `REVIEWER_PROMPT`) and 242; `story.mjs` lines 48, 184, 218 and 294.
+  `land.mjs` has none; OQ-125 has it read its settings from the same
+  directory, two levels above `scripts/dispatch/`.
+- `queue.mjs`'s and `lint-stories.mjs`'s command lines already read the working
+  directory (`loadQueue()` defaults `rootDir` to `process.cwd()`;
+  `lint-stories.mjs`'s `main` passes `process.cwd()`).
+- `vite.config.js` sets `pool: 'vmThreads'`, and Node does not allow
+  `process.chdir()` in a worker thread.
+- OQ-122 adds `steward.config.json` and the settings module. OQ-125 to OQ-128
+  make the scripts take the repository and the story prefix from it, reading
+  it from the root they find today, and OQ-129 guards against either coming
+  back. This story moves that root to the working directory.
 - The decisions: `docs/agent-workflow-design.md` on `main` (landed with #199),
   "Portability", R2 and "The move, in order".
 

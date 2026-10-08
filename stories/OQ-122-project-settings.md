@@ -45,8 +45,8 @@ and the module that reads it; OQ-125 to OQ-129 make the scripts use it.
 - **Any other setting.** The base branch (`main`), the remote (`origin`), the
   `stories/` directory and the CI workflow path stay constants: they are the
   same in all three repositories (decided 2026-10-08 by the owner).
-- **Where the project root is found.** That is OQ-123. The new module takes the
-  root as a parameter.
+- **Where the project root is found.** That is OQ-123 and OQ-130. The new module
+  takes the root as a parameter.
 
 ## Constraints
 

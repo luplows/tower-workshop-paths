@@ -12,13 +12,13 @@ this file is the procedure, and where it restates a decision it names the one it
 from.
 
 Every count and line number here was taken on `main` at `7169d85`, or at `d86080c` for the dry
-run, and **must be re-derived at the time of the run**: OQ-117, OQ-121, OQ-122, OQ-123, and OQ-124
-to OQ-129 change these files before then.
+run, and **must be re-derived at the time of the run**: OQ-117, OQ-121, and OQ-122 to OQ-131
+change these files before then.
 
 ## 1. Before starting
 
-- [ ] **P1.** OQ-116, OQ-117, OQ-118, OQ-121, OQ-122 to OQ-129 are in `stories/done/` on `main`.
-      Of those, the move needs OQ-118, OQ-117, OQ-122 to OQ-129 (design doc, "The move, in
+- [ ] **P1.** OQ-116, OQ-117, OQ-118, OQ-121, OQ-122 to OQ-131 are in `stories/done/` on `main`.
+      Of those, the move needs OQ-118, OQ-117, OQ-122 to OQ-131 (design doc, "The move, in
       order", step 1). OQ-116 and OQ-121 were ahead of them in the queue, and were built on
       2026-10-08.
 - [ ] **P2.** No open pull request changes a moving path, except #209 (OQ-73), which stays parked.
@@ -51,7 +51,7 @@ rule in R4: every unbuilt `kind: workflow` story, except OQ-72, OQ-94, OQ-115, O
 | `.github/pull_request_template.md`, `.oxlintrc.json`, `.gitignore` | Not in R1: steward's lint, PRs and ignores |
 
 **The 21 moving stories**, as of `7169d85`, assuming OQ-116, OQ-121, OQ-122 and OQ-123 are built
-by then, and OQ-124 to OQ-129, written since (P1): OQ-46, 54, 59, 62, 64, 66, 71, 73, 88, 89, 98,
+by then, and OQ-124 to OQ-131, written since (P1): OQ-46, 54, 59, 62, 64, 66, 71, 73, 88, 89, 98,
 99, 100, 101, 102, 103, 105, 108, 114, 119 and 120. Each is extracted at its path under
 `stories/`, so its history moves with it.
 
@@ -127,7 +127,7 @@ checkout. Each is its own commit, so the direct push in section 6 is reviewable 
       point the tests that read them there.
 - [ ] **B3. `steward.config.json`:** `{ "repo": "luplows/steward", "storyPrefix": "ST" }`.
 - [ ] **B4. `package.json`.** Name `steward`, `"type": "module"`, `"private": true`, and a `bin`
-      entry `steward` pointing at `scripts/dispatch/cli.mjs` (OQ-123), which needs a
+      entry `steward` pointing at `scripts/dispatch/cli.mjs` (OQ-131), which needs a
       `#!/usr/bin/env node` line. Scripts `lint` (`oxlint`) and `test` (`vitest run`).
       `devDependencies`: `vitest` and `oxlint` only, at this repository's ranges (`^5.0.0` and
       `^1.79.0` at `7169d85`). `package-lock.json` from `npm install`.
