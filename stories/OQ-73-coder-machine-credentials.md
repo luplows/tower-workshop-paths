@@ -5,7 +5,7 @@ tier: next
 kind: workflow
 depends_on: [OQ-84]
 model: sonnet
-blocked: null
+blocked: "AC-1/AC-2 need the coder's whole process tree to run with no access to the owner's Windows Credential Manager store (confirmed readable right now via a plain CredRead from a node -e child, matching the Context's \"believed, not yet demonstrated\" note). The story's own candidate mechanism -- a dedicated low-privilege Windows account for spawns -- needs 'net user /add', which this session's own token cannot run (tested here: System error 5, Access is denied), confirming a coder session is not an Administrator. The only other isolation primitive that does not need admin rights, an AppContainer/LowBox token wrapped around the whole coder process, needs explicit ACL grants to the derived AppContainer SID on node, npm, git and the worktree before the coder could do anything at all, is unprototyped, and is exactly the kind of hard-to-reverse, machine-wide change CLAUDE.md asks to confirm before taking, which an unattended session should not do on its own judgement. Which does the owner want: (a) create the dedicated account once, by hand, as Administrator, and record its name somewhere a coder/dispatcher session can read so invocation.mjs can target it; (b) accept the AppContainer approach's ACL footprint and have a future session build and test it despite the risk; or (c) a different mechanism not named in the story?"
 ---
 
 ## Intent
