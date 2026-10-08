@@ -89,9 +89,8 @@ project's `node_modules`, that checkout is the package, not the project.
   `story-containment.mjs` by CI, so neither is a command here.
 - OQ-122 adds `steward.config.json` and the settings module this story reads
   the project from.
-- The decisions: `docs/agent-workflow-design.md` on #199's branch
-  (`write-story/OQ-114-portable-workflow`), "Portability", R2 and "The move,
-  in order".
+- The decisions: `docs/agent-workflow-design.md` on `main` (landed with #199),
+  "Portability", R2 and "The move, in order".
 
 ## Open questions
 
