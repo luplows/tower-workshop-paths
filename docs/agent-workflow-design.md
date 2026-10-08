@@ -1490,7 +1490,8 @@ readiness test, whether the gate works at all. Both arguments point at Session A
 
 Refined with the owner from 2026-10-07. The goals, the move's shape and its order are decided;
 M4 (how a role names its model) and R7's issue queue are still
-open, and both wait for the workflow's own repository. Each answer is recorded here, dated, in the pull request that makes it.
+open, and both wait for the workflow's own repository. Each answer is recorded here, dated, in
+the pull request that makes it.
 
 ### Goals
 
