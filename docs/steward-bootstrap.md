@@ -5,10 +5,10 @@ The hand-run procedure for "The move, in order", step 2, in
 from this repository. It is run by the owner with Session A. It is not a story, and nothing
 dispatches from it.
 
-**Status: proposed by Session A on 2026-10-08, awaiting the owner's agreement.** Nothing below has
-been run except the dry run in section 3. Each decision it needs is listed in section 9. The
-decisions themselves live in the design doc's Portability section; this file is the procedure, and
-where it restates a decision it names the one it must not drift from.
+**Status: agreed by the owner on 2026-10-08, with the six decisions in section 9.** Nothing below
+has been run except the dry run in section 3. It runs once P1 to P6 hold. The decisions
+themselves live in the design doc's Portability section; this file is the procedure, and where it
+restates a decision it names the one it must not drift from.
 
 Every count and line number here was taken on `main` at `7169d85`, or at `d86080c` for the dry
 run, and **must be re-derived at the time of the run**: OQ-117, OQ-121, OQ-122 and OQ-123 change
@@ -143,7 +143,8 @@ checkout. Each is its own commit, so the direct push in section 6 is reviewable 
       - Its **Planned** markers that name a moved story take that story's `ST-<n>`. At `7169d85`
         those are OQ-73 (3), OQ-101 (2), OQ-102, OQ-105, OQ-108, OQ-114 and OQ-119. The marker
         naming OQ-115 is reworded without a marker, since that work is this repository's.
-      - This repository's passages: see D-1.
+      - This repository's passages, listed in R1 under "This document", and the example story:
+        removed or replaced (D-1).
 - [ ] **B12. Links to files that stay here**, made into plain text or links to this repository.
       Five at `d86080c`: `CLAUDE.md` lines 62 and 90, `stories/README.md` lines 14 and 18, and
       ST-7's (OQ-71's) line 69.
@@ -182,31 +183,32 @@ checkout. Each is its own commit, so the direct push in section 6 is reviewable 
 
 - [ ] A checkout of steward at `E:\Source\steward`, and the loop's own worktree made from it with
       `node scripts/dispatch/cli.mjs loop --init <path>`. `TW_MACHINE_LABEL` exported.
+- [ ] Steward's own first stories written at tier `next`, on `write-story/` branches in steward,
+      before its loop first runs (D-5).
 - [ ] A first, small pull request on steward (for example, its first story), reviewed and landed
       through steward's own gate, which shows `test`, `review/agent` and the sweep working.
 - [ ] Record the outcome: in steward's design doc, through a steward pull request; and here, in R4,
       the OQ-to-ST mapping, through a `write-story/` pull request, since OQ-115 needs it.
 
-## 9. Decisions this checklist needs
+## 9. Decisions
 
-- **D-1. This repository's passages in steward's copy of the design doc.** R1 lists them (Pages as
-  the alpha channel, the buy-order examples, scraped-data validation, the production target,
-  `mytower.app`). Strip them at the bootstrap, as the prompts are, or leave them for a steward
-  story? Session A recommends stripping them, for the same reason as the prompts.
-- **D-2. `CLAUDE.md`'s "Testing" section in steward.** Session A recommends keeping the rules
-  that hold for steward (CI is required, tests alongside new logic in Vitest, no coverage
-  tooling, green CI is not sufficient) and dropping Playwright, screenshot baselines and the
-  buy-order algorithm.
-- **D-3. The R1 additions in section 2** (`test/fixtures/`, the four fixture stories, the PR
-  template, `.oxlintrc.json`, `.gitignore`), to be recorded in R1 when agreed.
-- **D-4. ST-8 (OQ-73) in steward.** Its file reads `ready` on `main` today, and its `blocked:` is
-  only on its branch. Copied as it is, steward's loop would dispatch the old Windows-account
-  version at once. Session A recommends setting `blocked:` to say it is to be rewritten as
-  containers (R5).
-- **D-5. The order of steward's first stories.** The held stories become dispatchable in steward
-  as soon as their `blocked:` is cleared (R4). Steward's own first work (the prompts' slots,
-  closing `REVIEW.md`'s gaps, `init` and the thin workflow files) is not written yet. Write those
-  as `next` tier before the first loop run, so they come first? Session A recommends it: the
-  slots must land before this repository adopts steward (OQ-115).
-- **D-6. Where the checkouts live:** `E:\Source\steward-extract` for the extraction, and
-  `E:\Source\steward` with a loop worktree beside it.
+All six were made by the owner on 2026-10-08, and are recorded in the design doc's Portability
+section (R1 and R4) and its "Decided so far".
+
+- **D-1. This repository's passages in steward's copy of the design doc** (Pages as the alpha
+  channel, the buy-order examples, scraped-data validation, the production target, `mytower.app`,
+  and the example story): **stripped at the bootstrap**, as the prompts are (B11).
+- **D-2. `CLAUDE.md`'s "Testing" section in steward:** **keeps** the rules that hold for steward
+  (CI is required, tests alongside new logic in Vitest, no coverage tooling, green CI is not
+  sufficient) and **drops** Playwright, screenshot baselines and the buy-order algorithm (B10).
+- **D-3. The additions to R1's list in section 2** (`test/fixtures/`, the four fixture stories, the
+  PR template, `.oxlintrc.json`, `.gitignore`): **added** to R1's table.
+- **D-4. ST-8 (OQ-73):** **`blocked:` is set** in steward, saying it is to be rewritten as
+  containers (R5). Its file reads `ready` on this repository's `main`, so copied as it is,
+  steward's loop would dispatch the Windows-account version at once (B1).
+- **D-5. The order of steward's first stories:** steward's own first stories (the prompts'
+  `{{REPO}}` slot and project section, closing `REVIEW.md`'s gaps, and `init` with the thin
+  workflow files) are **written at tier `next` before its loop first runs**, so they come before
+  the moved stories. Writing them is Session A's, in steward (section 8).
+- **D-6. The checkouts:** `E:\Source\steward-extract` for the extraction, and `E:\Source\steward`
+  with the loop's worktree beside it.
