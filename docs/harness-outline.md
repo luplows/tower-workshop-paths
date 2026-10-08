@@ -76,7 +76,12 @@ the owner decides (readiness, priority) keeps both.
 - Publishing to npm (R2 in the design document).
 - Setup help beyond what the owner needs, though it is welcome.
 
-## Open
+## What matters most
 
-- **What matters most, in order.** The answers above suggest: the review-and-land pipeline first,
-  then keeping going and surfacing problems, then the view. Not yet confirmed by the owner.
+In order (confirmed 2026-10-08 by the owner):
+
+1. **The review-and-land pipeline**: every change reviewed against what it was for, and landed
+   only on a verdict.
+2. **Keeping going**: working through ready work unattended, and surfacing problems where the
+   owner will see them.
+3. **The view** for deciding what is next and seeing what is in flight.
