@@ -1568,10 +1568,11 @@ from the day it exists. Today the `OQ` prefix is hardcoded in five modules, so i
    project from the working directory and the scripts and prompts from wherever the engine is
    installed, #211).
 2. **By hand, the owner with Session A (a bootstrap, not a story):** create `luplows/steward`,
-   public; extract the moved paths with their history (`git filter-repo`, not installed here yet);
-   renumber the moved stories `ST-<n>`, each naming its old OQ id; push `main`, the one direct
-   push, made before any protection exists; then protect `main`, and give the repository its own
-   CI, review gate and landing, running the engine from its own checkout.
+   public; extract the moved paths with their history (`git filter-repo`, installed on the
+   owner's machine on 2026-10-08 and tried in a dry run); renumber the moved stories `ST-<n>`, each
+   naming its old OQ id; push `main`, the one direct push, made before any protection exists; then
+   protect `main`, and give the repository its own CI, review gate and landing, running the engine
+   from its own checkout. The steps are in [`steward-bootstrap.md`](steward-bootstrap.md).
 3. **In steward:** `init` and the thin gate workflow files (R2); the second project's gate-only
    start (R6, R7); then OQ-73 as containers, and OQ-101.
 4. **Here:** OQ-115, narrowed to adopting steward: pin it, switch to the thin workflow files,
