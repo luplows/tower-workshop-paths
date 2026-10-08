@@ -1635,7 +1635,7 @@ Checked on 2026-10-07 against `main` at `66c578d`:
 - **R4. The workflow's own stories.** The new repository needs a queue of its own. Which of this
   repository's workflow stories move with it?
 - **R5. When.** **Decided 2026-10-07 by the owner: after OQ-73, before OQ-101.** The owner's build
-  order is OQ-80 (in review as #203), then OQ-73, then OQ-101, so the move comes after OQ-80 and
+  order is OQ-80 (landed as #203 on 2026-10-07), then OQ-73, then OQ-101, so the move comes after OQ-80 and
   OQ-73 land and OQ-101 is built in the workflow's repository. OQ-101's `install` registers a
   scheduled task per machine, and the second project needs one too, so building it once there
   avoids building it here and then moving it. Which repository's queue OQ-101 then sits in is R4.
