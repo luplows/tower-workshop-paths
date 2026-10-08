@@ -1537,6 +1537,9 @@ deciding what is next. It is the harness's product outline, and moves with this 
 - **Its stories are numbered `ST-<n>`**, and every unbuilt workflow story moves except this
   repository's own, with its history (decided 2026-10-08 by the owner). See R1, R4 and R9.
 - **The second project starts with the gate only** (decided 2026-10-08 by the owner). See R6.
+- **The moving workflow stories are held here until the move**, and **steward starts with this
+  repository's lines stripped from its prompts and `REVIEW.md`** (decided 2026-10-08 by the
+  owner). See R4 and R1.
 
 ### The move, in order
 
@@ -1627,7 +1630,7 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   | Moves to the workflow's repository | Stays here |
   |---|---|
   | `scripts/dispatch/` (with `story-containment.mjs`), `scripts/land/`, `scripts/lint-stories.mjs`, `scripts/report/review-verdicts.mjs`, and their tests | The product, its data scripts (`scripts/extract-*`, `generate-*`, `verify-workshop-costs.mjs`, `scripts/lib/`) |
-  | `.claude/prompts/coder.md` and `reviewer.md`, with their project-specific lines turned into slots (below) | This project's stories: `stories/`, `stories/done/`, `stories/retired/`, `Completed-Questions.md`, `Open-Questions.md` |
+  | `.claude/prompts/coder.md` and `reviewer.md`, with their project-specific lines stripped, and slots for them added later (below) | This project's stories: `stories/`, `stories/done/`, `stories/retired/`, `Completed-Questions.md`, `Open-Questions.md` |
   | `REVIEW.md` except items 8 and 10, which name Vitest, Playwright, the buy-order algorithm and screenshot baselines | `REVIEW.md` items 8 and 10, as this project's own review items |
   | The workflow rules in `CLAUDE.md` ("Branches and pull requests", "Claims about this repository", "Stories") | `CLAUDE.md`'s project rules ("Testing", screenshot baselines), plus a pointer to the workflow's rules |
   | `stories/README.md` and `_TEMPLATE.md`, as the story schema of record | A short `stories/README.md` pointing at the schema |
@@ -1638,6 +1641,16 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   frameworks and screenshot-baseline rules, and `mytower.app` being reachable. In `reviewer.md`:
   the repository name. They become a `{{REPO}}` slot and a project section the project supplies,
   rendered by the same bounded injection as the story (`render.mjs`).
+
+  **Decided 2026-10-08 by the owner: steward starts clean.** At the bootstrap, steward's copies
+  of the prompts have this repository's lines stripped by hand: its name, Vitest and Playwright,
+  the screenshot-baseline rules, `mytower.app`, and the pointer to `Completed-Questions.md`
+  (`coder.md`). The slot and the project section are built in steward afterwards, before this
+  repository adopts it (OQ-115), since this project's lines have to come back through them.
+
+  **`REVIEW.md` items 8 and 10 are removed from steward's copy** (decided 2026-10-08 by the owner),
+  leaving gaps in the numbering. A story in steward closes the gaps and updates every reference to
+  an item number.
 
   A side effect worth having: in the workflow's repository the prompts need not live under
   `.claude/`, so a coder there could edit them directly, instead of through the emit-a-diff route
@@ -1699,6 +1712,12 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   consolidates are in the workflow's documents. A story built before the move stays in
   `stories/done/` here, as history. A moved story takes the new repository's next number (R9) and
   names its old OQ id.
+
+  **Held here until the move** (decided 2026-10-08 by the owner): the moving workflow stories
+  that the loop would otherwise reach after OQ-123 carry `blocked:` saying so, so that they are
+  built in steward rather than here. They are OQ-54, OQ-59, OQ-62, OQ-88, OQ-89, OQ-98, OQ-100,
+  OQ-103, OQ-105, OQ-119 and OQ-120 (`normal` tier) and OQ-99 (`later`). The steward copies are
+  renumbered with `blocked:` cleared; the copies here are retired by OQ-115.
 - **R5. When.** **Revised 2026-10-08 by the owner: the move comes before OQ-73**, once the story
   pull requests #204 to #208 (OQ-117 to OQ-121) have landed, and still before OQ-101. OQ-73's coder
   (#209) found that its candidate mechanism, a separate Windows account for spawns, needs an
@@ -1710,7 +1729,8 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   **Clarified 2026-10-08 by the owner:** OQ-118 and then OQ-117 are *built* before the move, not
   only written, because they fix CI itself and the move's own pull requests go through CI. The
   move does not wait for OQ-119, OQ-120 or OQ-121: whichever are built first move with the
-  workflow, and the rest go to its queue (R4).
+  workflow, and the rest go to its queue (R4). Since the hold under R4, OQ-119 and OQ-120 are not
+  built here; OQ-121 still is, ahead of OQ-122 in the queue.
 
   **OQ-73's mechanism is a container** (decided 2026-10-08 by the owner, replacing the separate
   Windows account in OQ-73's Context). Decided, not yet built: coder sessions run in a container whose
