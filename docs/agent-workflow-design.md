@@ -1540,6 +1540,8 @@ deciding what is next. It is the harness's product outline, and moves with this 
 - **The moving workflow stories are held here until the move**, and **steward starts with this
   repository's lines stripped from its prompts and `REVIEW.md`** (decided 2026-10-08 by the
   owner). See R4 and R1.
+- **OQ-115 stays here and OQ-114 moves**, and the extracted history names this repository's pull
+  requests in plain text (decided 2026-10-08 by the owner). See R4 and R1.
 
 ### The move, in order
 
@@ -1674,6 +1676,11 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   **The history moves with the code** (decided 2026-10-08 by the owner): the moved paths are
   extracted with their git history, for example with `git filter-repo`, so `git log` on a moved
   file in the workflow's repository still shows the commits and stories that shaped it.
+  **Commit messages name this repository's pull requests in plain text** (decided 2026-10-08 by
+  the owner): the extraction rewrites each `(#N)` as `(tower-workshop-paths PR N)`. Left as it was,
+  `#N` would link to the workflow's repository's own #N. Written as `luplows/tower-workshop-paths#N`,
+  it would add a cross-reference to each of this repository's pull requests when steward's `main`
+  is pushed.
 - **R2. How a project uses it.** Proposed by Session A, 2026-10-07; **decided 2026-10-07 by the
   owner, as proposed, with the git-tag pin** (below):
   - **A Node package with a command-line entry point**, added as a development dependency of each
@@ -1712,6 +1719,12 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   consolidates are in the workflow's documents. A story built before the move stays in
   `stories/done/` here, as history. A moved story takes the new repository's next number (R9) and
   names its old OQ id.
+
+  **OQ-115 stays, and OQ-114 moves** (decided 2026-10-08 by the owner). OQ-115 is this
+  repository's adoption of steward, "The move, in order", step 4, so it is about this repository's
+  own files, like OQ-72 and OQ-94. OQ-114, the adapters for other companies' models, is engine work
+  and moves. It is not a prerequisite of the move and not a high priority. Its `depends_on:
+  [OQ-115]` only meant "after the move", so it is dropped when the story is renumbered.
 
   **Held here until the move** (decided 2026-10-08 by the owner): the moving workflow stories
   that the loop would otherwise reach after OQ-123 carry `blocked:` saying so, so that they are
