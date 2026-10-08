@@ -3,7 +3,7 @@ id: OQ-123
 title: Run the dispatch scripts on the project in the working directory, through one command-line entry point
 tier: next
 kind: workflow
-depends_on: [OQ-122]
+depends_on: [OQ-122, OQ-125, OQ-126, OQ-127, OQ-128, OQ-129]
 model: sonnet
 blocked: null
 ---
@@ -75,10 +75,10 @@ project's `node_modules`, that checkout is the package, not the project.
 
 ## Context
 
-- `DISPATCHER_ROOT` on `main` at `a2c7f7e`: `coder.mjs` lines 52–53 (with
+- `DISPATCHER_ROOT` on `main` at `0a9254b`: `coder.mjs` lines 52–53 (with
   `CODER_PROMPT`), 314 and 536; `loop.mjs` lines 60, 318, 500 and 505;
-  `review.mjs` lines 55–56 (with `REVIEWER_PROMPT`) and 236; `story.mjs` lines
-  48, 176, 210 and 286.
+  `review.mjs` lines 55–56 (with `REVIEWER_PROMPT`) and 242; `story.mjs` lines
+  48, 184, 218 and 294.
 - `loop.mjs` line 61: `STORY_MJS = path.join(DISPATCH_DIR, 'story.mjs')`, the
   child process each story runs in (OQ-86).
 - The modules that run as commands today, by their
@@ -88,7 +88,10 @@ project's `node_modules`, that checkout is the package, not the project.
   `review-tools.mjs` is run by the reviewer session, and
   `story-containment.mjs` by CI, so neither is a command here.
 - OQ-122 adds `steward.config.json` and the settings module this story reads
-  the project from.
+  the project from. OQ-125 to OQ-128 make the scripts take the repository and
+  the story prefix from it, reading it from the root they find today, and
+  OQ-129 guards against either coming back. This story moves that root to the
+  working directory.
 - The decisions: `docs/agent-workflow-design.md` on `main` (landed with #199),
   "Portability", R2 and "The move, in order".
 

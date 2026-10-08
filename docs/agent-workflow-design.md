@@ -108,11 +108,14 @@ One file per story. **OQ numbering is preserved** — those identifiers are refe
 codebase, workflow comments, and `Completed-Questions.md`, and the "never reused, never renumbered"
 rule stays. Only the container changes.
 
-**Planned (OQ-122):** the prefix is a project setting, not part of the code. A project's
-`steward.config.json` names its repository and its story prefix (`OQ` here), and every story-id
-pattern the scripts use is built from it, so the same code can run a queue numbered `ST-<n>`
-(decided 2026-10-08 by the owner, as the first step of moving the workflow to its own
-repository).
+**Planned (OQ-122, OQ-125, OQ-126, OQ-127, OQ-128):** the prefix is a project setting, not part
+of the code. A project's `steward.config.json` names its repository and its story prefix (`OQ`
+here), and every story-id pattern the scripts use is built from it, so the same code can run a
+queue numbered `ST-<n>` (decided 2026-10-08 by the owner, as the first step of moving the workflow
+to its own repository). OQ-122 adds the file and the module that reads it; OQ-125 takes the
+default repository from it; OQ-126, OQ-127 and OQ-128 take the prefix from it in the queue
+reader, the story lint, and `coder.mjs`'s and `story.mjs`'s story-id checks; OQ-129 fails a test
+if either comes back into the code (split from OQ-122 on 2026-10-08 by the owner).
 
 ```
 stories/
@@ -682,8 +685,12 @@ picked from data:
 | Reviewer, full diff plus re-running the suite | opus | $0.95 – $1.88 | 1.8 – 4.8 min |
 
 Three things follow. The sketch's `6` and `3` are **generous** — no spawn has come close, and the
-one that ended early ended on a session limit rather than the budget. A **retry round is markedly
-cheaper than a first pass**, because the findings do the searching the coder would otherwise pay
+one that ended early ended on a session limit rather than the budget. *(No longer true, 2026-10-08:
+OQ-122's first coder spent its whole `6`, $6.03 over 119 turns, and committed nothing. Its story
+covered seven modules (`coder.mjs`, `land.mjs`, `loop.mjs`, `review.mjs`, `story.mjs`, `queue.mjs`
+and `lint-stories.mjs`) and their tests. The owner chose to split it into smaller stories, OQ-122
+and OQ-125 to OQ-129, rather than raise the budget: smaller stories are cheaper to run and to
+review.)* A **retry round is markedly cheaper than a first pass**, because the findings do the searching the coder would otherwise pay
 for, so the expensive spawn is the first one rather than the loop. And a reviewer costs about what a
 retry round does, so review is not the expensive half of a retry either. A timeout wants to be well
 clear of 16 minutes, not tuned to the median.
@@ -1556,6 +1563,13 @@ deciding what is next. It is the harness's product outline, and moves with this 
   owner). See R4 and R1.
 - **OQ-115 stays here and OQ-114 moves**, and the extracted history names this repository's pull
   requests in plain text (decided 2026-10-08 by the owner). See R4 and R1.
+- **OQ-122 is split as small as it sensibly goes**, into OQ-122 and OQ-125 to OQ-129 (decided
+  2026-10-08 by the owner, after its first coder spent its whole budget and committed nothing):
+  smaller stories are cheaper to run and to review. All six are built here before the move, ahead
+  of OQ-123 ("The move, in order", step 1). The test and CI follow-ups raised by that day's
+  dispatch batch become one story, written after the move (decided 2026-10-08 by the owner).
+- **The bootstrap checklist gains D-7 and D-8** (decided 2026-10-08 by the owner): a rewritten `#N`
+  is checked at the real run, and steward's `ci.test.mjs` drops OQ-117's tests. See R1.
 - **The bootstrap checklist is agreed**, [`steward-bootstrap.md`](steward-bootstrap.md), with its
   six decisions (decided 2026-10-08 by the owner). Steward's copies of this document and of
   `CLAUDE.md` are stripped of this repository's own content at the bootstrap, and R1's list gains
@@ -1569,9 +1583,13 @@ and gate already work, so that the workflow's repository can dispatch its own `S
 from the day it exists. Today the `OQ` prefix is hardcoded in five modules, so it could not.
 
 1. **Here, built by the loop:** OQ-118 then OQ-117 (CI), OQ-122 (a settings file with the
-   repository and the story prefix, #210), OQ-123 (one command-line entry point, finding the
+   repository and the story prefix, #210) and the stories split from it on 2026-10-08: OQ-125
+   (the default repository from the settings), OQ-126, OQ-127 and OQ-128 (the story prefix from
+   the settings, in the queue reader, the story lint, and `coder.mjs` and `story.mjs`) and OQ-129
+   (a test that keeps both out of the code); then OQ-123 (one command-line entry point, finding the
    project from the working directory and the scripts and prompts from wherever the engine is
-   installed, #211).
+   installed, #211). OQ-124 (CI and the Pages deploy on `main` after each landing) is also built
+   here first, as a `fix` story.
 2. **By hand, the owner with Session A (a bootstrap, not a story):** create `luplows/steward`,
    public; extract the moved paths with their history (`git filter-repo`, installed on the
    owner's machine on 2026-10-08 and tried in a dry run); renumber the moved stories `ST-<n>`, each
@@ -1712,7 +1730,19 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   in a commit body ("From #195's review…") is rewritten the same way, as
   `tower-workshop-paths PR N`. The dry run (from `main` at `d86080c`) kept 127 commits, whose
   bodies had 106 lines with a bare `#N`. Every one was this repository's pull request. A `#N` that
-  follows a `/` or a letter or digit, such as `owner/repo#N`, is left alone.
+  follows a `/`, a `&`, or a letter or digit, such as `owner/repo#N`, is left alone.
+  **Checked again at the real run** (decided 2026-10-08 by the owner, after the reviewer's
+  observation on #215): that "every one" holds only for the paths extracted in the dry run.
+  Commits `44b8afa` and `9f4ffb7` cite an upstream issue as a bare `#1614`, and are left out only
+  because the paths they touch (`review.yml`, `Open-Questions.md`) do not move. So the fresh dry
+  run lists every `#N` the rules rewrite, and checks each against this repository's pull requests.
+  If any is not one, the bootstrap stops until the rule leaves it alone.
+
+  **Steward's `ci.test.mjs` drops OQ-117's tests** (decided 2026-10-08 by the owner, after the
+  reviewer's observation on #217). They read this repository's `ci.yml` Playwright steps,
+  `update-screenshots.yml` and `package-lock.json`'s `@playwright/test`, none of which steward has.
+  OQ-118's tests, which read steward's own `ci.yml`, stay. This repository's copy keeps both until
+  OQ-115.
 - **R2. How a project uses it.** Proposed by Session A, 2026-10-07; **decided 2026-10-07 by the
   owner, as proposed, with the git-tag pin** (below):
   - **A Node package with a command-line entry point**, added as a development dependency of each
@@ -1750,7 +1780,8 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   `Open-Questions.md`) and OQ-94 (this repository's `CLAUDE.md`). OQ-71 moves: the claims it
   consolidates are in the workflow's documents. A story built before the move stays in
   `stories/done/` here, as history. A moved story takes the new repository's next number (R9) and
-  names its old OQ id.
+  names its old OQ id. OQ-124 to OQ-129, written on 2026-10-08, are built here before the move
+  ("The move, in order", step 1), so they stay, as OQ-117 and OQ-118 do.
 
   **OQ-115 stays, and OQ-114 moves** (decided 2026-10-08 by the owner). OQ-115 is this
   repository's adoption of steward, "The move, in order", step 4, so it is about this repository's
