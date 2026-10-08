@@ -1573,7 +1573,7 @@ deciding what is next. It is the harness's product outline, and moves with this 
   step 1). The test and CI follow-ups raised by that day's dispatch batch become one story,
   written after the move (decided 2026-10-08 by the owner).
 - **The bootstrap checklist gains D-7 and D-8** (decided 2026-10-08 by the owner): a rewritten `#N`
-  is checked at the real run, and steward's `ci.test.mjs` drops OQ-117's tests. See R1.
+  is checked at the real run, and only tests of files that move go to steward. See R1.
 - **The bootstrap checklist is agreed**, [`steward-bootstrap.md`](steward-bootstrap.md), with its
   six decisions (decided 2026-10-08 by the owner). Steward's copies of this document and of
   `CLAUDE.md` are stripped of this repository's own content at the bootstrap, and R1's list gains
@@ -1742,11 +1742,14 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   run lists every `#N` the rules rewrite, and checks each against this repository's pull requests.
   If any is not one, the bootstrap stops until the rule leaves it alone.
 
-  **Steward's `ci.test.mjs` drops OQ-117's tests** (decided 2026-10-08 by the owner, after the
-  reviewer's observation on #217). They read this repository's `ci.yml` Playwright steps,
-  `update-screenshots.yml` and `package-lock.json`'s `@playwright/test`, none of which steward has.
-  OQ-118's tests, which read steward's own `ci.yml`, stay. This repository's copy keeps both until
-  OQ-115.
+  **Only tests of files that move go to steward** (decided 2026-10-08 by the owner, after the
+  reviewer's observation on #217, and widened by the owner the same day). A test that covers this
+  repository's own flows stays here, even where it sits in a moved test file. The case found so
+  far is `scripts/dispatch/ci.test.mjs`: OQ-117's tests read this repository's `ci.yml` Playwright
+  steps, `update-screenshots.yml` and `package-lock.json`'s `@playwright/test`, and OQ-124's may
+  read `deploy-pages.yml`, none of which steward has. Steward's copy drops them. OQ-118's tests,
+  which read steward's own `ci.yml`, move. OQ-115 keeps the tests that stay when it removes the
+  moved code from this repository.
 - **R2. How a project uses it.** Proposed by Session A, 2026-10-07; **decided 2026-10-07 by the
   owner, as proposed, with the git-tag pin** (below):
   - **A Node package with a command-line entry point**, added as a development dependency of each

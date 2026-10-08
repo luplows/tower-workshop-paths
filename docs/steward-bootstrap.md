@@ -69,8 +69,8 @@ leaves it alone (D-7). At `d86080c` every one was; `44b8afa` and `9f4ffb7` cite 
 `#1614`, and are left out only because their paths do not move.
 
 **Not extracted, though a moved test reads them:** `.github/workflows/update-screenshots.yml` and
-`package-lock.json`, read by OQ-117's tests in `scripts/dispatch/ci.test.mjs`. Those tests are
-removed from steward's copy (B7a, D-8).
+`package-lock.json`, read by OQ-117's tests in `scripts/dispatch/ci.test.mjs`. Only tests of files
+that move go to steward, so those tests are removed from steward's copy (B7a, D-8).
 
 ## 3. The dry run (done 2026-10-08)
 
@@ -141,9 +141,11 @@ checkout. Each is its own commit, so the direct push in section 6 is reviewable 
       limits are kept.
 - [ ] **B7. `review-gate.yml` and `land-approved.yml`, unchanged.** Neither names this repository:
       they take `github.repository`, and run `node scripts/land/…` without `npm ci`.
-- [ ] **B7a. `scripts/dispatch/ci.test.mjs`, trimmed** (D-8): OQ-117's tests are removed, with the
-      constants and helpers only they use; OQ-118's stay. If OQ-124's tests read
-      `deploy-pages.yml`, which steward does not have, that part goes too.
+- [ ] **B7a. Tests of files that stay here, removed from steward's copy** (D-8). Re-derive them at
+      the run: every test in a moved test file that reads a file not on the list in section 2.
+      Known at `0a9254b`: OQ-117's tests in `scripts/dispatch/ci.test.mjs`, with the constants
+      and helpers only they use. OQ-124's tests of `deploy-pages.yml`, if it adds any, are removed
+      too. OQ-118's tests are kept in steward's copy. This repository keeps all of its own.
 - [ ] **B8. The prompts, stripped by hand** (R1, "steward starts clean"): in `coder.md` this
       repository's name, Vitest and Playwright, the screenshot-baseline rules, `mytower.app`, and
       the pointer to `Completed-Questions.md`; in `reviewer.md` this repository's name. The name
@@ -230,6 +232,7 @@ section (R1 and R4) and its "Decided so far".
 - **D-7. A `#N` that is not this repository's pull request** (from the reviewer's observation on
   #215): the fresh dry run checks every rewritten `#N`, and the bootstrap stops on one that is
   not (section 2).
-- **D-8. Steward's `ci.test.mjs`** (from the reviewer's observation on #217): **drops** OQ-117's
-  tests, which read this repository's Playwright steps, `update-screenshots.yml` and
-  `package-lock.json`, and **keeps** OQ-118's (B7a).
+- **D-8. Tests** (from the reviewer's observation on #217, widened by the owner the same day):
+  **only tests of files that move go to steward.** A test of this repository's own flows stays
+  here, such as OQ-117's, which read this repository's Playwright steps,
+  `update-screenshots.yml` and `package-lock.json`. OQ-118's move (B7a).
