@@ -21,18 +21,18 @@ red round.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — In `.github/workflows/ci.yml`, job `test`, each setup step
+- [x] **AC-1** — In `.github/workflows/ci.yml`, job `test`, each setup step
       has an explicit `name:` that starts with `Setup: `: the
       `actions/checkout` step, the `actions/setup-node` step, the `npm ci`
       step and the Playwright browser install step. No other step's name
       starts with `Setup: `. Nothing else in a step changes: its `uses:`,
       `with:` and `run:` stay as they are.
-- [ ] **AC-2** — `scripts/dispatch/ci.mjs` exports the prefix (`'Setup: '`)
+- [x] **AC-2** — `scripts/dispatch/ci.mjs` exports the prefix (`'Setup: '`)
       and the name GitHub gives a job's own first step (`'Set up job'`), and
       a function that says whether a step name is a setup step: it starts
       with the prefix, or is exactly `'Set up job'`. A cleanup step GitHub
       reports as `Post Setup: …` is not a setup step.
-- [ ] **AC-3** — A Vitest test reads `.github/workflows/ci.yml` as text and
+- [x] **AC-3** — A Vitest test reads `.github/workflows/ci.yml` as text and
       checks it against AC-2's prefix, as `scripts/dispatch/github.test.mjs`
       checks its transcription against `review-gate.yml`. Every step of the
       `test` job whose `uses:` is `actions/checkout`, `actions/setup-node` or
@@ -40,7 +40,7 @@ red round.
       `playwright install`, has a name starting with the prefix, and no other
       step does. The test fails naming the offending step, and fails if it
       finds no setup step, so it cannot pass by reading nothing.
-- [ ] **AC-4** — `waitForCi`'s `red` result says whether the run is a
+- [x] **AC-4** — `waitForCi`'s `red` result says whether the run is a
       **setup failure**, and names the failed setup steps. A run is a setup
       failure when its failed jobs report at least one failed step, and every
       failed step of every failed job is a setup step (AC-2). A failed step
@@ -53,7 +53,7 @@ red round.
       `timed_out` named in `failedJobs` and the findings, and `success` and
       `skipped` steps left out. A failed job that reports no failed step
       makes the run not a setup failure.
-- [ ] **AC-5** — `decideCi` returns a stop for a `red` result that concluded
+- [x] **AC-5** — `decideCi` returns a stop for a `red` result that concluded
       `failure` and is a setup failure: status `ci-setup-failed`, and a reason
       that names each failed setup step and says a coder retry cannot fix
       it. That is checked before the red-round bound, and `story.mjs` does
@@ -61,12 +61,12 @@ red round.
       with fakes, shows that a setup failure spawns no coder retry, makes the
       pull request a draft, and records `blocked:` with that status and
       reason on the story's branch, as every other stop does.
-- [ ] **AC-6** — `countRedCiRounds` does not count a commit whose latest
+- [x] **AC-6** — `countRedCiRounds` does not count a commit whose latest
       `ci.yml` run concluded `failure` as a setup failure (AC-4). It reads
       that run's jobs with the existing `buildListRunJobs` request, and only
       for commits whose latest run concluded `failure`. `assertAllowedCiRequest`'s
       four request shapes are unchanged.
-- [ ] **AC-7** — The **Planned (OQ-118)** row in
+- [x] **AC-7** — The **Planned (OQ-118)** row in
       `docs/agent-workflow-design.md`'s "Failure paths" table is resolved as
       that document's "Reading this document" note says.
 
