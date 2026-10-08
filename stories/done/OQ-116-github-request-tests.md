@@ -20,7 +20,7 @@ regression.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — `allBuiltRequests()` in `scripts/dispatch/github.test.mjs`
+- [x] **AC-1** — `allBuiltRequests()` in `scripts/dispatch/github.test.mjs`
       includes `buildListOpenPullRequests`, so that the three tests that run
       over it cover it: "OQ-68/AC-2: builders are pure and carry no token",
       "OQ-68/AC-3: no request this module can build targets a commit status,
@@ -30,7 +30,7 @@ regression.
       counts, the responses its fake `fetch` is given and the sent requests
       it expects, are not hand-written numbers: each is the number of
       requests `allBuiltRequests()` holds, however AC-2 has it store them.
-- [ ] **AC-2** — A new test fails when any function `github.mjs` exports
+- [x] **AC-2** — A new test fails when any function `github.mjs` exports
       whose name starts with `build` is not represented in
       `allBuiltRequests()`. `allBuiltRequests()` may become a structure keyed
       by builder name to make this possible. The one exclusion is
@@ -38,7 +38,7 @@ regression.
       own tests cover; the exclusion is written in the test, with that reason.
       The test is shown to fail by removing one builder from the list, and the
       PR body says which builder and what the failure said.
-- [ ] **AC-3** — A test of the request's shape, as OQ-112/AC-1's tests have for
+- [x] **AC-3** — A test of the request's shape, as OQ-112/AC-1's tests have for
       the three requests OQ-112 added:
       - `buildListOpenPullRequests(REPO, { base: 'main', page: 2 })` returns
         exactly `{ method: 'GET', url:
@@ -49,7 +49,7 @@ regression.
       - an empty `base` builds a URL with `base=&`, which `send` refuses
         through the allowlist (its pattern needs at least one character).
         The fake `fetch` records no call in either case.
-- [ ] **AC-4** — Tests of the response side, with a fake `fetch`:
+- [x] **AC-4** — Tests of the response side, with a fake `fetch`:
       - `parseOpenPullRequests` reduces each pull request to `number`,
         `headRef`, `headSha`, `draft` and `authorAssociation`; `draft` is
         `true` only when the response's `draft` is `true`; a missing `head` or
