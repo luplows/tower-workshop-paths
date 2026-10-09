@@ -85,7 +85,10 @@ only tests of files that move go to steward).
   `npm test` (line 32), wherever it is. OQ-137, which changes both files,
   depends on this story, so it finds them at their new paths.
 - `scripts/verify-workshop-costs.test.mjs` is the one existing test this project
-  keeps under `scripts/`, the precedent for the new file's place.
+  keeps under `scripts/`, the precedent for the new file's place. The other
+  test there on `main` at `09147c3`, `scripts/no-project-literals.test.mjs`
+  (OQ-129), goes to steward at the bootstrap and is removed here (Open
+  questions).
 
 ## Open questions
 
@@ -95,3 +98,6 @@ only tests of files that move go to steward).
 - Re-derive AC-2's list when this is refined to `ready`: OQ-124's tests, and
   any other test in a moved file that reads a file staying here (the
   bootstrap's B7a finds the same set).
+- Add `scripts/no-project-literals.test.mjs` (OQ-129) to AC-1's list. It reads
+  only files AC-1 removes, and goes to steward at the bootstrap (decided
+  2026-10-09 by the owner; `docs/steward-bootstrap.md`, D-11).

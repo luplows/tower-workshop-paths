@@ -1,6 +1,6 @@
 ---
 id: OQ-137
-title: Count the first clean-up in the install step's 5-minute budget, and check it fits its allowance
+title: Count the first clean-up in the install step's 5-minute budget, and check its allowance
 tier: normal
 kind: workflow
 depends_on: [OQ-132]
