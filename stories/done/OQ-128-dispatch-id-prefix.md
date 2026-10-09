@@ -17,17 +17,17 @@ can dispatch and retry an `ST-<n>` story. Today both refuse any id that is not
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — In `scripts/dispatch/coder.mjs`, the story-id checks in
+- [x] **AC-1** — In `scripts/dispatch/coder.mjs`, the story-id checks in
       `retryStory` and in its command line, and its usage text (`USAGE`, and
       the usage error its command line throws), take the prefix from the
       settings.
-- [ ] **AC-2** — In `scripts/dispatch/story.mjs`, the story-id checks in
+- [x] **AC-2** — In `scripts/dispatch/story.mjs`, the story-id checks in
       `runStory` and in its command line, and its usage text, take the prefix
       from the settings.
-- [ ] **AC-3** — A message or usage text names the configured prefix (for
+- [x] **AC-3** — A message or usage text names the configured prefix (for
       example `ST-<n>`) or a neutral `<story-id>`; which one is the coder's
       choice.
-- [ ] **AC-4** — Tests, using a project whose settings say `ST`: `runStory` and
+- [x] **AC-4** — Tests, using a project whose settings say `ST`: `runStory` and
       `retryStory` refuse `OQ-3` with their "requires a story id" error, and
       accept `ST-3`, going on past that check. With this repository's own
       settings every existing test passes; the only change made to an existing
@@ -35,7 +35,7 @@ can dispatch and retry an `ST-<n>` story. Today both refuse any id that is not
       value changes. How the settings reach `runStory` and `retryStory` is the
       coder's choice (both already take `repoDir`): nothing falls back to a
       default when they are missing.
-- [ ] **AC-5** — `OQ-128` is taken out of the **Planned (…)** marker in
+- [x] **AC-5** — `OQ-128` is taken out of the **Planned (…)** marker in
       `docs/agent-workflow-design.md`, "The story artifact", "Format", as that
       document's "Reading this document" note says.
 
