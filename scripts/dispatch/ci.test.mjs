@@ -1,7 +1,7 @@
 // @vitest-environment node
 
-import { execFileSync } from 'node:child_process'
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { spawn, spawnSync } from 'node:child_process'
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -453,11 +453,13 @@ describe('OQ-117/AC-4: the install step limits itself to 5 minutes, and the job 
 
 describe('OQ-136/AC-1: a try that fails or reaches its limit stops every process it started, apt-get and dpkg under sudo included', () => {
   for (const [label, file] of OQ117_WORKFLOWS) {
-    it(`${label}'s install step snapshots pids before each try, diffs them after, kills (plain then sudo) whatever is still alive, and logs which pids or that none were found`, () => {
+    it(`${label}'s install step snapshots pids before each try, after it picks the new ones orphaned to init or an ancestor of the step's shell, kills (plain then sudo) whatever is still alive, and logs which pids or that none were found`, () => {
       const block = installStepOf(readFileSync(file, 'utf8'))
       expect(block).toContain(`before_pids="$(ps -eo pid= | tr -d ' ')"`)
-      expect(block).toContain(`after_pids="$(ps -eo pid= | tr -d ' ')"`)
-      expect(block).toContain('leftover="$(grep -vxFf <(echo "$before_pids") <(echo "$after_pids"))"')
+      expect(block).toContain(`leftover="$(awk -v self=$$ '`)
+      expect(block).toContain('while ((q in parent) && !(q in old)) q = parent[q]')
+      expect(block).toContain('if (q in above) print p')
+      expect(block).toContain(`}' <(echo "$before_pids") <(ps -eo pid=,ppid=))"`)
       expect(block).toContain('kill -9 "$pid" 2>/dev/null || sudo kill -9 "$pid" 2>/dev/null || true')
       expect(block).toContain('echo "Stopping leftover processes from attempt $attempt: $leftover"')
       expect(block).toContain('echo "No leftover processes from attempt $attempt"')
@@ -499,7 +501,7 @@ describe('OQ-136/AC-3: the retry limits are unchanged, and the wait plus clean-u
   }
 })
 
-describe('OQ-136/AC-4: a detached child holding the lock in a session of its own is killed by the clean-up, so the next try takes the lock (skips on non-Linux platforms, named here)', () => {
+describe('OQ-136/AC-4: a detached child holding the lock in a session of its own is killed by the clean-up, so the next try takes the lock, and a process the try did not start survives (skips on non-Linux platforms, named here)', () => {
   const isLinux = process.platform === 'linux'
 
   // Pulls the step's own shell text out of the workflow (not a reimplementation of it), and
@@ -511,7 +513,9 @@ describe('OQ-136/AC-4: a detached child holding the lock in a session of its own
     const runText = fieldsOfStep(block).run
     const bodyLines = runText.split('\n').slice(1) // drop the `run: |` line itself
     const script = bodyLines.map((l) => l.replace(/^ {10}/, '')).join('\n')
-    const standinCmd = `cmd="bash '${standinPath}' '${lockPath}' $attempt"`
+    // No quotes round the paths: the step runs `$cmd` unquoted, and word splitting keeps quote
+    // characters, so a quoted path names a file that does not exist (mkdtemp paths have no spaces).
+    const standinCmd = `cmd="bash ${standinPath} ${lockPath} $attempt"`
     return script
       .replace('${{ steps.playwright-cache.outputs.cache-hit }}', 'true')
       .replaceAll('cmd="npx playwright install-deps chromium"', standinCmd)
@@ -522,7 +526,7 @@ describe('OQ-136/AC-4: a detached child holding the lock in a session of its own
   }
 
   it.skipIf(!isLinux)(
-    'on attempt 1 the stand-in starts a detached setsid child holding the lock file and outliving its own hang; the clean-up kills it; on attempt 2 the stand-in takes the now-free lock and the step exits 0',
+    'on attempt 1 the stand-in starts a detached setsid child holding the lock file and outliving its own hang, and an unrelated process starts a child; the clean-up kills the setsid child but not the unrelated one; on attempt 2 the stand-in takes the now-free lock and the step exits 0',
     () => {
       const dir = mkdtempSync(path.join(tmpdir(), 'oq136-'))
       const standinPath = path.join(dir, 'standin.sh')
@@ -534,7 +538,9 @@ describe('OQ-136/AC-4: a detached child holding the lock in a session of its own
           'lockfile="$1"',
           'attempt="$2"',
           'if [ "$attempt" = "1" ]; then',
-          '  setsid bash -c "exec 9>\\"$lockfile\\"; flock 9; sleep 100" &',
+          // The holder's stdio is closed so that, if the clean-up misses it, it cannot keep the
+          // step's output pipes open; it records its pid so the test can stop it either way.
+          `  setsid bash -c 'echo $$ > "$0.holder"; exec 9>"$0"; flock 9; sleep 100' "$lockfile" </dev/null >/dev/null 2>&1 &`,
           '  disown',
           '  sleep 100',
           'else',
@@ -543,19 +549,55 @@ describe('OQ-136/AC-4: a detached child holding the lock in a session of its own
         ].join('\n'),
       )
 
-      for (const [, file] of OQ117_WORKFLOWS) {
+      for (const [label, file] of OQ117_WORKFLOWS) {
         const block = installStepOf(readFileSync(file, 'utf8'))
         const script = extractTestableScript(block, standinPath, lockPath)
-        let status = null
+        // Already running when the step starts, so not the try's; it starts a child half a second
+        // into attempt 1, which the clean-up must leave alone.
+        const unrelatedPidFile = path.join(dir, `unrelated-${label}.pid`)
+        const unrelated = spawn('bash', ['-c', `sleep 0.5; sleep 30 & echo $! > ${unrelatedPidFile}; wait`], {
+          stdio: 'ignore',
+        })
+        let result
+        let unrelatedPid = null
+        let unrelatedAlive = false
         try {
-          execFileSync('bash', ['-c', script], { timeout: 15000, stdio: 'pipe' })
-          status = 0
-        } catch (err) {
-          status = err.status ?? 'signal:' + err.signal
+          result = spawnSync('bash', ['-c', script], { timeout: 15000, encoding: 'utf8' })
+          if (existsSync(unrelatedPidFile)) {
+            unrelatedPid = Number(readFileSync(unrelatedPidFile, 'utf8'))
+            try {
+              process.kill(unrelatedPid, 0)
+              unrelatedAlive = true
+            } catch {
+              // gone
+            }
+          }
+        } finally {
+          unrelated.kill('SIGKILL')
+          for (const pidFile of [unrelatedPidFile, `${lockPath}.holder`]) {
+            if (!existsSync(pidFile)) continue
+            const pid = Number(readFileSync(pidFile, 'utf8'))
+            try {
+              process.kill(pidFile === unrelatedPidFile ? pid : -pid, 'SIGKILL')
+            } catch {
+              // already gone
+            }
+          }
         }
-        expect(status, `expected the step to recover the lock and exit 0 for ${file}`).toBe(0)
+        const output = `status ${result.status}, signal ${result.signal}\n--- stdout\n${result.stdout}\n--- stderr\n${result.stderr}`
+        expect(result.status, `expected the step to recover the lock and exit 0 for ${file}\n${output}`).toBe(0)
+        expect(result.stdout, output).toContain('Stopping leftover processes from attempt 1')
+        expect(unrelatedPid, `the unrelated process never started its child\n${output}`).not.toBeNull()
+        expect(
+          result.stdout.split(/\s+/),
+          `the clean-up stopped the unrelated process's child, pid ${unrelatedPid}\n${output}`,
+        ).not.toContain(String(unrelatedPid))
+        expect(unrelatedAlive, `the unrelated process's child, pid ${unrelatedPid}, did not survive\n${output}`).toBe(
+          true,
+        )
       }
     },
+    30000,
   )
 })
 

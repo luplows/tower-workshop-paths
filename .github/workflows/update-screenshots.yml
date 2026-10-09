@@ -82,8 +82,23 @@ jobs:
               exit 0
             fi
             echo "Playwright install attempt $attempt failed or timed out"
-            after_pids="$(ps -eo pid= | tr -d ' ')"
-            leftover="$(grep -vxFf <(echo "$before_pids") <(echo "$after_pids"))"
+            # The try has ended, so whatever it started that is still alive has lost its parent
+            # to init, or to an ancestor of this shell that adopts orphans. A process that started
+            # during the try under any other parent already running was not started by the try,
+            # and is left alone.
+            leftover="$(awk -v self=$$ '
+              NR == FNR { old[$1] = 1; next }
+              { parent[$1] = $2 }
+              END {
+                above[1] = 1
+                for (q = parent[self]; q in parent; q = parent[q]) above[q] = 1
+                for (p in parent) {
+                  if (p in old) continue
+                  q = p
+                  while ((q in parent) && !(q in old)) q = parent[q]
+                  if (q in above) print p
+                }
+              }' <(echo "$before_pids") <(ps -eo pid=,ppid=))"
             if [ -n "$leftover" ]; then
               echo "Stopping leftover processes from attempt $attempt: $leftover"
               for pid in $leftover; do

@@ -857,9 +857,14 @@ GitHub's 360-minute default. Retrying the install is a retry of setup, not of a 
 contradict "no retries in the merge gate": the checks themselves still run once. `detect-drift.yml`'s
 weekly install is left as it is (decided 2026-10-08 by the owner): it gates no pull request.
 
-A try that fails or reaches its limit leaves nothing running: the step diffs the process list
-before and after each try and kills whatever is still alive, `apt-get` and `dpkg` under sudo
-included, trying a plain `kill` first and falling back to `sudo kill` only when that is refused.
+A try that fails or reaches its limit leaves nothing running: after each try the step kills every
+process that started during it and is still alive, `apt-get` and `dpkg` under sudo included,
+trying a plain `kill` first and falling back to `sudo kill` only when that is refused. Since the
+try has ended, what it left behind has lost its parent to init (or to an ancestor of the step's
+shell that adopts orphans); a process that started under any other parent already running is not
+the try's, and is left alone (amended 2026-10-09 by the owner). A process that init, or the
+runner above the step, itself starts during the try, such as a system service, cannot be told
+apart, and is killed too.
 Before the second try it waits up to 30 seconds for `/var/lib/dpkg/lock-frontend` to be free and
 then runs `sudo dpkg --configure -a`, so a package the first try left half-installed is finished.
 Decided 2026-10-09 by the owner (OQ-136), after a first try timed out while apt was slowly fetching
@@ -1632,6 +1637,12 @@ deciding what is next. It is the harness's product outline, and moves with this 
   Session A writes with the owner. #209, OQ-73's earlier coder pull request, was closed unmerged
   and its branch deleted. The container runtime is left open, as the spike's open question. See
   R5.
+- **OQ-136 is fixed on its own pull request, #241, by Session A** (decided 2026-10-09 by the
+  owner, an exception to the rule against editing a story whose branch is on origin). Its coder's
+  run stopped at `ci-round-bound` because the Linux-only test quoted its stand-in's paths, so the
+  stand-in never ran. The fix also narrows the clean-up to the try's own processes ("What CI
+  runs"), and amends OQ-136's AC-1 and AC-4 to say so. OQ-136 is a prerequisite of the move: it
+  unblocks OQ-130.
 
 ### The move, in order
 
