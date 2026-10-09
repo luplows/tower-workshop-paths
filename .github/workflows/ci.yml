@@ -33,6 +33,10 @@ jobs:
         run: npm ci
       - run: npm run lint
       - run: npm test
+      - name: Run the install clean-up test alone (OQ-136)
+        run: npx vitest run scripts/dispatch/install-cleanup.alone.test.mjs
+        env:
+          VITEST_ALONE: '1'
       - name: Check story diff containment (OQ-82)
         if: github.event_name == 'pull_request'
         run: >-

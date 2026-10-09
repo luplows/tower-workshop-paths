@@ -870,7 +870,10 @@ Before the second try it waits up to 30 seconds for `/var/lib/dpkg/lock-frontend
 then runs `sudo dpkg --configure -a`, so a package the first try left half-installed is finished.
 Decided 2026-10-09 by the owner (OQ-136), after a first try timed out while apt was slowly fetching
 fonts: the limit ended `npx` but not the `apt-get` under it, which kept the dpkg lock, so the
-second try failed at once and the retry could not recover from the hang it was added for.
+second try failed at once and the retry could not recover from the hang it was added for. The
+test that runs this clean-up for real is in a file of its own, `*.alone.test.mjs`, which `npm test`
+leaves out and CI runs in a step of its own after it, so that no other test's processes are
+running for the clean-up to stop (decided 2026-10-09 by the owner).
 
 **Definition of green:** it builds, lint is clean, every AC has a named test, Vitest passes,
 Playwright passes without retries, no pre-existing test was modified without story authorization,

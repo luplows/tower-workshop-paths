@@ -1,8 +1,6 @@
 // @vitest-environment node
 
-import { spawn, spawnSync } from 'node:child_process'
-import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
@@ -500,104 +498,20 @@ describe('OQ-136/AC-3: the retry limits are unchanged, and the wait plus clean-u
   }
 })
 
-describe('OQ-136/AC-4: a detached child holding the lock in a session of its own is killed by the clean-up, so the next try takes the lock, and a process the try did not start survives (skips on non-Linux platforms, named here)', () => {
-  const isLinux = process.platform === 'linux'
-
-  // Pulls the step's own shell text out of the workflow (not a reimplementation of it), and
-  // substitutes only: the GitHub Actions `${{ }}` expression bash cannot evaluate, the install
-  // command itself (for a stand-in that can be driven from a test), the 2-minute try limit (for
-  // test speed), and the two dpkg-specific lines (which need real root and a real dpkg lock, and
-  // are covered separately by the OQ-136/AC-2 text assertions above).
-  function extractTestableScript(block, standinPath, lockPath) {
-    const runText = fieldsOfStep(block).run
-    const bodyLines = runText.split('\n').slice(1) // drop the `run: |` line itself
-    const script = bodyLines.map((l) => l.replace(/^ {10}/, '')).join('\n')
-    // No quotes round the paths: the step runs `$cmd` unquoted, and word splitting keeps quote
-    // characters, so a quoted path names a file that does not exist (mkdtemp paths have no spaces).
-    const standinCmd = `cmd="bash ${standinPath} ${lockPath} $attempt"`
-    return script
-      .replace('${{ steps.playwright-cache.outputs.cache-hit }}', 'true')
-      .replaceAll('cmd="npx playwright install-deps chromium"', standinCmd)
-      .replaceAll('cmd="npx playwright install --with-deps chromium"', standinCmd)
-      .replace('timeout 2m $cmd', 'timeout 2s $cmd')
-      .replace('sudo flock -n /var/lib/dpkg/lock-frontend true 2>/dev/null', 'true')
-      .replace('sudo dpkg --configure -a', 'true')
-  }
-
-  it.skipIf(!isLinux)(
-    'on attempt 1 the stand-in starts a detached setsid child holding the lock file and outliving its own hang, and an unrelated process starts a child; the clean-up kills the setsid child but not the unrelated one; on attempt 2 the stand-in takes the now-free lock and the step exits 0',
-    () => {
-      const dir = mkdtempSync(path.join(tmpdir(), 'oq136-'))
-      const standinPath = path.join(dir, 'standin.sh')
-      const lockPath = path.join(dir, 'lock')
-      writeFileSync(
-        standinPath,
-        [
-          '#!/bin/bash',
-          'lockfile="$1"',
-          'attempt="$2"',
-          'if [ "$attempt" = "1" ]; then',
-          // The holder's stdio is closed so that, if the clean-up misses it, it cannot keep the
-          // step's output pipes open; it records its pid so the test can stop it either way.
-          `  setsid bash -c 'echo $$ > "$0.holder"; exec 9>"$0"; flock 9; sleep 100' "$lockfile" </dev/null >/dev/null 2>&1 &`,
-          '  disown',
-          '  sleep 100',
-          'else',
-          '  flock -n "$lockfile" true 2>/dev/null',
-          'fi',
-        ].join('\n'),
-      )
-
-      for (const [label, file] of OQ117_WORKFLOWS) {
-        const block = installStepOf(readFileSync(file, 'utf8'))
-        const script = extractTestableScript(block, standinPath, lockPath)
-        // Already running when the step starts, so not the try's; it starts a child half a second
-        // into attempt 1, which the clean-up must leave alone.
-        const unrelatedPidFile = path.join(dir, `unrelated-${label}.pid`)
-        const unrelated = spawn('bash', ['-c', `sleep 0.5; sleep 30 & echo $! > ${unrelatedPidFile}; wait`], {
-          stdio: 'ignore',
-        })
-        let result
-        let unrelatedPid = null
-        let unrelatedAlive = false
-        try {
-          result = spawnSync('bash', ['-c', script], { timeout: 15000, encoding: 'utf8' })
-          if (existsSync(unrelatedPidFile)) {
-            unrelatedPid = Number(readFileSync(unrelatedPidFile, 'utf8'))
-            try {
-              process.kill(unrelatedPid, 0)
-              unrelatedAlive = true
-            } catch {
-              // gone
-            }
-          }
-        } finally {
-          unrelated.kill('SIGKILL')
-          for (const pidFile of [unrelatedPidFile, `${lockPath}.holder`]) {
-            if (!existsSync(pidFile)) continue
-            const pid = Number(readFileSync(pidFile, 'utf8'))
-            try {
-              process.kill(pidFile === unrelatedPidFile ? pid : -pid, 'SIGKILL')
-            } catch {
-              // already gone
-            }
-          }
-        }
-        const output = `status ${result.status}, signal ${result.signal}\n--- stdout\n${result.stdout}\n--- stderr\n${result.stderr}`
-        expect(result.status, `expected the step to recover the lock and exit 0 for ${file}\n${output}`).toBe(0)
-        expect(result.stdout, output).toContain('Stopping leftover processes from attempt 1')
-        expect(unrelatedPid, `the unrelated process never started its child\n${output}`).not.toBeNull()
-        expect(
-          result.stdout.split(/\s+/),
-          `the clean-up stopped the unrelated process's child, pid ${unrelatedPid}\n${output}`,
-        ).not.toContain(String(unrelatedPid))
-        expect(unrelatedAlive, `the unrelated process's child, pid ${unrelatedPid}, did not survive\n${output}`).toBe(
-          true,
-        )
-      }
-    },
-    30000,
-  )
+describe('OQ-136/AC-4: the clean-up test runs alone, outside npm test, in a CI step of its own', () => {
+  it('vite.config.js leaves *.alone.test.mjs out unless VITEST_ALONE=1, and ci.yml runs the clean-up test with it after npm test', () => {
+    const config = readFileSync(path.join(HERE, '..', '..', 'vite.config.js'), 'utf8')
+    expect(config).toContain("...(process.env.VITEST_ALONE === '1' ? [] : ['**/*.alone.test.mjs'])")
+    const blocks = testJobStepBlocks(readFileSync(CI_WORKFLOW_FILE, 'utf8'))
+    const steps = blocks.map(fieldsOfStep)
+    // runTextOf keeps the `run:` key on its first line.
+    const npmTestAt = steps.findIndex((s) => s.run?.trim() === 'run: npm test')
+    const aloneAt = steps.findIndex((s) => s.name === 'Run the install clean-up test alone (OQ-136)')
+    expect(npmTestAt).toBeGreaterThan(-1)
+    expect(aloneAt).toBe(npmTestAt + 1)
+    expect(steps[aloneAt].run.trim()).toBe('run: npx vitest run scripts/dispatch/install-cleanup.alone.test.mjs')
+    expect(blocks[aloneAt]).toMatch(/^ {8}env:\n {10}VITEST_ALONE: '1'$/m)
+  })
 })
 
 describe('OQ-118/AC-4: a failed step is one whose conclusion is neither success nor skipped', () => {
