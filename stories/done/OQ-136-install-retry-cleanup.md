@@ -5,7 +5,7 @@ tier: fix
 kind: workflow
 depends_on: []
 model: sonnet
-blocked: null
+blocked: "ci-round-bound: CI has failed on 3 commits, the bound; failing jobs: test"
 ---
 
 ## Intent
