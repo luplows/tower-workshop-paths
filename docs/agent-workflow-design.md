@@ -868,6 +868,10 @@ process in a new session that the try did not start, such as a system service in
 it, cannot be told apart, and is killed too.
 Before the second try it waits up to 30 seconds for `/var/lib/dpkg/lock-frontend` to be free and
 then runs `sudo dpkg --configure -a`, so a package the first try left half-installed is finished.
+The wait tests the lock with an `fcntl` lock, as apt and dpkg take it, since a `flock` probe
+cannot see theirs; the repair is limited to 20 seconds, and a repair that fails or times out is
+logged and does not stop the second try, though the step runs under `bash -e` (amended again
+2026-10-09 by the owner, after #241's review).
 Decided 2026-10-09 by the owner (OQ-136), after a first try timed out while apt was slowly fetching
 fonts: the limit ended `npx` but not the `apt-get` under it, which kept the dpkg lock, so the
 second try failed at once and the retry could not recover from the hang it was added for. The

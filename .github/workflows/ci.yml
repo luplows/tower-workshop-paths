@@ -89,13 +89,21 @@ jobs:
               echo "No leftover processes from attempt $attempt"
             fi
             if [ "$attempt" -eq 1 ]; then
+              # apt and dpkg lock this file with fcntl(2), which a flock(1) probe cannot see, so
+              # the probe takes the same kind of lock, without waiting, and lets it go at once.
+              dpkg_lock=/var/lib/dpkg/lock-frontend
+              probe='import fcntl, sys; fcntl.lockf(open(sys.argv[1], "a"), fcntl.LOCK_EX | fcntl.LOCK_NB)'
               waited=0
-              while [ "$waited" -lt 30 ] && ! sudo flock -n /var/lib/dpkg/lock-frontend true 2>/dev/null; do
+              while [ "$waited" -lt 30 ] && ! sudo python3 -c "$probe" "$dpkg_lock" 2>/dev/null; do
                 sleep 1
                 waited=$((waited + 1))
               done
-              echo "Waited ${waited}s for /var/lib/dpkg/lock-frontend"
-              sudo dpkg --configure -a
+              echo "Waited ${waited}s for $dpkg_lock"
+              # Bounded, and not fatal: the step runs under bash -e, and the second try is what
+              # the step is for.
+              if ! sudo timeout 20s dpkg --configure -a; then
+                echo "dpkg --configure -a failed or ran past 20s; making the second try anyway"
+              fi
             fi
           done
           exit 1

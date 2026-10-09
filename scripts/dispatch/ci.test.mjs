@@ -466,21 +466,25 @@ describe('OQ-136/AC-1: a try that fails or reaches its limit stops every process
 
 describe('OQ-136/AC-2: before the second try, the step waits at most 30s for the dpkg package lock and then repairs any half-finished install', () => {
   for (const [label, file] of OQ117_WORKFLOWS) {
-    it(`${label}'s install step waits on /var/lib/dpkg/lock-frontend for at most 30s, logs how long it waited, then runs sudo dpkg --configure -a`, () => {
+    it(`${label}'s install step waits on /var/lib/dpkg/lock-frontend for at most 30s with an fcntl probe, logs how long it waited, then runs sudo dpkg --configure -a for at most 20s without failing the step`, () => {
       const block = installStepOf(readFileSync(file, 'utf8'))
       expect(block).toMatch(/if \[ "\$attempt" -eq 1 \]; then/)
+      expect(block).toContain('dpkg_lock=/var/lib/dpkg/lock-frontend')
       expect(block).toContain(
-        'while [ "$waited" -lt 30 ] && ! sudo flock -n /var/lib/dpkg/lock-frontend true 2>/dev/null; do',
+        `probe='import fcntl, sys; fcntl.lockf(open(sys.argv[1], "a"), fcntl.LOCK_EX | fcntl.LOCK_NB)'`,
       )
-      expect(block).toContain('echo "Waited ${waited}s for /var/lib/dpkg/lock-frontend"')
-      expect(block).toContain('sudo dpkg --configure -a')
+      expect(block).toContain('while [ "$waited" -lt 30 ] && ! sudo python3 -c "$probe" "$dpkg_lock" 2>/dev/null; do')
+      expect(block).not.toContain('flock -n') // the old probe, blind to apt's and dpkg's fcntl lock
+      expect(block).toContain('echo "Waited ${waited}s for $dpkg_lock"')
+      expect(block).toContain('if ! sudo timeout 20s dpkg --configure -a; then')
+      expect(block).toContain('echo "dpkg --configure -a failed or ran past 20s; making the second try anyway"')
     })
   }
 })
 
-describe('OQ-136/AC-3: the retry limits are unchanged, and the wait plus clean-up still fit inside the 5-minute step timeout', () => {
+describe('OQ-136/AC-3: the retry limits are unchanged, and the tries, the wait and the repair still fit inside the 5-minute step timeout', () => {
   for (const [label, file] of OQ117_WORKFLOWS) {
-    it(`${label} still tries at most twice at timeout 2m each, keeps timeout-minutes: 5 / 20, and caps the wait at 30s within that budget`, () => {
+    it(`${label} still tries at most twice at timeout 2m each, keeps timeout-minutes: 5 / 20, and caps the wait at 30s and the repair at 20s within that budget`, () => {
       const text = readFileSync(file, 'utf8')
       const block = installStepOf(text)
       expect(block).toMatch(/for attempt in 1 2; do/)
@@ -491,8 +495,11 @@ describe('OQ-136/AC-3: the retry limits are unchanged, and the wait plus clean-u
       expect(text).toMatch(/^ {4}timeout-minutes: 20$/m)
       const waitCapMatches = [...block.matchAll(/waited" -lt (\d+)/g)].map((m) => Number(m[1]))
       expect(waitCapMatches).toEqual([30])
+      const repairCapMatches = [...block.matchAll(/timeout (\d+)s dpkg --configure -a/g)].map((m) => Number(m[1]))
+      expect(repairCapMatches).toEqual([20])
       const tries = 2
-      const worstCaseSeconds = perTryMinutesMatches[0] * 60 * tries + waitCapMatches[0]
+      const worstCaseSeconds = perTryMinutesMatches[0] * 60 * tries + waitCapMatches[0] + repairCapMatches[0]
+      expect(worstCaseSeconds).toBe(290)
       expect(worstCaseSeconds).toBeLessThan(stepTimeout * 60)
     })
   }
