@@ -45,8 +45,10 @@ from one, which stopped the queue.
       same test starts, during the first try, a child of a process already
       running, and shows the clean-up leaves it running. On failure it reports
       the step's output. It runs on Linux and is skipped elsewhere, with the
-      skip named in the test's title. How the step's logic is made runnable
-      from the test is the coder's choice.
+      skip named in the test's title. It is in a test file of its own, which
+      `npm test` leaves out and CI runs in a step of its own, so that no other
+      test starts processes while its tries run. How the step's logic is made
+      runnable from the test is the coder's choice.
 - [ ] **AC-5** — OQ-118's AC-3 test still passes unchanged: the step keeps its
       name and its `Setup: ` prefix, and no step the change adds is named with
       that prefix unless OQ-118's test requires it.
@@ -100,6 +102,10 @@ from one, which stopped the queue.
   still killed another test file's `git clone` in CI (run 37954635058),
   because vitest runs test files as threads of the process that is also
   the step's parent; the rule became the process group and session.
+  That rule still stops a process that something else starts in a new
+  session during the try: `spawn.mjs` starts sessions `detached` on Linux,
+  so a `spawn.test.mjs` session started during AC-4's tries could be
+  stopped. So AC-4's test runs alone (amended the same day by the owner).
 
 ## Open questions
 
