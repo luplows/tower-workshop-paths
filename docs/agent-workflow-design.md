@@ -1673,7 +1673,9 @@ deciding what is next. It is the harness's product outline, and moves with this 
   `scripts/dispatch/` (decided the same day by the owner). OQ-131's held observation, that this
   document and `cli.mjs` say "this repository's own package" will point `bin` at `cli.mjs` though
   the package is steward's (`steward-bootstrap.md`, B4), is left as it is: the words are true in
-  steward's copies, and OQ-132 and OQ-134 remove the copies here.
+  steward's copies, and OQ-132 and OQ-134 remove the copies here. The held observations on #240,
+  #241 and #244, stale numbers in their merged pull requests' Verification sections, are left as
+  they are: the current figures are in the same sections, and no repository content is wrong.
 
 ### The move, in order
 
