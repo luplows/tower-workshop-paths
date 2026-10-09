@@ -19,18 +19,18 @@ and the module that reads it; OQ-125 to OQ-129 make the scripts use it.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — A file `steward.config.json` at the repository root holds
+- [x] **AC-1** — A file `steward.config.json` at the repository root holds
       `{ "repo": "luplows/tower-workshop-paths", "storyPrefix": "OQ" }`. A new
       module under `scripts/dispatch/` reads and validates a project's settings
       from a given project root: `repo` must be `owner/name`, `storyPrefix`
       must match `^[A-Z]{1,8}$`, and any other key is refused. A missing file,
       invalid JSON, a missing key or an invalid value throws an error naming
       the file and the problem. The code holds no default for either value.
-- [ ] **AC-2** — Tests for AC-1: this repository's own `steward.config.json`
+- [x] **AC-2** — Tests for AC-1: this repository's own `steward.config.json`
       reads as the values above, and each invalid case AC-1 names (missing
       file, invalid JSON, each key missing, each value invalid, an extra key)
       throws, with the file named in the message.
-- [ ] **AC-3** — `OQ-122` is taken out of the **Planned (…)** marker in
+- [x] **AC-3** — `OQ-122` is taken out of the **Planned (…)** marker in
       `docs/agent-workflow-design.md`, "The story artifact", "Format", as that
       document's "Reading this document" note says. The other ids in the
       marker stay.

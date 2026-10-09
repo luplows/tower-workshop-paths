@@ -47,7 +47,7 @@ have held CI for GitHub's default of 360 minutes.
       nothing under `e2e/__screenshots__/`, and `npm run test:e2e` passes in
       CI against the existing baselines on both a cache miss and a cache hit
       (AC-8).
-- [ ] **AC-8** — The pull request body links two green `ci.yml` runs on the
+- [x] **AC-8** — The pull request body links two green `ci.yml` runs on the
       same `package-lock.json`, and quotes their install step's log:
       - the first misses the cache, and its log has
         `Downloading Chrome for Testing`;
@@ -112,6 +112,26 @@ have held CI for GitHub's default of 360 minutes.
 - OQ-94 (`stories/OQ-94-name-lint-command.md`) reads `ci.yml`'s `run:` steps
   that start with `npm `. The install step starts with neither `npm ` nor
   `npm ci`.
+- **AC-8's evidence**, recorded here on 2026-10-08 by Session A, after this
+  story landed (#218), at the owner's request. #218's body left AC-8
+  unticked: its coder could not push or read runs. #218's own branch had one
+  `ci.yml` run (37810907520), so the evidence comes from the next pull request
+  to run CI twice once #218 was on `main`: #220 (OQ-121), branch
+  `story/OQ-121-rereview-malformed-verdict`. `package-lock.json` is identical
+  at both commits (`git diff ba49914 da4457b -- package-lock.json` is empty).
+  - Run [37832631163](https://github.com/luplows/tower-workshop-paths/actions/runs/37832631163),
+    commit `ba49914`, `success`: `Cache not found for input keys:
+    Linux-playwright-1.63.0`; the install step's condition renders as
+    `if [ "" = "true" ]`, so it runs `npx playwright install --with-deps
+    chromium`; its log has `Downloading Chrome for Testing 153.0.8010.12
+    (playwright chromium v1243) from https://cdn.playwright.dev/…`.
+  - Run [37834680225](https://github.com/luplows/tower-workshop-paths/actions/runs/37834680225),
+    commit `da4457b`, a later commit of the same branch, `success`:
+    `Cache restored from key: Linux-playwright-1.63.0`; the condition renders
+    as `if [ "true" = "true" ]`, so it runs `npx playwright install-deps
+    chromium` only; its log has no `Downloading Chrome for Testing` line.
+  - Both runs' `npm run test:e2e` report `45 passed` against the existing
+    baselines, which is AC-7's CI clause on a miss and on a hit.
 
 ## Open questions
 
