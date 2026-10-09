@@ -62,13 +62,13 @@ jobs:
             else
               cmd="npx playwright install --with-deps chromium"
             fi
-            before_pids="$(ps -eo pid= | tr -d ' ' | sort)"
+            before_pids="$(ps -eo pid= | tr -d ' ')"
             if timeout 2m $cmd; then
               exit 0
             fi
             echo "Playwright install attempt $attempt failed or timed out"
-            after_pids="$(ps -eo pid= | tr -d ' ' | sort)"
-            leftover="$(comm -13 <(echo "$before_pids") <(echo "$after_pids"))"
+            after_pids="$(ps -eo pid= | tr -d ' ')"
+            leftover="$(grep -vxFf <(echo "$before_pids") <(echo "$after_pids"))"
             if [ -n "$leftover" ]; then
               echo "Stopping leftover processes from attempt $attempt: $leftover"
               for pid in $leftover; do

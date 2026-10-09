@@ -455,9 +455,9 @@ describe('OQ-136/AC-1: a try that fails or reaches its limit stops every process
   for (const [label, file] of OQ117_WORKFLOWS) {
     it(`${label}'s install step snapshots pids before each try, diffs them after, kills (plain then sudo) whatever is still alive, and logs which pids or that none were found`, () => {
       const block = installStepOf(readFileSync(file, 'utf8'))
-      expect(block).toContain(`before_pids="$(ps -eo pid= | tr -d ' ' | sort)"`)
-      expect(block).toContain(`after_pids="$(ps -eo pid= | tr -d ' ' | sort)"`)
-      expect(block).toContain('leftover="$(comm -13 <(echo "$before_pids") <(echo "$after_pids"))"')
+      expect(block).toContain(`before_pids="$(ps -eo pid= | tr -d ' ')"`)
+      expect(block).toContain(`after_pids="$(ps -eo pid= | tr -d ' ')"`)
+      expect(block).toContain('leftover="$(grep -vxFf <(echo "$before_pids") <(echo "$after_pids"))"')
       expect(block).toContain('kill -9 "$pid" 2>/dev/null || sudo kill -9 "$pid" 2>/dev/null || true')
       expect(block).toContain('echo "Stopping leftover processes from attempt $attempt: $leftover"')
       expect(block).toContain('echo "No leftover processes from attempt $attempt"')
