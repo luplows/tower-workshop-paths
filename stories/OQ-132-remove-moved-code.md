@@ -58,7 +58,8 @@ only tests of files that move go to steward).
 - Decided 2026-10-08 by the owner, refining OQ-115: the cut-over first, by hand,
   then this as an ordinary story run on steward's engine.
 - **After OQ-133** (owner, 2026-10-09, from #223's review, item 24): AC-4 needs
-  nothing outside `docs/` and `stories/` to refer to a removed path, and
+  nothing outside `docs/`, `stories/` and `Completed-Questions.md` to refer to a
+  removed path, and
   `CLAUDE.md` and `REVIEW.md`, which refer to `scripts/dispatch/` and
   `scripts/land/`, are OQ-133's to cut.
 - On `main` at `c97aa50`, `scripts/dispatch/ci.test.mjs` holds OQ-117's tests
