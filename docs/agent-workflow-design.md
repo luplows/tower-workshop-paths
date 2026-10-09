@@ -857,6 +857,28 @@ GitHub's 360-minute default. Retrying the install is a retry of setup, not of a 
 contradict "no retries in the merge gate": the checks themselves still run once. `detect-drift.yml`'s
 weekly install is left as it is (decided 2026-10-08 by the owner): it gates no pull request.
 
+A try that fails or reaches its limit leaves nothing running: after each try the step kills every
+process that started during it and is still alive, `apt-get` and `dpkg` under sudo included,
+trying a plain `kill` first and falling back to `sudo kill` only when that is refused. A try runs
+under `timeout`, in a process group of its own, and what it starts with `setsid` or under sudo's
+pty has a session of its own, so the try's processes are the new ones whose group or session is
+new too. A new process whose group and session both existed before the try, such as a test
+runner's child, is not the try's, and is left alone (amended 2026-10-09 by the owner). A new
+process in a new session that the try did not start, such as a system service init starts during
+it, cannot be told apart, and is killed too.
+Before the second try it waits up to 30 seconds for `/var/lib/dpkg/lock-frontend` to be free and
+then runs `sudo dpkg --configure -a`, so a package the first try left half-installed is finished.
+The wait tests the lock with an `fcntl` lock, as apt and dpkg take it, since a `flock` probe
+cannot see theirs; the repair is limited to 20 seconds, and a repair that fails or times out is
+logged and does not stop the second try, though the step runs under `bash -e` (amended again
+2026-10-09 by the owner, after #241's review).
+Decided 2026-10-09 by the owner (OQ-136), after a first try timed out while apt was slowly fetching
+fonts: the limit ended `npx` but not the `apt-get` under it, which kept the dpkg lock, so the
+second try failed at once and the retry could not recover from the hang it was added for. The
+test that runs this clean-up for real is in a file of its own, `*.alone.test.mjs`, which `npm test`
+leaves out and CI runs in a step of its own after it, so that no other test's processes are
+running for the clean-up to stop (decided 2026-10-09 by the owner).
+
 **Definition of green:** it builds, lint is clean, every AC has a named test, Vitest passes,
 Playwright passes without retries, no pre-existing test was modified without story authorization,
 and the story file validates.
@@ -1624,6 +1646,18 @@ deciding what is next. It is the harness's product outline, and moves with this 
   Session A writes with the owner. #209, OQ-73's earlier coder pull request, was closed unmerged
   and its branch deleted. The container runtime is left open, as the spike's open question. See
   R5.
+- **OQ-136 is fixed on its own pull request, #241, by Session A** (decided 2026-10-09 by the
+  owner, an exception to the rule against editing a story whose branch is on origin). Its coder's
+  run stopped at `ci-round-bound` because the Linux-only test quoted its stand-in's paths, so the
+  stand-in never ran. The fix also narrows the clean-up to the try's own processes ("What CI
+  runs"), and OQ-136's AC-1 and AC-4 are amended to say so, in a `write-story/` pull request,
+  since a story's own pull request may not reword it (`story-containment.mjs`). Because the
+  narrowed clean-up still stops a process something else starts in a new session during a try,
+  OQ-136's behavioural test runs alone, in a CI step of its own, not in `npm test`; in the real
+  install step only a system service started mid-try is exposed. OQ-136 is a prerequisite of the
+  move: it unblocks OQ-130. When #241's review then blocked on the wait's lock probe, the owner
+  amended AC-2 to AC-4 again (the same day) and kept the exception for Session A to make the fix,
+  because OQ-136 blocks the move, while saying such exceptions are not to become the rule.
 
 ### The move, in order
 

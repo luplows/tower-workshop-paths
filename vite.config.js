@@ -22,6 +22,14 @@ export default defineConfig(({ command, isPreview }) => ({
     // .claude/worktrees/ holds full checkouts of other branches, made by the
     // local agent tooling. Collecting their test files would run a second
     // copy of the suite against code that is not this branch's.
-    exclude: ['**/node_modules/**', 'e2e/**', '.claude/worktrees/**'],
+    // A `*.alone.test.mjs` file must not share the run with other tests (OQ-136's clean-up test
+    // stops processes other tests could start), so `npm test` leaves it out, and CI runs it in a
+    // step of its own with VITEST_ALONE=1.
+    exclude: [
+      '**/node_modules/**',
+      'e2e/**',
+      '.claude/worktrees/**',
+      ...(process.env.VITEST_ALONE === '1' ? [] : ['**/*.alone.test.mjs']),
+    ],
   },
 }))
