@@ -17,8 +17,8 @@ repository stays about the product (goals 1 and 4 in
 where the thing being changed is the engine running the change, so the owner and
 Session A do it by hand, in one pull request that the gate still reviews and
 lands. The clean-up after it is ordinary stories run on steward's engine:
-OQ-132 (the moved code), OQ-133 (`CLAUDE.md`, `REVIEW.md` and the stories
-README) and OQ-134 (the moved documents).
+OQ-133 (`CLAUDE.md`, `REVIEW.md` and the stories README), then OQ-132 (the
+moved code), then OQ-134 (the moved documents).
 
 ## Acceptance criteria
 

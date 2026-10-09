@@ -3,7 +3,7 @@ id: OQ-132
 title: Remove the workflow code that moved to steward, keeping the tests of this repository's own CI
 tier: next
 kind: workflow
-depends_on: [OQ-115]
+depends_on: [OQ-115, OQ-133]
 model: sonnet
 blocked: null
 ---
@@ -41,7 +41,8 @@ only tests of files that move go to steward).
 ## Out of scope
 
 - **`CLAUDE.md`, `REVIEW.md`, `stories/README.md` and `stories/_TEMPLATE.md`**
-  (OQ-133), and **the moved documents** (OQ-134).
+  (OQ-133, which this depends on), and **the moved documents** (OQ-134, which
+  depends on this).
 - **The four built stories that are steward's test fixtures** (OQ-51, OQ-68,
   OQ-69, OQ-70). Their originals stay in `stories/done/` here, as history.
 - **`.github/pull_request_template.md`, `.oxlintrc.json` and `.gitignore`.**
@@ -56,6 +57,10 @@ only tests of files that move go to steward).
 
 - Decided 2026-10-08 by the owner, refining OQ-115: the cut-over first, by hand,
   then this as an ordinary story run on steward's engine.
+- **After OQ-133** (owner, 2026-10-09, from #223's review, item 24): AC-4 needs
+  nothing outside `docs/` and `stories/` to refer to a removed path, and
+  `CLAUDE.md` and `REVIEW.md`, which refer to `scripts/dispatch/` and
+  `scripts/land/`, are OQ-133's to cut.
 - On `main` at `c97aa50`, `scripts/dispatch/ci.test.mjs` holds OQ-117's tests
   (`describe` blocks from line 394), OQ-118/AC-3 (line 353), and the helpers
   `testJobStepBlocks`, `runTextOf` and `fieldsOfStep` (lines 311–351).

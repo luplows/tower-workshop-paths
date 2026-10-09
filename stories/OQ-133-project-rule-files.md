@@ -38,7 +38,7 @@ workflow rule has one home and changes in steward without an edit here. Today
 - **The moved documents** (OQ-134). `CLAUDE.md`'s "Where things are
   documented" table points at steward's copies once this lands, so OQ-134
   can remove the local ones.
-- **The code** (OQ-132).
+- **The code** (OQ-132, which runs after this).
 - **`.github/pull_request_template.md`**, which stays as it is.
 
 ## Constraints

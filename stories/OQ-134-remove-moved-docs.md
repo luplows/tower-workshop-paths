@@ -3,7 +3,7 @@ id: OQ-134
 title: Remove the workflow documents that moved to steward, keeping this project's passages in its README and outline
 tier: next
 kind: workflow
-depends_on: [OQ-133]
+depends_on: [OQ-132, OQ-133]
 model: sonnet
 blocked: null
 ---
@@ -59,6 +59,10 @@ by the owner).
 
 ## Context
 
+- **After OQ-132 as well as OQ-133** (owner, 2026-10-09, from #223's review,
+  item 24): the moved code refers to `docs/agent-workflow-design.md`, so AC-4
+  needs it gone, and OQ-132's own AC-5 edits that document's marker, which this
+  story deletes.
 - Decided 2026-10-08 by the owner, refining OQ-115: the passages go to
   `README.md` and `Project-Outline.md`, not to a document about the workflow;
   `docs/steward-bootstrap.md` moves to steward with its history (the
