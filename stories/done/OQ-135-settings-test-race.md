@@ -17,17 +17,17 @@ every pull request and on `main`, and a test cannot pass on the wrong error.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — `withTempProject` in `scripts/dispatch/settings.test.mjs`
+- [x] **AC-1** — `withTempProject` in `scripts/dispatch/settings.test.mjs`
       awaits the function it is given before it removes the temporary
       directory, and every test that uses it awaits it. The directory is still
       removed when that function throws or rejects.
-- [ ] **AC-2** — A test of `withTempProject` itself shows AC-1: given an async
+- [x] **AC-2** — A test of `withTempProject` itself shows AC-1: given an async
       function that first awaits a timer and then checks that the directory
       exists, the directory exists at that point, and it no longer exists once
       `withTempProject`'s promise has settled. A second case shows the same
       when the function rejects after the timer, and that the rejection
       reaches the caller.
-- [ ] **AC-3** — Each of the eight tests of an invalid case asserts that the
+- [x] **AC-3** — Each of the eight tests of an invalid case asserts that the
       error message contains both the settings file's full path and the
       problem as `settings.mjs` words it:
       - missing file: `file not found`;
@@ -38,7 +38,7 @@ every pull request and on `main`, and a test cannot pass on the wrong error.
       - `storyPrefix` lower case, and `storyPrefix` longer than eight
         characters: `'storyPrefix' must match`;
       - an extra key: `unrecognised key 'extra'`.
-- [ ] **AC-4** — The diff changes no file but
+- [x] **AC-4** — The diff changes no file but
       `scripts/dispatch/settings.test.mjs` and this story's own move to
       `stories/done/` with its ticks. `scripts/dispatch/settings.mjs` is
       unchanged.
