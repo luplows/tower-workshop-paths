@@ -52,7 +52,10 @@ minutes on runs that change nothing. Today neither runs: the sweep merges with
   2026-10-08 by the owner).
 - **OQ-117's AC-8 evidence** (a cache hit on a pull request after a run on
   `main` has saved the cache). It can only be seen on runs after this story
-  lands. Session A records it then, in OQ-117's story file.
+  lands. Session A records it then, in OQ-117's story file. (Corrected
+  2026-10-09: it came sooner, from two runs of one pull request, #220, before
+  this story landed, since a pull request's later runs restore the cache its
+  earlier run saved. #227 recorded it.)
 - **`update-screenshots.yml` and `detect-drift.yml`.**
 - **Steward's `ci.yml`**, written at the bootstrap (`docs/steward-bootstrap.md`,
   B6), and the second project's workflow files, written by `init` (design doc,
