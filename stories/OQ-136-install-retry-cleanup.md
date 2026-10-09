@@ -29,11 +29,17 @@ from one, which stopped the queue.
 - [ ] **AC-2** — Before the second try, the step waits until no process holds
       `/var/lib/dpkg/lock-frontend`, for at most 30 seconds, and then runs
       `sudo dpkg --configure -a`, so a package the first try left half
-      installed is finished. The log says how long it waited.
-- [ ] **AC-3** — The step's limits are unchanged: at most two tries, each
-      bounded by `timeout 2m`, a step `timeout-minutes: 5` and a job
-      `timeout-minutes: 20`. The two tries, the wait and the clean-up fit
-      within the step's 5 minutes. OQ-117's tests in
+      installed is finished. The wait tests the lock the way apt and dpkg
+      take it, with an `fcntl` record lock: a `flock` probe cannot see theirs.
+      The repair is limited to 20 seconds, and when it fails or reaches that
+      limit the step logs so and still makes the second try. The log says how
+      long it waited.
+- [ ] **AC-3** — The step's existing limits are unchanged: at most two
+      tries, each bounded by `timeout 2m`, a step `timeout-minutes: 5` and a
+      job `timeout-minutes: 20`. The two tries, the wait and AC-2's repair
+      limit (2 × 120, 30 and 20 seconds) fit within the step's 5 minutes, with
+      time left for the clean-up, and the test's worst case counts all four.
+      OQ-117's tests in
       `scripts/dispatch/ci.test.mjs` change only as far as the new step text
       requires, and keep their names and what they assert.
 - [ ] **AC-4** — Tests in `scripts/dispatch/ci.test.mjs` read both files'
@@ -47,8 +53,13 @@ from one, which stopped the queue.
       the step's output. It runs on Linux and is skipped elsewhere, with the
       skip named in the test's title. It is in a test file of its own, which
       `npm test` leaves out and CI runs in a step of its own, so that no other
-      test starts processes while its tries run. How the step's logic is made
-      runnable from the test is the coder's choice.
+      test starts processes while its tries run. The same file shows AC-2
+      for real, on Linux: while a stand-in process holds an `fcntl` lock on a
+      file standing in for `/var/lib/dpkg/lock-frontend`, the wait goes on,
+      and once it lets go a few seconds later the wait ends and logs a wait
+      above zero; and with a stand-in repair that fails, the second try still
+      runs. How the step's logic is made runnable from the test is the
+      coder's choice.
 - [ ] **AC-5** — OQ-118's AC-3 test still passes unchanged: the step keeps its
       name and its `Setup: ` prefix, and no step the change adds is named with
       that prefix unless OQ-118's test requires it.
@@ -106,6 +117,16 @@ from one, which stopped the queue.
   session during the try: `spawn.mjs` starts sessions `detached` on Linux,
   so a `spawn.test.mjs` session started during AC-4's tries could be
   stopped. So AC-4's test runs alone (amended the same day by the owner).
+- Amended again 2026-10-09 by the owner, after #241's review blocked at
+  `e2e5b0b` (comment 6085948518). The wait probed with `sudo flock -n`, but
+  apt and dpkg lock `/var/lib/dpkg/lock-frontend` with `fcntl` (apt's "It is
+  held by process N" comes from `F_GETLK`), and on Linux the two kinds of
+  lock do not see each other, so the wait never waited. The review also
+  observed that GitHub runs the step under `bash -e`, so a failing
+  `sudo dpkg --configure -a` ended it before the second try, and that the
+  repair had no limit inside the 5 minutes. AC-2 to AC-4 now cover all
+  three. Session A makes the fix on #241's branch, by the owner's exception
+  again.
 
 ## Open questions
 
