@@ -39,9 +39,8 @@ from one, which stopped the queue.
       job `timeout-minutes: 20`. The two tries, the wait and AC-2's repair
       limit (2 × 120, 30 and 20 seconds) fit within the step's 5 minutes, with
       time left for the clean-up, and the test's worst case counts all four.
-      OQ-117's tests in
-      `scripts/dispatch/ci.test.mjs` change only as far as the new step text
-      requires, and keep their names and what they assert.
+      OQ-117's tests in `scripts/dispatch/ci.test.mjs` change only as far as
+      the new step text requires, and keep their names and what they assert.
 - [ ] **AC-4** — Tests in `scripts/dispatch/ci.test.mjs` read both files'
       install steps and fail if either lacks AC-1's clean-up or AC-2's wait
       and repair. A test shows the clean-up working for real: a stand-in for
