@@ -18,17 +18,17 @@ them could see an `ST-<n>` story.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — In `scripts/dispatch/queue.mjs`, `STORY_FILENAME_RE`
+- [x] **AC-1** — In `scripts/dispatch/queue.mjs`, `STORY_FILENAME_RE`
       (and `isStoryFilename`), the frontmatter `id` check and its error
       message, and `numericId` take the prefix from the settings. The error
       message names the configured prefix (for example `ST-<n>`) or a neutral
       `<story-id>`; which one is the coder's choice.
-- [ ] **AC-2** — The uses of those outside `queue.mjs` take the prefix too:
+- [x] **AC-2** — The uses of those outside `queue.mjs` take the prefix too:
       `review.mjs`'s `resolveStory`, both its story-file matches and the id it
       takes from a moved story file and from a `story/<prefix>-<n>-…` branch,
       which `scripts/dispatch/story-containment.mjs` relies on; and
       `coder.mjs`'s `loadQueueAt`, through `isStoryFilename` and `buildStory`.
-- [ ] **AC-3** — Tests, using a project whose settings say `ST`:
+- [x] **AC-3** — Tests, using a project whose settings say `ST`:
       - `loadQueue` loads `stories/ST-3-thing.md` and ignores
         `stories/OQ-3-thing.md`;
       - `buildStory` accepts `id: ST-3` with `numericId` 3, and refuses
@@ -36,14 +36,14 @@ them could see an `ST-<n>` story.
       - `resolveStory` reads `ST-3` from a branch `story/ST-3-thing` and from a
         moved `stories/done/ST-3-thing.md`, and finds no story in an `OQ-3`
         move or branch.
-- [ ] **AC-4** — With this repository's own settings every existing test
+- [x] **AC-4** — With this repository's own settings every existing test
       passes. The only change made to an existing test is supplying the
       settings: a `steward.config.json` written into its temporary root, or
       the settings passed in. No existing assertion or expected value changes.
       How the settings reach `buildStory`, `loadQueue`, `isStoryFilename` and
       `resolveStory` is the coder's choice: nothing falls back to a default
       when they are missing.
-- [ ] **AC-5** — `OQ-126` is taken out of the **Planned (…)** marker in
+- [x] **AC-5** — `OQ-126` is taken out of the **Planned (…)** marker in
       `docs/agent-workflow-design.md`, "The story artifact", "Format", as that
       document's "Reading this document" note says.
 
