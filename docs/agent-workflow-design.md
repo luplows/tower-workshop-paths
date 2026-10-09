@@ -1759,8 +1759,13 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   - "Branching and releases": Pages as the alpha channel, and tags as checkpoints;
   - in "Quality beyond the gate", the buy-order examples given for items 3 and 4 (property-based
     and golden tests; the techniques themselves move), and item 5, validating scraped data;
-  - open question 9, the production deployment target;
-  - mentions of `mytower.app` as an example of network egress.
+  - open question 9, the production deployment target.
+
+  The tables comparing a cloud session with a local one ("Everything runs locally" and "Where
+  commands run") give `mytower.app` as their example of network egress. That example is **dropped
+  here, not placed** (decided 2026-10-08 by the owner, after #223's review): `README.md` already
+  names `mytower.app` as the data source, and the coder prompt's line that it is reachable comes
+  back through steward's project section (OQ-115). OQ-134 removes it with this document.
 
   The example story under "The story artifact" (a `playerInfo.dat` import) is replaced with a
   neutral one. `Project-Outline.md` stays the product's design of record. Once moved, a workflow
@@ -1799,8 +1804,8 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   far is `scripts/dispatch/ci.test.mjs`: OQ-117's tests read this repository's `ci.yml` Playwright
   steps, `update-screenshots.yml` and `package-lock.json`'s `@playwright/test`, and OQ-124's may
   read `deploy-pages.yml`, none of which steward has. Steward's copy drops them. OQ-118's tests,
-  which read steward's own `ci.yml`, move. OQ-115 keeps the tests that stay when it removes the
-  moved code from this repository.
+  which read steward's own `ci.yml`, move. OQ-132 keeps the tests that stay, in a new
+  `scripts/ci-workflows.test.mjs`, when it removes the moved code from this repository.
 - **R2. How a project uses it.** Proposed by Session A, 2026-10-07; **decided 2026-10-07 by the
   owner, as proposed, with the git-tag pin** (below):
   - **A Node package with a command-line entry point**, added as a development dependency of each
@@ -1856,7 +1861,9 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   that the loop would otherwise reach after step 1's stories carry `blocked:` saying so, so that
   they are built in steward rather than here. They are OQ-54, OQ-59, OQ-62, OQ-88, OQ-89, OQ-98,
   OQ-100, OQ-103, OQ-105, OQ-119 and OQ-120 (`normal` tier) and OQ-99 (`later`). The steward
-  copies are renumbered with `blocked:` cleared; the copies here are retired by OQ-115.
+  copies are renumbered with `blocked:` cleared; the copies here are retired by Session A, in a
+  `write-story/` pull request, once the bootstrap's B1 has fixed the mapping (OQ-115's Out of
+  scope).
 
   **In steward, two exceptions and an order** (decided 2026-10-08 by the owner, agreeing the
   bootstrap checklist). ST-8, the copy of OQ-73, carries `blocked:` saying it is to be rewritten

@@ -44,9 +44,10 @@ by the owner).
 
 ## Out of scope
 
-- **`mytower.app` as an example of network egress.** It is dropped here. The
-  coder's line about it reaches the prompt through steward's project section
-  (OQ-115).
+- **`mytower.app` as an example of network egress.** It is dropped here
+  (decided 2026-10-08 by the owner, after #223's review; the design doc's R1).
+  The coder's line about it reaches the prompt through steward's project
+  section (OQ-115).
 - **Stories that stay here and cite a removed document**, such as OQ-72 and
   OQ-94. A coder's pull request may not change other stories (OQ-82), so
   Session A repoints them in a `write-story/` pull request.

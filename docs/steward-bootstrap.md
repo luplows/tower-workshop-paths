@@ -210,7 +210,8 @@ checkout. Each is its own commit, so the direct push in section 6 is reviewable 
 - [ ] A first, small pull request on steward (for example, its first story), reviewed and landed
       through steward's own gate, which shows `test`, `review/agent` and the sweep working.
 - [ ] Record the outcome: in steward's design doc, through a steward pull request; and here, in R4,
-      the OQ-to-ST mapping, through a `write-story/` pull request, since OQ-115 needs it.
+      the OQ-to-ST mapping, through a `write-story/` pull request, in which Session A also
+      retires the moved stories here, each naming its `ST-<n>` (OQ-115's Out of scope).
 
 ## 9. Decisions
 
