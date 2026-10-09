@@ -19,15 +19,15 @@ Today the loop takes the project to be the checkout it is loaded from
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — `DISPATCHER_ROOT` is gone from `scripts/dispatch/loop.mjs`.
+- [x] **AC-1** — `DISPATCHER_ROOT` is gone from `scripts/dispatch/loop.mjs`.
       The project root, where `steward.config.json`, `stories/` and the git
       repository are, is the current working directory. It is used for
       `runLoop`'s `repoDir` default, for `--init`'s `initWorktree`, for
       `requireOwnWorktree`, and for the settings OQ-125 reads.
-- [ ] **AC-2** — The loop starts each story's child process from the engine
+- [x] **AC-2** — The loop starts each story's child process from the engine
       root (`STORY_MJS`, found from the module's own location), with the
       project root as its working directory.
-- [ ] **AC-3** — Tests, with a temporary directory holding its own
+- [x] **AC-3** — Tests, with a temporary directory holding its own
       `steward.config.json` (`repo` `owner/other`) as the project root:
       `runLoop` with no `repoDir` uses that directory, and with no `repo` uses
       `owner/other`; and `runStoryProcess` runs `STORY_MJS` from this
@@ -35,9 +35,9 @@ Today the loop takes the project to be the checkout it is loaded from
       working directory. How a test sets the project root is the coder's
       choice (Context: `process.chdir` is not available in this repository's
       test pool).
-- [ ] **AC-4** — With this repository as the working directory, every existing
+- [x] **AC-4** — With this repository as the working directory, every existing
       test passes, and no existing assertion or expected value changes.
-- [ ] **AC-5** — `OQ-130` is taken out of the **Planned (…)** marker in
+- [x] **AC-5** — `OQ-130` is taken out of the **Planned (…)** marker in
       `docs/agent-workflow-design.md`, "The dispatcher is a script", as that
       document's "Reading this document" note says.
 
