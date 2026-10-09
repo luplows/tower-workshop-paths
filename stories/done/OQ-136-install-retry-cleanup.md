@@ -22,8 +22,10 @@ from one, which stopped the queue.
       `.github/workflows/ci.yml` and `.github/workflows/update-screenshots.yml`,
       when a try fails or reaches its limit, every process it started is
       stopped before the next try begins, including an `apt-get` or `dpkg`
-      started under `sudo`. The log says that leftover processes were stopped,
-      or that none were found.
+      started under `sudo`. A process that starts during the try in a process
+      group and a session that both existed before it is not the try's, and is
+      left running. The log says that leftover processes were stopped, or that
+      none were found.
 - [x] **AC-2** — Before the second try, the step waits until no process holds
       `/var/lib/dpkg/lock-frontend`, for at most 30 seconds, and then runs
       `sudo dpkg --configure -a`, so a package the first try left half
@@ -39,10 +41,14 @@ from one, which stopped the queue.
       and repair. A test shows the clean-up working for real: a stand-in for
       the install command starts a child in a session of its own that holds a
       lock file and outlives its parent; after the first try's limit, the
-      clean-up leaves that child stopped, and the next try takes the lock. It
-      runs on Linux and is skipped elsewhere, with the skip named in the
-      test's title. How the step's logic is made runnable from the test is the
-      coder's choice.
+      clean-up leaves that child stopped, and the next try takes the lock. The
+      same test starts, during the first try, a child of a process already
+      running, and shows the clean-up leaves it running. On failure it reports
+      the step's output. It runs on Linux and is skipped elsewhere, with the
+      skip named in the test's title. It is in a test file of its own, which
+      `npm test` leaves out and CI runs in a step of its own, so that no other
+      test starts processes while its tries run. How the step's logic is made
+      runnable from the test is the coder's choice.
 - [x] **AC-5** — OQ-118's AC-3 test still passes unchanged: the step keeps its
       name and its `Setup: ` prefix, and no step the change adds is named with
       that prefix unless OQ-118's test requires it.
@@ -85,6 +91,21 @@ from one, which stopped the queue.
   which assert `timeout 2m` once and `timeout-minutes: 5`; OQ-118's AC-3 test
   at line 353.
 - OQ-117 (`stories/done/`): the cache, the retry and the limits.
+- Amended 2026-10-09 by the owner, after the coder's run stopped at
+  `ci-round-bound` (#241): AC-4's test failed on all three coder commits
+  because its stand-in command quoted its paths, and the step runs `$cmd`
+  unquoted, so the stand-in never ran. AC-1 gained the limit on what the
+  clean-up stops: the first version stopped every process that started
+  anywhere during the try, which in the test run can include other test
+  files' processes. Session A made the fix on #241's branch, by the owner's
+  exception to the story-branch rule. Its first narrowing, by ancestry,
+  still killed another test file's `git clone` in CI (run 37954635058),
+  because vitest runs test files as threads of the process that is also
+  the step's parent; the rule became the process group and session.
+  That rule still stops a process that something else starts in a new
+  session during the try: `spawn.mjs` starts sessions `detached` on Linux,
+  so a `spawn.test.mjs` session started during AC-4's tries could be
+  stopped. So AC-4's test runs alone (amended the same day by the owner).
 
 ## Open questions
 

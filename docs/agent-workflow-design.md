@@ -1641,6 +1641,16 @@ deciding what is next. It is the harness's product outline, and moves with this 
   Session A writes with the owner. #209, OQ-73's earlier coder pull request, was closed unmerged
   and its branch deleted. The container runtime is left open, as the spike's open question. See
   R5.
+- **OQ-136 is fixed on its own pull request, #241, by Session A** (decided 2026-10-09 by the
+  owner, an exception to the rule against editing a story whose branch is on origin). Its coder's
+  run stopped at `ci-round-bound` because the Linux-only test quoted its stand-in's paths, so the
+  stand-in never ran. The fix also narrows the clean-up to the try's own processes ("What CI
+  runs"), and OQ-136's AC-1 and AC-4 are amended to say so, in a `write-story/` pull request,
+  since a story's own pull request may not reword it (`story-containment.mjs`). Because the
+  narrowed clean-up still stops a process something else starts in a new session during a try,
+  OQ-136's behavioural test runs alone, in a CI step of its own, not in `npm test`; in the real
+  install step only a system service started mid-try is exposed. OQ-136 is a prerequisite of the
+  move: it unblocks OQ-130.
 
 ### The move, in order
 
