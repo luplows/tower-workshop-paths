@@ -18,7 +18,7 @@ this story gives them one front door.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — A new `scripts/dispatch/cli.mjs` is one entry point:
+- [x] **AC-1** — A new `scripts/dispatch/cli.mjs` is one entry point:
       `node scripts/dispatch/cli.mjs <command> [arguments]`, where `<command>`
       is `loop`, `story`, `coder`, `review`, `land`, `queue`, `lint` or
       `verdicts`. Each runs what `node scripts/dispatch/<module>.mjs`
@@ -27,14 +27,14 @@ this story gives them one front door.
       same arguments, output and exit code. An unknown or missing command
       prints the list of commands and exits non-zero. Running each module
       directly still works.
-- [ ] **AC-2** — A test runs `cli.mjs` from this checkout with a different
+- [x] **AC-2** — A test runs `cli.mjs` from this checkout with a different
       project as the working directory: a temporary git repository holding its
       own `steward.config.json` (prefix `ST`) and a `stories/ST-1-thing.md`.
       `queue` lists `ST-1` and nothing from this repository, and `lint`
       checks that project's stories, not this repository's. Another test
       shows an unknown command and a missing one each exit non-zero with the
       list of commands.
-- [ ] **AC-3** — The **Planned (…)** marker in
+- [x] **AC-3** — The **Planned (…)** marker in
       `docs/agent-workflow-design.md`, "The dispatcher is a script", is
       resolved as that document's "Reading this document" note says: this is
       the last story it names.
