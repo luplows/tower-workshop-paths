@@ -18,14 +18,14 @@ modules under `scripts/dispatch/`, and in `scripts/report/review-verdicts.mjs`.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — The `DEFAULT_REPO` constants in `scripts/dispatch/coder.mjs`,
+- [x] **AC-1** — The `DEFAULT_REPO` constants in `scripts/dispatch/coder.mjs`,
       `land.mjs`, `loop.mjs`, `review.mjs` and `story.mjs`, and in
       `scripts/report/review-verdicts.mjs`, are gone. Where each
       was used (the default for `--repo` in each command line, and `runLoop`'s
       `repo` parameter), the default is the `repo` read by OQ-122's settings
       module from the project root. `--repo` still overrides it, and an explicit
       `repo` passed to `runLoop` still wins.
-- [ ] **AC-2** — The project root each module reads the settings from is the
+- [x] **AC-2** — The project root each module reads the settings from is the
       one it uses for the repository today: `DISPATCHER_ROOT` in `coder.mjs`,
       `loop.mjs`, `review.mjs` and `story.mjs`. `land.mjs`, which has none,
       uses the same directory, two levels above `scripts/dispatch/`.
@@ -33,7 +33,7 @@ modules under `scripts/dispatch/`, and in `scripts/report/review-verdicts.mjs`.
       OQ-123 nor OQ-130 changes, reads the settings from the working
       directory, where `queue.mjs` and `lint-stories.mjs` already find their
       project.
-- [ ] **AC-3** — Tests, using a temporary project root whose settings name
+- [x] **AC-3** — Tests, using a temporary project root whose settings name
       `owner/other`: `loop.mjs`'s `parseArgs` with no `--repo`, and `runLoop`
       with no `repo`, use `owner/other`; with `--repo x/y`, and with an
       explicit `repo`, they use that. How the root reaches `parseArgs` and
@@ -45,7 +45,7 @@ modules under `scripts/dispatch/`, and in `scripts/report/review-verdicts.mjs`.
       settings every existing test passes, and no existing assertion or
       expected value changes (`loop.test.mjs`'s
       `parseArgs([])` expectation of `luplows/tower-workshop-paths` included).
-- [ ] **AC-4** — `OQ-125` is taken out of the **Planned (…)** marker in
+- [x] **AC-4** — `OQ-125` is taken out of the **Planned (…)** marker in
       `docs/agent-workflow-design.md`, "The story artifact", "Format", and the
       `DEFAULT_REPO` bullet under "Portability", "What ties the workflow to
       this repository today", is corrected, as that document's "Reading this
