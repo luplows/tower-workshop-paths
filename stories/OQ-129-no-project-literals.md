@@ -1,6 +1,6 @@
 ---
 id: OQ-129
-title: Fail a test when the story prefix or this repository's name comes back into the dispatch modules
+title: Fail a test when the story prefix or this repository's name comes back into the engine's modules
 tier: next
 kind: workflow
 depends_on: [OQ-125, OQ-126, OQ-127, OQ-128]
@@ -23,7 +23,8 @@ project without anyone having to notice the regression by reading.
       if `OQ-` appears in it outside a comment: in a regular expression
       literal, a string literal or a template literal.
 - [ ] **AC-2** — The same test reads each of `scripts/dispatch/coder.mjs`,
-      `land.mjs`, `loop.mjs`, `review.mjs` and `story.mjs`, and fails if
+      `land.mjs`, `loop.mjs`, `review.mjs` and `story.mjs`, and
+      `scripts/report/review-verdicts.mjs`, and fails if
       `luplows/tower-workshop-paths` appears in it outside a comment, in the
       same three kinds of literal.
 - [ ] **AC-3** — The test shows it can fail: given a module text with `OQ-` in
@@ -32,13 +33,18 @@ project without anyone having to notice the regression by reading.
       given text with them only in `//` and `/* … */` comments, it reports
       nothing.
 - [ ] **AC-4** — On this repository, at this story's head, the test passes.
+- [ ] **AC-5** — The **Planned (…)** marker in
+      `docs/agent-workflow-design.md`, "The story artifact", "Format", is
+      resolved as that document's "Reading this document" note says: this is
+      the last story it names.
 
 ## Out of scope
 
 - **Any change to the modules themselves.** If the test finds a literal that
   OQ-125 to OQ-128 left, the coder sets `blocked:` naming it rather than
   changing the module here.
-- **Other modules**, test files, the prompts, `.github/` and documents.
+- **Other modules**, test files, the prompts, `.github/`, and documents other
+  than AC-5's marker.
 - **The claim commit's identity**, `user.email=dispatch@tower-workshop-paths.invalid`
   in `coder.mjs` (line 380 on `main` at `0a9254b`). It names this project but is
   not the repository, so AC-2 matches `luplows/tower-workshop-paths` rather
@@ -55,6 +61,10 @@ project without anyone having to notice the regression by reading.
 
 - Split from OQ-122 on 2026-10-08, at the owner's decision: the old AC-5,
   widened to `luplows/tower-workshop-paths` for OQ-125's modules.
+- `review-verdicts.mjs` in AC-2, and AC-5, added 2026-10-08 from #222's
+  review (observations under `REVIEW.md` items 24 and 25): OQ-125 now covers
+  that module, and this story's id is in the marker, which it is the last to
+  leave, since it depends on OQ-125 to OQ-128 and they on OQ-122.
 - The sites the test guards are listed in OQ-125's to OQ-128's Context
   sections, on `main` at `0a9254b`.
 - Comments in these modules do spell `OQ-`, for example
