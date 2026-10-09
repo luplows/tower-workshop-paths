@@ -1654,7 +1654,9 @@ deciding what is next. It is the harness's product outline, and moves with this 
   narrowed clean-up still stops a process something else starts in a new session during a try,
   OQ-136's behavioural test runs alone, in a CI step of its own, not in `npm test`; in the real
   install step only a system service started mid-try is exposed. OQ-136 is a prerequisite of the
-  move: it unblocks OQ-130.
+  move: it unblocks OQ-130. When #241's review then blocked on the wait's lock probe, the owner
+  amended AC-2 to AC-4 again (the same day) and kept the exception for Session A to make the fix,
+  because OQ-136 blocks the move, while saying such exceptions are not to become the rule.
 
 ### The move, in order
 
