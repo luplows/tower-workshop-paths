@@ -881,6 +881,11 @@ test that runs this clean-up for real is in a file of its own, `*.alone.test.mjs
 leaves out and CI runs in a step of its own after it, so that no other test's processes are
 running for the clean-up to stop (decided 2026-10-09 by the owner).
 
+**Planned (OQ-137):** the step's worst case counts the clean-up after the first try, with a
+5-second allowance that the clean-up test checks: 2 × 120 + 5 + 30 + 20 = 295 seconds of the 300
+(decided 2026-10-09 by the owner, from #243's review). The clean-up after the second try is not
+counted: the step fails then whatever happens.
+
 **Definition of green:** it builds, lint is clean, every AC has a named test, Vitest passes,
 Playwright passes without retries, no pre-existing test was modified without story authorization,
 and the story file validates.
@@ -1660,6 +1665,10 @@ deciding what is next. It is the harness's product outline, and moves with this 
   move: it unblocks OQ-130. When #241's review then blocked on the wait's lock probe, the owner
   amended AC-2 to AC-4 again (the same day) and kept the exception for Session A to make the fix,
   because OQ-136 blocks the move, while saying such exceptions are not to become the rule.
+- **#243's held review observation becomes OQ-137** (decided 2026-10-09 by the owner): the install
+  step's worst case counts the clean-up after the first try, and the clean-up test checks its
+  allowance ("What CI runs"). #242's two held observations were already resolved by OQ-136's own
+  pull request, #241.
 
 ### The move, in order
 
