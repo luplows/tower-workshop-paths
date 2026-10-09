@@ -5,7 +5,7 @@ tier: next
 kind: workflow
 depends_on: [OQ-125]
 model: sonnet
-blocked: "ci-setup-failed: CI failed in setup step(s) Setup: Playwright browsers, outside the repository; a coder retry cannot fix it"
+blocked: null
 ---
 
 ## Intent
