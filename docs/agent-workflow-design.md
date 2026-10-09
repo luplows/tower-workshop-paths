@@ -857,12 +857,14 @@ GitHub's 360-minute default. Retrying the install is a retry of setup, not of a 
 contradict "no retries in the merge gate": the checks themselves still run once. `detect-drift.yml`'s
 weekly install is left as it is (decided 2026-10-08 by the owner): it gates no pull request.
 
-**Planned (OQ-136):** a try that fails or reaches its limit leaves nothing running. Whatever it
-started, `apt-get` and `dpkg` included, is stopped before the next try, and the next try waits for
-the package lock and finishes any interrupted install first (decided 2026-10-09 by the owner).
-On 2026-10-09 a first try timed out while apt was slowly fetching fonts; the limit ended `npx`
-but not the `apt-get` under it, which kept the dpkg lock, so the second try failed at once and
-the retry could not recover from the hang it was added for.
+A try that fails or reaches its limit leaves nothing running: the step diffs the process list
+before and after each try and kills whatever is still alive, `apt-get` and `dpkg` under sudo
+included, trying a plain `kill` first and falling back to `sudo kill` only when that is refused.
+Before the second try it waits up to 30 seconds for `/var/lib/dpkg/lock-frontend` to be free and
+then runs `sudo dpkg --configure -a`, so a package the first try left half-installed is finished.
+Decided 2026-10-09 by the owner (OQ-136), after a first try timed out while apt was slowly fetching
+fonts: the limit ended `npx` but not the `apt-get` under it, which kept the dpkg lock, so the
+second try failed at once and the retry could not recover from the hang it was added for.
 
 **Definition of green:** it builds, lint is clean, every AC has a named test, Vitest passes,
 Playwright passes without retries, no pre-existing test was modified without story authorization,

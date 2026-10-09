@@ -18,23 +18,23 @@ from one, which stopped the queue.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — In the `Setup: Playwright browsers` step of both
+- [x] **AC-1** — In the `Setup: Playwright browsers` step of both
       `.github/workflows/ci.yml` and `.github/workflows/update-screenshots.yml`,
       when a try fails or reaches its limit, every process it started is
       stopped before the next try begins, including an `apt-get` or `dpkg`
       started under `sudo`. The log says that leftover processes were stopped,
       or that none were found.
-- [ ] **AC-2** — Before the second try, the step waits until no process holds
+- [x] **AC-2** — Before the second try, the step waits until no process holds
       `/var/lib/dpkg/lock-frontend`, for at most 30 seconds, and then runs
       `sudo dpkg --configure -a`, so a package the first try left half
       installed is finished. The log says how long it waited.
-- [ ] **AC-3** — The step's limits are unchanged: at most two tries, each
+- [x] **AC-3** — The step's limits are unchanged: at most two tries, each
       bounded by `timeout 2m`, a step `timeout-minutes: 5` and a job
       `timeout-minutes: 20`. The two tries, the wait and the clean-up fit
       within the step's 5 minutes. OQ-117's tests in
       `scripts/dispatch/ci.test.mjs` change only as far as the new step text
       requires, and keep their names and what they assert.
-- [ ] **AC-4** — Tests in `scripts/dispatch/ci.test.mjs` read both files'
+- [x] **AC-4** — Tests in `scripts/dispatch/ci.test.mjs` read both files'
       install steps and fail if either lacks AC-1's clean-up or AC-2's wait
       and repair. A test shows the clean-up working for real: a stand-in for
       the install command starts a child in a session of its own that holds a
@@ -43,10 +43,10 @@ from one, which stopped the queue.
       runs on Linux and is skipped elsewhere, with the skip named in the
       test's title. How the step's logic is made runnable from the test is the
       coder's choice.
-- [ ] **AC-5** — OQ-118's AC-3 test still passes unchanged: the step keeps its
+- [x] **AC-5** — OQ-118's AC-3 test still passes unchanged: the step keeps its
       name and its `Setup: ` prefix, and no step the change adds is named with
       that prefix unless OQ-118's test requires it.
-- [ ] **AC-6** — The **Planned (OQ-136)** passage in
+- [x] **AC-6** — The **Planned (OQ-136)** passage in
       `docs/agent-workflow-design.md`, "What CI runs", is resolved as that
       document's "Reading this document" note says.
 

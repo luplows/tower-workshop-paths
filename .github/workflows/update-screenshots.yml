@@ -77,10 +77,30 @@ jobs:
             else
               cmd="npx playwright install --with-deps chromium"
             fi
+            before_pids="$(ps -eo pid= | tr -d ' ' | sort -n)"
             if timeout 2m $cmd; then
               exit 0
             fi
             echo "Playwright install attempt $attempt failed or timed out"
+            after_pids="$(ps -eo pid= | tr -d ' ' | sort -n)"
+            leftover="$(comm -13 <(echo "$before_pids") <(echo "$after_pids"))"
+            if [ -n "$leftover" ]; then
+              echo "Stopping leftover processes from attempt $attempt: $leftover"
+              for pid in $leftover; do
+                kill -9 "$pid" 2>/dev/null || sudo kill -9 "$pid" 2>/dev/null || true
+              done
+            else
+              echo "No leftover processes from attempt $attempt"
+            fi
+            if [ "$attempt" -eq 1 ]; then
+              waited=0
+              while [ "$waited" -lt 30 ] && ! sudo flock -n /var/lib/dpkg/lock-frontend true 2>/dev/null; do
+                sleep 1
+                waited=$((waited + 1))
+              done
+              echo "Waited ${waited}s for /var/lib/dpkg/lock-frontend"
+              sudo dpkg --configure -a
+            fi
           done
           exit 1
 

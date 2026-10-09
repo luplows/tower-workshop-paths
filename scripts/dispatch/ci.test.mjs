@@ -1,6 +1,8 @@
 // @vitest-environment node
 
-import { readFileSync } from 'node:fs'
+import { execFileSync } from 'node:child_process'
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
@@ -447,6 +449,114 @@ describe('OQ-117/AC-4: the install step limits itself to 5 minutes, and the job 
       expect(block).toMatch(/timeout-minutes: 5/)
     })
   }
+})
+
+describe('OQ-136/AC-1: a try that fails or reaches its limit stops every process it started, apt-get and dpkg under sudo included', () => {
+  for (const [label, file] of OQ117_WORKFLOWS) {
+    it(`${label}'s install step snapshots pids before each try, diffs them after, kills (plain then sudo) whatever is still alive, and logs which pids or that none were found`, () => {
+      const block = installStepOf(readFileSync(file, 'utf8'))
+      expect(block).toContain(`before_pids="$(ps -eo pid= | tr -d ' ' | sort -n)"`)
+      expect(block).toContain(`after_pids="$(ps -eo pid= | tr -d ' ' | sort -n)"`)
+      expect(block).toContain('leftover="$(comm -13 <(echo "$before_pids") <(echo "$after_pids"))"')
+      expect(block).toContain('kill -9 "$pid" 2>/dev/null || sudo kill -9 "$pid" 2>/dev/null || true')
+      expect(block).toContain('echo "Stopping leftover processes from attempt $attempt: $leftover"')
+      expect(block).toContain('echo "No leftover processes from attempt $attempt"')
+    })
+  }
+})
+
+describe('OQ-136/AC-2: before the second try, the step waits at most 30s for the dpkg package lock and then repairs any half-finished install', () => {
+  for (const [label, file] of OQ117_WORKFLOWS) {
+    it(`${label}'s install step waits on /var/lib/dpkg/lock-frontend for at most 30s, logs how long it waited, then runs sudo dpkg --configure -a`, () => {
+      const block = installStepOf(readFileSync(file, 'utf8'))
+      expect(block).toMatch(/if \[ "\$attempt" -eq 1 \]; then/)
+      expect(block).toContain(
+        'while [ "$waited" -lt 30 ] && ! sudo flock -n /var/lib/dpkg/lock-frontend true 2>/dev/null; do',
+      )
+      expect(block).toContain('echo "Waited ${waited}s for /var/lib/dpkg/lock-frontend"')
+      expect(block).toContain('sudo dpkg --configure -a')
+    })
+  }
+})
+
+describe('OQ-136/AC-3: the retry limits are unchanged, and the wait plus clean-up still fit inside the 5-minute step timeout', () => {
+  for (const [label, file] of OQ117_WORKFLOWS) {
+    it(`${label} still tries at most twice at timeout 2m each, keeps timeout-minutes: 5 / 20, and caps the wait at 30s within that budget`, () => {
+      const text = readFileSync(file, 'utf8')
+      const block = installStepOf(text)
+      expect(block).toMatch(/for attempt in 1 2; do/)
+      const perTryMinutesMatches = [...block.matchAll(/timeout (\d+)m /g)].map((m) => Number(m[1]))
+      expect(perTryMinutesMatches).toEqual([2]) // unchanged from OQ-117: one `timeout …m` call, run once per try
+      const stepTimeout = Number(block.match(/timeout-minutes: (\d+)/)[1])
+      expect(stepTimeout).toBe(5)
+      expect(text).toMatch(/^ {4}timeout-minutes: 20$/m)
+      const waitCapMatches = [...block.matchAll(/waited" -lt (\d+)/g)].map((m) => Number(m[1]))
+      expect(waitCapMatches).toEqual([30])
+      const tries = 2
+      const worstCaseSeconds = perTryMinutesMatches[0] * 60 * tries + waitCapMatches[0]
+      expect(worstCaseSeconds).toBeLessThan(stepTimeout * 60)
+    })
+  }
+})
+
+describe('OQ-136/AC-4: a detached child holding the lock in a session of its own is killed by the clean-up, so the next try takes the lock (skips on non-Linux platforms, named here)', () => {
+  const isLinux = process.platform === 'linux'
+
+  // Pulls the step's own shell text out of the workflow (not a reimplementation of it), and
+  // substitutes only: the GitHub Actions `${{ }}` expression bash cannot evaluate, the install
+  // command itself (for a stand-in that can be driven from a test), the 2-minute try limit (for
+  // test speed), and the two dpkg-specific lines (which need real root and a real dpkg lock, and
+  // are covered separately by the OQ-136/AC-2 text assertions above).
+  function extractTestableScript(block, standinPath, lockPath) {
+    const runText = fieldsOfStep(block).run
+    const bodyLines = runText.split('\n').slice(1) // drop the `run: |` line itself
+    const script = bodyLines.map((l) => l.replace(/^ {10}/, '')).join('\n')
+    const standinCmd = `cmd="bash '${standinPath}' '${lockPath}' $attempt"`
+    return script
+      .replace('${{ steps.playwright-cache.outputs.cache-hit }}', 'true')
+      .replaceAll('cmd="npx playwright install-deps chromium"', standinCmd)
+      .replaceAll('cmd="npx playwright install --with-deps chromium"', standinCmd)
+      .replace('timeout 2m $cmd', 'timeout 2s $cmd')
+      .replace('sudo flock -n /var/lib/dpkg/lock-frontend true 2>/dev/null', 'true')
+      .replace('sudo dpkg --configure -a', 'true')
+  }
+
+  it.skipIf(!isLinux)(
+    'on attempt 1 the stand-in starts a detached setsid child holding the lock file and outliving its own hang; the clean-up kills it; on attempt 2 the stand-in takes the now-free lock and the step exits 0',
+    () => {
+      const dir = mkdtempSync(path.join(tmpdir(), 'oq136-'))
+      const standinPath = path.join(dir, 'standin.sh')
+      const lockPath = path.join(dir, 'lock')
+      writeFileSync(
+        standinPath,
+        [
+          '#!/bin/bash',
+          'lockfile="$1"',
+          'attempt="$2"',
+          'if [ "$attempt" = "1" ]; then',
+          '  setsid bash -c "exec 9>\\"$lockfile\\"; flock 9; sleep 100" &',
+          '  disown',
+          '  sleep 100',
+          'else',
+          '  flock -n "$lockfile" true 2>/dev/null',
+          'fi',
+        ].join('\n'),
+      )
+
+      for (const [, file] of OQ117_WORKFLOWS) {
+        const block = installStepOf(readFileSync(file, 'utf8'))
+        const script = extractTestableScript(block, standinPath, lockPath)
+        let status = null
+        try {
+          execFileSync('bash', ['-c', script], { timeout: 15000, stdio: 'pipe' })
+          status = 0
+        } catch (err) {
+          status = err.status ?? 'signal:' + err.signal
+        }
+        expect(status, `expected the step to recover the lock and exit 0 for ${file}`).toBe(0)
+      }
+    },
+  )
 })
 
 describe('OQ-118/AC-4: a failed step is one whose conclusion is neither success nor skipped', () => {
