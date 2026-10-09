@@ -19,13 +19,13 @@ minutes on runs that change nothing. Today neither runs: the sweep merges with
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — `.github/workflows/ci.yml` is also triggered by `workflow_run`
+- [x] **AC-1** — `.github/workflows/ci.yml` is also triggered by `workflow_run`
       on the workflow named `Land approved PRs`, with `types: [completed]`. Its
       `pull_request` and `push` triggers are unchanged.
-- [ ] **AC-2** — `.github/workflows/deploy-pages.yml` is also triggered by the
+- [x] **AC-2** — `.github/workflows/deploy-pages.yml` is also triggered by the
       same `workflow_run`. Its `push` and `workflow_dispatch` triggers are
       unchanged.
-- [ ] **AC-3** — In both files, every job with no `needs:` has this condition,
+- [x] **AC-3** — In both files, every job with no `needs:` has this condition,
       exactly:
       `if: github.event_name != 'workflow_run' || github.event.workflow_run.head_sha != github.sha`.
       So a run started by any other event behaves as it does today, and a run
@@ -33,14 +33,14 @@ minutes on runs that change nothing. Today neither runs: the sweep merges with
       before any runner starts. A job with `needs:` (`deploy-pages.yml`'s
       `deploy`) is left without one, since it is skipped when the job it needs
       is.
-- [ ] **AC-4** — No checkout step in either file is given a `ref:`. On a
+- [x] **AC-4** — No checkout step in either file is given a `ref:`. On a
       `workflow_run` event the checkout takes `github.sha`, the latest commit
       on `main`, not the commit the sweep started from.
-- [ ] **AC-5** — Tests read both workflow files as text and fail when AC-1, AC-2,
+- [x] **AC-5** — Tests read both workflow files as text and fail when AC-1, AC-2,
       AC-3 or AC-4 does not hold. The workflow name the trigger must match is
       read from `land-approved.yml`'s own `name:` line, so renaming the sweep
       without updating the trigger fails the test.
-- [ ] **AC-6** — Both **Planned (OQ-124)** markers in
+- [x] **AC-6** — Both **Planned (OQ-124)** markers in
       `docs/agent-workflow-design.md`, in "Platform constraints", "GitHub
       mechanics", and in "Portability", "Decided so far", are resolved as that
       document's "Reading this document" note says.
