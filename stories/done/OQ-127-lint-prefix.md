@@ -18,14 +18,14 @@ and ignore every `ST-<n>` file.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — Every story-id pattern in `scripts/lint-stories.mjs` takes its
+- [x] **AC-1** — Every story-id pattern in `scripts/lint-stories.mjs` takes its
       prefix from the settings: its own `STORY_FILENAME_RE`, the `id` and
       `depends_on` checks and their messages, the filename-prefix match and
       its message, the `stories/done/` id collection, and the ids read from
       `**Planned (…)**` markers. A message names the configured prefix (for
       example `ST-<n>`) or a neutral `<story-id>`; which one is the coder's
       choice.
-- [ ] **AC-2** — Tests, using a project whose settings say `ST`:
+- [x] **AC-2** — Tests, using a project whose settings say `ST`:
       - `lintStory` passes a well-formed `stories/ST-3-thing.md`, and fails a
         story whose `id` is `OQ-3` and one with a `depends_on: [OQ-1]` entry;
       - `lintAll` lints `stories/ST-3-thing.md` and ignores
@@ -33,7 +33,7 @@ and ignore every `ST-<n>` file.
       - a `**Planned (ST-3)**` marker in that project's `docs/` fails when
         `stories/done/ST-3-thing.md` exists, and passes when only
         `stories/ST-3-thing.md` does.
-- [ ] **AC-3** — With this repository's own settings every existing test
+- [x] **AC-3** — With this repository's own settings every existing test
       passes, and `node scripts/lint-stories.mjs` on this repository reports
       what it reported before. The only change made to an existing test is
       supplying the settings: a `steward.config.json` written into its
@@ -41,7 +41,7 @@ and ignore every `ST-<n>` file.
       expected value changes. How the settings reach `lintStory` and `lintAll`
       is the coder's choice: nothing falls back to a default when they are
       missing.
-- [ ] **AC-4** — `OQ-127` is taken out of the **Planned (…)** marker in
+- [x] **AC-4** — `OQ-127` is taken out of the **Planned (…)** marker in
       `docs/agent-workflow-design.md`, "The story artifact", "Format", as that
       document's "Reading this document" note says.
 
