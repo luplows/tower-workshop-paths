@@ -21,7 +21,7 @@ for `loop.mjs`, and OQ-131 adds the one command-line entry point.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — `coder.mjs`, `review.mjs` and `story.mjs` distinguish two
+- [x] **AC-1** — `coder.mjs`, `review.mjs` and `story.mjs` distinguish two
       directories:
       - the **engine root**, where the scripts and the prompts are, found from
         the module's own location as `DISPATCHER_ROOT` is today;
@@ -32,19 +32,19 @@ for `loop.mjs`, and OQ-131 adds the one command-line entry point.
       used it for the repository (each `repoDir` default) uses the project
       root, and the prompts (`CODER_PROMPT`, `REVIEWER_PROMPT`) are read from
       the engine root.
-- [ ] **AC-2** — The settings these three modules and `land.mjs` read (OQ-125's
+- [x] **AC-2** — The settings these three modules and `land.mjs` read (OQ-125's
       default repository, and OQ-126's and OQ-128's prefix) are read from the
       project root, not from the directory two levels above the module.
-- [ ] **AC-3** — Tests, with a temporary git repository holding its own
+- [x] **AC-3** — Tests, with a temporary git repository holding its own
       `steward.config.json` (`repo` `owner/other`, prefix `ST`) as the project
       root: the coder's and the reviewer's prompts are still read from the
       engine root, and the settings and the default `repoDir` come from the
       project root. How a test sets the project root is the coder's choice
       (Context: `process.chdir` is not available in this repository's test
       pool).
-- [ ] **AC-4** — With this repository as the working directory, every existing
+- [x] **AC-4** — With this repository as the working directory, every existing
       test passes, and no existing assertion or expected value changes.
-- [ ] **AC-5** — `OQ-123` is taken out of the **Planned (…)** marker in
+- [x] **AC-5** — `OQ-123` is taken out of the **Planned (…)** marker in
       `docs/agent-workflow-design.md`, "The dispatcher is a script", as that
       document's "Reading this document" note says.
 
