@@ -1668,10 +1668,12 @@ deciding what is next. It is the harness's product outline, and moves with this 
 - **#243's held review observation becomes OQ-137** (decided 2026-10-09 by the owner): the install
   step's worst case counts the clean-up after the first try, and the clean-up test checks its
   allowance ("What CI runs"). #242's two held observations were already resolved by OQ-136's own
-  pull request, #241. OQ-137 stays here, as a story about this repository's CI (R4). OQ-131's
-  held observation, that this document and `cli.mjs` say "this repository's own package" will
-  point `bin` at `cli.mjs` though the package is steward's (`steward-bootstrap.md`, B4), is left
-  as it is: the words are true in steward's copies, and OQ-132 and OQ-134 remove the copies here.
+  pull request, #241. OQ-137 stays here, as a story about this repository's CI (R4), and is built
+  after OQ-132, which now also carries OQ-136's tests and its clean-up test out of
+  `scripts/dispatch/` (decided the same day by the owner). OQ-131's held observation, that this
+  document and `cli.mjs` say "this repository's own package" will point `bin` at `cli.mjs` though
+  the package is steward's (`steward-bootstrap.md`, B4), is left as it is: the words are true in
+  steward's copies, and OQ-132 and OQ-134 remove the copies here.
 
 ### The move, in order
 

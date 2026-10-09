@@ -25,8 +25,17 @@ only tests of files that move go to steward).
 - [ ] **AC-2** — A new `scripts/ci-workflows.test.mjs` holds the tests of this
       repository's workflow files that were in `scripts/dispatch/ci.test.mjs`:
       OQ-117's, OQ-118/AC-3's check that `ci.yml` names its setup steps with the
-      `Setup: ` prefix, and OQ-124's. Their test names and assertions are
-      unchanged. It holds its own copies of the text-scanning helpers they use.
+      `Setup: ` prefix, OQ-124's, and OQ-136's (AC-1 to AC-3, and AC-4's check
+      of how the clean-up test is run). Their test names and assertions are
+      unchanged, except that OQ-136/AC-4's check names the clean-up test's new
+      path (AC-2a). It holds its own copies of the text-scanning helpers they
+      use.
+- [ ] **AC-2a** — OQ-136's clean-up test file moves from
+      `scripts/dispatch/install-cleanup.alone.test.mjs` to
+      `scripts/install-cleanup.alone.test.mjs`, with its test names and
+      assertions unchanged and only the paths it reads the workflow files from
+      adjusted, and `ci.yml`'s `Run the install clean-up test alone (OQ-136)`
+      step runs it there. CI still runs it alone, with `VITEST_ALONE=1`.
 - [ ] **AC-3** — `scripts/ci-workflows.test.mjs` takes the setup-step prefix
       from the pinned `steward` package, not from a string of its own, so a
       change of prefix in steward fails this repository's test when the pin
@@ -67,6 +76,14 @@ only tests of files that move go to steward).
   `testJobStepBlocks`, `runTextOf` and `fieldsOfStep` (lines 311–351).
   `SETUP_STEP_PREFIX` comes from `ci.mjs`. OQ-124's tests are added later; their
   file is that story's choice.
+- Added 2026-10-09 by the owner: OQ-136's tests read this repository's workflow
+  files too. On `main` at `9943619`, `scripts/dispatch/ci.test.mjs` holds them
+  at lines 452 (AC-1), 467 (AC-2), 485 (AC-3) and 508 (AC-4, how the clean-up
+  test is run), and `scripts/dispatch/install-cleanup.alone.test.mjs` holds
+  OQ-136's behavioural tests (AC-4 at line 67, AC-2 at line 162). `ci.yml`
+  line 37 runs that file; `vite.config.js` leaves `**/*.alone.test.mjs` out of
+  `npm test` (line 32), wherever it is. OQ-137, which changes both files,
+  depends on this story, so it finds them at their new paths.
 - `scripts/verify-workshop-costs.test.mjs` is the one existing test this project
   keeps under `scripts/`, the precedent for the new file's place.
 
