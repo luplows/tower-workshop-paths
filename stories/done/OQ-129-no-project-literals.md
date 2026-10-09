@@ -17,23 +17,23 @@ project without anyone having to notice the regression by reading.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — A test reads each of `scripts/dispatch/queue.mjs`,
+- [x] **AC-1** — A test reads each of `scripts/dispatch/queue.mjs`,
       `scripts/lint-stories.mjs`, `scripts/dispatch/coder.mjs`,
       `scripts/dispatch/story.mjs` and `scripts/dispatch/review.mjs`, and fails
       if `OQ-` appears in it outside a comment: in a regular expression
       literal, a string literal or a template literal.
-- [ ] **AC-2** — The same test reads each of `scripts/dispatch/coder.mjs`,
+- [x] **AC-2** — The same test reads each of `scripts/dispatch/coder.mjs`,
       `land.mjs`, `loop.mjs`, `review.mjs` and `story.mjs`, and
       `scripts/report/review-verdicts.mjs`, and fails if
       `luplows/tower-workshop-paths` appears in it outside a comment, in the
       same three kinds of literal.
-- [ ] **AC-3** — The test shows it can fail: given a module text with `OQ-` in
+- [x] **AC-3** — The test shows it can fail: given a module text with `OQ-` in
       each of the three kinds of literal, and given one with
       `luplows/tower-workshop-paths` in a string literal, it reports each;
       given text with them only in `//` and `/* … */` comments, it reports
       nothing.
-- [ ] **AC-4** — On this repository, at this story's head, the test passes.
-- [ ] **AC-5** — The **Planned (…)** marker in
+- [x] **AC-4** — On this repository, at this story's head, the test passes.
+- [x] **AC-5** — The **Planned (…)** marker in
       `docs/agent-workflow-design.md`, "The story artifact", "Format", is
       resolved as that document's "Reading this document" note says: this is
       the last story it names.
