@@ -859,12 +859,13 @@ weekly install is left as it is (decided 2026-10-08 by the owner): it gates no p
 
 A try that fails or reaches its limit leaves nothing running: after each try the step kills every
 process that started during it and is still alive, `apt-get` and `dpkg` under sudo included,
-trying a plain `kill` first and falling back to `sudo kill` only when that is refused. Since the
-try has ended, what it left behind has lost its parent to init (or to an ancestor of the step's
-shell that adopts orphans); a process that started under any other parent already running is not
-the try's, and is left alone (amended 2026-10-09 by the owner). A process that init, or the
-runner above the step, itself starts during the try, such as a system service, cannot be told
-apart, and is killed too.
+trying a plain `kill` first and falling back to `sudo kill` only when that is refused. A try runs
+under `timeout`, in a process group of its own, and what it starts with `setsid` or under sudo's
+pty has a session of its own, so the try's processes are the new ones whose group or session is
+new too. A new process whose group and session both existed before the try, such as a test
+runner's child, is not the try's, and is left alone (amended 2026-10-09 by the owner). A new
+process in a new session that the try did not start, such as a system service init starts during
+it, cannot be told apart, and is killed too.
 Before the second try it waits up to 30 seconds for `/var/lib/dpkg/lock-frontend` to be free and
 then runs `sudo dpkg --configure -a`, so a package the first try left half-installed is finished.
 Decided 2026-10-09 by the owner (OQ-136), after a first try timed out while apt was slowly fetching

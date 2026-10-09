@@ -22,10 +22,10 @@ from one, which stopped the queue.
       `.github/workflows/ci.yml` and `.github/workflows/update-screenshots.yml`,
       when a try fails or reaches its limit, every process it started is
       stopped before the next try begins, including an `apt-get` or `dpkg`
-      started under `sudo`. A process that starts during the try under a parent
-      already running before it, other than init or an ancestor of the step's
-      shell, is not the try's and is left running. The log says that leftover
-      processes were stopped, or that none were found.
+      started under `sudo`. A process that starts during the try in a process
+      group and a session that both existed before it is not the try's, and is
+      left running. The log says that leftover processes were stopped, or that
+      none were found.
 - [x] **AC-2** — Before the second try, the step waits until no process holds
       `/var/lib/dpkg/lock-frontend`, for at most 30 seconds, and then runs
       `sudo dpkg --configure -a`, so a package the first try left half
@@ -96,7 +96,10 @@ from one, which stopped the queue.
   clean-up stops: the first version stopped every process that started
   anywhere during the try, which in the test run can include other test
   files' processes. Session A made the fix on this branch, by the owner's
-  exception to the story-branch rule.
+  exception to the story-branch rule. Its first narrowing, by ancestry,
+  still killed another test file's `git clone` in CI (run 37954635058),
+  because vitest runs test files as threads of the process that is also
+  the step's parent; the rule became the process group and session.
 
 ## Open questions
 

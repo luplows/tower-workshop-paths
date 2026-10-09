@@ -67,23 +67,15 @@ jobs:
               exit 0
             fi
             echo "Playwright install attempt $attempt failed or timed out"
-            # The try has ended, so whatever it started that is still alive has lost its parent
-            # to init, or to an ancestor of this shell that adopts orphans. A process that started
-            # during the try under any other parent already running was not started by the try,
-            # and is left alone.
-            leftover="$(awk -v self=$$ '
+            # A try runs under `timeout`, in a process group of its own, and what it starts in a
+            # session of its own (setsid, or sudo's pty) has a new session. So a process that
+            # started during the try is the try's when its group or its session is new too. One
+            # whose group and session were both already there, such as a child of a test runner
+            # or of the Actions runner, is not the try's, and is left alone.
+            leftover="$(awk '
               NR == FNR { old[$1] = 1; next }
-              { parent[$1] = $2 }
-              END {
-                above[1] = 1
-                for (q = parent[self]; q in parent; q = parent[q]) above[q] = 1
-                for (p in parent) {
-                  if (p in old) continue
-                  q = p
-                  while ((q in parent) && !(q in old)) q = parent[q]
-                  if (q in above) print p
-                }
-              }' <(echo "$before_pids") <(ps -eo pid=,ppid=))"
+              !($1 in old) && (!($2 in old) || !($3 in old)) { print $1 }
+              ' <(echo "$before_pids") <(ps -eo pid=,pgid=,sid=))"
             if [ -n "$leftover" ]; then
               echo "Stopping leftover processes from attempt $attempt: $leftover"
               for pid in $leftover; do

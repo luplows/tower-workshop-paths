@@ -453,13 +453,12 @@ describe('OQ-117/AC-4: the install step limits itself to 5 minutes, and the job 
 
 describe('OQ-136/AC-1: a try that fails or reaches its limit stops every process it started, apt-get and dpkg under sudo included', () => {
   for (const [label, file] of OQ117_WORKFLOWS) {
-    it(`${label}'s install step snapshots pids before each try, after it picks the new ones orphaned to init or an ancestor of the step's shell, kills (plain then sudo) whatever is still alive, and logs which pids or that none were found`, () => {
+    it(`${label}'s install step snapshots pids before each try, after it picks the new ones whose process group or session is new too, kills (plain then sudo) whatever is still alive, and logs which pids or that none were found`, () => {
       const block = installStepOf(readFileSync(file, 'utf8'))
       expect(block).toContain(`before_pids="$(ps -eo pid= | tr -d ' ')"`)
-      expect(block).toContain(`leftover="$(awk -v self=$$ '`)
-      expect(block).toContain('while ((q in parent) && !(q in old)) q = parent[q]')
-      expect(block).toContain('if (q in above) print p')
-      expect(block).toContain(`}' <(echo "$before_pids") <(ps -eo pid=,ppid=))"`)
+      expect(block).toContain(`leftover="$(awk '`)
+      expect(block).toContain('!($1 in old) && (!($2 in old) || !($3 in old)) { print $1 }')
+      expect(block).toContain(`' <(echo "$before_pids") <(ps -eo pid=,pgid=,sid=))"`)
       expect(block).toContain('kill -9 "$pid" 2>/dev/null || sudo kill -9 "$pid" 2>/dev/null || true')
       expect(block).toContain('echo "Stopping leftover processes from attempt $attempt: $leftover"')
       expect(block).toContain('echo "No leftover processes from attempt $attempt"')
