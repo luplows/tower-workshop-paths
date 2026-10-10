@@ -15,8 +15,16 @@ Everything below is the owner's, stated on 2026-10-07, unless it says otherwise.
 
 ## What it is
 
-- **A harness that takes units of work through a code, review and merge loop.** It picks up work
-  marked ready, codes it, reviews it, and merges it into the mainline branch.
+Revised 2026-10-10 by the owner, from the end goal ("Defining steward", "What steward is for"). The
+first two bullets replace "A harness that takes units of work through a code, review and merge
+loop", stated on 2026-10-07; the last two are unchanged.
+
+- **A path from a ready unit of work to a merged change: automated coding and review, merged only
+  on a verdict.** It takes units marked ready, starting them in the order the project sets, codes
+  them, has each pull request reviewed against its unit and the project's rules, and merges it on
+  a passing verdict once its checks have passed.
+- **It does not plan the work**, and it need not be the only way work is done in a project. Units
+  come from however the project plans; readiness and priority are the project's settings.
 - **It surfaces problems**, probably as GitHub issues, as OQ-112 does for a stuck story.
 - **It keeps working while other ready work remains**, up to a point where too much has stopped
   without merging. Today two separate limits come closest: two or more open `loop-stuck` issues
@@ -79,13 +87,26 @@ the owner decides (readiness, priority) keeps both.
 
 ## What matters most
 
-In order (confirmed 2026-10-08 by the owner):
+Revised 2026-10-10 by the owner. The MVP, in order:
 
-1. **The review-and-land pipeline**: every change reviewed against what it was for, and landed
-   only on a verdict.
-2. **Keeping going**: working through ready work unattended, and surfacing problems where the
+1. **Review you can trust**: every pull request reviewed against its unit and the project's rules,
+   and merged only on a verdict, once its checks have passed. It installs on its own, with little
+   to configure.
+2. **Automated coding**: coders take ready units, and pull requests whose latest verdict is a
+   block, in the order the project sets. Each runs the project's check command before its work is
+   pushed. A project opts in.
+3. **Keeping going**: working through ready work unattended, and surfacing problems where the
    owner will see them.
-3. **The view** for deciding what is next and seeing what is in flight.
+
+After the MVP, in order:
+
+1. **The view**, for deciding what is next and seeing what is in flight.
+2. **Parallel work**, on one machine or several.
+3. **Looking back**: a walkthrough of the product, if that is steward's at all.
+
+Superseded: the order confirmed on 2026-10-08 by the owner was the review-and-land pipeline, then
+keeping going, then the view. The revision names the coder, which that order left implied, draws
+the MVP line, and moves the view below it, ahead of parallel work (owner, 2026-10-10).
 
 ## Defining steward
 
@@ -128,9 +149,10 @@ otherwise; what is still open says so.
   steward's is open. Tower-workshop-paths' design has Session B for this, a periodic walkthrough of
   `main` that ends in a release tag (design doc, "The shape"), but it has not yet run there, so its
   scope is unknown (owner, 2026-10-10); `origin` has no tags (Session A, 2026-10-10).
-- **"What it is" and "What matters most", above, are to be revisited in light of these** (Session
-  A, 2026-10-10): they put review and land first and leave the coder implied, and neither mentions
-  planning, priority, parallel work or looking back.
+- **"What it is" and "What matters most", above, were revisited in light of these** (Session A,
+  2026-10-10, who noted they put review and land first, left the coder implied, and mentioned
+  neither planning, priority, parallel work nor looking back). The owner revised both the same day,
+  from a draft by Session A.
 
 ### Review
 
@@ -188,9 +210,11 @@ otherwise; what is still open says so.
   - **`init` writes default entries, then explores the repository to surface options, as a
     deterministic script**, so it does not learn from prose. What it explores is open.
   - **The lander waits for the checks the settings name**: kept, as the next bullet says.
-  - **Whether steward waits for CI before the review is open.** The owner is on the fence: a
-    coder's work almost always passes CI, and when it does not, the cause is usually the coder's
-    configuration. Today's `waitForCi` is the wait this decides.
+  - **Steward does not wait for CI before it starts a review, and does wait for all checks before
+    it lands** (owner, 2026-10-10, after first being on the fence: a coder's work almost always
+    passes CI, and when it does not, the cause is usually the coder's configuration). So today's
+    `waitForCi` goes, as the line above already says. What follows (Session A, 2026-10-10): the
+    reviewer can read only the CI results that have finished when it looks.
   - **The reviewer may read the CI results, but does not run CI itself**: GitHub already does.
   - **The coder runs the project's check command before its work is pushed**, which also makes the
     wait before the review matter less. For reference (Session A, at `4f2f0fd`): in
