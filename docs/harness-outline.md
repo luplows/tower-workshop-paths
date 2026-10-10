@@ -176,5 +176,11 @@ otherwise; what is still open says so.
   picks up the reviewer's feedback): any coder can take a pull request, read its linked unit and
   its review findings, and make the changes asked for. So a pull request whose latest verdict is a
   block is work, as a ready unit is, and the round bound, counted from the pull request's own
-  blocking verdicts, needs no owner. Open: which pull requests a coder may take, how a coder claims
-  one so that two do not take it at once, and whether one with no unit is eligible.
+  blocking verdicts, needs no owner.
+- **By default a coder may take any ready unit, and any pull request whose latest verdict is a
+  block, with the review's findings available to it** (owner, 2026-10-09), so that steward is easy
+  to set up.
+- **A coder claims its work with a claim commit, at first** (owner, 2026-10-09), as
+  tower-workshop-paths does for a story (`coder.mjs`'s `claimPushArgs`, OQ-110).
+- **Coder work always needs a unit** (owner, 2026-10-09): a pull request with no unit is reviewed,
+  but no coder takes it.
