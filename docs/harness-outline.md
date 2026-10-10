@@ -32,7 +32,8 @@ loop", stated on 2026-10-07; the last two are unchanged.
   `review-blocked` pull requests narrow what the sweep lands (the circuit breaker in
   `.github/workflows/land-approved.yml`). Neither counts a unit stopped for another reason, such as
   red CI at its own bound, which leaves `blocked:` on a draft pull request with no label and no
-  issue. Whether "too much stopped" should be one measure is open.
+  issue. Whether "too much stopped" should be one measure is open; the owner's view is that the
+  two loops should probably stop together ("Defining steward", "Loops").
 
 ## Who it is for
 
@@ -294,3 +295,7 @@ otherwise; what is still open says so.
   (owner, 2026-10-10). Review installs with its rules predefined and little to configure; the
   coder does not, since there is no way to ship readiness with installation alone. The default
   above applies to a project that has opted in.
+- **The two loops should probably stop at the same time, so that a backlog of unreviewed pull
+  requests does not build up** (the owner's view, 2026-10-10, asked whether each loop stops on its
+  own measure or both on one). What counts as too much stopped, and how each stop reaches the
+  owner, are open.
