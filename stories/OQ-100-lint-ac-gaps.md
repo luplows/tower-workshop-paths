@@ -5,7 +5,7 @@ tier: normal
 kind: workflow
 depends_on: []
 model: sonnet
-blocked: "Held for the move to steward, decided 2026-10-08 by the owner (docs/agent-workflow-design.md, Portability, R4)"
+blocked: "Held until steward is extracted, so that this repository's edits to files that move stay out of steward's copies (decided 2026-10-10 by the owner; docs/agent-workflow-design.md, Portability, Decided so far)"
 ---
 
 ## Intent
@@ -38,7 +38,7 @@ the function behind it.
       - a story whose section holds an italic line starting with `*` and no
         space, beside well-formed ACs, has no `AC-5` violation;
       - `lintAll` over the repository still reports no blocking violation.
-        That covers the four italic lines named in Context and indented `-`
+        That covers the three italic lines named in Context and indented `-`
         sub-bullets such as OQ-99's.
 - [ ] **AC-3** — A test runs `node scripts/lint-stories.mjs` as a child
       process, by the script's absolute path, with its working directory set
@@ -82,12 +82,13 @@ the function behind it.
     `process.argv[1] === fileURLToPath(import.meta.url)`.
     `scripts/report/review-verdicts.mjs` compares `realpathSync` of both
     instead. AC-3 tests the behaviour, not which comparison is used.
-- Four stories on `main` have a line in `Acceptance criteria` that starts
-  with `*` and is italic text, not a list item (AC-2):
-  `stories/OQ-66-parallel-flows.md:19` (`*(provisional — …`), and line 19 of
+- Three stories under `stories/` have a line in `Acceptance criteria` that
+  starts with `*` and is italic text, not a list item (AC-2): line 19 of
   `OQ-95-gold-box-max-level.md`, `OQ-96-deprioritize-enhancements.md` and
   `OQ-97-clear-leading-zeros.md` (`*Barebones: to be refined in a planning
-  session.*`). No story in `stories/done/` has such a line.
+  session.*`). No story in `stories/done/` has such a line. A fourth,
+  `OQ-66-parallel-flows.md` (`*(provisional — …`, line 19), was retired on
+  2026-10-10, and the lint does not read `stories/retired/`.
 - `scripts/lint-stories.test.mjs` builds fixture roots with `mkdtemp` under
   `tmpdir()` (`tmpRoot`), and calls `lintAll` directly.
 - `stories/done/OQ-61-story-schema-lint.md`, AC-5: "The set of N across a

@@ -86,9 +86,9 @@ only tests of files that move go to steward).
   depends on this story, so it finds them at their new paths.
 - `scripts/verify-workshop-costs.test.mjs` is the one existing test this project
   keeps under `scripts/`, the precedent for the new file's place. The other
-  test there on `main` at `09147c3`, `scripts/no-project-literals.test.mjs`
-  (OQ-129), goes to steward at the bootstrap and is removed here (Open
-  questions).
+  two there on `main` at `b2a02bf` are `scripts/lint-stories.test.mjs`, which
+  AC-1 removes, and `scripts/no-project-literals.test.mjs` (OQ-129), which goes
+  to steward at the bootstrap and is removed here (Open questions).
 
 ## Open questions
 
