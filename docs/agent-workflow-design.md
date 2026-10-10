@@ -1774,6 +1774,14 @@ deciding what is next. It is the harness's product outline, and moves with this 
   interactive sessions; and adopting steward's gate early, while keeping this repository's own
   coder, which needs `init`, the prompts' slot and the delivery of rules first, and splits this
   repository across two engines.
+- **What the stopped extraction needs before it is retried** (decided 2026-10-10 by the owner,
+  from Session A's proposal; `steward-bootstrap.md`, D-14). The 38 failing tests are dealt with in
+  the bootstrap commits rather than by `fix` stories here: two are removed under R1's rule that
+  only tests of files that move go to steward (B7a), and the other 36 are made independent of the
+  project they run in (B7b). B1 gives the held `blocked:` text. Steward's `ci.yml` passes the head
+  branch name through `env:` from the start (B6). Nothing else from the definition is needed
+  first: the rest is steward's own work. The retry waits for the pull request recording these
+  decisions to land, since it changes moving paths.
 
 ### The move, in order
 

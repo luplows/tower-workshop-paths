@@ -6,10 +6,11 @@ from this repository. It is run by the owner with Session A. It is not a story, 
 dispatches from it.
 
 **Status: agreed by the owner on 2026-10-08, with the six decisions in section 9 (D-1 to D-6; D-7
-to D-9 were added the same day, D-10 to D-12 on 2026-10-09, and D-13 on 2026-10-10).** Nothing
-below has been run except the two dry runs in section 3. It runs once P1 to P6 hold. The
-decisions themselves live in the design doc's Portability section; this file is the procedure,
-and where it restates a decision it names the one it must not drift from.
+to D-9 were added the same day, D-10 to D-12 on 2026-10-09, and D-13 and D-14 on 2026-10-10).**
+Nothing below has been run except the two dry runs and the stopped real extraction in section 3.
+It runs once P1 to P6 hold.
+The decisions themselves live in the design doc's Portability section; this file is the
+procedure, and where it restates a decision it names the one it must not drift from.
 
 **Paused 2026-10-09 by the owner**, during the real extraction, before A1: steward is to be defined
 first (design doc, "Portability", "Decided so far"). What the extraction ran and found is in
@@ -165,8 +166,9 @@ checkout. Each is its own commit, so the direct push in section 6 is reviewable 
 - [ ] **B1. Renumber the stories.** `git mv` each moving story to `ST-<n>`, numbered in ascending
       order of OQ id (R4, R9), and set its `id:`. Add a line to its Context: "Formerly
       tower-workshop-paths OQ-<n>." References to OQ stories that stay here keep their numbers.
-      The mapping, revised on 2026-10-10 for the 17 stories (D-13). "Held" means a `blocked:`
-      saying the story is held until steward's coder works, replacing any it has here:
+      The mapping, revised on 2026-10-10 for the 17 stories (D-13). "Held" means this `blocked:`,
+      replacing any the story has here (D-14):
+      `"Held until steward's coder works (decided 2026-10-10 by the owner; docs/agent-workflow-design.md, Portability, Decided so far)"`.
 
       | ST | OQ | `depends_on` in steward | `blocked:` in steward |
       |---|---|---|---|
@@ -208,7 +210,10 @@ checkout. Each is its own commit, so the direct push in section 6 is reviewable 
       limits are kept. OQ-124's `workflow_run` trigger on `Land approved PRs`, and its job
       condition, are kept, so steward's `main` is checked after each landing (design doc,
       "Portability", "Decided so far"). OQ-124/AC-1's test, which moves, matches the `on:` block
-      exactly: `pull_request` then `push`, each with `branches: [main]`.
+      exactly: `pull_request` then `push`, each with `branches: [main]`. The story containment
+      step passes the head branch name through an `env:` entry, referenced as a quoted shell
+      variable, so no `${{ github.head_ref }}` appears in its `run:` (D-14; OQ-105's AC-5, which
+      stays here, does the same for this repository's `ci.yml`).
 - [ ] **B7. `review-gate.yml` and `land-approved.yml`, unchanged.** Neither names this repository:
       they take `github.repository`, and run `node scripts/land/…` without `npm ci`.
 - [ ] **B7a. Tests of files that stay here, removed from steward's copy** (D-8). Re-derive them at
@@ -218,10 +223,25 @@ checkout. Each is its own commit, so the direct push in section 6 is reviewable 
         AC-4, which read the Playwright install step and `vite.config.js`), and OQ-124's cases of
         `deploy-pages.yml` (AC-2, AC-3's second case, and AC-4's `deploy-pages.yml` case);
       - all of `scripts/dispatch/install-cleanup.alone.test.mjs` (OQ-136), which reads the
-        Playwright install step of `ci.yml` and `update-screenshots.yml`.
+        Playwright install step of `ci.yml` and `update-screenshots.yml`;
+      - found at the real extraction from `b2a02bf` (section 3): the two cases in
+        `scripts/dispatch/invocation.test.mjs` that read `.claude/settings.json` (line 229), which
+        does not move.
 
       OQ-118's tests, and OQ-124's cases of `ci.yml`, are kept in steward's copy. This repository
       keeps all of its own.
+- [ ] **B7b. Tests that read the project they run in, fixed in steward's copy** (D-14). The real
+      extraction's other 36 failures (section 3). Re-derive them at the run; known at `b2a02bf`:
+      - `scripts/dispatch/story.test.mjs` (33): its harness calls `runStory` without a `repoDir`
+        (line 83), so `runStory` reads the settings of the directory the tests run in. The harness
+        passes a temporary `repoDir` whose `steward.config.json` matches the tests' story ids.
+      - `scripts/dispatch/settings.test.mjs` line 53, `scripts/dispatch/loop.test.mjs` line 657
+        and `scripts/report/review-verdicts.test.mjs` line 281: each reads the committed
+        `steward.config.json` and expects this repository's values. Each reads a temporary
+        settings fixture instead, except where the test's point is the committed file itself
+        (`settings.test.mjs`, "OQ-122/AC-2"), which expects steward's values from B3.
+
+      This repository's copies are unchanged: they pass here.
 - [ ] **B8. The prompts, stripped by hand** (R1, "steward starts clean"): in `coder.md` this
       repository's name, Vitest and Playwright, the screenshot-baseline rules, `mytower.app`, and
       the pointer to `Completed-Questions.md`; in `reviewer.md` this repository's name. The name
@@ -295,7 +315,7 @@ checkout. Each is its own commit, so the direct push in section 6 is reviewable 
 ## 9. Decisions
 
 D-1 to D-9 were made by the owner on 2026-10-08, D-10 to D-12 on 2026-10-09, after the fresh dry
-run, and D-13 on 2026-10-10, while defining steward. All are recorded in the design doc's
+run, and D-13 and D-14 on 2026-10-10, while defining steward. All are recorded in the design doc's
 Portability section (R1 and R4) and its "Decided so far".
 
 - **D-1. This repository's passages in steward's copy of the design doc** (Pages as the alpha
@@ -341,3 +361,10 @@ Portability section (R1 and R4) and its "Decided so far".
   coder works, so nothing is ready there on its first day (B1). All 29 paths move, and this
   repository keeps its own story tooling in full (`scripts/lint-stories.mjs` and its test,
   `scripts/dispatch/story-containment.mjs`, `stories/README.md` and `stories/_TEMPLATE.md`).
+- **D-14. What the stopped extraction needs before it is retried** (owner, 2026-10-10, from
+  Session A's proposal): the 38 failing tests are dealt with in the bootstrap commits, not by
+  `fix` stories here, which would need a dispatch: the two `invocation.test.mjs` cases are removed
+  under D-8 (B7a), and the other 36 are fixed in steward's copy (B7b). B1's held `blocked:` text
+  is as B1 gives it. Steward's `ci.yml` passes the head branch name through `env:` (B6), rather
+  than leaving that for a steward story. The retry waits for #248 to land, since it changes
+  moving paths (P2) and holds these decisions.
