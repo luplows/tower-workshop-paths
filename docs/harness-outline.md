@@ -127,3 +127,12 @@ otherwise; what is still open says so.
   a project's rules file with the example in the version it pins is a possibility, not decided
   (owner, 2026-10-09). Considered and not chosen: steward's default sections shipped in the package,
   which a project's file extends or switches off.
+
+### Land
+
+- **Steward enforces nothing about CI** (owner, 2026-10-09). The lander relies on the project's
+  own settings for when a pull request may merge, and nothing in steward uses CI to decide when to
+  go on: tower-workshop-paths' `story.mjs` waits for the `ci.yml` run before it reviews
+  (`waitForCi`), and that wait goes.
+- **How checks are enforced on a repository with no branch protection is open** (raised by the
+  owner, 2026-10-09). The second project is one (design doc, R6).
