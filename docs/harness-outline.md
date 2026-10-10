@@ -110,12 +110,12 @@ otherwise; what is still open says so.
   steward shipping a planning session, as tower-workshop-paths has in Session A
   (`docs/session-a.md`).
 - **Tests and CI are an important part of review, but steward does not require a test structure**
-  (owner, 2026-10-10). A possibility: a hook into a CI script that the project configures. Open:
-  what the hook is, and how it sits with "Steward enforces nothing about CI" (Land, below). For
-  reference (Session A, from `main` at `b2a02bf`): the reviewer's prompt assumes `npm test`
-  (`reviewer.md`, lines 78, 220 and 234), and both sessions start from `npm ci` (`install.mjs`,
-  line 20), which no project setting changes: `settings.mjs` accepts no key beyond `repo` and
-  `storyPrefix` (line 20).
+  (owner, 2026-10-10). A possibility: a hook into a CI script that the project configures. How
+  the hook sits with "Steward enforces nothing about CI" was taken up the same day: see that line's
+  revision (Land, below). For reference (Session A, from `main` at `b2a02bf`): the reviewer's
+  prompt assumes `npm test` (`reviewer.md`, lines 78, 220 and 234), and both sessions start from
+  `npm ci` (`install.mjs`, line 20), which no project setting changes: `settings.mjs` accepts no
+  key beyond `repo` and `storyPrefix` (line 20).
 - **Priority is probably the order in which work is started, since the order it finishes in is not
   deterministic** (the owner's leaning, 2026-10-10, still to be thought through). For reference
   (Session A, from `main` at `b2a02bf`): tower-workshop-paths orders ready stories by `tier`, then
@@ -178,6 +178,31 @@ otherwise; what is still open says so.
   own settings for when a pull request may merge, and nothing in steward uses CI to decide when to
   go on: tower-workshop-paths' `story.mjs` waits for the `ci.yml` run before it reviews
   (`waitForCi`), and that wait goes.
+- **Revised 2026-10-10 by the owner: steward cannot enforce CI at install, because it does not know
+  what the project uses, but it could once it learns what the project wants.** The line above
+  stands for what steward assumes at install; these refine it (owner, 2026-10-10):
+  - **Steward learns it from the project's steward settings.** Considered and not chosen (Session
+    A's list): `init` detecting the setup with nothing written down; reading the required checks
+    from GitHub's branch protection or rulesets, which an unprotected repository does not have
+    (R6); and describing it in the rules file, which steward itself cannot act on.
+  - **`init` writes default entries, then explores the repository to surface options, as a
+    deterministic script**, so it does not learn from prose. What it explores is open.
+  - **The lander waits for the checks the settings name**: kept, as the next bullet says.
+  - **Whether steward waits for CI before the review is open.** The owner is on the fence: a
+    coder's work almost always passes CI, and when it does not, the cause is usually the coder's
+    configuration. Today's `waitForCi` is the wait this decides.
+  - **The reviewer may read the CI results, but does not run CI itself**: GitHub already does.
+  - **The coder runs the project's check command before its work is pushed**, which also makes the
+    wait before the review matter less. For reference (Session A, at `4f2f0fd`): in
+    tower-workshop-paths the coder session commits and the dispatcher pushes (`pushBranch`,
+    `coder.mjs` line 233). The prompt asks the session to report `ready` only when "the suite is
+    green" (`coder.md`, line 276), but in prose that names no command, and the dispatcher runs no
+    check before it pushes. Open: whether the coder session runs the command, or steward's own
+    script runs it before the push.
+  - **Whether a project must have CI at all is open.** The owner leans against making CI a
+    prerequisite, but every project of the owner's will have CI, so requiring it is possible.
+  - To confirm (Session A's proposal, 2026-10-10): the install command, today `npm ci`
+    (`install.mjs`, line 20, at `b2a02bf`), goes in the settings beside the check command.
 - **A project says in its steward settings which checks must pass before the lander merges**, and
   installing steward writes the default, **every check on the head green** (the owner leans this
   way, 2026-10-09). This was asked for a repository with no branch protection, where GitHub
