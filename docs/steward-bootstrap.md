@@ -6,10 +6,10 @@ from this repository. It is run by the owner with Session A. It is not a story, 
 dispatches from it.
 
 **Status: agreed by the owner on 2026-10-08, with the six decisions in section 9 (D-1 to D-6; D-7
-to D-9 were added the same day, and D-10 to D-12 on 2026-10-09).** Nothing below has been run
-except the two dry runs in section 3. It runs once P1 to P6 hold. The decisions themselves live in
-the design doc's Portability section; this file is the procedure, and where it restates a decision
-it names the one it must not drift from.
+to D-9 were added the same day, D-10 to D-12 on 2026-10-09, and D-13 on 2026-10-10).** Nothing
+below has been run except the two dry runs in section 3. It runs once P1 to P6 hold. The
+decisions themselves live in the design doc's Portability section; this file is the procedure,
+and where it restates a decision it names the one it must not drift from.
 
 **Paused 2026-10-09 by the owner**, during the real extraction, before A1: steward is to be defined
 first (design doc, "Portability", "Decided so far"). What the extraction ran and found is in
@@ -37,7 +37,9 @@ pull request that records the fresh dry run moves `main` itself.
 
 The design doc's R1 table, with the gaps the dry run found. Re-derive the moving stories with the
 rule in R4: every unbuilt `kind: workflow` story, except OQ-72, OQ-94, OQ-115, OQ-117, OQ-118,
-OQ-137, and OQ-115's clean-up stories OQ-132 to OQ-134.
+OQ-137, OQ-115's clean-up stories OQ-132 to OQ-134, and, since 2026-10-10, OQ-46, OQ-100 and
+OQ-105 (D-13). This repository keeps its own copies of the story tooling among the paths below
+(D-13).
 
 **Paths (29, with `steward.config.json`, this checklist and OQ-129's test):**
 
@@ -56,9 +58,10 @@ OQ-137, and OQ-115's clean-up stories OQ-132 to OQ-134.
 | `docs/steward-bootstrap.md` | Added to R1 on 2026-10-08 (D-9): the record of how steward was made |
 | `scripts/no-project-literals.test.mjs` | Added to R1 on 2026-10-09 (D-11): OQ-129's test, which reads only moved files |
 
-**The 21 moving stories**, re-derived with the rule above at `09147c3`, where every P1 story is
-built: OQ-46, 54, 59, 62, 64, 66, 71, 73, 88, 89, 98, 99, 100, 101, 102, 103, 105, 108, 114, 119
-and 120. Each is extracted at its path under `stories/`, so its history moves with it.
+**The 17 moving stories**, re-derived with the rule above on 2026-10-10, on #248's branch
+with OQ-66 retired: OQ-54, 59, 62, 64, 71, 73, 88, 89, 98, 99, 101, 102, 103, 108, 114, 119 and
+120. Each is extracted at its path under `stories/`, so its history moves with it. (Until
+2026-10-10 there were 21: these, and OQ-46, OQ-66, OQ-100 and OQ-105.)
 
 **Commit messages** (R1, "Commit messages name this repository's pull requests in plain text";
 must not drift from it). The rule file, written with a heredoc, not `printf`, which mangles `\1`:
@@ -162,31 +165,28 @@ checkout. Each is its own commit, so the direct push in section 6 is reviewable 
 - [ ] **B1. Renumber the stories.** `git mv` each moving story to `ST-<n>`, numbered in ascending
       order of OQ id (R4, R9), and set its `id:`. Add a line to its Context: "Formerly
       tower-workshop-paths OQ-<n>." References to OQ stories that stay here keep their numbers.
-      The mapping, re-derived at `09147c3` (unchanged from `7169d85`):
+      The mapping, revised on 2026-10-10 for the 17 stories (D-13). "Held" means a `blocked:`
+      saying the story is held until steward's coder works, replacing any it has here:
 
       | ST | OQ | `depends_on` in steward | `blocked:` in steward |
       |---|---|---|---|
-      | ST-1 | OQ-46 | `[]` | `null` |
-      | ST-2 | OQ-54 | `[]` (OQ-61 is built here) | cleared (R4) |
-      | ST-3 | OQ-59 | `[]` (OQ-49 is built here) | cleared (R4) |
-      | ST-4 | OQ-62 | `[]` | cleared (R4) |
-      | ST-5 | OQ-64 | `[]` | `null` |
-      | ST-6 | OQ-66 | `[]` | `null` |
-      | ST-7 | OQ-71 | `[]` | `null` |
-      | ST-8 | OQ-73 | `[]` | kept, less "held until the move": see decision D-4 |
-      | ST-9 | OQ-88 | `[]` | cleared (R4) |
-      | ST-10 | OQ-89 | `[]` | cleared (R4) |
-      | ST-11 | OQ-98 | `[]` | cleared (R4) |
-      | ST-12 | OQ-99 | `[]` | cleared (R4) |
-      | ST-13 | OQ-100 | `[]` | cleared (R4) |
-      | ST-14 | OQ-101 | `[ST-8]` (the other nine are built here) | `null` |
-      | ST-15 | OQ-102 | `[ST-14]` (OQ-83 and OQ-86 are built here) | `null` |
-      | ST-16 | OQ-103 | `[]` | cleared (R4) |
-      | ST-17 | OQ-105 | `[]` | cleared (R4) |
-      | ST-18 | OQ-108 | `[]` (OQ-107 is built here) | kept: parked by the owner |
-      | ST-19 | OQ-114 | `[]` (R4: `OQ-115` dropped) | `null` |
-      | ST-20 | OQ-119 | `[]` | cleared (R4) |
-      | ST-21 | OQ-120 | `[]` | cleared (R4) |
+      | ST-1 | OQ-54 | `[]` (OQ-61 is built here) | held (D-13) |
+      | ST-2 | OQ-59 | `[]` (OQ-49 is built here) | held (D-13) |
+      | ST-3 | OQ-62 | `[]` | held (D-13) |
+      | ST-4 | OQ-64 | `[]` | held (D-13) |
+      | ST-5 | OQ-71 | `[]` | held (D-13) |
+      | ST-6 | OQ-73 | `[]` | kept, less "held until the move": see decision D-4 |
+      | ST-7 | OQ-88 | `[]` | held (D-13) |
+      | ST-8 | OQ-89 | `[]` | held (D-13) |
+      | ST-9 | OQ-98 | `[]` | held (D-13) |
+      | ST-10 | OQ-99 | `[]` | held (D-13) |
+      | ST-11 | OQ-101 | `[ST-6]` (the other nine are built here) | held (D-13) |
+      | ST-12 | OQ-102 | `[ST-11]` (OQ-83 and OQ-86 are built here) | held (D-13) |
+      | ST-13 | OQ-103 | `[]` | held (D-13) |
+      | ST-14 | OQ-108 | `[]` (OQ-107 is built here) | kept: parked by the owner |
+      | ST-15 | OQ-114 | `[]` (R4: `OQ-115` dropped) | held (D-13) |
+      | ST-16 | OQ-119 | `[]` | held (D-13) |
+      | ST-17 | OQ-120 | `[]` | held (D-13) |
 
       A dropped dependency is recorded in that story's Context, naming the built OQ story.
 - [ ] **B2. Move the fixtures.** `git mv` the four built stories to `test/fixtures/stories/`, and
@@ -234,14 +234,15 @@ checkout. Each is its own commit, so the direct push in section 6 is reviewable 
       - One note at the top of each: an `OQ-<n>` means a tower-workshop-paths story, found in its
         `stories/done/` or `Completed-Questions.md`.
       - Its **Planned** markers that name a moved story take that story's `ST-<n>`. At `09147c3`
-        those are OQ-73 (3), OQ-101 (2), OQ-102, OQ-105, OQ-108, OQ-114 and OQ-119. The markers
-        naming OQ-115 (with OQ-132 to OQ-134) and OQ-137 are reworded without a marker, since that
-        work is this repository's (D-12).
+        those are OQ-73 (3), OQ-101 (2), OQ-102, OQ-108, OQ-114 and OQ-119, the same at #248's
+        head on 2026-10-10. The markers naming OQ-115 (with OQ-132 to OQ-134), OQ-137 and, since
+        2026-10-10, OQ-105 are reworded without a marker, since that work is this repository's
+        (D-12, D-13).
       - This repository's passages, listed in R1 under "This document", and the example story:
         removed or replaced (D-1).
 - [ ] **B12. Links to files that stay here**, made into plain text or links to this repository.
       Five at `09147c3`, as at `d86080c`: `CLAUDE.md` lines 62 and 90, `stories/README.md`
-      lines 14 and 18, and ST-7's (OQ-71's) line 69.
+      lines 14 and 18, and ST-5's (OQ-71's) line 69.
 - [ ] **B13. `.github/pull_request_template.md`**: its Docs check names `README.md`,
       `Open-Questions.md` and `Project-Outline.md`, which steward does not have.
 - [ ] **B14. A short `README.md`**: what steward is, with a pointer to `docs/harness-outline.md`.
@@ -290,9 +291,9 @@ checkout. Each is its own commit, so the direct push in section 6 is reviewable 
 
 ## 9. Decisions
 
-D-1 to D-9 were made by the owner on 2026-10-08, and D-10 to D-12 on 2026-10-09, after the fresh
-dry run. All are recorded in the design doc's Portability section (R1 and R4) and its "Decided so
-far".
+D-1 to D-9 were made by the owner on 2026-10-08, D-10 to D-12 on 2026-10-09, after the fresh dry
+run, and D-13 on 2026-10-10, while defining steward. All are recorded in the design doc's
+Portability section (R1 and R4) and its "Decided so far".
 
 - **D-1. This repository's passages in steward's copy of the design doc** (Pages as the alpha
   channel, the buy-order examples, scraped-data validation, the production target, `mytower.app`,
@@ -302,9 +303,9 @@ far".
   sufficient) and **drops** Playwright, screenshot baselines and the buy-order algorithm (B10).
 - **D-3. The additions to R1's list in section 2** (`test/fixtures/`, the four fixture stories, the
   PR template, `.oxlintrc.json`, `.gitignore`): **added** to R1's table.
-- **D-4. ST-8 (OQ-73):** **its `blocked:` is kept** in steward, less "held until the move": it
-  is a spike the owner runs with Session A, not dispatched (revised 2026-10-09 by the owner, when
-  OQ-73 was rewritten here as that spike; design doc, R5).
+- **D-4. ST-6 (OQ-73; ST-8 until 2026-10-10):** **its `blocked:` is kept** in steward, less
+  "held until the move": it is a spike the owner runs with Session A, not dispatched (revised
+  2026-10-09 by the owner, when OQ-73 was rewritten here as that spike; design doc, R5).
 - **D-5. The order of steward's first stories:** steward's own first stories (the prompts'
   `{{REPO}}` slot and project section, closing `REVIEW.md`'s gaps, and `init` with the thin
   workflow files) are **written at tier `next` before its loop first runs**, so they come before
@@ -331,3 +332,9 @@ far".
 - **D-12. OQ-137's Planned marker** (owner, 2026-10-09, after the fresh dry run): in steward's copy
   of the design doc it **is reworded without a marker**, as OQ-115's is (B11). The passage it is
   in, under "What CI runs", stays.
+- **D-13. Which stories move, and how they are held** (owner, 2026-10-10, while defining steward;
+  design doc, "Portability", "Decided so far"): **17 stories move** (section 2). OQ-46, OQ-100
+  and OQ-105 stay here, and OQ-66 is retired. Every moved story **is held** in steward until its
+  coder works, so nothing is ready there on its first day (B1). All 29 paths move, and this
+  repository keeps its own story tooling in full (`scripts/lint-stories.mjs` and its test,
+  `scripts/dispatch/story-containment.mjs`, `stories/README.md` and `stories/_TEMPLATE.md`).

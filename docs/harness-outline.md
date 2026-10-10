@@ -163,6 +163,10 @@ otherwise; what is still open says so.
 - **The minimum steward needs from a project is the unit of work a pull request implements**
   (owner, 2026-10-09). Steward is not particular about the unit's form: the reviewer reads it as
   written, and steward does not parse it, lint it, or require acceptance criteria of it.
+  **Refined 2026-10-10 by the owner, as for CI:** steward could be configured to lint a project's
+  units, but does not ship with that turned on. A project's own story tooling, such as
+  tower-workshop-paths' story lint and story containment, stays the project's (design doc,
+  "Portability", "Decided so far").
 - **A pull request points at its unit with a link** (owner, 2026-10-09). Steward reads two kinds: a
   file in the repository, from the checkout, and a GitHub issue (owner, 2026-10-09). Other kinds,
   such as a Jira item, are a future improvement. The base install requires the link for code changes

@@ -47,6 +47,12 @@ shape is arguable, not because it is settled.)*
 
 ## Context
 
+**Retired on 2026-10-10 by the owner, unbuilt**, while deciding with Session A which stories
+move to steward (`docs/agent-workflow-design.md`, "Portability", "Decided so far"). Its reason
+was workflow work using up this repository's dispatch slots, and moving the workflow to a
+repository of its own removes that. Running work in parallel is wanted, but after steward's MVP
+(`docs/harness-outline.md`, "What matters most").
+
 Raised 2026-09-19, when the queue held **eleven open `workflow` stories against
 five `product`** — thirteen to five counting `stories/done/` — and none of the
 product ones had moved while the conveyor was built. That is a deliberate
