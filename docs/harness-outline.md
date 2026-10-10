@@ -213,8 +213,10 @@ otherwise; what is still open says so.
   - **Steward does not wait for CI before it starts a review, and does wait for all checks before
     it lands** (owner, 2026-10-10, after first being on the fence: a coder's work almost always
     passes CI, and when it does not, the cause is usually the coder's configuration). So today's
-    `waitForCi` goes, as the line above already says. What follows (Session A, 2026-10-10): the
-    reviewer can read only the CI results that have finished when it looks.
+    `waitForCi` goes, as the line above already says. "All checks" means the checks the project's
+    settings name, and the default is still every check (owner, 2026-10-10, asked whether the
+    project's choice goes). What follows (Session A, 2026-10-10): the reviewer can read only the
+    CI results that have finished when it looks.
   - **The reviewer may read the CI results, but does not run CI itself**: GitHub already does.
   - **The coder runs the project's check command before its work is pushed**, which also makes the
     wait before the review matter less. For reference (Session A, at `4f2f0fd`): in
@@ -229,11 +231,16 @@ otherwise; what is still open says so.
     checks the lander waits for, which is only where the project has CI.
   - **Whether a project must have CI at all is open.** The owner leans against making CI a
     prerequisite, but every project of the owner's will have CI, so requiring it is possible.
-  - To confirm (Session A's proposal, 2026-10-10): the install command, today `npm ci`
-    (`install.mjs`, line 20, at `b2a02bf`), goes in the settings beside the check command.
+  - **The command that prepares a fresh checkout goes in the settings beside the check command,
+    and steward calls it `setup`** (owner, 2026-10-10, from Session A's proposal). Considered and
+    not chosen: `install`, which names only a dependency install, where a project may need more,
+    such as generating code. For reference (Session A, from `main` at `b2a02bf`): today it is
+    `npm ci`, which `install.mjs` calls "the dependency install both dispatched sessions start
+    from" (lines 2 and 20), and tower-workshop-paths' CI runs it as `'Setup: npm ci'` (`ci.yml`,
+    line 32).
 - **A project says in its steward settings which checks must pass before the lander merges**, and
-  installing steward writes the default, **every check on the head green** (the owner leans this
-  way, 2026-10-09). This was asked for a repository with no branch protection, where GitHub
+  installing steward writes the default, **every check on the head green** (the owner leaned this
+  way on 2026-10-09, and confirmed it on 2026-10-10). This was asked for a repository with no branch protection, where GitHub
   enforces nothing and anyone with write access can merge or push to `main` (design doc, R6). For
   reference (Session A, from `main` at `b2a02bf`): the lander merges only when GitHub reports
   `mergeable_state` `clean` (`land.mjs` line 191, `land-approved.yml` line 145), so today a failing
