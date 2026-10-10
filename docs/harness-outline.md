@@ -265,11 +265,14 @@ otherwise; what is still open says so.
 
 ### Loops
 
-- **A review loop and a coding loop, separately** (the owner's idea, 2026-10-09, not yet
-  decided): the coder picks up work, and the reviewer picks up any open pull request. How a coder
-  picks up the reviewer's feedback is to be discussed. For reference (Session A, from `main` at
-  `b2a02bf`): today one run of `story.mjs` takes a story through coder, CI, review and retry, and
-  `writer-prs.mjs` already reviews and lands the open pull requests the loop did not open.
+- **A review loop and a coding loop, separately** (the owner's idea, 2026-10-09; decided by the
+  owner on 2026-10-10, for now, to see how it plays): the coder picks up work, and the reviewer
+  picks up any open pull request. How a coder picks up the reviewer's feedback was taken up on
+  2026-10-09, in the bullets below. Considered and not chosen: one run taking a unit through
+  coding, review and retry, which is what tower-workshop-paths does. For reference (Session A,
+  from `main` at `b2a02bf`): today one run of `story.mjs` takes a story through coder, CI, review
+  and retry, and `writer-prs.mjs` already reviews and lands the open pull requests the loop did not
+  open.
 - **A pull request does not belong to a coder** (the owner's view, 2026-10-09, asked how a coder
   picks up the reviewer's feedback): any coder can take a pull request, read its linked unit and
   its review findings, and make the changes asked for. So a pull request whose latest verdict is a
