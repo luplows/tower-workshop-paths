@@ -149,8 +149,21 @@ otherwise; what is still open says so.
   check that is not required stops it too. Two other ways were considered: merge whenever GitHub
   allows, which on an unprotected repository means on the verdict alone; and keep requiring
   `clean` as steward's own rule.
-- **What installing steward can set up to record and enforce a verdict is open** (raised by the
-  owner, 2026-10-09), and what to do if the answer is nothing.
+- **What installing steward sets up** (owner, 2026-10-09, asked what can record and enforce a
+  verdict, and what to do if the answer is nothing):
+  - It always writes the gate's workflow files (the one that turns the reviewer's verdict into the
+    `review/agent` status, and the sweep), the labels the sweep reads, the project's steward
+    settings with the default merge rule, and the example rules file.
+  - Where GitHub offers branch protection, it offers to set it, and asks first: it changes the
+    repository's settings.
+  - It offers a watchdog, never forces it, as it offers branch protection: a check that opens an
+    issue for any merge to `main` without a passing verdict (design doc, "Watchdog", which
+    describes it and is not built).
+  - Where GitHub offers no branch protection, as on a private repository on GitHub Free, it says
+    plainly that nothing on GitHub enforces the gate. Steward's own sweep still checks the verdict
+    on the head before each merge it makes (`land-approved.yml`, "Belt and braces").
+  - Open: whether GitHub's rulesets are available where branch protection is not. Only the branch
+    protection limit is recorded (design doc, R6).
 
 ### Loops
 
