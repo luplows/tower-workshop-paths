@@ -1,6 +1,7 @@
 # Steward: harness outline
 
-**Status:** draft, being refined with the owner from 2026-10-07, in pull request #199.
+**Status:** draft, being refined with the owner from 2026-10-07: in pull request #199, which
+merged on 2026-10-08, and now in #248.
 
 The harness is named **steward** (decided 2026-10-07 by the owner; R10 in the design document).
 
@@ -50,11 +51,11 @@ readability and must not drift from the files named.
 2. **Never push directly to main.** Every push the dispatcher makes is built by `pushArgs` or
    `claimPushArgs` in `scripts/dispatch/coder.mjs`, and both refuse `main`
    (`assertPlainBranch`). A coder session may not run `git push` (its allowlist grants none and
-   denies it), but it can still reach the owner's SSH key. OQ-73 is scoped to the GitHub token and names SSH
-   keys out of scope, but its chosen mechanism, a container for coder sessions (decided 2026-10-08,
-   built after the move), would close this too. This matters more
-   on the second project: its account is on GitHub Free, so nothing on GitHub stops a push to
-   `main` there (R6 in the design document).
+   denies it), but it can still reach the owner's SSH key. OQ-73 is scoped to the GitHub token and
+   names SSH keys out of scope, but its chosen mechanism, a container for coder sessions (decided
+   2026-10-08, built after the move), would close this too. This matters more on the second
+   project: its account is on GitHub Free, so nothing on GitHub stops a push to `main` there (R6
+   in the design document).
 3. **Always bound the sessions it spawns.** Each session has a spend ceiling (`--max-budget-usd`,
    `ROLE_DEFAULTS` in `scripts/dispatch/invocation.mjs`), a timeout and a stall interval
    (`DEFAULT_TIMEOUT_MS` and `DEFAULT_STALL_MS`, `scripts/dispatch/spawn.mjs`). The spend ceiling
@@ -93,6 +94,43 @@ Started 2026-10-09 by the owner with Session A, after the move was paused to def
 this one works out what it does, and where it ends and a project begins. It follows "What matters
 most", so it starts with review and land. Each statement is the owner's, dated, unless it says
 otherwise; what is still open says so.
+
+### What steward is for
+
+- **The end goal** (owner, 2026-10-10, talked through to give the priorities a direction): to plan
+  work with one or more agents and hand it to coders to carry out; to have that work reviewed
+  before it merges, so the owner can trust what is delivered; to set the priority of work, so that
+  several ready items are worked through in order; to run work in parallel, to deliver more sooner;
+  and to look back at what has been done, so the owner keeps in touch with the state of the
+  project. Not all of it need be steward's: working out which is the point of this section.
+- **Steward's purpose is to provide a path to automated code and review** (owner, 2026-10-10). It
+  does not dictate how a project plans its work, and it need not be the only way work is done in a
+  project. So steward does not provide a planning session: it takes units however they were
+  planned, and readiness is the project's setting (Loops, below). Considered and not chosen:
+  steward shipping a planning session, as tower-workshop-paths has in Session A
+  (`docs/session-a.md`).
+- **Tests and CI are an important part of review, but steward does not require a test structure**
+  (owner, 2026-10-10). A possibility: a hook into a CI script that the project configures. Open:
+  what the hook is, and how it sits with "Steward enforces nothing about CI" (Land, below). For
+  reference (Session A, from `main` at `b2a02bf`): the reviewer's prompt assumes `npm test`
+  (`reviewer.md`, lines 78, 220 and 234), and both sessions start from `npm ci` (`install.mjs`,
+  line 20), which no project setting changes: `settings.mjs` accepts no key beyond `repo` and
+  `storyPrefix` (line 20).
+- **Priority is probably the order in which work is started, since the order it finishes in is not
+  deterministic** (the owner's leaning, 2026-10-10, still to be thought through). For reference
+  (Session A, from `main` at `b2a02bf`): tower-workshop-paths orders ready stories by `tier`, then
+  lowest id (`stories/README.md`, line 129).
+- **Parallel work, on one machine or across several, is wanted but is not in the MVP** (owner,
+  2026-10-10). For reference (Session A, from `main` at `b2a02bf`): the dispatcher runs one story
+  at a time, and the design doc names a merge queue as required before parallel dispatch (line
+  1013).
+- **Looking back is ideally a walkthrough of the product** (owner, 2026-10-10). Whether it is
+  steward's is open. Tower-workshop-paths' design has Session B for this, a periodic walkthrough of
+  `main` that ends in a release tag (design doc, "The shape"), but it has not yet run there, so its
+  scope is unknown (owner, 2026-10-10); `origin` has no tags (Session A, 2026-10-10).
+- **"What it is" and "What matters most", above, are to be revisited in light of these** (Session
+  A, 2026-10-10): they put review and land first and leave the coder implied, and neither mentions
+  planning, priority, parallel work or looking back.
 
 ### Review
 
