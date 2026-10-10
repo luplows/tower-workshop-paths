@@ -102,15 +102,18 @@ otherwise; what is still open says so.
 - **The minimum steward needs from a project is the unit of work a pull request implements**
   (owner, 2026-10-09). Steward is not particular about the unit's form: the reviewer reads it as
   written, and steward does not parse it, lint it, or require acceptance criteria of it.
-- **A pull request points at its unit with a link**: to a file, an issue, a Jira item or the like
-  (owner, 2026-10-09). Steward's base install requires the link for code changes only, and stops
-  hard when it is missing (owner, 2026-10-09). How steward reads what a link points at, and what
-  counts as a code change for this rule, are open. Two other ways of finding the unit were
-  considered: the project's settings name one of a few lookups steward provides, or the project
-  supplies its own lookup. For reference (Session A, from `main` at `b2a02bf`): in
-  tower-workshop-paths the diff is the pointer. `review.mjs`'s `resolveStory` takes the unit to be
-  the story file the diff moves into `stories/done/`, refuses a pull request whose `story/` branch
-  names a story its diff does not move, and refuses one that moves two.
+- **A pull request points at its unit with a link** (owner, 2026-10-09). Steward reads two kinds: a
+  file in the repository, from the checkout, and a GitHub issue (owner, 2026-10-09). Other kinds,
+  such as a Jira item, are a future improvement. The base install requires the link for code changes
+  only, and stops hard when it is missing or cannot be read (owner, 2026-10-09). The stop is a
+  section of the example rules file, not a check steward makes before the review: the reviewer
+  decides what is a code change, as it decides which sections apply, and a project can change the
+  condition (owner, 2026-10-09). The cost is a review session for a pull request without a link. Two
+  other ways of finding the unit were considered: the project's settings name one of a few lookups
+  steward provides, or the project supplies its own lookup. For reference (Session A, from `main` at
+  `b2a02bf`): in tower-workshop-paths the diff is the pointer. `review.mjs`'s `resolveStory` takes
+  the unit to be the story file the diff moves into `stories/done/`, refuses a pull request whose
+  `story/` branch names a story its diff does not move, and refuses one that moves two.
 - **A pull request that implements no unit is still reviewed, against the project's own rules**
   (owner, 2026-10-09, raised for a write-story pull request; tower-workshop-paths could not work
   otherwise). In tower-workshop-paths today such a pull request is reviewed against `REVIEW.md`'s
