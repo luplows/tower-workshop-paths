@@ -114,5 +114,11 @@ otherwise; what is still open says so.
   otherwise). In tower-workshop-paths today such a pull request is reviewed against `REVIEW.md`'s
   general items only, and against items 20 to 25 when it changes `stories/` (`reviewer.md`, "The
   story this PR is meant to implement").
-- **Whether the reviewer's instructions differ by kind of change is open** (raised by the owner,
-  2026-10-09): for example one set for a code change and another for a docs change.
+- **One reviewer prompt, steward's; the rules are the project's, in sections that each say when
+  they apply; and the reviewer names the sections it applied** (owner, 2026-10-09, asked whether
+  instructions should differ for a code change and a docs change). The prompt holds what is the
+  same in every project, how to review; a project's rules say what good means there. Steward does
+  not sort pull requests into kinds itself: the reviewer decides which sections apply, and naming
+  them in its verdict shows when one was skipped.
+- **Steward gives an adopting project an example rules file**, with a basic set of sections and
+  conditions that the project modifies and adds to (owner, 2026-10-09).
