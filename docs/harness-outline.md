@@ -172,3 +172,9 @@ otherwise; what is still open says so.
   picks up the reviewer's feedback is to be discussed. For reference (Session A, from `main` at
   `b2a02bf`): today one run of `story.mjs` takes a story through coder, CI, review and retry, and
   `writer-prs.mjs` already reviews and lands the open pull requests the loop did not open.
+- **A pull request does not belong to a coder** (the owner's view, 2026-10-09, asked how a coder
+  picks up the reviewer's feedback): any coder can take a pull request, read its linked unit and
+  its review findings, and make the changes asked for. So a pull request whose latest verdict is a
+  block is work, as a ready unit is, and the round bound, counted from the pull request's own
+  blocking verdicts, needs no owner. Open: which pull requests a coder may take, how a coder claims
+  one so that two do not take it at once, and whether one with no unit is eligible.
