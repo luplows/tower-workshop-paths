@@ -1686,6 +1686,17 @@ deciding what is next. It is the harness's product outline, and moves with this 
   dry run at `09147c3`): a literal rule rewrites the one `#122/#123`, which the second rule left
   half-rewritten; `scripts/no-project-literals.test.mjs` (OQ-129) is extracted; and steward's
   copy of this document drops OQ-137's marker as it drops OQ-115's. See R1.
+- **The move is paused, to define steward first** (decided 2026-10-09 by the owner, during the
+  real extraction from `main` at `b2a02bf`, before `luplows/steward` was created). The bootstrap's
+  local checks (B15) found 38 of 751 tests failing in the extract, and showed that the engine
+  assumes a project's CI layout: `ci.mjs` takes CI to be `.github/workflows/ci.yml` and a setup
+  step to be one named with `Setup: ` (`CI_WORKFLOW_PATH` and `SETUP_STEP_PREFIX`), and some tests
+  pass only when the project they run in is this repository (`steward-bootstrap.md`, section 3).
+  The owner's view: the engine grew here from "that might be nice" rather than from a definition
+  of steward, so story, coder and review probably have gaps of the same kind. Steward is defined
+  first, starting from its outline (`harness-outline.md`), and the move waits for that. Nothing
+  was created or pushed; what is decided above stands, and the stories held for the move (R4)
+  stay held.
 
 ### The move, in order
 
@@ -1702,12 +1713,13 @@ could not; OQ-126 to OQ-129 made it a project setting.
    working directory and the scripts and prompts from wherever the engine is installed, #211, split
    on 2026-10-08) and OQ-131 (one command-line entry point). OQ-124 (CI and the Pages deploy on
    `main` after each landing) is also built here first, as a `fix` story.
-2. **By hand, the owner with Session A (a bootstrap, not a story):** create `luplows/steward`,
-   public; extract the moved paths with their history (`git filter-repo`, installed on the
-   owner's machine on 2026-10-08 and tried in a dry run); renumber the moved stories `ST-<n>`, each
-   naming its old OQ id; push `main`, the one direct push, made before any protection exists; then
-   protect `main`, and give the repository its own CI, review gate and landing, running the engine
-   from its own checkout. The steps are in [`steward-bootstrap.md`](steward-bootstrap.md).
+2. **Paused 2026-10-09** ("Decided so far"). **By hand, the owner with Session A (a bootstrap, not
+   a story):** create `luplows/steward`, public; extract the moved paths with their history (`git
+   filter-repo`, installed on the owner's machine on 2026-10-08 and tried in a dry run); renumber
+   the moved stories `ST-<n>`, each naming its old OQ id; push `main`, the one direct push, made
+   before any protection exists; then protect `main`, and give the repository its own CI, review
+   gate and landing, running the engine from its own checkout. The steps are in
+   [`steward-bootstrap.md`](steward-bootstrap.md).
 3. **In steward:** `init` and the thin gate workflow files (R2); the second project's gate-only
    start (R6, R7); then OQ-73's container spike and the stories it recommends, and OQ-101.
 4. **Here:** adopting steward (split 2026-10-08, "Decided so far"). OQ-115, the cut-over, by hand:

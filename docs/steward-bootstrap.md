@@ -11,6 +11,10 @@ except the two dry runs in section 3. It runs once P1 to P6 hold. The decisions 
 the design doc's Portability section; this file is the procedure, and where it restates a decision
 it names the one it must not drift from.
 
+**Paused 2026-10-09 by the owner**, during the real extraction, before A1: steward is to be defined
+first (design doc, "Portability", "Decided so far"). What the extraction ran and found is in
+section 3.
+
 Every count and line number here was re-derived on `main` at `09147c3` for the fresh dry run
 (section 3), unless it names another commit, and **is checked again at the real extraction**: the
 pull request that records the fresh dry run moves `main` itself.
@@ -117,6 +121,38 @@ paths and all three rules, after D-10.
 - `git filter-repo` also rewrites a short commit hash cited in a message, such as "on `main` at
   `5eb868f`", to that commit's hash in the new history.
 - `scripts/no-project-literals.test.mjs` was found off the list (D-11).
+
+### The real extraction (stopped 2026-10-09)
+
+From `main` at `b2a02bf`, P1 to P6 checked and P4 confirmed by the dispatcher session, into
+`E:\Source\steward-extract`. Nothing was pushed, and `luplows/steward` was not created. The
+extract is kept on the owner's machine as a record.
+
+- `git filter-repo`, with the 29 paths, the 21 stories and the three rules: 158 of 250 commits kept,
+  and 102 files, every one on the list. Per-file commit counts matched for all 102. D-7: 168
+  distinct numbers rewritten (the extra one is #247), every one this repository's pull request.
+- B1 to B14 were committed in the extract, with one commit not in this checklist: a `.gitattributes`
+  holding `* text=auto eol=lf`, since without it a checkout on a machine with `core.autocrlf=true`
+  gets CRLF files.
+- B15: `npm ci`, `npm run lint`, the story lint and the queue passed; the queue listed only the 21
+  `ST-` stories, ST-8 and ST-18 `blocked` as B1 sets them. **`npm test`: 38 of 751 tests failed, in
+  5 of 25 files.**
+  - `scripts/dispatch/story.test.mjs` (33): its harness calls `runStory` without a `repoDir`, so it
+    reads the settings of the directory it runs in, and rejects its story id `OQ-9` (line 29) once
+    that project's prefix is `ST`.
+  - `scripts/dispatch/settings.test.mjs`, `scripts/dispatch/loop.test.mjs` and
+    `scripts/report/review-verdicts.test.mjs` (one each): they read the committed
+    `steward.config.json` and expect this repository's values.
+  - `scripts/dispatch/invocation.test.mjs` (2): they read `.claude/settings.json` (line 229), which
+    does not move. B7a's rule already covered them, and the re-derivation missed them.
+- What the engine itself assumes about a project, found while looking at those failures:
+  - its CI: `.github/workflows/ci.yml` is CI, and a setup step is named with `Setup: `
+    (`scripts/dispatch/ci.mjs`, lines 26 and 31), which OQ-118's tests check in a real `ci.yml`;
+  - its screenshots: `SCREENSHOT_DIR = 'e2e/__screenshots__/'` (`coder.mjs`, line 128);
+  - its name: the dispatch commits as `dispatch@tower-workshop-paths.invalid` (`coder.mjs`, line
+    385);
+  - its rule files: `coder.md` reads `CLAUDE.md` and `REVIEW.md` from the project (line 140), and
+    `reviewer.md` reads `REVIEW.md` and assumes `npm test`.
 
 ## 4. The bootstrap commits
 
