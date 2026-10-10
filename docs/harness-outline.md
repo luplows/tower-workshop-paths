@@ -109,7 +109,10 @@ otherwise; what is still open says so.
   already works the first way, through the diff. `review.mjs`'s `resolveStory` takes the unit to be
   the story file the diff moves into `stories/done/`, refuses a pull request whose `story/` branch
   names a story its diff does not move, and refuses one that moves two.
-- **A pull request that implements no unit is open** (raised by the owner, 2026-10-09, for a
-  write-story pull request). In tower-workshop-paths today such a pull request is still reviewed,
-  against `REVIEW.md`'s general items only, and against items 20 to 25 when it changes `stories/`
-  (`reviewer.md`, "The story this PR is meant to implement").
+- **A pull request that implements no unit is still reviewed, against the project's own rules**
+  (owner, 2026-10-09, raised for a write-story pull request; tower-workshop-paths could not work
+  otherwise). In tower-workshop-paths today such a pull request is reviewed against `REVIEW.md`'s
+  general items only, and against items 20 to 25 when it changes `stories/` (`reviewer.md`, "The
+  story this PR is meant to implement").
+- **Whether the reviewer's instructions differ by kind of change is open** (raised by the owner,
+  2026-10-09): for example one set for a code change and another for a docs change.
