@@ -181,6 +181,15 @@ otherwise; what is still open says so.
   block, with the review's findings available to it** (owner, 2026-10-09), so that steward is easy
   to set up.
 - **A coder claims its work with a claim commit, at first** (owner, 2026-10-09), as
-  tower-workshop-paths does for a story (`coder.mjs`'s `claimPushArgs`, OQ-110).
+  tower-workshop-paths does for a story (`coder.mjs`'s `claimPushArgs`, OQ-110). On a blocked
+  pull request the claim is a push that requires the branch to be still at the blocked head, so
+  only one of two racing coders succeeds (Session A, 2026-10-10). The owner accepts what follows
+  (2026-10-10): the claim moves the head, so the block is no longer at the head and no other coder
+  takes the pull request, and `review/agent` is cleared until the next review; and the claim
+  commit stays in the pull request's history, though not in `main`'s once the sweep squashes it.
 - **Coder work always needs a unit** (owner, 2026-10-09): a pull request with no unit is reviewed,
   but no coder takes it.
+- **Coders picking up work is opt-in, and what makes a unit ready is the project's setting**
+  (owner, 2026-10-10). Review installs with its rules predefined and little to configure; the
+  coder does not, since there is no way to ship readiness with installation alone. The default
+  above applies to a project that has opted in.
