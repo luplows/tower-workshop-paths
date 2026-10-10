@@ -5,7 +5,7 @@ tier: normal
 kind: workflow
 depends_on: []
 model: sonnet
-blocked: null
+blocked: "Held until steward is extracted, so that this repository's edits to files that move stay out of steward's copies (decided 2026-10-10 by the owner; docs/agent-workflow-design.md, Portability, Decided so far)"
 ---
 
 ## Intent

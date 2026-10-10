@@ -284,7 +284,10 @@ checkout. Each is its own commit, so the direct push in section 6 is reviewable 
       owner: steward starts with the gate only, and its first stories get its coder working (design
       doc, "Decided so far").
 - [ ] A first, small pull request on steward (for example, its first story), reviewed and landed
-      through steward's own gate, which shows `test`, `review/agent` and the sweep working.
+      through steward's own gate, which shows `test`, `review/agent` and the sweep working. Until
+      steward's review loop is built, a dispatcher session runs `review.mjs` and `land.mjs` for
+      its pull requests, as for this repository's (decided 2026-10-10 by the owner; design doc,
+      "Decided so far").
 - [ ] Record the outcome: in steward's design doc, through a steward pull request; and here, in R4,
       the OQ-to-ST mapping, through a `write-story/` pull request, in which Session A also
       retires the moved stories here, each naming its `ST-<n>` (OQ-115's Out of scope).

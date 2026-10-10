@@ -1710,8 +1710,8 @@ deciding what is next. It is the harness's product outline, and moves with this 
   on its first day (Session A suggested the gate only, as R6 decided for the second project),
   taken the same day (next entry); which stories and paths move, re-sorted against the outline
   (since 2026-10-09 steward does not lint units, so the story lint and story containment may be
-  this repository's), also taken the same day (the entry after next); and, not yet taken, what
-  this repository runs until it adopts steward.
+  this repository's), also taken the same day (the entry after next); and what this repository
+  runs until it adopts steward, taken the same day too (the third entry after this one).
 - **Steward starts with the gate only, and its first stories get its coder working** (decided
   2026-10-10 by the owner, from Session A's proposal). On its first day steward reviews and lands
   its own pull requests, written in the owner's interactive sessions, and runs no coder, as R6
@@ -1721,7 +1721,9 @@ deciding what is next. It is the harness's product outline, and moves with this 
   engine's single loop, which the outline replaces with two (`harness-outline.md`, "Loops"). This
   revises the order of steward's first stories in R4 and in `steward-bootstrap.md` (D-5 and
   section 8): the prompts' slot, closing `REVIEW.md`'s gaps and `init` now come after the coder's
-  stories. Open: how steward's reviews are started before its review loop is built.
+  stories. Until steward's review loop is built, its reviews are started by a dispatcher session
+  running `review.mjs` and `land.mjs`, as this repository's are (**The dispatcher session**,
+  above; decided the same day by the owner).
 - **Which stories and paths move, re-sorted against the outline** (decided 2026-10-10 by the
   owner, from Session A's proposal):
   - **Steward's own repository is a project that uses steward, and it and this repository each
@@ -1751,8 +1753,27 @@ deciding what is next. It is the harness's product outline, and moves with this 
     reworded for the `setup` command; OQ-101 and OQ-102 are reworded for two loops; OQ-119 is
     revisited with the stop measure. The rest move as they are.
 
-  Open: OQ-100 and OQ-105 stay here with `blocked:` reading "Held for the move to steward", until
-  what this repository runs meanwhile is decided.
+  OQ-100 and OQ-105 stay here, held until the extraction (next entry).
+- **Until it adopts steward, this repository runs its own engine, frozen** (decided 2026-10-10 by
+  the owner, from Session A's proposal):
+  - **Product stories dispatch** on the engine here, as they do today. When the dispatcher session
+    resumes dispatching is the owner's call, apart from this decision.
+  - **The engine gets no new work here**: no new workflow stories, and only `fix` stories for a
+    defect that stops this repository's loop. After the extraction, a fix to code steward also has
+    gets a matching steward story.
+  - **This repository's own workflow stories that edit files that move wait until after the
+    extraction**: OQ-72 (`CLAUDE.md`, `.github/pull_request_template.md`, `REVIEW.md` items 3
+    and 4, `review-gate.yml` and `stories/README.md`), OQ-94 (`CLAUDE.md`'s Testing section,
+    `REVIEW.md` item 12), OQ-100 (`scripts/lint-stories.mjs`) and OQ-105
+    (`scripts/dispatch/story-containment.mjs`, `ci.yml`). Built first, their edits for this
+    project would be extracted into steward's copies with the history, and stripped by hand at
+    the bootstrap. Built after, they change this repository's copies only. Each carries a
+    `blocked:` saying so.
+
+  Considered and not chosen: pausing dispatch here until the cut-over, with product work done in
+  interactive sessions; and adopting steward's gate early, while keeping this repository's own
+  coder, which needs `init`, the prompts' slot and the delivery of rules first, and splits this
+  repository across two engines.
 
 ### The move, in order
 
@@ -1784,7 +1805,8 @@ starts with the gate only, and dispatches no stories until its coder works ("Dec
    pin steward and switch to the thin workflow files, then start the loop with steward's command.
    Then OQ-133 (the rule files), OQ-132 (the moved code) and OQ-134 (the moved documents), in
    that order, run on steward's engine. Session A retires the moved stories with a note naming
-   each one's `ST-<n>`.
+   each one's `ST-<n>`. Until then, this repository runs its own engine, frozen (decided
+   2026-10-10 by the owner, "Decided so far").
 
 ### What adopting steward needs from it
 
