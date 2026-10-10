@@ -1697,6 +1697,20 @@ deciding what is next. It is the harness's product outline, and moves with this 
   first, starting from its outline (`harness-outline.md`), and the move waits for that. Nothing
   was created or pushed; what is decided above stands, and the stories held for the move (R4)
   stay held.
+- **Steward starts from the extracted engine, and is changed in steward to match its outline**
+  (decided 2026-10-10 by the owner, while defining steward). Steward is made by extracting this
+  repository's engine with its history (`steward-bootstrap.md`); which paths and stories that
+  takes is one of the decisions below. Considered and not chosen:
+  starting steward fresh from the outline and bringing code over piece by piece. Session A's case
+  for extracting, put to the owner the same day: the gate already works, as do the session bounds,
+  the allowlists, the sweep and the claim, and most of what the outline changes is a change to
+  existing code. In `harness-outline.md`, "Defining steward", decisions that differ from the
+  engine say what it does today, each in a note starting "For reference". Session A proposed
+  three more decisions before the extraction resumes, not yet taken: what steward runs for its own
+  pull requests on its first day (Session A suggested the gate only, as R6 decided for the second
+  project); which stories and paths move, re-sorted against the outline (since 2026-10-09 steward
+  does not lint units, so the story lint and story containment may be this repository's); and
+  what this repository runs until it adopts steward.
 
 ### The move, in order
 
