@@ -122,3 +122,8 @@ otherwise; what is still open says so.
   them in its verdict shows when one was skipped.
 - **Steward gives an adopting project an example rules file**, with a basic set of sections and
   conditions that the project modifies and adds to (owner, 2026-10-09).
+- **The example is a copy: once adopted, the project owns its rules file** (owner, 2026-10-09).
+  Steward keeps update notes on what changes in the example between versions. A tool that compares
+  a project's rules file with the example in the version it pins is a possibility, not decided
+  (owner, 2026-10-09). Considered and not chosen: steward's default sections shipped in the package,
+  which a project's file extends or switches off.
