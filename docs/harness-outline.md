@@ -102,11 +102,13 @@ otherwise; what is still open says so.
 - **The minimum steward needs from a project is the unit of work a pull request implements**
   (owner, 2026-10-09). Steward is not particular about the unit's form: the reviewer reads it as
   written, and steward does not parse it, lint it, or require acceptance criteria of it.
-- **How steward finds the unit is open.** The owner prefers, for its simplicity, that the pull
-  request point at its unit (2026-10-09), with questions still to settle. Two other ways were
+- **A pull request points at its unit with a link**: to a file, an issue, a Jira item or the like
+  (owner, 2026-10-09). Steward's base install requires the link for code changes only, and stops
+  hard when it is missing (owner, 2026-10-09). How steward reads what a link points at, and what
+  counts as a code change for this rule, are open. Two other ways of finding the unit were
   considered: the project's settings name one of a few lookups steward provides, or the project
-  supplies its own lookup. For reference (Session A, from `main` at `b2a02bf`): tower-workshop-paths
-  already works the first way, through the diff. `review.mjs`'s `resolveStory` takes the unit to be
+  supplies its own lookup. For reference (Session A, from `main` at `b2a02bf`): in
+  tower-workshop-paths the diff is the pointer. `review.mjs`'s `resolveStory` takes the unit to be
   the story file the diff moves into `stories/done/`, refuses a pull request whose `story/` branch
   names a story its diff does not move, and refuses one that moves two.
 - **A pull request that implements no unit is still reviewed, against the project's own rules**
@@ -127,6 +129,7 @@ otherwise; what is still open says so.
   a project's rules file with the example in the version it pins is a possibility, not decided
   (owner, 2026-10-09). Considered and not chosen: steward's default sections shipped in the package,
   which a project's file extends or switches off.
+- **What the example rules file contains is left for later** (owner, 2026-10-09).
 
 ### Land
 
@@ -143,3 +146,13 @@ otherwise; what is still open says so.
   check that is not required stops it too. Two other ways were considered: merge whenever GitHub
   allows, which on an unprotected repository means on the verdict alone; and keep requiring
   `clean` as steward's own rule.
+- **What installing steward can set up to record and enforce a verdict is open** (raised by the
+  owner, 2026-10-09), and what to do if the answer is nothing.
+
+### Loops
+
+- **A review loop and a coding loop, separately** (the owner's idea, 2026-10-09, not yet
+  decided): the coder picks up work, and the reviewer picks up any open pull request. How a coder
+  picks up the reviewer's feedback is to be discussed. For reference (Session A, from `main` at
+  `b2a02bf`): today one run of `story.mjs` takes a story through coder, CI, review and retry, and
+  `writer-prs.mjs` already reviews and lands the open pull requests the loop did not open.
