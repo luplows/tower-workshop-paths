@@ -240,13 +240,13 @@ otherwise; what is still open says so.
     line 32).
 - **A project says in its steward settings which checks must pass before the lander merges**, and
   installing steward writes the default, **every check on the head green** (the owner leaned this
-  way on 2026-10-09, and confirmed it on 2026-10-10). This was asked for a repository with no branch protection, where GitHub
-  enforces nothing and anyone with write access can merge or push to `main` (design doc, R6). For
-  reference (Session A, from `main` at `b2a02bf`): the lander merges only when GitHub reports
-  `mergeable_state` `clean` (`land.mjs` line 191, `land-approved.yml` line 145), so today a failing
-  check that is not required stops it too. Two other ways were considered: merge whenever GitHub
-  allows, which on an unprotected repository means on the verdict alone; and keep requiring
-  `clean` as steward's own rule.
+  way on 2026-10-09, and confirmed it on 2026-10-10). This was asked for a repository with no
+  branch protection, where GitHub enforces nothing and anyone with write access can merge or push
+  to `main` (design doc, R6). For reference (Session A, from `main` at `b2a02bf`): the lander
+  merges only when GitHub reports `mergeable_state` `clean` (`land.mjs` line 191,
+  `land-approved.yml` line 145), so today a failing check that is not required stops it too. Two
+  other ways were considered: merge whenever GitHub allows, which on an unprotected repository
+  means on the verdict alone; and keep requiring `clean` as steward's own rule.
 - **What installing steward sets up** (owner, 2026-10-09, asked what can record and enforce a
   verdict, and what to do if the answer is nothing):
   - It always writes the gate's workflow files (the one that turns the reviewer's verdict into the
