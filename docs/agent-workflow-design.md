@@ -1706,18 +1706,29 @@ deciding what is next. It is the harness's product outline, and moves with this 
   the allowlists, the sweep and the claim, and most of what the outline changes is a change to
   existing code. In `harness-outline.md`, "Defining steward", decisions that differ from the
   engine say what it does today, each in a note starting "For reference". Session A proposed
-  three more decisions before the extraction resumes, not yet taken: what steward runs for its own
-  pull requests on its first day (Session A suggested the gate only, as R6 decided for the second
-  project); which stories and paths move, re-sorted against the outline (since 2026-10-09 steward
-  does not lint units, so the story lint and story containment may be this repository's); and
-  what this repository runs until it adopts steward.
+  three more decisions before the extraction resumes: what steward runs for its own pull requests
+  on its first day (Session A suggested the gate only, as R6 decided for the second project),
+  taken the same day (next entry); and, not yet taken, which stories and paths move, re-sorted
+  against the outline (since 2026-10-09 steward does not lint units, so the story lint and story
+  containment may be this repository's), and what this repository runs until it adopts steward.
+- **Steward starts with the gate only, and its first stories get its coder working** (decided
+  2026-10-10 by the owner, from Session A's proposal). On its first day steward reviews and lands
+  its own pull requests, written in the owner's interactive sessions, and runs no coder, as R6
+  decided for the second project. The first follow-ups in steward are the stories that get its
+  coder working to its outline. Considered and not chosen: steward dispatching its own `ST-<n>`
+  stories from the day it exists, which "The move, in order" was built for; that would run the
+  engine's single loop, which the outline replaces with two (`harness-outline.md`, "Loops"). This
+  revises the order of steward's first stories in R4 and in `steward-bootstrap.md` (D-5 and
+  section 8): the prompts' slot, closing `REVIEW.md`'s gaps and `init` now come after the coder's
+  stories. Open: how steward's reviews are started before its review loop is built.
 
 ### The move, in order
 
 Decided 2026-10-08 by the owner. The engine is made project-neutral here first, where the loop
 and gate already work, so that the workflow's repository can dispatch its own `ST-<n>` stories
 from the day it exists. When this was decided, the `OQ` prefix was hardcoded in five modules, so it
-could not; OQ-126 to OQ-129 made it a project setting.
+could not; OQ-126 to OQ-129 made it a project setting. Revised 2026-10-10 by the owner: steward
+starts with the gate only, and dispatches no stories until its coder works ("Decided so far").
 
 1. **Here, built by the loop:** OQ-118 then OQ-117 (CI), OQ-122 (a settings file with the
    repository and the story prefix, #210) and the stories split from it on 2026-10-08: OQ-125
@@ -1734,7 +1745,8 @@ could not; OQ-126 to OQ-129 made it a project setting.
    before any protection exists; then protect `main`, and give the repository its own CI, review
    gate and landing, running the engine from its own checkout. The steps are in
    [`steward-bootstrap.md`](steward-bootstrap.md).
-3. **In steward:** `init` and the thin gate workflow files (R2); the second project's gate-only
+3. **In steward:** first the stories that get its coder working (revised 2026-10-10 by the owner,
+   "Decided so far"); `init` and the thin gate workflow files (R2); the second project's gate-only
    start (R6, R7); then OQ-73's container spike and the stories it recommends, and OQ-101.
 4. **Here:** adopting steward (split 2026-10-08, "Decided so far"). OQ-115, the cut-over, by hand:
    pin steward and switch to the thin workflow files, then start the loop with steward's command.
@@ -1994,7 +2006,9 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   dispatched (R5). ST-18, the copy of OQ-108, keeps the owner's own `blocked:`. And steward's own
   first stories (the prompts' `{{REPO}}` slot and project section, closing `REVIEW.md`'s numbering
   gaps, and `init` with the thin workflow files) are written at tier `next` before its loop first
-  runs, so they come before the moved stories.
+  runs, so they come before the moved stories. **Revised 2026-10-10 by the owner:** steward starts
+  with the gate only, and the stories that get its coder working come first, ahead of these
+  ("Decided so far").
 - **R5. When.** **Revised 2026-10-08 by the owner: the move comes before OQ-73**, once the story
   pull requests #204 to #208 (OQ-117 to OQ-121) have landed, and still before OQ-101. OQ-73's coder
   (#209) found that its candidate mechanism, a separate Windows account for spawns, needs an

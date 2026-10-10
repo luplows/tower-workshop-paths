@@ -279,7 +279,9 @@ checkout. Each is its own commit, so the direct push in section 6 is reviewable 
       `node scripts/dispatch/cli.mjs loop --init <path>`. `TW_MACHINE_LABEL` exported.
 - [ ] Steward's own first stories written at tier `next`, on `write-story/` branches in steward,
       before its loop first runs (D-5). The design doc's "What adopting steward needs from it"
-      lists what this repository's adoption (OQ-115) needs from them.
+      lists what this repository's adoption (OQ-115) needs from them. Revised 2026-10-10 by the
+      owner: steward starts with the gate only, and its first stories get its coder working (design
+      doc, "Decided so far").
 - [ ] A first, small pull request on steward (for example, its first story), reviewed and landed
       through steward's own gate, which shows `test`, `review/agent` and the sweep working.
 - [ ] Record the outcome: in steward's design doc, through a steward pull request; and here, in R4,
@@ -306,7 +308,9 @@ far".
 - **D-5. The order of steward's first stories:** steward's own first stories (the prompts'
   `{{REPO}}` slot and project section, closing `REVIEW.md`'s gaps, and `init` with the thin
   workflow files) are **written at tier `next` before its loop first runs**, so they come before
-  the moved stories. Writing them is Session A's, in steward (section 8).
+  the moved stories. Writing them is Session A's, in steward (section 8). **Revised 2026-10-10 by
+  the owner:** steward starts with the gate only, and the stories that get its coder working come
+  first, ahead of these (design doc, "Decided so far").
 - **D-6. The checkouts:** `E:\Source\steward-extract` for the extraction, and `E:\Source\steward`
   with the loop's worktree beside it.
 - **D-7. A `#N` that is not this repository's pull request** (from the reviewer's observation on
