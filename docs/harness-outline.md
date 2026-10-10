@@ -197,8 +197,12 @@ otherwise; what is still open says so.
     tower-workshop-paths the coder session commits and the dispatcher pushes (`pushBranch`,
     `coder.mjs` line 233). The prompt asks the session to report `ready` only when "the suite is
     green" (`coder.md`, line 276), but in prose that names no command, and the dispatcher runs no
-    check before it pushes. Open: whether the coder session runs the command, or steward's own
-    script runs it before the push.
+    check before it pushes. **The coder session runs it, so that it can make changes when the check
+    fails; steward's own script does not run it again before the push, since on a bigger project
+    the check can take a long time** (owner, 2026-10-10). Considered and not chosen: steward's
+    script running it, alone or as well. What follows (Session A, 2026-10-10): nothing
+    deterministic runs the check before the push, so a coder that skips it is caught only by the
+    checks the lander waits for, which is only where the project has CI.
   - **Whether a project must have CI at all is open.** The owner leans against making CI a
     prerequisite, but every project of the owner's will have CI, so requiring it is possible.
   - To confirm (Session A's proposal, 2026-10-10): the install command, today `npm ci`
