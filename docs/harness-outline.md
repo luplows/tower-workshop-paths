@@ -85,3 +85,31 @@ In order (confirmed 2026-10-08 by the owner):
 2. **Keeping going**: working through ready work unattended, and surfacing problems where the
    owner will see them.
 3. **The view** for deciding what is next and seeing what is in flight.
+
+## Defining steward
+
+Started 2026-10-09 by the owner with Session A, after the move was paused to define steward first
+(design doc, "Portability", "Decided so far"). The sections above say who steward is for and why;
+this one works out what it does, and where it ends and a project begins. It follows "What matters
+most", so it starts with review and land. Each statement is the owner's, dated, unless it says
+otherwise; what is still open says so.
+
+### Review
+
+- **When a pull request appears, a reviewer is spawned to check that it implements what it is
+  supposed to** (owner, 2026-10-09). Left deliberately broad at first, since the specifics bear on
+  other decisions.
+- **The minimum steward needs from a project is the unit of work a pull request implements**
+  (owner, 2026-10-09). Steward is not particular about the unit's form: the reviewer reads it as
+  written, and steward does not parse it, lint it, or require acceptance criteria of it.
+- **How steward finds the unit is open.** The owner prefers, for its simplicity, that the pull
+  request point at its unit (2026-10-09), with questions still to settle. Two other ways were
+  considered: the project's settings name one of a few lookups steward provides, or the project
+  supplies its own lookup. For reference (Session A, from `main` at `b2a02bf`): tower-workshop-paths
+  already works the first way, through the diff. `review.mjs`'s `resolveStory` takes the unit to be
+  the story file the diff moves into `stories/done/`, refuses a pull request whose `story/` branch
+  names a story its diff does not move, and refuses one that moves two.
+- **A pull request that implements no unit is open** (raised by the owner, 2026-10-09, for a
+  write-story pull request). In tower-workshop-paths today such a pull request is still reviewed,
+  against `REVIEW.md`'s general items only, and against items 20 to 25 when it changes `stories/`
+  (`reviewer.md`, "The story this PR is meant to implement").
