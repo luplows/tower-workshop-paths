@@ -1782,6 +1782,12 @@ deciding what is next. It is the harness's product outline, and moves with this 
   branch name through `env:` from the start (B6). Nothing else from the definition is needed
   first: the rest is steward's own work. The retry waits for the pull request recording these
   decisions to land, since it changes moving paths.
+- **The extraction is retried, and stops before the repository is created** (2026-10-10, from
+  `main` at `688c3c2`, after #248). Its local checks passed (`steward-bootstrap.md`, section 3).
+  Two decisions by the owner, the same day: the retry goes into a fresh clone, and the stopped
+  run's is kept as its record (D-6); and steward gets a `.gitattributes` holding
+  `* text=auto eol=lf`, as a bootstrap commit of its own (D-15). Creating `luplows/steward` and the
+  one direct push each wait for the owner's authorisation at that moment (A1, A2).
 
 ### The move, in order
 
@@ -1799,9 +1805,10 @@ starts with the gate only, and dispatches no stories until its coder works ("Dec
    working directory and the scripts and prompts from wherever the engine is installed, #211, split
    on 2026-10-08) and OQ-131 (one command-line entry point). OQ-124 (CI and the Pages deploy on
    `main` after each landing) is also built here first, as a `fix` story.
-2. **Paused 2026-10-09** ("Decided so far"). **By hand, the owner with Session A (a bootstrap, not
-   a story):** create `luplows/steward`, public; extract the moved paths with their history (`git
-   filter-repo`, installed on the owner's machine on 2026-10-08 and tried in a dry run); renumber
+2. **Paused 2026-10-09, and retried 2026-10-10 up to the local checks, which passed** ("Decided so
+   far"). **By hand, the owner with Session A (a bootstrap, not a story):** create
+   `luplows/steward`, public; extract the moved paths with their history (`git filter-repo`,
+   installed on the owner's machine on 2026-10-08 and tried in a dry run); renumber
    the moved stories `ST-<n>`, each naming its old OQ id; push `main`, the one direct push, made
    before any protection exists; then protect `main`, and give the repository its own CI, review
    gate and landing, running the engine from its own checkout. The steps are in
