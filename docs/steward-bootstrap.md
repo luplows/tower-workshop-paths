@@ -7,15 +7,15 @@ dispatches from it.
 
 **Status: agreed by the owner on 2026-10-08, with the six decisions in section 9 (D-1 to D-6; D-7
 to D-9 were added the same day, D-10 to D-12 on 2026-10-09, and D-13 to D-15 on 2026-10-10).**
-Sections 1, 2 and 4 were run on 2026-10-10, in the retried extraction (section 3). Sections 5 to
-8 have not been run.
+Sections 1, 2 and 4 to 7 were run on 2026-10-10, in the retried extraction (section 3): steward
+exists, with its history pushed and its `main` protected. Section 8 has not been run.
 The decisions themselves live in the design doc's Portability section; this file is the
 procedure, and where it restates a decision it names the one it must not drift from.
 
 **Paused 2026-10-09 by the owner**, during the real extraction, before A1: steward is to be defined
 first (design doc, "Portability", "Decided so far"). What the extraction ran and found is in
 section 3. **Retried 2026-10-10**, from `main` at `688c3c2`, after #248 recorded that definition.
-The local checks (B15) passed. It stops before A1, which waits for the owner.
+The local checks (B15) passed, and the owner then authorised A1 and A2 (sections 5 to 7).
 
 Every count and line number here was re-derived on `main` at `09147c3` for the fresh dry run
 (section 3), unless it names another commit, and was checked again at the retried extraction, at
@@ -164,8 +164,8 @@ extract is kept on the owner's machine as a record.
 ### The retried extraction (done 2026-10-10)
 
 From `main` at `688c3c2` (#248), into a fresh clone at `E:\Source\steward-extract-2` (D-6).
-Nothing was pushed, and `luplows/steward` was not created. `E:\Source\steward-extract` was left
-untouched.
+`E:\Source\steward-extract` was left untouched. Sections 1, 2 and 4 are below; sections 5 to 7,
+run once the owner had authorised A1 and then A2, are at the end of this entry.
 
 - P1 to P6 held. P4 was confirmed by the dispatcher session, for this machine: no loop, story,
   coder, review or landing process and no scheduled task, nothing in flight or queued, and no
@@ -200,6 +200,26 @@ untouched.
   tests passed: the stopped run's 751 less B7a's two), `node scripts/dispatch/cli.mjs lint` (exit
   0, no output) and `node scripts/dispatch/cli.mjs queue`: 17 rows, ST-1 to ST-17, every one
   `blocked`. `package-lock.json` was unchanged by a fresh `npm install`.
+- A1, authorised by the owner. `luplows/steward` was created public, with no initial commit
+  (`gh repo create luplows/steward --public`, at 2026-10-11T01:47:48Z, which was 2026-10-10 on
+  the owner's machine). Section 5's settings were set and read back. This repository's settings,
+  read again first, were as section 5 records. `delete_branch_on_merge`, which this repository
+  has on and section 5 does not list, was left at GitHub's default, off: the sweep deletes heads
+  (`CLAUDE.md`). The two labels were created with this repository's colours and descriptions.
+  GitHub's nine default labels were left in place.
+- A2, authorised by the owner. The first try used an HTTPS remote. It waited on a credential
+  manager sign-in, which was cancelled, and nothing was pushed. On the owner's word the push was
+  made over SSH, as this repository's remote is, with `git@github.com:luplows/steward.git`. One
+  `git push origin main` created `main` at `e77fc29`, steward's only branch.
+- The `ci.yml` run the push triggered, run 38104261972, was green: job `test`, with lint and
+  `npm test` (25 of 25 files, 749 of 749 tests); the containment step was skipped, as it runs on
+  pull requests only.
+- Section 7: this repository's protection was read again, and applied to steward's `main` with
+  the two required checks bound to GitHub Actions (`app_id` 15368), as this repository's are.
+  Read back with `gh api`, every field compared (required checks, strictness, the review
+  settings, signatures, `enforce_admins`, linear history, force pushes, deletions, creations,
+  conversation resolution, lock, fork syncing and restrictions) is the same as this
+  repository's.
 
 ## 4. The bootstrap commits
 
@@ -316,28 +336,31 @@ extraction; D-6), never a working checkout. Each is its own commit, so the direc
       `npm test`, `node scripts/dispatch/cli.mjs lint`, and `node scripts/dispatch/cli.mjs queue`.
       The queue should list only `ST-` stories, with the statuses in B1.
 
+Sections 5 to 7 were ticked at the retried extraction, on 2026-10-10 (section 3).
+
 ## 5. Create the repository
 
-- [ ] **A1. The owner authorises creating `luplows/steward`, public**, with no initial commit.
-- [ ] Settings, mirroring this repository's as read on 2026-10-08: squash, merge-commit and rebase
+- [x] **A1. The owner authorises creating `luplows/steward`, public**, with no initial commit.
+- [x] Settings, mirroring this repository's as read on 2026-10-08: squash, merge-commit and rebase
       merging allowed (the sweep squashes); issues on; default workflow permissions `read`;
       Actions may not approve pull requests.
-- [ ] Labels: `review-blocked` and `loop-stuck`, which this repository has. `breaker-override` is
+- [x] Labels: `review-blocked` and `loop-stuck`, which this repository has. `breaker-override` is
       read by `land-approved.yml` but this repository has no such label either.
 
 ## 6. The one direct push
 
-- [ ] **A2. The owner authorises the push explicitly, at that moment.** It is made before any
+- [x] **A2. The owner authorises the push explicitly, at that moment.** It is made before any
       protection exists (design doc, "The move, in order", step 2).
-- [ ] Push `main` only: `git push origin main`. No other branch, no tags.
-- [ ] The `ci.yml` run triggered by the push is green.
+- [x] Push `main` only: `git push origin main`. No other branch, no tags. Over SSH, as this
+      repository pushes (section 3).
+- [x] The `ci.yml` run triggered by the push is green.
 
 ## 7. Protect `main`
 
-- [ ] Mirror this repository's protection, as read on 2026-10-08: required checks `test` and
+- [x] Mirror this repository's protection, as read on 2026-10-08: required checks `test` and
       `review/agent`, not strict; `enforce_admins: true`; pull requests required, with 0
       approvals; no force pushes, no deletions.
-- [ ] Read the protection back with `gh api repos/luplows/steward/branches/main/protection` and
+- [x] Read the protection back with `gh api repos/luplows/steward/branches/main/protection` and
       check each setting.
 
 ## 8. Steward's own loop, and the first pull request
