@@ -5,7 +5,7 @@ tier: normal
 kind: product
 depends_on: []
 model: sonnet
-blocked: "ci-retry-no-commit: the retry pushed no commit, so the head is unchanged and its CI is still red"
+blocked: null
 ---
 
 ## Intent
