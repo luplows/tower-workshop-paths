@@ -37,8 +37,10 @@ once: every purchase in order, and a short summary of where the coins go.
       `ENHANCEMENT_CATEGORIES` (each tree's `upgrades`) either reaches its max
       level in the plan, or is listed as unpriced (AC-6).
 - [ ] **AC-4** — Two views of the plan are presented:
-      - a **granular** list of every purchase in order, each with what is
-        bought, the levels it goes from and to, and its cost;
+      - a **granular** list of the purchases in order, each with what is
+        bought, the levels it goes from and to, and its cost, from which every
+        purchase in the plan can be reached. It need not show them all at once
+        (Out of scope, "How the granular list is presented");
       - a **per-upgrade summary**, with one row per upgrade bought, keyed by
         the buy order's `source` and `name`, giving its level before its first
         purchase in the plan, its level after its last, how many purchases it

@@ -56,7 +56,11 @@ this repository's own convention (`docs/steward-bootstrap.md`, D-13).
   reach a project's sessions is decided once steward builds the mechanism.
 - AC-3 and the title were reworded on 2026-10-12 for D-13 (decided
   2026-10-10). Before, AC-3 cut `stories/README.md` to a pointer at steward's
-  schema and removed `stories/_TEMPLATE.md`.
+  schema and removed `stories/_TEMPLATE.md`. AC-3 was then reworded a second
+  time the same day (#256, after #251's review): its first rewording, "left
+  whole … the diff does not touch either, and `node scripts/lint-stories.mjs`
+  passes", could not fail. It now requires `CLAUDE.md`'s pointer to this
+  repository's `stories/README.md`.
 - The coder reads `CLAUDE.md` and `REVIEW.md` from the repository root
   (`.claude/prompts/coder.md` line 140), and the reviewer reads `REVIEW.md`
   there (`reviewer.md` line 171). The reviewer cites `REVIEW.md` items by

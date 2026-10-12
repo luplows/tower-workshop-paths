@@ -44,9 +44,12 @@ starts none that runs. This stopped OQ-8 on #252.
       and carries on from that result as from any CI result.
 - [ ] **AC-4** — `runStory` does AC-3 at most once per run. A second red CI
       after it is decided as today, by `decideCi`. So one case is left: a
-      retried coder that deletes stale baselines a second time still stops
-      with `ci-retry-no-commit`. That is intended. The limit stops a loop of
-      empty commits, if baselines are committed after every push.
+      retried coder that deletes stale baselines a second time pushes a
+      commit, so the run goes back to CI. That CI is red, and the bot commits
+      baselines again. The coder is retried once more, changes nothing, and
+      the story stops with `ci-retry-no-commit` (or at `MAX_ROUNDS` first).
+      That is intended. The limit stops a loop of empty commits, if baselines
+      are committed after every push.
 - [ ] **AC-5** — When no baseline commit is recognised, the run goes on as
       at `f5cb7b1`: `decideCi`'s retry, with the same round count and the
       same findings.
