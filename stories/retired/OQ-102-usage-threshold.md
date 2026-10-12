@@ -80,6 +80,12 @@ up again once usage is back under the threshold.
 
 ## Context
 
+**Retired here on 2026-10-12, unbuilt: it moved to steward as ST-12.** It was
+copied into `luplows/steward` at the extraction on 2026-10-10
+(`docs/steward-bootstrap.md`, B1), and is built there, not here
+(`docs/agent-workflow-design.md`, R4). This copy is otherwise as it was when
+it moved.
+
 - Decided by the owner on 2026-09-28, in the dispatcher session: past the
   threshold, no new coder session starts, retries included, and reviews carry
   on, "I'd like the end state to be everything has a review posted".

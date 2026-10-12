@@ -66,6 +66,12 @@ today, but nothing would fail if one changed and the other did not.
 
 ## Context
 
+**Retired here on 2026-10-12, unbuilt: it moved to steward as ST-17.** It was
+copied into `luplows/steward` at the extraction on 2026-10-10
+(`docs/steward-bootstrap.md`, B1), and is built there, not here
+(`docs/agent-workflow-design.md`, R4). This copy is otherwise as it was when
+it moved.
+
 - `scripts/land/apply-review-blocked.mjs`: `MARKER_RE` (lines 34–35),
   `lastVerdict` (lines 37–40), `countBlockingVerdicts` (lines 43–49).
 - `scripts/dispatch/github.mjs`: `parseMarkerComment` returns

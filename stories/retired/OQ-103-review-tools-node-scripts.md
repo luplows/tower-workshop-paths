@@ -67,6 +67,12 @@ exit code.
 
 ## Context
 
+**Retired here on 2026-10-12, unbuilt: it moved to steward as ST-13.** It was
+copied into `luplows/steward` at the extraction on 2026-10-10
+(`docs/steward-bootstrap.md`, B1), and is built there, not here
+(`docs/agent-workflow-design.md`, R4). This copy is otherwise as it was when
+it moved.
+
 - `scripts/dispatch/review-tools.mjs` (OQ-92):
   - `allowedPrefixes()` takes the `Bash(<prefix>:*)` entries of
     `reviewerAllowedTools()` and drops `node`

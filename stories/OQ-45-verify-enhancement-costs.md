@@ -35,8 +35,8 @@ not silently skew the buy-order the way a stale Workshop table would.
 - [ ] **AC-5** — Any comparison helper that already exists in
       `verify-workshop-costs.mjs` and applies unchanged to Enhancement data is
       **shared rather than copied**. Two independently-drifting copies of a
-      rounding tolerance or an abbreviated-number parser is the defect this
-      project already has a story about (OQ-71); name in the PR body which
+      rounding tolerance or an abbreviated-number parser is the defect
+      steward's ST-5 (formerly OQ-71 here) is about; name in the PR body which
       helpers were shared and which genuinely differ, with the reason.
 - [ ] **AC-6** — Drift detection runs on a schedule for Enhancement data,
       producing the same outcome as the Workshop check: a confirmed discrepancy

@@ -244,7 +244,7 @@ export function retrySection({ round, roundsRemaining, findings, branch, source 
  * Returns `{ args, env, prompt }`. `prompt` is for stdin (OQ-65) and appears
  * in no element of `args`. The coder's `env` is `coderEnv`'s, so no GitHub
  * credential survives into it. The reviewer's is a copy of `baseEnv`:
- * removing the reviewer's credentials is OQ-62's, not this story's. Both
+ * removing the reviewer's credentials is OQ-62's (now steward's ST-3), not this story's. Both
  * roles' `env` then has `BASH_DEFAULT_TIMEOUT_MS` and `BASH_MAX_TIMEOUT_MS`
  * set to `SHELL_TIMEOUT_MS`, overriding whatever `baseEnv` carried, and
  * `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS` removed so background commands stay

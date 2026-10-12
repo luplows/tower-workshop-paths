@@ -64,7 +64,7 @@ verdict; whoever ran it records that verdict. Invoke it with `Edit`, `Write`,
 
 Those denials raise the floor rather than sealing it — see **defence in depth,
 not containment** below, which is the honest version of what they buy and why
-OQ-62 exists.
+OQ-62 (now steward's ST-3) exists.
 
 **Three further flags on that invocation are load-bearing.** Pass
 `--permission-prompts none`, so anything that would prompt is *denied* rather
@@ -101,7 +101,8 @@ accidental path; it does not make writing impossible, and nothing in this
 invocation does. What keeps the gate honest is that you **post nothing** — a
 rule you follow, not one the flags enforce. Treat that as a reason to hold to it
 more carefully, not less. Removing the capability rather than denying the
-command is OQ-62; until it lands, prose is the guarantee.
+command is OQ-62, now steward's ST-3; until this repository adopts steward with it
+built, prose is the guarantee.
 
 That is also why this file has no credentials section. The previous version of
 this prompt accreted one fix per failed run — credential hunting after sessions

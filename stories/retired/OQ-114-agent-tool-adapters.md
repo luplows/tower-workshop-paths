@@ -43,6 +43,12 @@ the real ones come from the answers to the open questions.
 
 ## Context
 
+**Retired here on 2026-10-12, unbuilt: it moved to steward as ST-15.** It was
+copied into `luplows/steward` at the extraction on 2026-10-10
+(`docs/steward-bootstrap.md`, B1), and is built there, not here
+(`docs/agent-workflow-design.md`, R4). This copy is otherwise as it was when
+it moved.
+
 - `docs/agent-workflow-design.md`, "Portability": the goals, what ties the
   workflow to the Claude Code CLI today, and the open questions.
 - `scripts/dispatch/spawn.mjs`, `invocation.mjs`, `outcome.mjs`,

@@ -48,10 +48,11 @@ moved code), then OQ-134 (the moved documents).
   can be undone by reverting one pull request.
 - **Retiring the moved stories.** Session A does that in a `write-story/` pull
   request, each with a note naming its `ST-<n>`, once the bootstrap's B1 has
-  fixed the mapping (`stories/README.md`, "Lifecycle").
+  fixed the mapping (`stories/README.md`, "Lifecycle"). Done on 2026-10-12
+  (`docs/agent-workflow-design.md`, R4).
 - **A second project.** That is steward's (R6, R7), not this repository's
   (decided 2026-10-08 by the owner, dropping this story's earlier AC-1).
-- **Supporting other companies' models** (OQ-114, now steward's).
+- **Supporting other companies' models** (OQ-114, now steward's ST-15).
 
 ## Constraints
 

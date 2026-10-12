@@ -515,16 +515,19 @@ instruction to the session, lifted when the owner says so, and not part of this 
 ### Running unattended
 
 Decided 2026-09-28 by the owner, planning how Session A's pull requests reach the queue without a
-dispatcher session in between.
+dispatcher session in between. The first two items are steward's to build, not this repository's.
+Their story, OQ-101, moved to steward as ST-11 and was retired here on 2026-10-12. This
+repository's engine is frozen, so it gets them only by adopting steward (OQ-115).
 
-- **Planned (OQ-101):** a Windows scheduled task starts the loop every 15 minutes while the machine
-  is on, on mains power only. The task is a script: a run with nothing ready starts no model
-  session. GitHub's cron is not used (**Watchdog**, below).
-- **Planned (OQ-101):** a run takes a lock that a dead holder does not keep, and appends one line to
-  a local run log. That log is how the owner hears about the loop's own stops. A leftover
-  `tw-coder-*` worktree from an interrupted run is raised as a GitHub issue, as OQ-112 raises a
-  stuck story, and the run goes on (decided 2026-10-01 by the owner). A blocked story pull request is also reported by
-  GitHub's failure email, since a blocking verdict fails the gate's run.
+- **Steward's, not built here (ST-11):** a Windows scheduled task starts the loop every 15 minutes
+  while the machine is on, on mains power only. The task is a script: a run with nothing ready
+  starts no model session. GitHub's cron is not used (**Watchdog**, below).
+- **Steward's, not built here (ST-11):** a run takes a lock that a dead holder does not keep, and
+  appends one line to a local run log. That log is how the owner hears about the loop's own stops.
+  A leftover `tw-coder-*` worktree from an interrupted run is raised as a GitHub issue, as OQ-112
+  raises a stuck story, and the run goes on (decided 2026-10-01 by the owner). A blocked story pull
+  request is also reported by GitHub's failure email, since a blocking verdict fails the gate's
+  run.
 - The loop runs from a worktree of its own, beside the repository and at a detached `origin/main`,
   created once by `node scripts/dispatch/loop.mjs --init [path]` (`initWorktree`,
   `scripts/dispatch/loop.mjs`, OQ-109). Between stories `updateCheckout` fetches `origin`, stops with
@@ -547,10 +550,11 @@ dispatcher session in between.
   anything is claimed, installed or spawned.
 - `--max-stories N` caps how many stories one run starts (`scripts/dispatch/loop.mjs`, OQ-86); a
   story the loop skips as `in-progress` does not count against it.
-- **Planned (OQ-102):** past a usage threshold, the loop starts no coder session, first dispatch or
-  retry, but reviews and landing carry on, so every pull request ends with a review posted. A
-  story that would have been retried is paused, and resumes on a later run under the threshold.
-  What is measured, and over what window, is open.
+- **Steward's, not built here (ST-12, formerly OQ-102):** past a usage threshold, the loop starts
+  no coder session, first dispatch or retry, but reviews and landing carry on, so every pull
+  request ends with a review posted. A story that would have been retried is paused, and resumes
+  on a later run under the threshold. What is measured, and over what window, is open, in steward.
+  This repository gets it only by adopting steward.
 - Any pull request from an account with write access (OQ-81) that passes review may land
   unattended, including one that changes this document, `CLAUDE.md`, `.github/` or `.claude/`.
   Marking it ready is the owner's go-ahead: Session A opens its pull requests as drafts and marks
@@ -1004,9 +1008,11 @@ be kept essentially as-is:
 
 `review-blocked` is applied automatically when a pull request reaches the round bound, by
 `review-gate.yml`, with the bound derived from the PR's own `block` verdicts rather than
-remembered (OQ-80). **Planned (OQ-119):** removing the label by hand means "I have seen the cost,
-proceed", so after a removal only blocks recorded since the latest removal count towards applying
-it again, read from the pull request's `unlabeled` events (decided 2026-10-08 by the owner).
+remembered (OQ-80). **Steward's, not built here (ST-16, formerly OQ-119):** removing the label by
+hand means "I have seen the cost, proceed", so after a removal only blocks recorded since the
+latest removal count towards applying it again, read from the pull request's `unlabeled` events
+(decided 2026-10-08 by the owner). This repository's gate keeps counting every block until it
+adopts steward's.
 
 ### Merge queue
 
@@ -1491,8 +1497,9 @@ guarantee. `buildInvocation` pins `BASH_DEFAULT_TIMEOUT_MS` and `BASH_MAX_TIMEOU
 for both roles (`SHELL_TIMEOUT_MS` in `scripts/dispatch/invocation.mjs`), and removes
 `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS` if the dispatcher's environment carries it (items 2 to 4,
 with the default changed as item 6 says). `coder.md` and `reviewer.md` tell a session never to end
-its turn while a command runs (item 5). **Planned (OQ-108):** a coder session that completes with
-work left uncommitted is resumed once and told so. The resumed session's outcome, report and
+its turn while a command runs (item 5). **Steward's, not built here (ST-14, formerly OQ-108,
+parked by the owner):** a coder session that completes with work left uncommitted is resumed once
+and told so. The resumed session's outcome, report and
 commits are then used exactly as a first session's would be, so its report supplies the PR. That is the
 backstop for a session that ends its turn anyway, whatever the story. Items 4 and 6 describe
 OQ-76's AC-5 as it stood when the trials ran. The two pins have since moved to OQ-107. OQ-76's
@@ -1597,16 +1604,18 @@ deciding what is next. It is the harness's product outline, and moves with this 
 
 - **The move comes first** (decided 2026-10-07 by the owner).
   **Planned (OQ-115, OQ-132, OQ-133, OQ-134):** the workflow moves to a repository of its own, and
-  this repository uses it. **Planned (OQ-114):** once moved, coder and reviewer sessions run
-  through an adapter per agent tool, so that a role can be given another company's model. OQ-114
-  is a draft, to be split before it is dispatched; OQ-115 was split on 2026-10-08 (below).
+  this repository uses it. **Steward's, not built here (ST-15, formerly OQ-114):** coder and
+  reviewer sessions run through an adapter per agent tool, so that a role can be given another
+  company's model. ST-15 is a draft, to be split before it is dispatched; OQ-115 was split on
+  2026-10-08 (below).
 - **Goal 3 is about AI model companies, not GitHub** (decided 2026-10-07 by the owner). The gate
   stays on GitHub. Moving the hosting would be a far larger migration, and would depend on the
   target platform's rules much more than switching models does.
 - **The move comes before OQ-73 and before OQ-101, after OQ-118 and OQ-117 are built** (decided
   2026-10-07, revised 2026-10-08 by the owner). See R5.
-- **Planned (OQ-73): coder sessions are isolated in a container** (decided 2026-10-08 by the
-  owner). OQ-73, a spike, finds out how, and the stories it recommends build it. See R5.
+- **Coder sessions are isolated in a container, and steward builds it, not this repository**
+  (decided 2026-10-08 by the owner). ST-6 (formerly OQ-73), a spike, finds out how, and the steward
+  stories it recommends build it. See R5.
 - **A project takes the workflow as a package pinned by git tag**, with no npm publishing planned,
   runs the loop from its own worktree, and keeps thin gate workflow files written by an `init`
   command (decided 2026-10-07 by the owner). See R2.
@@ -1636,6 +1645,7 @@ deciding what is next. It is the harness's product outline, and moves with this 
   OQ-132 removes the moved code, and OQ-134 removes the moved documents (the order set on
   2026-10-09 by the owner, from #223's review: each needs what the one before it removes gone).
   Retiring the moved stories is Session A's, as soon as the bootstrap fixes the OQ-to-ST mapping.
+  (Done on 2026-10-12: R4.)
   The tests that stay go to a new `scripts/ci-workflows.test.mjs`, which takes the setup-step prefix
   from the pinned package. The passages about this project go to `README.md` and
   `Project-Outline.md`: no project needs a document about steward (R1). Which rules are steward's
@@ -1830,9 +1840,9 @@ starts with the gate only, and dispatches no stories until its coder works ("Dec
 4. **Here:** adopting steward (split 2026-10-08, "Decided so far"). OQ-115, the cut-over, by hand:
    pin steward and switch to the thin workflow files, then start the loop with steward's command.
    Then OQ-133 (the rule files), OQ-132 (the moved code) and OQ-134 (the moved documents), in
-   that order, run on steward's engine. Session A retires the moved stories with a note naming
-   each one's `ST-<n>`. Until then, this repository runs its own engine, frozen (decided
-   2026-10-10 by the owner, "Decided so far").
+   that order, run on steward's engine. Session A retired the moved stories on 2026-10-12, each
+   with a note naming its `ST-<n>` (R4). Until OQ-115, this repository runs its own engine, frozen
+   (decided 2026-10-10 by the owner, "Decided so far").
 
 ### What adopting steward needs from it
 
@@ -2097,6 +2107,20 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   runs, so they come before the moved stories. **Revised 2026-10-10 by the owner:** steward starts
   with the gate only, and the stories that get its coder working come first, ahead of these
   ("Decided so far").
+
+  **The 17 moved stories are retired here** (2026-10-12, Session A, with the owner; the mapping is
+  the bootstrap's B1, `docs/steward-bootstrap.md`). Each one's file is in `stories/retired/`, with
+  a note naming its `ST-<n>`. This document's other mentions of them keep the OQ id, and this
+  table maps each one. Its rows must not drift from B1's table.
+
+  | OQ | ST | OQ | ST | OQ | ST |
+  |---|---|---|---|---|---|
+  | OQ-54 | ST-1 | OQ-88 | ST-7 | OQ-103 | ST-13 |
+  | OQ-59 | ST-2 | OQ-89 | ST-8 | OQ-108 | ST-14 |
+  | OQ-62 | ST-3 | OQ-98 | ST-9 | OQ-114 | ST-15 |
+  | OQ-64 | ST-4 | OQ-99 | ST-10 | OQ-119 | ST-16 |
+  | OQ-71 | ST-5 | OQ-101 | ST-11 | OQ-120 | ST-17 |
+  | OQ-73 | ST-6 | OQ-102 | ST-12 | | |
 - **R5. When.** **Revised 2026-10-08 by the owner: the move comes before OQ-73**, once the story
   pull requests #204 to #208 (OQ-117 to OQ-121) have landed, and still before OQ-101. OQ-73's coder
   (#209) found that its candidate mechanism, a separate Windows account for spawns, needs an
@@ -2112,10 +2136,11 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   built here; OQ-121 still is, ahead of OQ-122 in the queue.
 
   **OQ-73's mechanism is a container** (decided 2026-10-08 by the owner, replacing the separate
-  Windows account in OQ-73's Context). **Planned (OQ-73):** coder sessions run in a container whose
-  image the workflow's repository defines, with only the work and the agent tool's own login passed
-  in, so no host keyring, `~/.ssh` or user profile is reachable. The reason is portability: a new
-  machine needs one standard install (a container runtime) rather than account management, and
+  Windows account in OQ-73's Context). **Steward's, not built here (ST-6):** coder sessions run in
+  a container whose image the workflow's repository defines, with only the work and the agent
+  tool's own login passed in, so no host keyring, `~/.ssh` or user profile is reachable. The
+  reason is portability: a new machine needs one standard install (a container runtime) rather
+  than account management, and
   the same image runs on Windows, macOS and Linux. It may also give the reviewer its read-only
   mount (OQ-62). **Revised 2026-10-09 by the owner:** OQ-73 is rewritten here, in place, as a
   spike only, run by the owner with Session A rather than dispatched, and held until the move.
@@ -2124,10 +2149,12 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   day, and its findings are in the spike's Context. The container runtime is left open, as the
   spike's open question. Known questions for the spike: a git worktree's `.git` file holds an
   absolute host path, and `node_modules` on a bind mount from Windows is slow.
-  The **Planned (OQ-73)** markers here and under "Decided so far" were added on 2026-10-08 at the
+  The markers naming OQ-73 here and under "Decided so far" were added on 2026-10-08 at the
   owner's decision, after #199's review. The spike builds nothing, so its AC-5 leaves them in
-  place, and the stories written from its recommendation take them over (its AC-4). They take
-  those stories' `ST-<n>` once written in steward.
+  place, and the stories written from its recommendation take them over (its AC-4). On
+  2026-10-12, when OQ-73 was retired here as steward's ST-6, both became prose saying the
+  container is steward's to build (owner). Steward's own copy of this document keeps the markers,
+  renumbered `Planned (ST-6)` at the bootstrap.
 
   Superseded: **decided 2026-10-07 by the owner: after OQ-73, before OQ-101.** The owner's build
   order is OQ-80 (landed as #203 on 2026-10-07), then OQ-73, then OQ-101, so the move comes after OQ-80 and

@@ -61,6 +61,12 @@ model is a one-line edit rather than an edit to every story file.
 
 ## Context
 
+**Retired here on 2026-10-12, unbuilt: it moved to steward as ST-1.** It was
+copied into `luplows/steward` at the extraction on 2026-10-10
+(`docs/steward-bootstrap.md`, B1), and is built there, not here
+(`docs/agent-workflow-design.md`, R4). This copy is otherwise as it was when
+it moved.
+
 - `stories/OQ-61-story-schema-lint.md` — the lint AC-3 tightens. Its AC-2
   constrains `id`, `tier`, `depends_on` and `blocked` by value but requires only
   that `model` be present, which is the hole this closes.
