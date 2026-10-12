@@ -30,7 +30,7 @@ describe('WorkshopBuyout', () => {
     const user = userEvent.setup()
     render(<WorkshopBuyout />)
 
-    await user.type(screen.getByLabelText('Lifetime coins'), '1000000')
+    await user.type(screen.getByLabelText('Lifetime coins'), '10000000')
     await user.type(screen.getByLabelText('Coins spent on Labs'), '0')
 
     const rollupList = screen.getByRole('list', { name: 'Simplified buyout plan' })
@@ -42,10 +42,14 @@ describe('WorkshopBuyout', () => {
     const granularList = screen.getByRole('list', { name: 'Granular buyout plan' })
     const granularRows = granularList.querySelectorAll('li')
 
-    // The rollup can never hold more rows than the granular sequence it was
-    // derived from -- it only ever merges consecutive same-upgrade rows
-    // together, never splits one apart.
-    expect(rollupRows.length).toBeLessThanOrEqual(granularRows.length)
+    // At this budget, this dataset's buy order includes a Workshop upgrade
+    // bought across two consecutive batches near the end of the plan (its
+    // final, under-sized batch right before it maxes out) -- so the rollup
+    // must have strictly fewer rows than the granular sequence it was
+    // derived from. "Strictly fewer" is the meaningful claim here: grouping
+    // actually happened, not merely "never more rows than", which grouping
+    // could never violate even if it grouped nothing at all.
+    expect(rollupRows.length).toBeLessThan(granularRows.length)
   })
 
   it('OQ-8/AC-6: reports coins spent on Labs exceeding lifetime coins, instead of a plan', async () => {

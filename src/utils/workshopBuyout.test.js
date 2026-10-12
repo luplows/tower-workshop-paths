@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { getPrioritizedNextUpgrades } from './cheapestNextUpgrades'
+import { WORKSHOP_CATEGORIES } from '../data/workshopCategories'
+import { WORKSHOP_UNLOCK_GROUPS } from '../data/workshopUnlockGroups'
 import {
   rollupPurchases,
   simulateWorkshopBuyout,
@@ -93,6 +95,69 @@ describe('simulateWorkshopBuyout', () => {
     const plan = simulateWorkshopBuyout(first51Cost)
 
     expect(plan.granular.length).toBeGreaterThan(50)
+  })
+
+  it('OQ-8/AC-2: a budget large enough reaches every Workshop upgrade across every tree, not just the ones reachable through each tree\'s first paid unlock group', () => {
+    // `getPrioritizedNextUpgrades` only ever offers a tree's *earliest*
+    // not-yet-purchased paid unlock group as a candidate, re-derived once
+    // per call -- a regression here (driving it with one call and an ever-
+    // bigger rowCap, say) would silently cap every tree at its first group's
+    // upgrades forever, however large the budget, because no single call
+    // ever sees a later group unlock. A budget this large must actually
+    // reach every upgrade in `WORKSHOP_CATEGORIES`, and buy every paid
+    // unlock group in every tree, to rule that out.
+    const plan = simulateWorkshopBuyout(1e30)
+
+    const boughtUpgradeNames = new Set(
+      plan.granular.filter((entry) => entry.source === 'workshop').map((entry) => entry.name),
+    )
+    const everyUpgradeName = WORKSHOP_CATEGORIES.flatMap((category) =>
+      category.upgrades.map((upgrade) => upgrade.name),
+    )
+    expect(everyUpgradeName.length).toBeGreaterThan(6) // sanity: this dataset has more than the old defect's ceiling
+    for (const name of everyUpgradeName) {
+      expect(boughtUpgradeNames.has(name)).toBe(true)
+    }
+
+    const boughtUnlockNames = new Set(
+      plan.granular.filter((entry) => entry.source === 'unlock').map((entry) => entry.name),
+    )
+    const everyPaidGroupName = Object.values(WORKSHOP_UNLOCK_GROUPS).flatMap((groups) =>
+      groups.slice(1).map((group) => group.name),
+    )
+    expect(everyPaidGroupName.length).toBeGreaterThan(1)
+    for (const name of everyPaidGroupName) {
+      expect(boughtUnlockNames.has(name)).toBe(true)
+    }
+  })
+
+  it('OQ-8/AC-5: reports stoppedBy "budget" when it stops because the budget ran out', () => {
+    const { ranked } = getPrioritizedNextUpgrades({}, { rowCap: 5 })
+    const firstTwoCost = ranked.slice(0, 2).reduce((sum, entry) => sum + entry.cost, 0)
+    const budget = firstTwoCost + Math.floor(ranked[2].cost / 2)
+
+    const plan = simulateWorkshopBuyout(budget)
+
+    expect(plan.stoppedBy).toBe('budget')
+  })
+
+  it('OQ-8/AC-5: reports stoppedBy "exhausted" when a budget covers an entire buy-out, with nothing left to spend on', () => {
+    // A real buy-out's total cost exceeds Number.MAX_SAFE_INTEGER (this
+    // dataset's full cost is on the order of 1e25), so this needs a budget
+    // comfortably past that, not just "very large".
+    const plan = simulateWorkshopBuyout(1e30)
+
+    expect(plan.stoppedBy).toBe('exhausted')
+    // Confirms this really is "nothing left", not merely "a lot bought":
+    // every Workshop upgrade is at its own max level.
+    for (const category of WORKSHOP_CATEGORIES) {
+      for (const upgrade of category.upgrades) {
+        const lastPurchase = [...plan.granular]
+          .reverse()
+          .find((entry) => entry.source === 'workshop' && entry.name === upgrade.name)
+        expect(lastPurchase.nextLevel).toBe(upgrade.quantity)
+      }
+    }
   })
 })
 

@@ -76,7 +76,10 @@ export function WorkshopBuyout() {
       {plan && (
         <>
           <p className="workshop-buyout__summary">
-            Budget: {formatCoins(plan.budget)}. Plan spends {formatCoins(plan.spent)}.
+            Budget: {formatCoins(plan.budget)}. Plan spends {formatCoins(plan.spent)}.{' '}
+            {plan.stoppedBy === 'exhausted'
+              ? 'Nothing more to buy -- this budget covers a full buy-out.'
+              : 'Stops here because the budget runs out.'}
           </p>
 
           <div

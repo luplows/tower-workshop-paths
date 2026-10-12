@@ -1,4 +1,5 @@
 import { getPrioritizedNextUpgrades } from './cheapestNextUpgrades'
+import { unlockGroupKey } from './workshopUnlockGroups'
 
 const isBlank = (value) => typeof value !== 'string' || value.trim() === ''
 
@@ -46,52 +47,103 @@ export function validateBuyoutInputs({ lifetimeCoins, coinsSpentOnLabs }) {
   return { valid: true, budget: lifetime - spent }
 }
 
-const INITIAL_ROW_CAP = 200
-const ROW_CAP_GROWTH = 4
-// A safety ceiling only -- every candidate (Workshop upgrades, Enhancement
-// categories, the Lab, unlock groups) has a finite max level, so growing
-// `rowCap` always terminates on its own once everything is bought out, well
-// under this.
-const MAX_ROW_CAP = 50_000
+// `getPrioritizedNextUpgrades` re-derives which Workshop unlock group (and,
+// before the Enhancement Lab is bought, which Enhancement category) is
+// reachable only once per call, from whatever `unlockedGroups`/
+// `enhancementLabLevel` it's given -- buying the one offered unlock group
+// inside a single call never brings that tree's *next* group into the same
+// call's own ranking (see that function's module docstring, "A tree's paid
+// groups unlock in order"). A single call with an ever-larger `rowCap` can
+// therefore never progress a tree past its first paid group, no matter how
+// high the cap goes -- rows just pile up among whatever's already
+// reachable. So this calls it repeatedly in small batches instead, feeding
+// each batch's purchases back as `workshopLevels`/`enhancementLevels`/
+// `enhancementLabLevel`/`unlockedGroups` for the next one -- the same state
+// shape a real player's entered levels would carry, just advanced by this
+// simulation instead of by hand. That makes each call re-derive gating from
+// up-to-date state, so a newly-unlocked group's upgrades become reachable
+// from the very next batch on.
+const BATCH_ROW_CAP = 50
+// A safety ceiling on total batches, not on how far the plan can reach --
+// every candidate (Workshop upgrades, Enhancement categories, the Lab,
+// unlock groups) has a finite max level, so the loop below always ends on
+// its own, by `ranked.length` dropping under `BATCH_ROW_CAP`, once
+// everything reachable is either bought out or budget-exhausted, well under
+// this many batches.
+const MAX_BATCHES = 10_000
 
-const totalCost = (entries) => entries.reduce((sum, entry) => sum + entry.cost, 0)
+const applyEntry = (entry, { workshopLevels, enhancementLevels, unlockedGroups }) => {
+  if (entry.source === 'workshop') {
+    workshopLevels[entry.name] = entry.nextLevel
+  } else if (entry.source === 'enhancement') {
+    enhancementLevels[entry.name] = entry.nextLevel
+  } else if (entry.source === 'unlock') {
+    unlockedGroups[unlockGroupKey(entry.categoryId, entry.name)] = true
+  }
+  // 'lab' is handled by the caller, which tracks `enhancementLabLevel` as a
+  // plain number rather than inside one of these maps.
+}
 
 /**
  * OQ-8/AC-2 + AC-5. The purchase sequence a full Workshop buy-out affords,
  * simulated from level zero against `budget` -- using
  * `getPrioritizedNextUpgrades` exactly as the Path list already does
  * (zero/default state is "simulated from level zero"), never a second
- * ranking algorithm. That function caps its own simulation at a fixed
- * `rowCap`, which exists to bound a ranking shown on screen, not a
- * budget-exhaustion run -- so this grows `rowCap` until either the ranked
- * sequence's own cost has caught up with `budget` or nothing is left to
- * rank at all, then spends down `budget` through that sequence, stopping
+ * ranking algorithm. Drives it in `BATCH_ROW_CAP`-sized batches (see that
+ * constant's own comment for why one large call can't be used instead),
+ * spending down `budget` through each batch's rows in order and stopping
  * before the first entry it can't fully afford. A batch is never split to
  * use up leftover budget, the same "whole batch or not at all" rule
  * `nextBatchCost` already applies to cost data -- so `spent` can land under
  * `budget` with coins left over.
+ *
+ * `stoppedBy` tells the caller *why* the sequence ends, since the two
+ * reasons look identical from `spent`/`budget` alone: `'budget'` when an
+ * affordable-or-not entry was still waiting and budget ran out first,
+ * `'exhausted'` when every reachable candidate got bought out (or stuck on
+ * missing cost data) before the budget did -- a real "nothing left to
+ * spend on" rather than a plan silently stopping short.
  */
 export function simulateWorkshopBuyout(budget) {
-  let rowCap = INITIAL_ROW_CAP
-  let ranked = []
-
-  while (true) {
-    ranked = getPrioritizedNextUpgrades({}, { rowCap }).ranked
-    if (totalCost(ranked) >= budget) break
-    if (ranked.length < rowCap) break
-    if (rowCap >= MAX_ROW_CAP) break
-    rowCap *= ROW_CAP_GROWTH
-  }
+  const workshopLevels = {}
+  const enhancementLevels = {}
+  const unlockedGroups = {}
+  let enhancementLabLevel = 0
 
   const granular = []
   let spent = 0
-  for (const entry of ranked) {
-    if (spent + entry.cost > budget) break
-    spent += entry.cost
-    granular.push(entry)
+  let stoppedBy = 'exhausted'
+
+  for (let batch = 0; batch < MAX_BATCHES; batch++) {
+    const { ranked } = getPrioritizedNextUpgrades(
+      { workshopLevels, enhancementLevels, enhancementLabLevel, unlockedGroups },
+      { rowCap: BATCH_ROW_CAP },
+    )
+    if (ranked.length === 0) break
+
+    let budgetRanOut = false
+    for (const entry of ranked) {
+      if (spent + entry.cost > budget) {
+        budgetRanOut = true
+        break
+      }
+      spent += entry.cost
+      granular.push(entry)
+      if (entry.source === 'lab') {
+        enhancementLabLevel = 1
+      } else {
+        applyEntry(entry, { workshopLevels, enhancementLevels, unlockedGroups })
+      }
+    }
+
+    if (budgetRanOut) {
+      stoppedBy = 'budget'
+      break
+    }
+    if (ranked.length < BATCH_ROW_CAP) break
   }
 
-  return { budget, spent, granular, rollup: rollupPurchases(granular) }
+  return { budget, spent, stoppedBy, granular, rollup: rollupPurchases(granular) }
 }
 
 /**
