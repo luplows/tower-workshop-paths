@@ -113,7 +113,9 @@ before it, until nothing is ready.
   (OQ-78's AC-10). The loop only skips stories that are `in-progress` (AC-4).
 - **Running stories in parallel.** Sequential is deliberate for now. Parallel
   dispatch needs a merge queue first (`docs/agent-workflow-design.md`, "Merge
-  queue") and is OQ-66's.
+  queue") and is OQ-66's. *(Noted 2026-10-12: OQ-66 was retired on
+  2026-10-10, unbuilt. Parallel work is steward's, after its MVP:
+  `docs/harness-outline.md`, "What matters most".)*
 - **Pull requests the loop did not open**, story-writing PRs among them. OQ-83
   adds those to this loop, for authors with write access only (OQ-81).
 - **Running on a schedule, or surviving the machine being off.** The watchdog

@@ -1,6 +1,6 @@
 ---
 id: OQ-133
-title: Cut CLAUDE.md, REVIEW.md and the stories README down to this project's own rules, pointing at steward's
+title: Cut CLAUDE.md and REVIEW.md down to this project's own rules, pointing at steward's
 tier: next
 kind: workflow
 depends_on: [OQ-115]
@@ -13,7 +13,8 @@ blocked: null
 As the owner, I want this repository's rule files to hold only this project's
 own rules, with steward's rules reaching every session from steward, so that a
 workflow rule has one home and changes in steward without an edit here. Today
-`CLAUDE.md`, `REVIEW.md` and `stories/README.md` hold both.
+`CLAUDE.md` and `REVIEW.md` hold both. The story schema stays here whole, as
+this repository's own convention (`docs/steward-bootstrap.md`, D-13).
 
 ## Acceptance criteria
 
@@ -27,8 +28,9 @@ workflow rule has one home and changes in steward without an edit here. Today
 - [ ] **AC-2** — `REVIEW.md` keeps the content of its items 8 and 10, which
       name Vitest, Playwright, the buy-order algorithm and screenshot baselines.
       Steward's checklist reaches the reviewer and the coder from steward.
-- [ ] **AC-3** — `stories/README.md` is a short file pointing at steward's story
-      schema, and `stories/_TEMPLATE.md` is removed in favour of steward's.
+- [ ] **AC-3** — `stories/README.md` and `stories/_TEMPLATE.md` are left
+      whole, as this repository's own story schema (D-13). The pull request's
+      diff does not touch either, and `node scripts/lint-stories.mjs` passes.
 - [ ] **AC-4** — `OQ-133` is taken out of the **Planned (…)** marker in
       `docs/agent-workflow-design.md`, "Portability", "Decided so far", as that
       document's "Reading this document" note says.
@@ -50,6 +52,9 @@ workflow rule has one home and changes in steward without an edit here. Today
 - Decided 2026-10-08 by the owner, refining OQ-115: which rules are this
   project's and which are steward's is settled (AC-1, AC-2); how steward's
   reach a project's sessions is decided once steward builds the mechanism.
+- AC-3 and the title were reworded on 2026-10-12 for D-13 (decided
+  2026-10-10). Before, AC-3 cut `stories/README.md` to a pointer at steward's
+  schema and removed `stories/_TEMPLATE.md`.
 - The coder reads `CLAUDE.md` and `REVIEW.md` from the repository root
   (`.claude/prompts/coder.md` line 140), and the reviewer reads `REVIEW.md`
   there (`reviewer.md` line 171). The reviewer cites `REVIEW.md` items by
@@ -70,3 +75,6 @@ workflow rule has one home and changes in steward without an edit here. Today
 - The form of this project's review items (AC-2), and how they reach the
   reviewer alongside steward's numbered checklist (R3, "a project's own review
   items come later"). Decided after steward is built (owner, 2026-10-08).
+- Whether `CLAUDE.md`'s "Stories" section counts as steward's rules, as AC-1
+  has it, or as this project's own. D-13 makes the story schema a project's
+  own convention. Raised by Session A on 2026-10-12, rewording AC-3.

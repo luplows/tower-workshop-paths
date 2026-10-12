@@ -1742,8 +1742,9 @@ deciding what is next. It is the harness's product outline, and moves with this 
     its own story tooling in full. That revises R1 (this repository keeps a full
     `stories/README.md`, not a short one pointing at steward's), OQ-132, which removes
     `scripts/lint-stories.mjs` and its test here, and OQ-133's AC-3, which shortens
-    `stories/README.md` and removes `stories/_TEMPLATE.md`. Both stories are reworded when they
-    are next refined.
+    `stories/README.md` and removes `stories/_TEMPLATE.md`. Both stories were reworded on
+    2026-10-12, and both stay `draft`. OQ-132 now keeps the story lint, `test/fixtures/` and
+    story containment. OQ-133 leaves the stories README and template whole.
   - **17 stories move, 3 stay here, and 1 is retired.** OQ-46, the batch walkthrough, is about
     this project's own app, and stays here for now, perhaps with a copy in steward later (owner).
     OQ-100 (the story lint's gaps) and OQ-105 (story containment, and `update-screenshots.yml`)

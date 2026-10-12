@@ -160,6 +160,9 @@ queue this way, one story after another, is OQ-86's.
 - **Running stories in parallel.** Sequential is deliberate for now (OQ-86).
   Parallel dispatch needs a merge queue first (`docs/agent-workflow-design.md`,
   "Merge queue") and is OQ-66's. The Constraints below keep the way open.
+  *(Noted 2026-10-12: OQ-66 was retired on 2026-10-10, unbuilt. Parallel work
+  is steward's, after its MVP: `docs/harness-outline.md`, "What matters
+  most".)*
 - **Pull requests the loop did not open**, story-writing PRs among them. OQ-83
   adds those, for authors with write access only (OQ-81).
 - **The mechanics of spawning, rendering, or GitHub calls.** OQ-65, OQ-51,

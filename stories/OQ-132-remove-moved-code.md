@@ -18,10 +18,14 @@ only tests of files that move go to steward).
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — These paths are removed: `scripts/dispatch/`, `scripts/land/`,
-      `scripts/report/`, `scripts/lint-stories.mjs`,
-      `scripts/lint-stories.test.mjs`, `test/fixtures/`, and
-      `.claude/prompts/coder.md` and `reviewer.md`.
+- [ ] **AC-1** — These paths are removed: `scripts/dispatch/`, apart from
+      the story containment check below, `scripts/land/`, `scripts/report/`,
+      and `.claude/prompts/coder.md` and `reviewer.md`. This repository's own
+      story tooling stays (`docs/steward-bootstrap.md`, D-13):
+      `scripts/lint-stories.mjs` and `scripts/lint-stories.test.mjs`;
+      `test/fixtures/`, which only that test reads; and
+      `scripts/dispatch/story-containment.mjs` and its test, which `ci.yml`
+      runs.
 - [ ] **AC-2** — A new `scripts/ci-workflows.test.mjs` holds the tests of this
       repository's workflow files that were in `scripts/dispatch/ci.test.mjs`:
       OQ-117's, OQ-118/AC-3's check that `ci.yml` names its setup steps with the
@@ -42,16 +46,17 @@ only tests of files that move go to steward).
       moves.
 - [ ] **AC-4** — Nothing outside `docs/`, `stories/` and `Completed-Questions.md`
       refers to a removed path, shown by a `git grep` in the pull request body.
-      `npm run lint`, `npm test`, the build and steward's story lint pass.
+      `npm run lint`, `npm test`, the build and `node scripts/lint-stories.mjs`
+      pass.
 - [ ] **AC-5** — `OQ-132` is taken out of the **Planned (…)** marker in
       `docs/agent-workflow-design.md`, "Portability", "Decided so far", as that
       document's "Reading this document" note says.
 
 ## Out of scope
 
-- **`CLAUDE.md`, `REVIEW.md`, `stories/README.md` and `stories/_TEMPLATE.md`**
-  (OQ-133, which this depends on), and **the moved documents** (OQ-134, which
-  depends on this).
+- **`CLAUDE.md` and `REVIEW.md`** (OQ-133, which this depends on), and **the
+  moved documents** (OQ-134, which depends on this). `stories/README.md` and
+  `stories/_TEMPLATE.md` stay, with the rest of the story tooling (D-13).
 - **The four built stories that are steward's test fixtures** (OQ-51, OQ-68,
   OQ-69, OQ-70). Their originals stay in `stories/done/` here, as history.
 - **`.github/pull_request_template.md`, `.oxlintrc.json` and `.gitignore`.**
@@ -87,10 +92,24 @@ only tests of files that move go to steward).
 - `scripts/verify-workshop-costs.test.mjs` is the one existing test this project
   keeps under `scripts/`, the precedent for the new file's place. The other
   two there on `main` at `b2a02bf` are `scripts/lint-stories.test.mjs`, which
-  AC-1 removes, and `scripts/no-project-literals.test.mjs` (OQ-129), which goes
-  to steward at the bootstrap and is removed here (Open questions).
+  stays (D-13, below), and `scripts/no-project-literals.test.mjs` (OQ-129),
+  which goes to steward at the bootstrap and is removed here (Open questions).
+- AC-1 and AC-4 were reworded on 2026-10-12 for D-13 (decided 2026-10-10),
+  which keeps this repository's story tooling: before, AC-1 removed
+  `scripts/lint-stories.mjs`, its test and `test/fixtures/`, and AC-4 ran
+  steward's story lint. At `f5cb7b1`, `scripts/lint-stories.mjs` imports
+  `readSettings` from `scripts/dispatch/settings.mjs`, and
+  `scripts/dispatch/story-containment.mjs` imports it too, with
+  `resolveStory` from `scripts/dispatch/review.mjs`. OQ-105, which stays
+  here, changes `story-containment.mjs`.
 
 ## Open questions
+
+- Where the kept story tooling gets `readSettings` and `resolveStory` once
+  the rest of `scripts/dispatch/` is gone: from the pinned `steward` package,
+  or from local copies. Also whether `story-containment.mjs` and its test
+  move out of `scripts/dispatch/`, and if so where (AC-1). Raised by Session
+  A on 2026-10-12, rewording AC-1 for D-13.
 
 - The name steward's package exports the setup-step prefix under (AC-3): a
   steward-side requirement, listed in the design doc ("What adopting steward

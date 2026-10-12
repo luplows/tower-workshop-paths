@@ -97,7 +97,9 @@ the owner is holding back.
   pull request can still land on a `main` its CI did not see, if something
   else landed in between. Updating the branch would change its head and
   discard its review. The design doc's "Merge queue" is the answer, and it is
-  needed before parallel dispatch (OQ-66).
+  needed before parallel dispatch (OQ-66). *(Noted 2026-10-12: OQ-66 was
+  retired on 2026-10-10, unbuilt. Parallel work is steward's, after its MVP:
+  `docs/harness-outline.md`, "What matters most".)*
 - **Who may land (OQ-81).** OQ-81 adds an author check to the sweep, in a
   module under `scripts/land/`. It may share `select-candidates.mjs`, but this
   story does not add that check.
