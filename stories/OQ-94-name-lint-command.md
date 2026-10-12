@@ -5,7 +5,7 @@ tier: normal
 kind: workflow
 depends_on: []
 model: sonnet
-blocked: "Held until steward is extracted, so that this repository's edits to files that move stay out of steward's copies (decided 2026-10-10 by the owner; docs/agent-workflow-design.md, Portability, Decided so far)"
+blocked: null
 ---
 
 ## Intent
@@ -51,8 +51,16 @@ the commands have to be reachable from there too.
 - **Running lint for the coder**, for example in `coder.mjs` before the push.
   CI runs `npm run lint` as a required check, so a lint failure is already
   caught and retried. This story is about what the PR body reports.
-- **The `npx playwright install` step.** It is setup, not a check, and
-  starts with `npx`, so AC-2's filter leaves it out.
+- **The steps that do not start with `npm `.** AC-2's filter leaves them out,
+  and AC-1 does not list them:
+  - the Playwright steps, "Resolve Playwright version" and "Setup: Playwright
+    browsers", are setup, not checks;
+  - "Run the install clean-up test alone (OQ-136)" and "Check story diff
+    containment (OQ-82)" are checks, but CI-only ones. The first runs the one
+    test file that `vite.config.js` leaves out of `npm test` unless
+    `VITEST_ALONE=1` is set, and the second takes the pull request's
+    base and head commits. Neither is what a pull request's **Verification**
+    reports. Decided by the owner on 2026-10-12, when the hold was cleared.
 
 ## Constraints
 
@@ -62,9 +70,15 @@ the commands have to be reachable from there too.
 
 ## Context
 
-- `.github/workflows/ci.yml`, job `test`: `npm ci`, `npm run lint`,
-  `npm test`, `npm run build`, `npx playwright install --with-deps chromium`,
-  `npm run test:e2e`, in that order.
+- `.github/workflows/ci.yml`, job `test`, its `run:` steps at `f5cb7b1`, in
+  order: `npm ci`, `npm run lint`, `npm test`, the OQ-136 alone test
+  (`npx vitest run scripts/dispatch/install-cleanup.alone.test.mjs`), the
+  containment check (`node scripts/dispatch/story-containment.mjs …`, on pull
+  requests only), `npm run build`, "Resolve Playwright version", "Setup:
+  Playwright browsers" (a retry loop around `npx playwright install`), and
+  `npm run test:e2e`. When this story was written (`c063e8d`), the steps were
+  `npm ci`, the four `npm` checks and `npx playwright install`, and nothing
+  else.
 - `package.json` scripts: `"lint": "oxlint"`, `"test": "vitest run"`,
   `"build": "vite build"`, `"test:e2e": "playwright test"`. The oxlint
   configuration is `.oxlintrc.json`. There is no `eslint.config.*` or
