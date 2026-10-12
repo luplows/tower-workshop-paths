@@ -120,10 +120,10 @@ text is what identifies the place.
 - **Rewriting `Completed-Questions.md`'s prose.** AC-9 fixes three links and
   nothing else.
 - **Other story files.** Their mentions are history ("Refined out of
-  `Open-Questions.md` on 2026-09-19") or are Session A's to reword: OQ-133's
-  AC-1 lists `Open-Questions.md` among `CLAUDE.md`'s project rules, and OQ-71's
-  AC-7 cites, as examples, the stale OQ-42 and OQ-48 pointers this story
-  fixes.
+  `Open-Questions.md` on 2026-09-19"), or examples: OQ-71's AC-7 cites the
+  stale OQ-42 and OQ-48 pointers this story fixes. OQ-71 has been steward's
+  ST-5 since the extraction on 2026-10-10. OQ-133's AC-1 was reworded, when
+  this story was refined, to keep the two-file docs check.
 - **Changing the OQ numbering scheme.** Numbers stay permanent, never reused,
   never renumbered, across `stories/`, `stories/done/`, `stories/retired/` and
   the archive.
@@ -172,7 +172,7 @@ citations among them already point at the wrong file.
 - `stories/README.md` — the table and paragraphs AC-6 changes
 - `docs/migration-plan.md` — the drain it planned for, annotated rather than
   edited
-- `stories/OQ-71-single-source-of-record.md` — the companion story; AC-10's
+- OQ-71, steward's ST-5 since 2026-10-10 — the companion story; AC-10's
   stale citations are the same defect class it addresses
 
 ## Open questions
