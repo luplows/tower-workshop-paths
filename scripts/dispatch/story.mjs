@@ -308,7 +308,6 @@ export async function pushBaselineContinuation({ repoDir = process.cwd(), branch
     await git(repoDir, ['worktree', 'add', '--no-track', '-b', branch, tree, baseSha])
     worktreeAdded = true
     await git(tree, [
-      '-c', 'user.name=tw-dispatch', '-c', 'user.email=dispatch@tower-workshop-paths.invalid',
       'commit', '--allow-empty', '-m',
       `Continue CI after update-screenshots.yml committed baselines on ${branch.replace(/^story\//, '')}`,
     ])
@@ -438,14 +437,15 @@ export async function runStory({
     phase = marker ? { next: 'verdict', verdict: marker.marker.verdict, comment: marker } : { next: 'ci' }
   }
 
-  let baselineAttempted = false // OQ-138's AC-4: at most once per run
+  // OQ-138's AC-4: the empty commit is pushed at most once per run. Only a push
+  // sets this, so a baseline commit after an earlier ordinary red CI is still caught.
+  let baselinePushed = false
 
   // Every loop pass is a step of the run; each ends in a stop, a landing, or another pass.
   for (;;) {
     if (phase.next === 'ci') {
       const ci = await d.waitForCi(ciCtx, run.headSha)
-      if (ci.result === 'red' && ci.conclusion === 'failure' && !ci.setupFailure && !baselineAttempted) {
-        baselineAttempted = true
+      if (ci.result === 'red' && ci.conclusion === 'failure' && !ci.setupFailure && !baselinePushed) {
         const baseline = await tryBaselineContinuation()
         if (baseline.stop) return baseline.stop
         if (baseline.continued) continue
@@ -493,6 +493,7 @@ export async function runStory({
     if (pushed.status !== 'pushed') {
       return { stop: await stop('baseline-push-failed', pushed.reason ?? `pushing the baseline continuation commit ended ${pushed.status}`) }
     }
+    baselinePushed = true
     run.headSha = pushed.headSha
     return { continued: true }
   }

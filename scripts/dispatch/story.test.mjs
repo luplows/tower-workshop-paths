@@ -413,6 +413,23 @@ describe('OQ-138/AC-1, AC-3, AC-4: the baseline-commit continuation', () => {
     expect(pushes).toBe(1)
   })
 
+  it('OQ-138/AC-4: a baseline commit after an earlier ordinary red CI is still recognised, and pushed once', async () => {
+    const h = harness({
+      dispatch: opened, ci: [red(), red(), green], retries: [retried(H2)],
+      reviews: [{ verdict: 'pass', head: H4 }], lands: [{ status: 'merged' }],
+    })
+    let detects = 0
+    let pushes = 0
+    h.deps.detectBaselineCommit = async () => (detects++, detects === 1 ? { recognised: false } : { recognised: true, headSha: H3 })
+    h.deps.pushBaselineContinuation = async () => (pushes++, { status: 'pushed', headSha: H4 })
+    const result = await h.run()
+    expect(result.status).toBe('merged')
+    expect(detects).toBe(2)
+    expect(pushes).toBe(1)
+    expect(h.names()).toEqual(['dispatch', 'ci', 'retry', 'ci', 'ci', 'review', 'land'])
+    expect(h.calls[4][1]).toBe(H4)
+  })
+
   it('OQ-138/AC-6: a failed push of the empty commit stops the run naming the push failure', async () => {
     const h = harness({ dispatch: opened, ci: [red()] })
     h.deps.detectBaselineCommit = async () => ({ recognised: true, headSha: H2 })
