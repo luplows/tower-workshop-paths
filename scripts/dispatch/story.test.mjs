@@ -17,6 +17,7 @@ import {
   decideRetry,
   decideReview,
   decideVerdict,
+  isBaselineCommit,
   MAX_ROUNDS,
   recordBlocked,
   runStory,
@@ -78,6 +79,11 @@ function harness({
     readBlockedAt: async () => blockedAt,
     listPullRequestComments: async () => state.comments,
     getPullRequestLabels: async () => state.labels,
+    // OQ-138: no baseline commit unless a test overrides these on h.deps.
+    detectBaselineCommit: async () => ({ recognised: false }),
+    pushBaselineContinuation: async () => {
+      throw new Error('pushBaselineContinuation should not be called when no baseline commit is recognised')
+    },
   }
   const ctx = { repo: REPO, send: async () => state.pr }
   const run = (extra = {}) => runStory({ storyId: STORY, ctx, ciCtx: {}, landCtx: {}, deps, ...extra })
@@ -342,6 +348,79 @@ describe('OQ-118/AC-5: a setup failure stops the story rather than retrying it',
     expect(counted).toBe(0)
     expect(h.calls.find((c) => c[0] === 'record')[1].reason).toContain('Setup: Playwright browsers')
     expect(result.record).toMatchObject({ draft: true, recorded: true, failed: [] })
+  })
+})
+
+describe('OQ-138/AC-2: isBaselineCommit', () => {
+  const bot = (files) => ({ sha: H2, author: 'github-actions[bot]', files })
+
+  it('OQ-138/AC-2: recognises one bot commit touching only screenshot files', () => {
+    expect(isBaselineCommit([bot(['e2e/__screenshots__/a.png', 'e2e/__screenshots__/b.png'])])).toBe(true)
+  })
+
+  it('OQ-138/AC-2: does not recognise H equal to S (no commits)', () => {
+    expect(isBaselineCommit([])).toBe(false)
+  })
+
+  it('OQ-138/AC-2: does not recognise a commit after S by any other author', () => {
+    expect(isBaselineCommit([{ sha: H2, author: 'someone-else', files: ['e2e/__screenshots__/a.png'] }])).toBe(false)
+  })
+
+  it('OQ-138/AC-2: does not recognise a bot commit that also changes a file outside e2e/__screenshots__/', () => {
+    expect(isBaselineCommit([bot(['e2e/__screenshots__/a.png', 'src/index.js'])])).toBe(false)
+  })
+})
+
+describe('OQ-138/AC-1, AC-3, AC-4: the baseline-commit continuation', () => {
+  it('OQ-138/AC-3: a recognised baseline commit pushes an empty commit and continues from CI on the new head, with no retry', async () => {
+    const h = harness({
+      dispatch: opened, ci: [red(), green], reviews: [{ verdict: 'pass', head: H2 }], lands: [{ status: 'merged' }],
+    })
+    h.deps.detectBaselineCommit = async (args) => {
+      expect(args).toMatchObject({ branch: BRANCH, prNumber: 7, headSha: H1 })
+      return { recognised: true, headSha: H2 }
+    }
+    h.deps.pushBaselineContinuation = async (args) => {
+      expect(args).toMatchObject({ branch: BRANCH, baseSha: H2 })
+      return { status: 'pushed', headSha: H2 }
+    }
+    const result = await h.run()
+    expect(result.status).toBe('merged')
+    expect(h.names()).toEqual(['dispatch', 'ci', 'ci', 'review', 'land'])
+    expect(h.calls[1][1]).toBe(H1)
+    expect(h.calls[2][1]).toBe(H2)
+    expect(h.names()).not.toContain('retry')
+  })
+
+  it('OQ-138/AC-5: a red CI with no baseline commit retries the coder as before', async () => {
+    const h = harness({ dispatch: opened, ci: [red(), green], reviews: [{ verdict: 'pass', head: H2 }], retries: [retried(H2)], lands: [{ status: 'merged' }] })
+    // h.deps.detectBaselineCommit keeps the harness default: { recognised: false }.
+    const result = await h.run()
+    expect(result.status).toBe('merged')
+    expect(h.names()).toEqual(['dispatch', 'ci', 'retry', 'ci', 'review', 'land'])
+  })
+
+  it('OQ-138/AC-4: a second red CI after a recognised baseline commit retries the coder, and pushes no second empty commit', async () => {
+    const h = harness({ dispatch: opened, ci: [red(), red()], retries: [{ status: 'session-failed' }] })
+    let detects = 0
+    let pushes = 0
+    h.deps.detectBaselineCommit = async () => (detects++, { recognised: true, headSha: H2 })
+    h.deps.pushBaselineContinuation = async () => (pushes++, { status: 'pushed', headSha: H2 })
+    const result = await h.run()
+    expect(result.status).toBe('retry-session-failed')
+    expect(h.names()).toEqual(['dispatch', 'ci', 'ci', 'retry', 'draft', 'record'])
+    expect(detects).toBe(1)
+    expect(pushes).toBe(1)
+  })
+
+  it('OQ-138/AC-6: a failed push of the empty commit stops the run naming the push failure', async () => {
+    const h = harness({ dispatch: opened, ci: [red()] })
+    h.deps.detectBaselineCommit = async () => ({ recognised: true, headSha: H2 })
+    h.deps.pushBaselineContinuation = async () => ({ status: 'push-failed', reason: 'rejected' })
+    const result = await h.run()
+    expect(result.status).toBe('baseline-push-failed')
+    expect(result.reason).toBe('rejected')
+    expect(h.names()).toEqual(['dispatch', 'ci', 'draft', 'record'])
   })
 })
 

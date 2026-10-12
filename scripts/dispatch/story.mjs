@@ -14,6 +14,14 @@
  * `decide*` below is the whole table of what each result leads to (AC-2).
  * A result the table does not name stops the story.
  *
+ * One case precedes that table (OQ-138): a red, non-setup CI failure may be
+ * `update-screenshots.yml` committing baselines the coder's own commit
+ * deleted, rather than something the coder did wrong. `runStory` recognises
+ * that (`isBaselineCommit`) and pushes one empty commit to get a CI run that
+ * can pass, instead of retrying the coder on a head that cannot change. It
+ * does this at most once per run; a second such red CI is decided by
+ * `decideCi` as any other.
+ *
  * Nothing is stored. The review count is the number of blocking verdict markers
  * from an honoured author on the pull request, the red CI count is
  * `countRedCiRounds`, and where a resumed story stands is read from its pull
@@ -29,8 +37,8 @@ import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { promisify } from 'node:util'
-import { countRedCiRounds, createCiContext, waitForCi } from './ci.mjs'
-import { dispatchCoder, pushBranch, retryStory } from './coder.mjs'
+import { commitsAfter, countRedCiRounds, createCiContext, waitForCi, waitForUpdateScreenshots } from './ci.mjs'
+import { SCREENSHOT_DIR, dispatchCoder, pushBranch, retryStory } from './coder.mjs'
 import {
   buildGetPullRequestState,
   convertPullRequestToDraft,
@@ -150,6 +158,37 @@ export function decideRetry(result, source) {
   return { next: 'stop', status: `retry-${result.status}`, reason: result.reason ?? `the retry ended ${result.status}` }
 }
 
+/**
+ * OQ-138's AC-2: whether `commits` -- every commit strictly after S up to and
+ * including H (`commitsAfter`'s shape: `{ sha, author, files }`) -- is a
+ * baseline commit: at least one commit, every one of them authored by
+ * `github-actions[bot]`, and every file any of them touched under
+ * `SCREENSHOT_DIR`. `H` equal to `S` is `commits.length === 0`, which is not
+ * recognised.
+ */
+export function isBaselineCommit(commits) {
+  if (commits.length === 0) return false
+  return commits.every((commit) => commit.author === 'github-actions[bot]' && commit.files.every((file) => file.startsWith(SCREENSHOT_DIR)))
+}
+
+/**
+ * OQ-138's AC-1, AC-2: waits for update-screenshots.yml's `pull_request` run
+ * on `headSha` (S) to finish, if there is one, then reads `branch`'s current
+ * head (H) from `origin` and reports whether a baseline commit is recognised
+ * between S and H (`isBaselineCommit`). Resolves `{ recognised: false }` when
+ * H equals S or no baseline commit is recognised there, or
+ * `{ recognised: true, headSha }` with H.
+ */
+export async function detectBaselineCommit({ ciCtx, repoDir = process.cwd(), branch, prNumber, headSha, deps = {} }) {
+  const d = { waitForUpdateScreenshots, commitsAfter, ...deps }
+  await d.waitForUpdateScreenshots(ciCtx, headSha)
+  await git(repoDir, ['fetch', REMOTE, `+refs/heads/${branch}:refs/remotes/${REMOTE}/${branch}`])
+  const newHead = (await git(repoDir, ['rev-parse', `${REMOTE}/${branch}`])).trim()
+  if (newHead === headSha) return { recognised: false }
+  const commits = await d.commitsAfter(ciCtx, prNumber, headSha, newHead)
+  return isBaselineCommit(commits) ? { recognised: true, headSha: newHead } : { recognised: false }
+}
+
 /** What landing leads to (AC-2). */
 export function decideLand(result) {
   if (result.status === 'merged') return { next: 'done' }
@@ -250,6 +289,38 @@ export async function recordBlocked({ repoDir = process.cwd(), branch, reason })
   }
 }
 
+/**
+ * OQ-138's AC-3: one empty commit on top of `baseSha` (the branch's head H,
+ * once the baseline commit is recognised) on `branch`, naming
+ * `update-screenshots.yml`, pushed with `pushBranch` -- the same shape
+ * `recordBlocked` uses for its own commit, from a scratch worktree. Resolves
+ * `pushBranch`'s result: `{ status: 'pushed', headSha, screenshots }` or one
+ * of its failures, with `reason`.
+ */
+export async function pushBaselineContinuation({ repoDir = process.cwd(), branch, baseSha }) {
+  if (await gitOrNull(repoDir, ['rev-parse', '--verify', '--quiet', `refs/heads/${branch}`])) {
+    return { status: 'local-branch-exists', reason: `${branch} already exists locally, and this checkout's copy is not the one to commit on` }
+  }
+  const scratch = await mkdtemp(path.join(tmpdir(), 'tw-baseline-'))
+  const tree = path.join(scratch, 'tree')
+  let worktreeAdded = false
+  try {
+    await git(repoDir, ['worktree', 'add', '--no-track', '-b', branch, tree, baseSha])
+    worktreeAdded = true
+    await git(tree, [
+      '-c', 'user.name=tw-dispatch', '-c', 'user.email=dispatch@tower-workshop-paths.invalid',
+      'commit', '--allow-empty', '-m',
+      `Continue CI after update-screenshots.yml committed baselines on ${branch.replace(/^story\//, '')}`,
+    ])
+    const push = await pushBranch({ cwd: tree, branch, baseSha })
+    return push.status !== 'pushed' ? { status: push.status, reason: push.reason ?? push.status } : push
+  } finally {
+    if (worktreeAdded) await git(repoDir, ['worktree', 'remove', '--force', tree]).catch(() => {})
+    await gitOrNull(repoDir, ['branch', '-D', branch])
+    await rm(scratch, { recursive: true, force: true })
+  }
+}
+
 // ------------------------------------------------------------------ GitHub
 
 const isHonoured = (comment) => HONOURED_ASSOCIATIONS.includes(comment.authorAssociation)
@@ -301,6 +372,7 @@ export async function runStory({
   const d = {
     dispatchCoder, retryStory, waitForCi, countRedCiRounds, reviewPullRequest, landPullRequest,
     convertPullRequestToDraft, listPullRequestComments, getPullRequestLabels, readBlockedAt, recordBlocked,
+    detectBaselineCommit, pushBaselineContinuation,
     ...deps,
   }
   const run = { pr: null, branch: null, headSha: null }
@@ -366,10 +438,18 @@ export async function runStory({
     phase = marker ? { next: 'verdict', verdict: marker.marker.verdict, comment: marker } : { next: 'ci' }
   }
 
+  let baselineAttempted = false // OQ-138's AC-4: at most once per run
+
   // Every loop pass is a step of the run; each ends in a stop, a landing, or another pass.
   for (;;) {
     if (phase.next === 'ci') {
       const ci = await d.waitForCi(ciCtx, run.headSha)
+      if (ci.result === 'red' && ci.conclusion === 'failure' && !ci.setupFailure && !baselineAttempted) {
+        baselineAttempted = true
+        const baseline = await tryBaselineContinuation()
+        if (baseline.stop) return baseline.stop
+        if (baseline.continued) continue
+      }
       const redCount =
         ci.result === 'red' && ci.conclusion === 'failure' && !ci.setupFailure ? await d.countRedCiRounds(ciCtx, run.pr) : 0
       const decision = decideCi(ci, redCount)
@@ -399,6 +479,22 @@ export async function runStory({
       return stop(`unhandled-${phase.next}`, `the run reached a phase it does not know: ${phase.next}`)
     }
     if (phase.stop) return phase.stop
+  }
+
+  // OQ-138's AC-1, AC-3, AC-6: `detectBaselineCommit` says whether the current
+  // red CI's head is followed by a recognised baseline commit; if so, pushes
+  // one empty commit on the new head and moves run.headSha there.
+  // `continued: true` means the caller should go back to CI on the new head
+  // without consulting decideCi; `stop` means the push failed and the run is over.
+  async function tryBaselineContinuation() {
+    const detected = await d.detectBaselineCommit({ ciCtx, repoDir, branch: run.branch, prNumber: run.pr, headSha: run.headSha })
+    if (!detected.recognised) return {}
+    const pushed = await d.pushBaselineContinuation({ repoDir, branch: run.branch, baseSha: detected.headSha })
+    if (pushed.status !== 'pushed') {
+      return { stop: await stop('baseline-push-failed', pushed.reason ?? `pushing the baseline continuation commit ended ${pushed.status}`) }
+    }
+    run.headSha = pushed.headSha
+    return { continued: true }
   }
 
   // AC-6: the round is the count so far plus one; the rounds remaining are the bound less that.

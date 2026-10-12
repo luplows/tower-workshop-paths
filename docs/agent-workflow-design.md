@@ -355,13 +355,13 @@ than relaxed.
    `scripts/dispatch/coder.mjs`), so a model session has no write access to the remote, then opens
    the PR from that text, as a **draft** if the coder said draft.
 4. CI passes. `scripts/dispatch/story.mjs` waits for it (`waitForCi`) before reviewing, so no
-   review is spent on a head that cannot land. **Planned (OQ-138):** when CI is red because the
-   coder deleted stale screenshot baselines, and `update-screenshots.yml` has committed new ones
-   to the branch, `story.mjs` does not retry the coder. It pushes one empty commit, so that CI
-   runs on the baselines, since the bot's own `GITHUB_TOKEN` push starts no CI run that can pass.
-   It does this at most once per run. Proposed by Session A on 2026-10-12, in the story the owner
-   asked for after OQ-8 stopped on #252. The empty commit is Session A's choice, and the owner's
-   to confirm when this pull request is marked ready.
+   review is spent on a head that cannot land. When CI is red because the coder deleted stale
+   screenshot baselines, and `update-screenshots.yml` has committed new ones to the branch
+   (`detectBaselineCommit`, `isBaselineCommit`, OQ-138), `story.mjs` does not retry the coder. It
+   pushes one empty commit (`pushBaselineContinuation`), so that CI runs on the baselines, since
+   the bot's own `GITHUB_TOKEN` push starts no CI run that can pass. It does this at most once per
+   run; a second such red CI is retried like any other, which bounds a loop of empty commits if
+   baselines are committed after every push.
 5. Dispatcher spawns the reviewer, which returns a structured verdict.
 6. Dispatcher posts the verdict as a marker comment, and `review-gate.yml` derives
    `review/agent` = `success` on the head SHA from it.

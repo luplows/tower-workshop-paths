@@ -9,16 +9,21 @@ import {
   CI_WAIT_TIMEOUT_MS,
   SETUP_JOB_STEP_NAME,
   SETUP_STEP_PREFIX,
+  UPDATE_SCREENSHOTS_WORKFLOW_PATH,
   assertAllowedCiRequest,
+  buildGetCommit,
   buildGetJobLog,
   buildListPullRequestCommits,
   buildListRunJobs,
   buildListRunsForCommit,
+  commitsAfter,
   countRedCiRounds,
   createCiContext,
   excerptLog,
   isSetupStep,
+  latestUpdateScreenshotsRun,
   waitForCi,
+  waitForUpdateScreenshots,
 } from './ci.mjs'
 import { retrySection } from './invocation.mjs'
 
@@ -46,9 +51,12 @@ const run = (o) => ({
 
 /**
  * A fake GitHub. `runsBySha[sha]` is a list of runs, or a function of the call
- * count (to script a run that finishes later). Records every request.
+ * count (to script a run that finishes later). `commits` is either a plain
+ * list of shas (the pull request's own commits, oldest first) or full
+ * `{ sha, author }` objects. `commitDetails[sha]` is that commit's `files`.
+ * Records every request.
  */
-function fakeGithub({ runsBySha = {}, jobs = {}, logs = {}, commits = [] } = {}) {
+function fakeGithub({ runsBySha = {}, jobs = {}, logs = {}, commits = [], commitDetails = {} } = {}) {
   const requests = []
   const calls = {}
   const fetch = async (url, init) => {
@@ -65,9 +73,15 @@ function fakeGithub({ runsBySha = {}, jobs = {}, logs = {}, commits = [] } = {})
     if (m) return respond({ jobs: jobs[m[1]] ?? [] })
     m = u.pathname.match(/\/actions\/jobs\/(\d+)\/logs$/)
     if (m) return respond(logs[m[1]] ?? '')
+    m = u.pathname.match(/\/commits\/([0-9a-f]{40})$/)
+    if (m) return respond({ sha: m[1], files: commitDetails[m[1]] ?? [] })
     if (u.pathname.endsWith('/commits')) {
       const page = Number(u.searchParams.get('page'))
-      return respond(commits.slice((page - 1) * 100, page * 100).map((sha) => ({ sha })))
+      return respond(
+        commits
+          .slice((page - 1) * 100, page * 100)
+          .map((c) => (typeof c === 'string' ? { sha: c } : c)),
+      )
     }
     return { ok: false, status: 404, text: async () => 'not found' }
   }
@@ -621,13 +635,83 @@ describe('OQ-118/AC-6: countRedCiRounds does not count a setup failure', () => {
   })
 })
 
-describe('OQ-79/AC-5: only the four reads are permitted, checked before the network', () => {
-  it('permits the four built requests', () => {
+describe('OQ-138/AC-1: waitForUpdateScreenshots and latestUpdateScreenshotsRun', () => {
+  const SCREENSHOTS = UPDATE_SCREENSHOTS_WORKFLOW_PATH
+  const screenshotsRun = (o) => ({ id: 2, path: SCREENSHOTS, name: 'Screenshot baselines', head_sha: SHA, run_number: 1, run_attempt: 1, event: 'pull_request', status: 'completed', conclusion: 'success', ...o })
+
+  it('found: false when there is no update-screenshots.yml run on the head', async () => {
+    const { ctx } = fakeGithub({ runsBySha: { [SHA]: [run({})] } })
+    expect(await waitForUpdateScreenshots(ctx, SHA)).toEqual({ found: false })
+  })
+
+  it('ignores a workflow_dispatch run of the same workflow, which is not the one CI ran alongside', async () => {
+    const { ctx } = fakeGithub({ runsBySha: { [SHA]: [screenshotsRun({ event: 'workflow_dispatch' })] } })
+    expect(await waitForUpdateScreenshots(ctx, SHA)).toEqual({ found: false })
+  })
+
+  it('found: true with the run\'s conclusion once its pull_request run completes', async () => {
+    const { ctx } = fakeGithub({ runsBySha: { [SHA]: [screenshotsRun({ conclusion: 'success' })] } })
+    expect(await waitForUpdateScreenshots(ctx, SHA)).toEqual({ found: true, conclusion: 'success' })
+  })
+
+  it('waits for a pull_request run that is not finished yet, then reports it', async () => {
+    const { ctx } = fakeGithub({
+      runsBySha: { [SHA]: (n) => (n < 3 ? [screenshotsRun({ status: 'in_progress', conclusion: null })] : [screenshotsRun({})]) },
+    })
+    expect(await waitForUpdateScreenshots(ctx, SHA)).toEqual({ found: true, conclusion: 'success' })
+  })
+
+  it('times out (but still found) when the run never finishes', async () => {
+    const { ctx } = fakeGithub({ runsBySha: { [SHA]: [screenshotsRun({ status: 'queued', conclusion: null })] } })
+    expect(await waitForUpdateScreenshots(ctx, SHA, { timeoutMs: 500, pollMs: 200 })).toEqual({ found: true, timedOut: true })
+  })
+
+  it('latestUpdateScreenshotsRun picks the highest run number, then attempt, among pull_request runs only', () => {
+    const runs = [screenshotsRun({ id: 1, run_number: 1 }), screenshotsRun({ id: 2, run_number: 2 }), screenshotsRun({ id: 3, event: 'workflow_dispatch', run_number: 9 })]
+    expect(latestUpdateScreenshotsRun(runs).id).toBe(2)
+  })
+})
+
+describe('OQ-138/AC-1, AC-2: commitsAfter', () => {
+  it('returns [] when the heads are equal, without any request', async () => {
+    const { ctx, requests } = fakeGithub({})
+    expect(await commitsAfter(ctx, 7, SHA, SHA)).toEqual([])
+    expect(requests).toHaveLength(0)
+  })
+
+  it('returns every commit strictly after S up to and including H, with its author and files, in order', async () => {
+    const { ctx } = fakeGithub({
+      commits: [{ sha: SHA, author: { login: 'someone' } }, { sha: SHA2, author: { login: 'github-actions[bot]' } }, { sha: SHA3, author: { login: 'github-actions[bot]' } }],
+      commitDetails: { [SHA2]: [{ filename: 'e2e/__screenshots__/a.png' }], [SHA3]: [{ filename: 'e2e/__screenshots__/b.png' }] },
+    })
+    expect(await commitsAfter(ctx, 7, SHA, SHA3)).toEqual([
+      { sha: SHA2, author: 'github-actions[bot]', files: ['e2e/__screenshots__/a.png'] },
+      { sha: SHA3, author: 'github-actions[bot]', files: ['e2e/__screenshots__/b.png'] },
+    ])
+  })
+
+  it('returns [] when either sha is not among the pull request\'s commits', async () => {
+    const { ctx } = fakeGithub({ commits: [{ sha: SHA, author: { login: 'x' } }] })
+    expect(await commitsAfter(ctx, 7, SHA, SHA2)).toEqual([])
+    expect(await commitsAfter(ctx, 7, SHA2, SHA)).toEqual([])
+  })
+
+  it('pages through more than 100 commits to find the range', async () => {
+    const commits = Array.from({ length: 150 }, (_, i) => ({ sha: i.toString(16).padStart(40, '0'), author: { login: 'x' } }))
+    const { ctx } = fakeGithub({ commits, commitDetails: { [commits[149].sha]: [{ filename: 'e2e/__screenshots__/a.png' }] } })
+    const result = await commitsAfter(ctx, 7, commits[148].sha, commits[149].sha)
+    expect(result).toEqual([{ sha: commits[149].sha, author: 'x', files: ['e2e/__screenshots__/a.png'] }])
+  })
+})
+
+describe('OQ-79/AC-5: only the five reads are permitted, checked before the network', () => {
+  it('permits the five built requests', () => {
     for (const r of [
       buildListRunsForCommit(REPO, SHA),
       buildListRunJobs(REPO, 5),
       buildGetJobLog(REPO, 6),
       buildListPullRequestCommits(REPO, 7),
+      buildGetCommit(REPO, SHA),
     ]) {
       expect(() => assertAllowedCiRequest(REPO, r)).not.toThrow()
     }
@@ -652,6 +736,7 @@ describe('OQ-79/AC-5: only the four reads are permitted, checked before the netw
         { method, url: `${base}/actions/runs/5/jobs?per_page=100` },
         { method, url: `${base}/actions/jobs/6/logs` },
         { method, url: `${base}/pulls/7/commits?per_page=100&page=1` },
+        { method, url: `${base}/commits/${SHA}` },
         { method, url: `${base}/actions/runs/5/rerun` },
         { method, url: `${base}/actions/workflows/ci.yml/dispatches`, body: { ref: 'main' } },
         { method, url: `${base}/statuses/${SHA}`, body: { state: 'success' } },
