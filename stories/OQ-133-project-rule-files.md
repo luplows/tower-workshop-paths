@@ -18,10 +18,10 @@ workflow rule has one home and changes in steward without an edit here. Today
 ## Acceptance criteria
 
 - [ ] **AC-1** — `CLAUDE.md` keeps this project's own rules: committing a data
-      regeneration separately; the docs check naming `README.md`,
-      `Open-Questions.md` and `Project-Outline.md`; nothing dispatches from
-      `Open-Questions.md`; looking things up in `Completed-Questions.md` by OQ
-      number; and all of "Testing". Steward's rules ("Branches and pull
+      regeneration separately; the docs check naming `README.md` and
+      `Project-Outline.md`; where an unrefined idea goes (both as OQ-72 leaves
+      them); looking things up in `Completed-Questions.md` by OQ number; and
+      all of "Testing". Steward's rules ("Branches and pull
       requests", "Claims about this repository" and "Stories", less the items
       above) reach sessions here from steward.
 - [ ] **AC-2** — `REVIEW.md` keeps the content of its items 8 and 10, which
@@ -56,6 +56,9 @@ workflow rule has one home and changes in steward without an edit here. Today
   number (for example items 16–18, `reviewer.md` line 152).
 - R1 removes items 8 and 10 from steward's copy of `REVIEW.md`, leaving gaps,
   and a steward story closes them.
+- AC-1 was reworded on 2026-10-12, when OQ-72 was refined to retire
+  `Open-Questions.md`. Before that, AC-1 kept a three-file docs check and the
+  rule that nothing dispatches from that file.
 
 ## Open questions
 

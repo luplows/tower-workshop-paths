@@ -1773,8 +1773,9 @@ deciding what is next. It is the harness's product outline, and moves with this 
     `REVIEW.md` item 12), OQ-100 (`scripts/lint-stories.mjs`) and OQ-105
     (`scripts/dispatch/story-containment.mjs`, `ci.yml`). Built first, their edits for this
     project would be extracted into steward's copies with the history, and stripped by hand at
-    the bootstrap. Built after, they change this repository's copies only. Each carries a
-    `blocked:` saying so.
+    the bootstrap. Built after, they change this repository's copies only. Each carried a
+    `blocked:` saying so, until the owner cleared all four on 2026-10-12, after the extraction.
+    OQ-72 was refined again against `f5cb7b1` first, since its references had grown.
 
   Considered and not chosen: pausing dispatch here until the cut-over, with product work done in
   interactive sessions; and adopting steward's gate early, while keeping this repository's own

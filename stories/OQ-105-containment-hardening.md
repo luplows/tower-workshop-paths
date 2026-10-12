@@ -5,7 +5,7 @@ tier: normal
 kind: workflow
 depends_on: []
 model: sonnet
-blocked: "Held until steward is extracted, so that this repository's edits to files that move stay out of steward's copies (decided 2026-10-10 by the owner; docs/agent-workflow-design.md, Portability, Decided so far)"
+blocked: null
 ---
 
 ## Intent
@@ -27,7 +27,7 @@ branch name cannot run as a command.
       a matching branch and move (`story/OQ-82-…` moving OQ-82), a move with a
       branch that does not match `story/OQ-<n>-…` (for example
       `write-story/…` or `chore/…`), and a move with no branch given are all
-      decided exactly as at `67d47ef`.
+      decided exactly as at `f5cb7b1`.
 - [ ] **AC-3** — `resolveStory` in `scripts/dispatch/review.mjs` is unchanged,
       so `review.mjs`'s choice of story is unchanged.
 - [ ] **AC-4** — `scripts/dispatch/story-containment.test.mjs` adds fixtures,
@@ -35,7 +35,7 @@ branch name cannot run as a command.
       - a `story/OQ-82-…` branch whose diff moves and ticks a different story,
         which fails as AC-1 says;
       - a `story/OQ-82-…` branch moving OQ-82, which still passes;
-      - a move on a `write-story/…` branch, which is decided as at `67d47ef`.
+      - a move on a `write-story/…` branch, which is decided as at `f5cb7b1`.
 
       The OQ-82 fixtures already in that file still pass, unmodified.
 - [ ] **AC-5** — In `.github/workflows/ci.yml`, the "Check story diff
@@ -85,6 +85,10 @@ branch name cannot run as a command.
   `permissions: contents: write`, and its last `run:` step ends with
   `git push origin HEAD:${{ github.event.pull_request.head.ref || github.ref_name }}`.
 - PR #178: the review that raised both points as observations.
+- AC-2's baseline was `67d47ef` when this story was written. It moved to
+  `f5cb7b1` on 2026-10-12, when the hold was cleared: since `67d47ef`,
+  `story-containment.mjs` changed in OQ-126 (#233), and `review.mjs` in OQ-121
+  (#220), OQ-125 (#230), OQ-126 and OQ-123 (#237).
 - GitHub's guidance on script injection in workflows recommends an
   intermediate environment variable for untrusted context values.
 

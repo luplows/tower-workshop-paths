@@ -5,7 +5,7 @@ tier: normal
 kind: workflow
 depends_on: []
 model: sonnet
-blocked: "Held until steward is extracted, so that this repository's edits to files that move stay out of steward's copies (decided 2026-10-10 by the owner; docs/agent-workflow-design.md, Portability, Decided so far)"
+blocked: null
 ---
 
 ## Intent
@@ -39,7 +39,8 @@ the function behind it.
         space, beside well-formed ACs, has no `AC-5` violation;
       - `lintAll` over the repository still reports no blocking violation.
         That covers the three italic lines named in Context and indented `-`
-        sub-bullets such as OQ-99's.
+        sub-bullets such as OQ-105's AC-4. (OQ-99's was the example until
+        2026-10-12. OQ-99 is retiring from here as steward's ST-10.)
 - [ ] **AC-3** — A test runs `node scripts/lint-stories.mjs` as a child
       process, by the script's absolute path, with its working directory set
       to a temporary fixture root, and asserts:
