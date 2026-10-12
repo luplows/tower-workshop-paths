@@ -1,0 +1,117 @@
+.workshop-buyout {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.workshop-buyout__inputs {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.workshop-buyout__field {
+  font-size: 15px;
+}
+
+.workshop-buyout__input {
+  width: 140px;
+  font: inherit;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+}
+
+.workshop-buyout__error {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--danger-border);
+  background: var(--danger-bg);
+  color: var(--danger);
+  font-size: 14px;
+}
+
+.workshop-buyout__summary {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.workshop-buyout__view-toggle {
+  display: flex;
+  gap: 2px;
+  align-self: flex-start;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 2px;
+}
+
+.workshop-buyout__view-tab {
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border: none;
+  border-radius: 999px;
+  background: none;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.workshop-buyout__view-tab--active {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+.workshop-buyout__empty {
+  color: var(--text);
+  text-align: center;
+  margin-top: 24px;
+}
+
+.workshop-buyout__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.workshop-buyout__list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.workshop-buyout__name {
+  flex: 1;
+  min-width: 0;
+  font-size: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workshop-buyout__level {
+  font-size: 13px;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.workshop-buyout__cost {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  white-space: nowrap;
+}

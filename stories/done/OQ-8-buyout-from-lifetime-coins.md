@@ -17,28 +17,28 @@ once.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — The tool accepts a lifetime-coins figure and a coins-spent-on-Labs
+- [x] **AC-1** — The tool accepts a lifetime-coins figure and a coins-spent-on-Labs
       figure, and computes the coin budget available to the Workshop from them.
-- [ ] **AC-2** — From that budget it produces a purchase sequence simulated from
+- [x] **AC-2** — From that budget it produces a purchase sequence simulated from
       level zero, using the existing buy-order scoring rather than a second
       algorithm.
-- [ ] **AC-3** — Two views of that sequence are presented: a **granular** list of
+- [x] **AC-3** — Two views of that sequence are presented: a **granular** list of
       individual purchases in order, and a **simplified rollup** grouping
       consecutive purchases of the same upgrade.
-- [ ] **AC-4** — **The rollup is derived from the granular sequence, not computed
+- [x] **AC-4** — **The rollup is derived from the granular sequence, not computed
       separately.** A test asserts this by construction — expanding the rollup
       reproduces the granular sequence exactly — so the two cannot drift apart.
       This is the one implementation decision the story fixes, because two
       independent calculations of the same plan is the failure it exists to avoid.
-- [ ] **AC-5** — The sequence stops when the budget is exhausted, and the interface
+- [x] **AC-5** — The sequence stops when the budget is exhausted, and the interface
       states what the budget was and how much of it the plan spends.
-- [ ] **AC-6** — An input that cannot produce a plan — coins spent on Labs
+- [x] **AC-6** — An input that cannot produce a plan — coins spent on Labs
       exceeding lifetime coins, a non-numeric or negative entry — is reported
       clearly rather than producing an empty or misleading plan.
-- [ ] **AC-7** — Unit tests cover the budget computation, the sequence generation
+- [x] **AC-7** — Unit tests cover the budget computation, the sequence generation
       and the rollup derivation. A Playwright test covers the real user flow:
       entering both figures and reading a plan out of both views.
-- [ ] **AC-8** — This does not change the existing per-upgrade entry flow. A player
+- [x] **AC-8** — This does not change the existing per-upgrade entry flow. A player
       who enters current levels by hand gets exactly what they get today, and a
       test asserts the existing flow still produces its current result.
 

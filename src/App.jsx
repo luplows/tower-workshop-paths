@@ -6,17 +6,19 @@ import { HeaderMenu } from './components/HeaderMenu'
 import { LabsInputs } from './components/LabsInputs'
 import { ModeTabBar } from './components/ModeTabBar'
 import { UpgradePath } from './components/UpgradePath'
+import { WorkshopBuyout } from './components/WorkshopBuyout'
 import { WorkshopInputs } from './components/WorkshopInputs'
 import { useLocalStorageState } from './hooks/useLocalStorageState'
 
-// "Labs" sits alongside Input/Path rather than as a third ModeTabBar entry
-// (below), for the same reason Path does: no in-game equivalent to mirror,
-// so no natural home inside the toggle that deliberately mirrors only the
-// game's own Upgrade/Enhance buttons.
+// "Labs" and "Buyout" sit alongside Input/Path rather than as ModeTabBar
+// entries (below), for the same reason Path does: neither has an in-game
+// equivalent to mirror, so neither has a natural home inside the toggle
+// that deliberately mirrors only the game's own Upgrade/Enhance buttons.
 const SECTIONS = [
   { id: 'input', label: 'Input' },
   { id: 'path', label: 'Path' },
   { id: 'labs', label: 'Labs' },
+  { id: 'buyout', label: 'Buyout' },
 ]
 
 const MODES = [
@@ -107,6 +109,17 @@ function App() {
           className="app__mode-panel"
         >
           <LabsInputs key={resetNonce} />
+        </div>
+      )}
+
+      {sectionId === 'buyout' && (
+        <div
+          role="tabpanel"
+          id="section-panel-buyout"
+          aria-labelledby="section-tab-buyout"
+          className="app__mode-panel"
+        >
+          <WorkshopBuyout key={resetNonce} />
         </div>
       )}
 
