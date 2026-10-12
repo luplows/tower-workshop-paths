@@ -63,6 +63,12 @@ stories most likely to be starved are the ones nobody is advocating for.
 
 ## Context
 
+**Retired here on 2026-10-12, unbuilt: it moved to steward as ST-2.** It was
+copied into `luplows/steward` at the extraction on 2026-10-10
+(`docs/steward-bootstrap.md`, B1), and is built there, not here
+(`docs/agent-workflow-design.md`, R4). This copy is otherwise as it was when
+it moved.
+
 - OQ-49 — `queue.mjs`, the module this extends. Its AC-4 currently states
   ordering as "by tier, then lowest id first; stable across runs" and needs
   amending when this lands. **It is still only prose in `docs/migration-plan.md` and

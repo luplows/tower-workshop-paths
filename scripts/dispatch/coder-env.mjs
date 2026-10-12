@@ -11,7 +11,7 @@
  * it has nothing to do with which command was used, only with whether a usable
  * credential exists in the environment that command inherits. Git's own
  * authentication (SSH key / credential helper) is left in place here; the
- * coder no longer needs it, and removing it is OQ-73's.
+ * coder no longer needs it, and removing it is OQ-73's (now steward's ST-6).
  *
  * `coderAllowedTools` is the separate, complementary layer. The coder commits
  * and the dispatcher pushes (OQ-84, `pushBranch` in `coder.mjs`), so no `git
@@ -33,7 +33,8 @@ const CREDENTIAL_ENV_VARS = ['GH_TOKEN', 'GITHUB_TOKEN', 'GH_ENTERPRISE_TOKEN']
  * empty of any host/token configuration, e.g. a fresh temp directory.
  *
  * Deliberately does not touch git's own authentication (SSH agent socket,
- * `GIT_SSH_COMMAND`, a credential helper's own storage); that is OQ-73's.
+ * `GIT_SSH_COMMAND`, a credential helper's own storage); that is OQ-73's (now
+ * steward's ST-6).
  */
 export function coderEnv(baseEnv, emptyGhConfigDir) {
   if (!emptyGhConfigDir) {
@@ -128,7 +129,7 @@ export function coderAllowedTools(branch) {
 /**
  * Denied outright, on top of `gh` simply having nothing to authenticate with
  * (`coderEnv`). Raises the floor against the ordinary, non-bypassing path the
- * same way OQ-62 denies it to the reviewer -- see `coderEnv`'s doc comment
+ * same way OQ-62 (now steward's ST-3) denies it to the reviewer -- see `coderEnv`'s doc comment
  * for why this alone would not satisfy AC-4.
  *
  * `Bash(git push:*)` is denied as a second barrier, as the reviewer's list does

@@ -94,6 +94,12 @@ one backstop for every story, with no special case for any of them.
 
 ## Context
 
+**Retired here on 2026-10-12, unbuilt: it moved to steward as ST-14.** It was
+copied into `luplows/steward` at the extraction on 2026-10-10
+(`docs/steward-bootstrap.md`, B1), and is built there, not here
+(`docs/agent-workflow-design.md`, R4). This copy is otherwise as it was when
+it moved.
+
 - `scripts/dispatch/coder.mjs`: `pushBranch`, `sessionSummary`, `cleanUp`, and
   the `finally` blocks of `dispatchCoder` and `retryStory` that remove the
   worktree.

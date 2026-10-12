@@ -101,6 +101,12 @@ what each run did.
 
 ## Context
 
+**Retired here on 2026-10-12, unbuilt: it moved to steward as ST-11.** It was
+copied into `luplows/steward` at the extraction on 2026-10-10
+(`docs/steward-bootstrap.md`, B1), and is built there, not here
+(`docs/agent-workflow-design.md`, R4). This copy is otherwise as it was when
+it moved.
+
 - Decided by the owner on 2026-09-28, in the dispatcher session, while
   planning how Session A's pull requests reach the queue:
   - a Windows scheduled task every 15 minutes wakes the loop, and GitHub's

@@ -58,6 +58,12 @@ noise and it does not depend on a pattern Node has deprecated.
 
 ## Context
 
+**Retired here on 2026-10-12, unbuilt: it moved to steward as ST-7.** It was
+copied into `luplows/steward` at the extraction on 2026-10-10
+(`docs/steward-bootstrap.md`, B1), and is built there, not here
+(`docs/agent-workflow-design.md`, R4). This copy is otherwise as it was when
+it moved.
+
 - `scripts/dispatch/install.mjs` runs
   `execFile('npm', ['ci'], { shell: process.platform === 'win32', … })` with
   no `timeout`. Its comment gives the reason for the shell: "On Windows `npm`

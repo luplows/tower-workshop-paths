@@ -275,7 +275,7 @@ its process environment and redirects `GH_CONFIG_DIR` to an empty directory,
 so nothing reachable from the session — `gh` directly, `gh` spawned from inside
 `node -e` via `child_process`, or an `npm`/`npx` script doing either — can
 authenticate as anything more than git over SSH, which none of that touches
-(removing that is OQ-73's). `gh` is absent from `coderAllowedTools`, and
+(removing that is OQ-73's, now steward's ST-6). `gh` is absent from `coderAllowedTools`, and
 `git push` is not allowed and is denied in `CODER_DISALLOWED_TOOLS`.
 
 **Opening the PR moves to whoever ran the coder.** The coder emits the PR title

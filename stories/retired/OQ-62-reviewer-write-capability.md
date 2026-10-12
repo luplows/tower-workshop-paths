@@ -68,6 +68,12 @@ instruction.
 
 ## Context
 
+**Retired here on 2026-10-12, unbuilt: it moved to steward as ST-3.** It was
+copied into `luplows/steward` at the extraction on 2026-10-10
+(`docs/steward-bootstrap.md`, B1), and is built there, not here
+(`docs/agent-workflow-design.md`, R4). This copy is otherwise as it was when
+it moved.
+
 Found reviewing [#109](https://github.com/luplows/tower-workshop-paths/pull/109),
 whose own round-4 verdict established it: the reviewer's allowlist grants
 `Bash(npm:*)`, `Bash(npx:*)` and `Bash(node:*)`, so `node -e` can write files

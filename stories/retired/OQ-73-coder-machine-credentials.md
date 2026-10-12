@@ -100,6 +100,12 @@ A, by hand, not dispatched.
 
 ## Context
 
+**Retired here on 2026-10-12, unbuilt: it moved to steward as ST-6.** It was
+copied into `luplows/steward` at the extraction on 2026-10-10
+(`docs/steward-bootstrap.md`, B1), and is built there, not here
+(`docs/agent-workflow-design.md`, R4). This copy is otherwise as it was when
+it moved.
+
 - **Rewritten on 2026-10-09 as a spike**, at the owner's decision. The story
   before the rewrite (`git show eb84893:stories/OQ-73-coder-machine-credentials.md`)
   had a separate Windows account as its candidate mechanism. On 2026-10-08 the

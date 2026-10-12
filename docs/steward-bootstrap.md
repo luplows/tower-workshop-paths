@@ -379,7 +379,8 @@ Sections 5 to 7 were ticked at the retried extraction, on 2026-10-10 (section 3)
       "Decided so far").
 - [ ] Record the outcome: in steward's design doc, through a steward pull request; and here, in R4,
       the OQ-to-ST mapping, through a `write-story/` pull request, in which Session A also
-      retires the moved stories here, each naming its `ST-<n>` (OQ-115's Out of scope).
+      retires the moved stories here, each naming its `ST-<n>` (OQ-115's Out of scope). The part
+      here was done on 2026-10-12. Steward's design doc is steward's to update.
 
 ## 9. Decisions
 
