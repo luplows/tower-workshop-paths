@@ -5,7 +5,7 @@ tier: normal
 kind: product
 depends_on: []
 model: sonnet
-blocked: null
+blocked: "review-session-failed: exit code 1"
 ---
 
 ## Intent
