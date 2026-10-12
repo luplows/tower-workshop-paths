@@ -28,9 +28,11 @@ this repository's own convention (`docs/steward-bootstrap.md`, D-13).
 - [ ] **AC-2** — `REVIEW.md` keeps the content of its items 8 and 10, which
       name Vitest, Playwright, the buy-order algorithm and screenshot baselines.
       Steward's checklist reaches the reviewer and the coder from steward.
-- [ ] **AC-3** — `stories/README.md` and `stories/_TEMPLATE.md` are left
-      whole, as this repository's own story schema (D-13). The pull request's
-      diff does not touch either, and `node scripts/lint-stories.mjs` passes.
+- [ ] **AC-3** — After the cut, `CLAUDE.md` still points at this
+      repository's `stories/README.md` for the story schema, status derivation
+      and readiness test, and not at steward's copy, since this repository
+      keeps its own story schema (D-13). `stories/README.md` and
+      `stories/_TEMPLATE.md` are unchanged.
 - [ ] **AC-4** — `OQ-133` is taken out of the **Planned (…)** marker in
       `docs/agent-workflow-design.md`, "Portability", "Decided so far", as that
       document's "Reading this document" note says.

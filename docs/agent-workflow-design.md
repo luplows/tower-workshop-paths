@@ -1947,7 +1947,9 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   **Revised 2026-10-10 by the owner:** this repository keeps its story tooling in full, as its own
   convention: `scripts/lint-stories.mjs` and its test, `scripts/dispatch/story-containment.mjs`,
   and full copies of `stories/README.md` and `stories/_TEMPLATE.md`. Steward's copies move as the
-  table says ("Decided so far").
+  table says ("Decided so far"). So `ci.yml`'s containment step stays here too, running this
+  repository's own script, and does not call steward's command, despite the table's row for the gate
+  workflows' logic (noted 2026-10-12, after #251's review).
 
   The prompts' project-specific lines are few. In `coder.md`: the repository name, the testing
   frameworks and screenshot-baseline rules, and `mytower.app` being reachable. In `reviewer.md`:

@@ -85,6 +85,11 @@ once: every purchase in order, and a short summary of where the coins go.
   `useLocalStorageState` pattern gives for free.
 - **Importing lifetime coins from a save file.** That is OQ-53's territory.
 - **Where the buy-out sits in the app.** The coder chooses, within AC-9.
+- **How the granular list is presented.** A full buy-out is 9281 purchases
+  (Context). Paging, collapsing, a cap with a way to show the rest, or a
+  virtualised list are the coder's choice, as long as every purchase in the
+  plan can be reached in the interface, as AC-4 requires. The PR body names
+  the choice. Left to the coder on 2026-10-12, after #255's review.
 
 ## Constraints
 
@@ -130,8 +135,12 @@ keeps that.
 - `src/utils/cheapestNextUpgrades.js` — `getPrioritizedNextUpgrades`, and the
   row shape it returns (`name`, `source`, `currentLevel`, `nextLevel`,
   `levels`, `cost`)
-- `src/App.jsx` — the sections, and the `localStorage` keys
-  `workshopDiscountLabs` and `enhancementDiscountLabs`
+- `src/App.jsx` — the sections
+- `src/components/LabsInputs.jsx` (lines 48 and 56) — owns the `localStorage`
+  keys `workshopDiscountLabs` and `enhancementDiscountLabs`.
+  `src/components/UpgradePath.jsx` (lines 37–38) reads them with
+  `useLocalStorageState`, the pattern AC-2's discount pricing follows.
+  `src/App.jsx` names them only to clear them (lines 58–59).
 - `src/data/workshopLevels.js`, `src/data/enhancementLevels.js` — the costs
 - `e2e/` — the Playwright suite AC-8 extends
 - OQ-2, OQ-4, OQ-5, OQ-6, OQ-7, in `Completed-Questions.md` — the scoring work

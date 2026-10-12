@@ -27,8 +27,9 @@ moved code), then OQ-134 (the moved documents).
       matches it.
 - [ ] **AC-2** — `review-gate.yml` and `land-approved.yml` are the thin files
       steward's `init` writes: this repository's triggers and permissions, then
-      steward's command. `ci.yml`'s story containment step runs steward's
-      command. `ci.yml`'s product checks, its `Setup: ` step names (OQ-118) and
+      steward's command. `ci.yml`'s story containment step keeps running this
+      repository's `scripts/dispatch/story-containment.mjs` (D-13, which keeps
+      the story tooling here). `ci.yml`'s product checks, its `Setup: ` step names (OQ-118) and
       its after-sweep trigger (OQ-124) are unchanged.
 - [ ] **AC-3** — This project's lines reach the coder's and the reviewer's
       prompts through steward's project section (R1): its repository name,
