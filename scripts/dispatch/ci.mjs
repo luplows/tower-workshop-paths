@@ -10,10 +10,19 @@
  *
  * This module only reads. `createCiContext` has its own allowlist
  * (`assertAllowedCiRequest`), checked before any network call, that permits
- * four GET shapes: a commit's workflow runs, a run's jobs, a job's log, and a
- * pull request's commits. It reports and counts; whether a red run is retried,
- * and the bound on retries, belong to OQ-48's loop. A red run counts as a round
- * even if a re-run would have passed.
+ * five GET shapes: a commit's workflow runs, a run's jobs, a job's log, a
+ * pull request's commits, and one commit's own detail (files and author). It
+ * reports and counts; whether a red run is retried, and the bound on retries,
+ * belong to OQ-48's loop. A red run counts as a round even if a re-run would
+ * have passed.
+ *
+ * It also answers one more question for OQ-138: whether a red `ci.yml` run
+ * was followed by `update-screenshots.yml` committing baselines to the same
+ * branch, which `story.mjs` uses to push a continuation commit instead of
+ * retrying the coder. `waitForUpdateScreenshots` finds that workflow's
+ * `pull_request` run the same way `waitForCi` finds CI's, and `commitsAfter`
+ * reads the commits between two heads (and each one's changed files) through
+ * the pull request's own commit list.
  *
  * A job's log is untrusted text (the pull request's code wrote it). It is
  * handed on as data in `findings`; bounding it in a prompt is
@@ -24,6 +33,9 @@ import { ghAuthToken } from './github.mjs'
 const API = 'https://api.github.com'
 
 export const CI_WORKFLOW_PATH = '.github/workflows/ci.yml'
+// OQ-138's AC-1: the workflow whose `pull_request` run commits screenshot
+// baselines, found by path the same way `CI_WORKFLOW_PATH` is.
+export const UPDATE_SCREENSHOTS_WORKFLOW_PATH = '.github/workflows/update-screenshots.yml'
 // AC-2: the name prefix `ci.yml` gives each setup step, and the name GitHub
 // gives a job's own first step. A cleanup step GitHub reports as `Post Setup:
 // …` does not start with the prefix (it starts with `Post `), so it is not a
@@ -85,17 +97,23 @@ export function buildListPullRequestCommits(repo, number, page = 1) {
   }
 }
 
+/** OQ-138's AC-2: request for one commit's own detail (its author and changed files). */
+export function buildGetCommit(repo, sha) {
+  return { method: 'GET', url: `${repoPath(repo)}/commits/${requireSha(sha)}` }
+}
+
 const ID = '[1-9][0-9]*'
-// [method, path after the repo]: the shapes of the four `build*` functions above.
+// [method, path after the repo]: the shapes of the five `build*` functions above.
 const ALLOWED = [
   ['GET', new RegExp('^/actions/runs\\?head_sha=[0-9a-f]{40}&per_page=100$')],
   ['GET', new RegExp(`^/actions/runs/${ID}/jobs\\?per_page=100$`)],
   ['GET', new RegExp(`^/actions/jobs/${ID}/logs$`)],
   ['GET', new RegExp(`^/pulls/${ID}/commits\\?per_page=100&page=${ID}$`)],
+  ['GET', new RegExp('^/commits/[0-9a-f]{40}$')],
 ]
 
 /**
- * Throws unless `request` is one of the four GET shapes above for `repo`, and
+ * Throws unless `request` is one of the five GET shapes above for `repo`, and
  * carries no body. `send` calls this before any network call.
  */
 export function assertAllowedCiRequest(repo, request) {
@@ -148,20 +166,30 @@ export function createCiContext({
 
 // ------------------------------------------------------------------- logic
 
-function isCiRun(run) {
+function isRunAtPath(run, workflowPath) {
   // A run's `path` can carry an `@ref` suffix; the workflow file is what precedes it.
-  return typeof run.path === 'string' && run.path.split('@')[0] === CI_WORKFLOW_PATH
+  return typeof run.path === 'string' && run.path.split('@')[0] === workflowPath
 }
 
-/** The latest ci.yml run in a listing: highest run number, then highest attempt. */
-export function latestCiRun(runs) {
-  const ci = runs.filter(isCiRun)
-  if (ci.length === 0) return null
-  return ci.reduce((best, run) => {
+/** The latest run at `workflowPath` in a listing, optionally filtered to one `event`: highest run number, then highest attempt. */
+function latestRunAtPath(runs, workflowPath, event) {
+  const matches = runs.filter((run) => isRunAtPath(run, workflowPath) && (event === undefined || run.event === event))
+  if (matches.length === 0) return null
+  return matches.reduce((best, run) => {
     const a = [best.run_number ?? 0, best.run_attempt ?? 1]
     const b = [run.run_number ?? 0, run.run_attempt ?? 1]
     return b[0] > a[0] || (b[0] === a[0] && b[1] > a[1]) ? run : best
   })
+}
+
+/** The latest ci.yml run in a listing: highest run number, then highest attempt. */
+export function latestCiRun(runs) {
+  return latestRunAtPath(runs, CI_WORKFLOW_PATH)
+}
+
+/** OQ-138's AC-1: the latest update-screenshots.yml `pull_request` run in a listing, or null. */
+export function latestUpdateScreenshotsRun(runs) {
+  return latestRunAtPath(runs, UPDATE_SCREENSHOTS_WORKFLOW_PATH, 'pull_request')
 }
 
 async function latestCiRunFor(ctx, headSha) {
@@ -285,6 +313,55 @@ export async function waitForCi(ctx, headSha, { timeoutMs = CI_WAIT_TIMEOUT_MS, 
     if (ctx.now() + pollMs > deadline) return { result: 'timed-out' }
     await ctx.sleep(pollMs)
   }
+}
+
+/**
+ * OQ-138's AC-1: waits for update-screenshots.yml's `pull_request` run on
+ * `headSha` to finish, the same way `waitForCi` waits for ci.yml's, except
+ * that there may be no such run at all (the push did not touch `e2e/**`).
+ * Resolves `{ found: false }` when there is none, `{ found: true, conclusion }`
+ * once it completes, or `{ found: true, timedOut: true }` if it does not
+ * finish within the wait.
+ */
+export async function waitForUpdateScreenshots(ctx, headSha, { timeoutMs = CI_WAIT_TIMEOUT_MS, pollMs = CI_POLL_INTERVAL_MS } = {}) {
+  requireSha(headSha)
+  const deadline = ctx.now() + timeoutMs
+  for (;;) {
+    const json = await ctx.send(buildListRunsForCommit(ctx.repo, headSha))
+    const run = latestUpdateScreenshotsRun((json.workflow_runs ?? []).filter((r) => r.head_sha === headSha))
+    if (!run) return { found: false }
+    if (run.status === 'completed') return { found: true, conclusion: run.conclusion }
+    if (ctx.now() + pollMs > deadline) return { found: true, timedOut: true }
+    await ctx.sleep(pollMs)
+  }
+}
+
+/**
+ * OQ-138's AC-1, AC-2: every commit strictly after `baseSha` up to and
+ * including `headSha`, in the pull request's own commit order, each with its
+ * GitHub author login and the files it changed. Reads the order from
+ * `buildListPullRequestCommits` (paged) and each commit's files from
+ * `buildGetCommit`. Resolves `[]` when `baseSha` equals `headSha`, or when
+ * either sha is not found in the pull request's commits (so `baseSha` after
+ * `headSha` in that order is impossible, not merely unrecognised).
+ */
+export async function commitsAfter(ctx, number, baseSha, headSha) {
+  if (baseSha === headSha) return []
+  const all = []
+  for (let page = 1; ; page++) {
+    const json = await ctx.send(buildListPullRequestCommits(ctx.repo, number, page))
+    all.push(...json)
+    if (json.length < 100) break
+  }
+  const baseIndex = all.findIndex((c) => c.sha === baseSha)
+  const headIndex = all.findIndex((c) => c.sha === headSha)
+  if (baseIndex === -1 || headIndex === -1 || headIndex < baseIndex) return []
+  const out = []
+  for (const commit of all.slice(baseIndex + 1, headIndex + 1)) {
+    const detail = await ctx.send(buildGetCommit(ctx.repo, commit.sha))
+    out.push({ sha: commit.sha, author: commit.author?.login ?? null, files: (detail.files ?? []).map((f) => f.filename) })
+  }
+  return out
 }
 
 /**

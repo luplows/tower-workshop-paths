@@ -22,13 +22,13 @@ starts none that runs. This stopped OQ-8 on #252.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — When `waitForCi` reports a red `failure` on head S, other
+- [x] **AC-1** — When `waitForCi` reports a red `failure` on head S, other
       than a setup failure, `runStory` first waits for
       `update-screenshots.yml`'s `pull_request` run on S to finish, if there
       is one. It finds that run through the commit's workflow runs, by
       workflow path, as `ci.mjs` finds CI's. It then reads the branch's head
       H from `origin`.
-- [ ] **AC-2** — A baseline commit is recognised when H differs from S, and
+- [x] **AC-2** — A baseline commit is recognised when H differs from S, and
       every commit after S up to H is authored by `github-actions[bot]` and
       changes only files under `e2e/__screenshots__/`. The test is a pure,
       exported function, unit-tested for these cases:
@@ -37,12 +37,12 @@ starts none that runs. This stopped OQ-8 on #252.
       - a commit after S by any other author, which is not;
       - a bot commit that also changes a file outside
         `e2e/__screenshots__/`, which is not.
-- [ ] **AC-3** — On a recognised baseline commit, `runStory` does not retry
+- [x] **AC-3** — On a recognised baseline commit, `runStory` does not retry
       the coder. It commits an empty commit on H, with a message naming
       `update-screenshots.yml`, and pushes it with `pushBranch`, as
       `recordBlocked` pushes its commit. It then waits for CI on the new head
       and carries on from that result as from any CI result.
-- [ ] **AC-4** — `runStory` does AC-3 at most once per run. A second red CI
+- [x] **AC-4** — `runStory` does AC-3 at most once per run. A second red CI
       after it is decided as today, by `decideCi`. So one case is left: a
       retried coder that deletes stale baselines a second time pushes a
       commit, so the run goes back to CI. That CI is red, and the bot commits
@@ -50,13 +50,13 @@ starts none that runs. This stopped OQ-8 on #252.
       the story stops with `ci-retry-no-commit` (or at `MAX_ROUNDS` first).
       That is intended. The limit stops a loop of empty commits, if baselines
       are committed after every push.
-- [ ] **AC-5** — When no baseline commit is recognised, the run goes on as
+- [x] **AC-5** — When no baseline commit is recognised, the run goes on as
       at `f5cb7b1`: `decideCi`'s retry, with the same round count and the
       same findings.
-- [ ] **AC-6** — If the empty commit's push fails, the run stops through
+- [x] **AC-6** — If the empty commit's push fails, the run stops through
       `runStory`'s `stop`, as any other stop does, with a status naming the
       push failure.
-- [ ] **AC-7** — `scripts/dispatch/story.test.mjs` adds tests named
+- [x] **AC-7** — `scripts/dispatch/story.test.mjs` adds tests named
       `OQ-138/AC-…`, through `runStory`'s injected dependencies, for:
       - a red CI, a recognised baseline commit, then green CI on the empty
         commit, which goes on to review, with no `retryStory` call;
@@ -65,7 +65,7 @@ starts none that runs. This stopped OQ-8 on #252.
         retries the coder and does not push a second empty commit.
 
       The existing tests in that file still pass, unmodified.
-- [ ] **AC-8** — The `**Planned (OQ-138)**` marker in
+- [x] **AC-8** — The `**Planned (OQ-138)**` marker in
       `docs/agent-workflow-design.md` is resolved, as that document's "Reading
       this document" note says.
 

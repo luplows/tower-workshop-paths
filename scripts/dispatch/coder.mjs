@@ -125,7 +125,9 @@ export function findPromptChange(body) {
 }
 
 const BRANCH_NAME = /^[A-Za-z0-9][A-Za-z0-9._/-]*$/
-const SCREENSHOT_DIR = 'e2e/__screenshots__/'
+// Exported for OQ-138's AC-2: the directory `isBaselineCommit` (story.mjs) checks a
+// baseline commit's files against, so the two never drift apart.
+export const SCREENSHOT_DIR = 'e2e/__screenshots__/'
 
 /** Throws unless `branch` is a plain name: no refspec, no option, and never `main`. */
 function assertPlainBranch(branch, fnName) {
