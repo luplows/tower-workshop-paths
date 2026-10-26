@@ -33,7 +33,7 @@ copy, and an old link never stops working.
       passed to. That catches a key passed through a helper, such as
       `BuyOutPlan.jsx`'s `readStored('workshopDiscountLabs')`, as well as
       direct calls and `storageKey` props. Comments are not checked: #268's
-      review counted about 15 comments name these keys in backticks, such as
+      review counted about 15 comments that name these keys in backticks, such as
       `cheapestNextUpgrades.js` lines 231–277 and `LabsInputs.jsx` lines 31–33
       at 825d78e, and stay as they are.
 - [ ] **AC-2** — Every stored item has a permanent numeric ID, in one table:
