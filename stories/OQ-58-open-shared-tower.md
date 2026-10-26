@@ -20,8 +20,9 @@ touching my own data or being able to edit theirs by accident.
       levels, Labs, unlocks and Buy-out inputs read-only. No input on the shared
       view accepts entry.
 - [ ] **AC-2** — Opening a shared link neither reads nor writes the recipient's
-      stored data, levels, Labs, unlocks and Buy-out inputs included. A test seeds the recipient's state, opens a share link, and
-      asserts the stored state is identical afterwards.
+      stored data, levels, Labs, unlocks and Buy-out inputs included. A test
+      seeds the recipient's state, opens a share link, and asserts the stored
+      state is identical afterwards.
 - [ ] **AC-3** — An invalid, truncated, or unknown-version payload reports that
       the link is the problem and leaves the recipient on their own tower — never
       a blank view and never a half-populated one.
