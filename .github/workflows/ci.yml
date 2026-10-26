@@ -56,9 +56,30 @@ jobs:
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ steps.playwright-version.outputs.version }}
+      - name: 'Resolve apt package cache key'
+        id: apt-cache-key
+        run: echo "key=${{ runner.os }}-apt-${ImageOS}-${ImageVersion}-playwright-${{ steps.playwright-version.outputs.version }}" >> "$GITHUB_OUTPUT"
+      - name: 'Restore apt package cache'
+        id: apt-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/apt-archives
+          key: ${{ steps.apt-cache-key.outputs.key }}
       - name: 'Setup: Playwright browsers'
-        timeout-minutes: 5
+        timeout-minutes: 6
         run: |
+          # The cache is kept in a directory the runner user owns, as /var/cache/apt/archives is
+          # root's. apt uses a .deb already there when its version matches, so only packages
+          # updated since the cache was saved are downloaded. Not fatal: the first try downloads
+          # what is missing.
+          apt_cache="$HOME/apt-archives"
+          if [ "${{ steps.apt-cache.outputs.cache-hit }}" = "true" ]; then
+            if sudo timeout 10s cp "$apt_cache"/*.deb /var/cache/apt/archives/; then
+              echo "Copied $(find "$apt_cache" -name '*.deb' | wc -l) cached .deb files into /var/cache/apt/archives/"
+            else
+              echo "Copying the cached .deb files failed or ran past 10s; making the first try anyway"
+            fi
+          fi
           for attempt in 1 2; do
             echo "Playwright install attempt $attempt of 2"
             if [ "${{ steps.playwright-cache.outputs.cache-hit }}" = "true" ]; then
@@ -104,9 +125,30 @@ jobs:
               if ! sudo timeout 20s dpkg --configure -a; then
                 echo "dpkg --configure -a failed or ran past 20s; making the second try anyway"
               fi
+              # Point apt at archive.ubuntu.com in place of the runner's Azure mirror, which
+              # stalled downloads in the runs this step failed. Bounded, and not fatal, like the repair.
+              mirror_list=/etc/apt/apt-mirrors.txt
+              echo "$mirror_list before the switch:"
+              cat "$mirror_list" || true
+              if ! sudo timeout 10s sh -c 'echo "http://archive.ubuntu.com/ubuntu/" > "$0"' "$mirror_list"; then
+                echo "Switching $mirror_list failed or ran past 10s; making the second try anyway"
+              fi
+              echo "$mirror_list after the switch:"
+              cat "$mirror_list" || true
             fi
           done
           exit 1
+      - name: 'Collect apt package files for the cache'
+        if: steps.apt-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/apt-archives
+          find /var/cache/apt/archives -maxdepth 1 -name '*.deb' -exec cp -t ~/apt-archives {} +
+      - name: 'Save apt package cache'
+        if: steps.apt-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ~/apt-archives
+          key: ${{ steps.apt-cache-key.outputs.key }}
       - run: npm run test:e2e
       # A failing screenshot assertion (OQ-40) reports a pixel count in the
       # log; the expected/actual/diff images that make it diagnosable are in
