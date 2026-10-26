@@ -1,6 +1,6 @@
 ---
 id: OQ-139
-title: Stop a tapped button staying highlighted on a touch screen
+title: Show a button pressed while it is held on a touch screen, not highlighted after
 tier: normal
 kind: product
 depends_on: []
@@ -10,9 +10,10 @@ blocked: null
 
 ## Intent
 
-As a player using the tool on my phone, I want a button to look normal again
-once I have tapped it, so that a highlight never marks a button I did not
-just press, after the screen around it has changed.
+As a player using the tool on my phone, I want a button to look pressed while
+I hold it and normal again once I let go, so that I can see my tap register,
+and a highlight never marks a button I did not just press, after the screen
+around it has changed.
 
 ## Acceptance criteria
 
@@ -34,6 +35,16 @@ just press, after the screen around it has changed.
 - [ ] **AC-4** — No screenshot baseline in `e2e/__screenshots__/` changes.
       `e2e/appearance.spec.js` moves the pointer away before each shot, so
       none should, and a baseline that does change is a finding.
+- [ ] **AC-5** — Every selector that has a `:hover` rule also has an
+      `:active` rule, outside any `@media (hover: …)` block, with the same
+      declarations as its `:hover` rule. So a press shows the hover look on
+      every device, but only while the button is held.
+- [ ] **AC-6** — AC-2's Vitest test also fails if a selector with a `:hover`
+      rule has no matching `:active` rule, or if the two rules'
+      declarations differ, and names the selector.
+- [ ] **AC-7** — `src/main.jsx` adds one passive, empty `touchstart`
+      listener on `document`, with a comment saying it is there so that iOS
+      WebKit applies `:active` on a tap.
 
 ## Out of scope
 
@@ -41,6 +52,9 @@ just press, after the screen around it has changed.
 - Focus outlines, and any change to keyboard behaviour. There are no
   `:focus` rules under `src/` today.
 - Any other change to how a button looks on a device that can hover.
+- A Playwright test of `:active`. Chromium in Playwright gives no reliable
+  way to observe it (see Context), so AC-6 guards it statically, and the
+  owner rechecks pressed feedback on the phone once this lands.
 
 ## Constraints
 
@@ -78,9 +92,20 @@ which is why the existing suite does not see it.
   emulation does produce a non-hovering device.
 - `e2e/appearance.spec.js`, `settle()` — already moves the pointer off the
   page before a screenshot, for the same reason.
+- Pressed feedback (AC-5 to AC-7) is the owner's answer of 2026-10-26: a
+  tapped button should show feedback while it is pressed.
+- AC-7 rests on WebKit's long-standing behaviour of not applying `:active`
+  on iOS unless a `touchstart` listener is registered. This is not verified
+  here: Session A has no iOS device, and the owner's recheck is the test.
+- Why there is no Playwright test of `:active`: Session A probed it on
+  2026-10-26 with Playwright 1.63.0, and every route failed.
+  - In a context with `hasTouch: true, isMobile: true`, a CDP
+    `Input.dispatchTouchEvent` `touchStart` did not apply `:active`, even
+    after 300 ms.
+  - CDP `Emulation.setEmulatedMedia` with `hover: none` left
+    `matchMedia('(hover: none)')` false.
+  - With a mouse, the `:hover` look shows anyway.
 
 ## Open questions
 
-1. Should a tapped button show brief pressed feedback instead, through an
-   `:active` style, or no feedback at all? If `:active`, AC-1 to AC-3 gain a
-   criterion for it, and AC-3 has to tell a held press from a finished one.
+*(none)*
