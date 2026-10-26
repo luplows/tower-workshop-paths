@@ -22,7 +22,7 @@ has actually seen rather than one inherited from a third party.
 
 - [x] **AC-1** — Every Workshop upgrade in `src/data/workshopLevels.js` has its
       maximum level checked against the live game, and the result recorded per
-      upgrade in [`OQ-1-Checklist.md`](../../OQ-1-Checklist.md) — confirmed, or the
+      upgrade in [`OQ-1-Checklist.md`](../OQ-1-Checklist.md) — confirmed, or the
       observed value where it differs.
 - [x] **AC-2** — The checklist records **when** the confirmation was made and
       against **which game version**, because the answer expires: a patch can
@@ -72,22 +72,12 @@ independent confirmation. Re-running `verify-workshop-costs.mjs` checks for
 *drift* from mytower.app's live data; it cannot cross-validate data that came
 from mytower.app in the first place. Only the game can.
 
-- [`OQ-1-Checklist.md`](../../OQ-1-Checklist.md) — the tracking file AC-1 fills in,
+- [`OQ-1-Checklist.md`](../OQ-1-Checklist.md) — the tracking file AC-1 fills in,
   now useful primarily for this remaining task
 - `src/data/workshopLevels.js` — the stored maximums under check
 - `scripts/verify-workshop-costs.mjs` — what already covers costs, and why it
   cannot cover this
 - OQ-38, OQ-39, OQ-43, in `Completed-Questions.md` — the resolved portions
-
-**Done on 2026-10-26, against game version 29.1.3.** The owner read every
-upgrade's maximum level off the live game in a session with Session A, one
-upgrade at a time and then a tab at a time. All 48 matched the stored values.
-The stored maximum is each upgrade's `quantity` in
-`src/data/workshopUpgradeList.js`; it equals the length of the upgrade's
-array in `src/data/workshopLevels.js`, and the checklist's "current data max"
-matched it for all 48. All three were checked by script at 2d6e966 that day,
-with no mismatch. So AC-3 filed no data-correction story, and AC-4 recorded
-no upgrade as unconfirmed. The result is recorded in `OQ-1-Checklist.md`.
 
 ## Open questions
 
