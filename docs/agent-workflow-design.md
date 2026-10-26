@@ -897,10 +897,15 @@ test that runs this clean-up for real is in a file of its own, `*.alone.test.mjs
 leaves out and CI runs in a step of its own after it, so that no other test's processes are
 running for the clean-up to stop (decided 2026-10-09 by the owner).
 
-**Planned (OQ-137):** the step's worst case counts the clean-up after the first try, with a
-5-second allowance that the clean-up test checks: 2 × 120 + 5 + 30 + 20 = 295 seconds of the 300
-(decided 2026-10-09 by the owner, from #243's review). The clean-up after the second try is not
-counted: the step fails then whatever happens.
+**Planned (OQ-140):** apt's package files are cached between runs, keyed on the runner image and
+the Playwright version, and copied into `/var/cache/apt/archives/` before the first try. After
+the wait and the repair, the step points apt at `archive.ubuntu.com` in place of the Azure mirror
+for the second try, within 10 seconds and without failing the step. The step's limit goes from 5
+to 6 minutes. Its worst case counts the clean-up after the first try, with a 5-second allowance
+that the clean-up test checks: 2 × 120 + 5 + 30 + 20 + 10 = 305 seconds of the 360. The clean-up
+after the second try is not counted: the step fails then whatever happens. Decided 2026-10-26 by
+the owner, after the Azure mirror's slow downloads failed the step in five CI runs that day; the
+clean-up allowance was decided 2026-10-09, from #243's review, as OQ-137, which this replaces.
 
 **Definition of green:** it builds, lint is clean, every AC has a named test, Vitest passes,
 Playwright passes without retries, no pre-existing test was modified without story authorization,
@@ -1808,6 +1813,15 @@ deciding what is next. It is the harness's product outline, and moves with this 
   push (A2), made over SSH. Steward's first CI run was green, and its `main` is protected as this
   repository's is. What is left is steward's own loop and its first pull request
   (`steward-bootstrap.md`, section 8).
+- **OQ-137 is retired into OQ-140, a `fix` story for the install step** (decided 2026-10-26 by
+  the owner, from Session A's proposal). The Azure Ubuntu mirror's slow downloads failed
+  `Setup: Playwright browsers` in five CI runs that day, `main`'s included. OQ-140 caches apt's
+  package files, switches mirror before the second try, and raises the step's limit to 6 minutes
+  ("What CI runs"). It is a `fix` under the frozen-engine rule above, since the stall stops this
+  repository's loop. It changes the step OQ-137 forbade changing, so it carries OQ-137's two ACs
+  itself. The entries above that say OQ-137 stays here and waits on OQ-132 describe it as it
+  stood on 2026-10-09 and 2026-10-10. Running CI in Playwright's Docker image was considered and
+  not chosen: it changes the machine the screenshot baselines are drawn on.
 
 ### The move, in order
 
