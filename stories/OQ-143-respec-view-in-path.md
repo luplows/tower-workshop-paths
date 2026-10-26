@@ -47,10 +47,14 @@ where every Workshop coin goes, using the Labs I really have.
       - its error text uses a theme colour from `index.css`, not the fixed
         `#b3261e`.
 
-      It looks right in both the light and the dark theme.
+      `e2e/appearance.spec.js` gains two screenshots of the Respec view with
+      a plan shown, `respec-mobile.png` in the light theme and
+      `respec-mobile-dark.png` in the dark. CI's `update-screenshots.yml`
+      creates their baselines.
 - [ ] **AC-6** — Vitest covers AC-3's simulation: with the Lab at 0, no
-      purchase has `source: 'lab'` and no Enhancement is bought. With it at 1,
-      Enhancements are bought and the Lab is not.
+      purchase has `source: 'lab'` and no Enhancement is bought. With it at 1
+      and a budget large enough to buy everything, Enhancements are bought,
+      and the Lab still is not.
 - [ ] **AC-7** — Playwright:
       - `e2e/buy-out.spec.js` reaches the plan through Path → Respec, not
         Labs;
