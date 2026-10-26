@@ -17,18 +17,24 @@ copy them straight from the game's settings screen.
 ## Acceptance criteria
 
 - [ ] **AC-1** — A new `parseCoins(text)` in `src/utils/` reads a coin
-      amount from a number, optionally followed by one of `formatCoins.js`'s
-      suffixes. `1.18q` is `1.18 × 10^15` and `66.5T` is `66.5 × 10^12`.
+      amount: a number, then optionally one of `formatCoins.js`'s suffixes,
+      then optionally the word ` coins`. `1.18q` is `1.18 × 10^15`, `66.5T` is
+      `66.5 × 10^12`, and `1.18q coins` is `1.18q`.
+      - The number is decimal digits with an optional decimal point and an
+        optional leading `-`, so that a negative amount still reaches AC-3's
+        "cannot be negative" error. Exponents (`1e15`) and hexadecimal
+        (`0x10`), which `Number()` accepts today, are rejected.
       - Suffixes are case-sensitive, as the game uses them: `q` is
         quadrillion and `Q` quintillion, `s` sextillion and `S` septillion.
-      - Any other letter, including `K`, is rejected.
-      - Plain numbers are still accepted, as `Number()` reads them today.
+      - Any other letter, including `K`, is rejected, apart from that word.
+      - A plain number, with no suffix, is still accepted.
       - Leading and trailing spaces are ignored.
 - [ ] **AC-2** — `parseCoins` takes its suffixes and their values from the
       same table `formatCoins` uses, exported from `formatCoins.js`, so the
       two cannot drift apart. A test checks that
       `parseCoins(formatCoins(x))` returns `x`, for one value in each tier,
-      to `formatCoins`'s two-decimal truncation.
+      to `formatCoins`'s two-decimal truncation. `formatCoins` ends with
+      ` coins`, which AC-1 accepts.
 - [ ] **AC-3** — `computeBuyOutBudget` reads both inputs with `parseCoins`.
       An amount it rejects gives an error naming the input and listing the
       accepted suffixes, in place of today's "must be a number". The other
@@ -40,10 +46,12 @@ copy them straight from the game's settings screen.
       - `q` against `Q`;
       - a rejected `K`;
       - a plain number;
+      - a trailing ` coins`;
+      - a rejected `1e15` and `0x10`;
       - a decimal with each suffix;
       - spaces around the amount.
 - [ ] **AC-6** — A Playwright test in `e2e/buy-out.spec.js` enters `1.18q`
-      and `66.5T`, plans, and sees `Budget 1.11q`, which is
+      and `66.5T`, plans, and sees `Budget 1.11q coins`, which is
       `1.18q − 66.5T = 1.1135 × 10^15` as `formatCoins` shows it.
 
 ## Out of scope
@@ -67,11 +75,12 @@ copy them straight from the game's settings screen.
 - The player reads both figures from the game's settings screen (owner,
   2026-10-26).
 - `src/utils/buyOutPlan.js`, `computeBuyOutBudget` (line 15 at 69db298):
-  its `parse` uses `Number(text)`, so `1.18q` is rejected today as "must be
+  its `parse` uses `Number(text)` (line 19), so `1.18q` is rejected today as "must be
   a number".
 - `src/utils/formatCoins.js`: `TIERS`, not yet exported, holds `k`, `M`, `B`,
   `T`, `q`, `Q`, `s`, `S` and `O`, from `1e3` to `1e27`. `formatCoins`
-  truncates to two decimals.
+  truncates to two decimals and appends ` coins`: `formatCoins(1.18e15)` is
+  `1.18q coins` (line 48 at 75e723e).
 - `e2e/buy-out.spec.js`: the existing flow enters `1500000` and `500000` and
   expects `Budget 1M coins`. Those tests keep passing.
 - OQ-141 (#266) carries these inputs as strings in share links, so a typed `1.18q`
