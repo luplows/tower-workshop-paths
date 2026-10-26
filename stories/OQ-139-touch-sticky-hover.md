@@ -28,10 +28,11 @@ around it has changed.
       (`hasTouch: true, isMobile: true`). It first asserts that
       `matchMedia('(hover: none)').matches` is true, so that it fails rather
       than passing vacuously if the emulation stops producing a touch device.
-      On Path, it taps the first entry's Buy button, which buys at once with
-      no confirmation, because no earlier row repeats that upgrade. It then
-      asserts that the Buy button now in that position has the computed
-      `background-color` of an unhovered Buy button.
+      With the app loaded, it walks `document.styleSheets`, descending into
+      `@media` rules. It asserts that no rule whose selector contains
+      `:hover` applies: each must sit inside an `@media` rule whose
+      `conditionText` does not match. It names any that do. On main at
+      c48dadd, all nine of today's `:hover` rules apply, so it fails there.
 - [ ] **AC-4** — No screenshot baseline in `e2e/__screenshots__/` changes.
       `e2e/appearance.spec.js` moves the pointer away before each shot, so
       none should, and a baseline that does change is a finding.
@@ -86,10 +87,30 @@ which is why the existing suite does not see it.
   another entry's Buy button can take the place of the one just tapped.
   `handleBuyClick` in `src/components/UpgradePath.jsx` buys at once unless the
   same upgrade appears earlier in the list, and then it asks first.
+- Why AC-3 checks the stylesheets rather than a tap. Review of #261 doubted
+  that its first wording, which tapped a Buy button, could fail on main.
+  Session A's probes on 2026-10-26, under Playwright 1.63.0 with
+  `hasTouch: true, isMobile: true`, bore that out:
+  - A tap does leave an unguarded `:hover` on the element that was tapped.
+  - An element that replaces the tapped one in the same spot is not
+    hovered, which is unlike WebKit.
+  - Path's rows are keyed by `${entry.source}-${entry.name}-${entry.currentLevel}`,
+    so a purchase replaces the Buy button.
+  - The menu item, the dialogs' buttons and the Enhancement lock's Unlock
+    button all unmount when tapped. The category Unlock button
+    (`WorkshopCategoryPanel.jsx`) has no `key`, so React may keep the same
+    element when the next group becomes purchasable. That case was not
+    probed, and it depends on the levels entered.
+
+  So a tap-based test would rest on that one state-dependent case. The
+  stylesheet walk does not: run against a dev server at c48dadd, it listed all
+  nine rules as applying.
 - Under Playwright 1.63.0, a context with `hasTouch: true, isMobile: true`,
   or `devices['iPhone 13']`, reports `(hover: none)` and `(pointer: coarse)`.
   Session A checked this on 2026-10-26 with a throwaway script, so AC-3's
   emulation does produce a non-hovering device.
+- The owner's recheck on the phone, once this lands, is the only test of the
+  tapped-then-replaced case itself.
 - `e2e/appearance.spec.js`, `settle()` — already moves the pointer off the
   page before a screenshot, for the same reason.
 - Pressed feedback (AC-5 to AC-7) is the owner's answer of 2026-10-26: a

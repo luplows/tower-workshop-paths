@@ -35,8 +35,10 @@ finished at a glance.
 ## Context
 
 - `src/components/UpgradeLevelInput.jsx`: renders one level input with
-  `/ {upgrade.quantity}` beside it when the upgrade has a finite max. It is
-  the app's only `<input>`, so every level input goes through it.
+  `/ {upgrade.quantity}` beside it when the upgrade has a finite max. Every
+  level input goes through it. At c48dadd the app's only other `<input>`s
+  are `BuyOutPlan.jsx`'s two text inputs, which are not levels
+  (`git grep -n '<input' -- 'src/*.jsx'`).
 - `CLAUDE.md`, **Testing**: an appearance change deletes the stale
   screenshot baselines and says why in the PR body.
 - Raised by the owner on 2026-09-28 as a draft.
