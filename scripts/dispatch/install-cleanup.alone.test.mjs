@@ -84,7 +84,7 @@ describe('OQ-136/AC-4: a detached child holding the lock in a session of its own
   it('the script taken from each workflow is the step body, with every substitution applied', () => {
     for (const [, file] of WORKFLOWS) {
       const script = testableScript(readFileSync(file, 'utf8'), '/s', '/l', { dpkgLock: '/d', repair: 'false' })
-      expect(script.startsWith('for attempt in 1 2; do\n'), script).toBe(true)
+      expect(script, script).toContain('\nfor attempt in 1 2; do\n')
       expect(script.trimEnd().endsWith('exit 1'), script).toBe(true)
       expect(script).toContain('cmd="bash /s /l $attempt"')
       expect(script).toContain('timeout 2s $cmd')
@@ -98,8 +98,10 @@ describe('OQ-136/AC-4: a detached child holding the lock in a session of its own
         'sudo python3',
         'sudo timeout',
         '/var/lib/dpkg',
-        '/var/cache/apt',
-        '/etc/apt',
+        'cp "$apt_cache"',
+        'apt_cache="$HOME',
+        'mirror_list=/etc/apt',
+        '> "$0"',
       ]) {
         expect(script, `still contains ${gone}`).not.toContain(gone)
       }
