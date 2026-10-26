@@ -66,6 +66,16 @@ under a real browser chrome.
   that already exists, and the reason AC-3 is about touch rather than layout
 - `Project-Outline.md` — the scope statement describing the intended use
 
+**Done on 2026-10-26** (#262). The owner checked every screen of the live
+site, built from 2d6e966, on an iPhone 16 Pro with Chrome 156.0.8078.54.
+Every screen was usable. The record, with the device details and a result
+per screen, is `OQ-9-Mobile-Check.md`. It found two defects. One is the new
+OQ-139: a tapped button stays highlighted. The other was already OQ-97:
+leading zeros. OQ-8's buy-out plan landed afterwards and was not covered;
+the record says how it will be. This note came in a later pull request,
+because story containment allows a story's own pull request to change only
+its ticks and `blocked:` line.
+
 ## Open questions
 
 *(none)*
