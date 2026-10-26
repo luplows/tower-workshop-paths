@@ -20,15 +20,17 @@ copy them straight from the game's settings screen.
       amount: a number, then optionally one of `formatCoins.js`'s suffixes,
       then optionally the word ` coins`. `1.18q` is `1.18 × 10^15`, `66.5T` is
       `66.5 × 10^12`, and `1.18q coins` is `1.18q`.
-      - The number is decimal digits with an optional decimal point and an
-        optional leading `-`, so that a negative amount still reaches AC-3's
+      - The number is decimal digits, optionally followed by a decimal point
+        and at least one more digit: `1.5` is accepted, and `.5` and `1.` are
+        rejected. An optional leading `-` lets a negative amount reach AC-3's
         "cannot be negative" error. Exponents (`1e15`) and hexadecimal
         (`0x10`), which `Number()` accepts today, are rejected.
       - Suffixes are case-sensitive, as the game uses them: `q` is
         quadrillion and `Q` quintillion, `s` sextillion and `S` septillion.
       - Any other letter, including `K`, is rejected, apart from that word.
       - A plain number, with no suffix, is still accepted.
-      - Leading and trailing spaces are ignored.
+      - Leading and trailing spaces are ignored, and so are spaces between
+        the number and its suffix: `1.18 q` is `1.18q`.
 - [ ] **AC-2** — `parseCoins` takes its suffixes and their values from the
       same table `formatCoins` uses, exported from `formatCoins.js`, so the
       two cannot drift apart. A test checks that
@@ -47,7 +49,8 @@ copy them straight from the game's settings screen.
       - a rejected `K`;
       - a plain number;
       - a trailing ` coins`;
-      - a rejected `1e15` and `0x10`;
+      - a rejected `1e15`, `0x10`, `.5` and `1.`;
+      - `1.18 q`, with a space;
       - a decimal with each suffix;
       - spaces around the amount.
 - [ ] **AC-6** — A Playwright test in `e2e/buy-out.spec.js` enters `1.18q`
@@ -85,6 +88,9 @@ copy them straight from the game's settings screen.
   expects `Budget 1M coins`. Those tests keep passing.
 - OQ-141 (#266) carries these inputs as strings in share links, so a typed `1.18q`
   travels as typed.
+
+- The number's exact form (`.5`, `1.`, `1.18 q`) was settled by Session A
+  after #267's review asked; the owner can overrule it.
 
 ## Open questions
 
