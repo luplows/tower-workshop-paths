@@ -5,7 +5,7 @@ tier: normal
 kind: product
 depends_on: []
 model: sonnet
-blocked: null
+blocked: "ci-setup-failed: CI failed in setup step(s) Setup: Playwright browsers, outside the repository; a coder retry cannot fix it"
 ---
 
 ## Intent
