@@ -71,6 +71,14 @@ than assumed.
   a 2-second try limit; `runStep` and `report` are defined above it.
 - OQ-136 (`stories/done/`): the clean-up, the wait and the repair.
 
+**Retired on 2026-10-26 by the owner, into OQ-140.** The step stalled on a
+slow Ubuntu mirror in five CI runs that day, `main`'s included, and OQ-140
+fixes it by caching apt's packages and switching mirror before the second
+try. That changes the step and its budget, which this story forbade (AC-3),
+and its sum, 295 of 300 seconds, no longer holds. OQ-140 takes over AC-1
+and AC-2 as its AC-5 and AC-6, counting the 10-second mirror switch too.
+This story waited on OQ-132; the fix could not.
+
 ## Open questions
 
 *(none)*

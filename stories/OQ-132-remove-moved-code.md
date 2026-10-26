@@ -87,8 +87,9 @@ only tests of files that move go to steward).
   test is run), and `scripts/dispatch/install-cleanup.alone.test.mjs` holds
   OQ-136's behavioural tests (AC-4 at line 67, AC-2 at line 162). `ci.yml`
   line 37 runs that file; `vite.config.js` leaves `**/*.alone.test.mjs` out of
-  `npm test` (line 32), wherever it is. OQ-137, which changes both files,
-  depends on this story, so it finds them at their new paths.
+  `npm test` (line 32), wherever it is. OQ-140, which changes both files,
+  does not wait for this story (it replaced OQ-137, which did, on
+  2026-10-26). If OQ-140 lands first, this story moves its tests too.
 - `scripts/verify-workshop-costs.test.mjs` is the one existing test this project
   keeps under `scripts/`, the precedent for the new file's place. The other
   two there on `main` at `b2a02bf` are `scripts/lint-stories.test.mjs`, which
