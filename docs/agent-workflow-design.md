@@ -897,11 +897,11 @@ test that runs this clean-up for real is in a file of its own, `*.alone.test.mjs
 leaves out and CI runs in a step of its own after it, so that no other test's processes are
 running for the clean-up to stop (decided 2026-10-09 by the owner).
 
-**Planned (OQ-140):** apt's package files are cached between runs, keyed on the runner image and the
+apt's package files are cached between runs, keyed on the runner image and the
 Playwright version, and copied into `/var/cache/apt/archives/` before the first try, within 10
 seconds. After the wait and the repair, the step points apt at `archive.ubuntu.com` in place of the
 Azure mirror for the second try, within 10 seconds and without failing the step. The step's limit
-goes from 5 to 6 minutes. Its worst case counts the clean-up after the first try, with a 5-second
+is 6 minutes (it was 5). Its worst case counts the clean-up after the first try, with a 5-second
 allowance that the clean-up test checks: 10 + 2 × 120 + 5 + 30 + 20 + 10 = 315 seconds of the 360.
 The clean-up after the second try is not counted: the step fails then whatever happens. Decided
 2026-10-26 by the owner, after the Azure mirror's slow downloads failed the step in five CI runs
