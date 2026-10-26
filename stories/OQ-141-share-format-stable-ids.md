@@ -27,7 +27,8 @@ copy, and an old link never stops working.
         `activeCategoryId` and `themePreference`.
 
       Every read, write and removal in `src/` takes its key from that module.
-      A test fails, naming the file and line, if any file under `src/` passes
+      A test fails, naming the file and line, if any non-test file under
+      `src/` (any file not named `*.test.*`) passes
       a key as a string literal to `useLocalStorageState`, to a
       `localStorage` method, or through a `storageKey` prop.
 - [ ] **AC-2** — Every stored item has a permanent numeric ID, in one table:
@@ -43,11 +44,19 @@ copy, and an old link never stops working.
 - [ ] **AC-3** — A payload is `[format version][data revision][records][CRC-16]`,
       encoded as unpadded base64url. The format version stays `1`: no v1
       payload has been shared, because OQ-57 is not built.
-      - A record is an ID, then a value. A number is a varint, a set member
-        (an unlocked group) has no value, and a string (a Buy-out input) is a
-        varint length, then UTF-8 bytes.
+      - A record starts with a varint key, `ID × 4 + type`. The type says how
+        long the value is, so a decoder can skip a record whose ID it does not
+        know:
+        - `0`: a varint (a level, a Lab level);
+        - `1`: no value (a set member, such as an unlocked group);
+        - `2`: a varint length, then that many bytes (a string, such as a
+          Buy-out input, in UTF-8).
+
+        Type `3` is reserved. A record with an unknown type is `malformed`.
       - Items at zero, empty or absent are left out. On decode, an absent item
-        is zero or empty, so a decoded tower is still complete (OQ-56's AC-5).
+        is zero or empty. **This replaces OQ-56's AC-5**, under which a
+        payload carried every level and a missing one was rejected. See
+        Context for why.
       - The checksum is CRC-16/CCITT-FALSE over every byte before it.
 - [ ] **AC-4** — The data revision is a number in the codec. A test pins a
       fingerprint of the item table: every item's ID, name and current max.
@@ -67,10 +76,13 @@ copy, and an old link never stops working.
       - a pinned literal for one fixed tower, replacing OQ-56's;
       - a changed byte anywhere, including `0x00` and `0xFF` swapped,
         failing the checksum;
-      - each case in AC-5.
+      - each case in AC-5;
+      - a record of each type with an unknown ID, skipped, and a record of
+        type `3`, rejected as `malformed`.
 
-      The all-max payload stays within OQ-57's 2,000-character budget, and a
-      test reports its length.
+      The all-max payload keeps the complete share URL at or under 2,000
+      characters, OQ-56's AC-3 budget, and a test reports the payload's
+      length.
 - [ ] **AC-7** — `encodeTower` and `decodeTower` keep their names. They take
       and return every tower-data key from AC-1, not only levels.
 
@@ -120,8 +132,17 @@ copy, and an old link never stops working.
   plus the multi-line calls and `storageKey` props read by hand.
 - **Size**: each record is about 3 bytes, so a fully maxed tower is a few
   hundred characters, and a typical one is shorter, since zeros are left out.
-- `stories/done/OQ-56-share-payload-codec.md`: the format this replaces, and
-  its AC-5, which this keeps by reading absent as zero.
+- `stories/done/OQ-56-share-payload-codec.md`: the format this replaces.
+- **Why AC-3 reverses OQ-56's AC-5.** OQ-56 rejected a missing level so
+  that "absent" would never be something the decoder had to interpret,
+  because OQ-53 had not settled what a partial import means. A sparse format
+  is what keeps old links working across patches, so absent has to mean
+  something. Here it means zero, and the data revision says when it might
+  not: an item added after a payload was made is absent from it, and decodes
+  as zero with `stale: true`. The encoder still writes every non-zero item,
+  so a current payload is still complete. Session A proposed this on
+  2026-10-26; #266's review found that the first wording claimed to keep
+  AC-5 rather than reverse it.
 
 ## Open questions
 

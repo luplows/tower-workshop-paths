@@ -20,7 +20,7 @@ touching my own data or being able to edit theirs by accident.
       levels, Labs, unlocks and Buy-out inputs read-only. No input on the shared
       view accepts entry.
 - [ ] **AC-2** — Opening a shared link neither reads nor writes the recipient's
-      stored levels. A test seeds the recipient's state, opens a share link, and
+      stored data, levels, Labs, unlocks and Buy-out inputs included. A test seeds the recipient's state, opens a share link, and
       asserts the stored state is identical afterwards.
 - [ ] **AC-3** — An invalid, truncated, or unknown-version payload reports that
       the link is the problem and leaves the recipient on their own tower — never
@@ -43,14 +43,14 @@ touching my own data or being able to edit theirs by accident.
 
 - **Adopting a shared tower into your own data.** Its own story, and framed as a
   second *source* into the same import path as `playerInfo.dat` rather than as a
-  share feature — a complete overwrite of the recipient's levels, differing from
+  share feature — a complete overwrite of the recipient's data, differing from
   OQ-53 only in where the complete level set comes from. Sequenced after OQ-53 so
   the two cannot answer the overwrite question differently. This story ships
   read-only with no adopt control at all; a control that does nothing is worse
   than no control.
 - Editing the shared tower, commenting on it, or sending anything back.
 - Showing the shared tower against the recipient's own side by side. That is the
-  compare use case, and it needs the payload to carry more than levels.
+  compare use case, its own story if wanted.
 
 ## Constraints
 

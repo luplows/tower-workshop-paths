@@ -26,7 +26,7 @@ every level to them.
 - [ ] **AC-3** — Generating a share link does not modify the user's stored
       data. A test seeds state, shares, and asserts stored state is
       unchanged.
-- [ ] **AC-4** — If the payload would exceed the 2,000-character budget from
+- [ ] **AC-4** — If the share URL would exceed the 2,000-character budget from
       OQ-56 AC-3, which OQ-141 keeps, the control reports why and produces no link, rather than
       emitting a truncated URL that fails on the recipient's side.
 - [ ] **AC-5** — When the clipboard write is refused or unavailable, the URL is

@@ -66,9 +66,10 @@ complete level set, or only the levels a player has bought?
 
 - `stories/OQ-53-import-player-info.md` — open questions 1 to 4 are exactly what
   AC-1 to AC-3 answer.
-- `stories/done/OQ-56-share-payload-codec.md` — its AC-5 fixes share payloads
-  as a complete level set. OQ-141 keeps that by reading an absent item as
-  zero. If `playerInfo.dat` is partial, that divergence is the
+- `stories/done/OQ-56-share-payload-codec.md` — its AC-5 fixed share
+  payloads as a complete level set. OQ-141 (#266) replaces that with a sparse
+  format, in which an absent item is zero. So a share payload is no longer
+  a model for a complete level set. If `playerInfo.dat` is partial, that divergence is the
   finding that matters most, because it means import and share-adopt cannot share
   one path.
 - OQ-24 in `Completed-Questions.md` — the original investigation. Read it before
