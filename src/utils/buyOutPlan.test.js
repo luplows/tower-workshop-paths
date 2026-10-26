@@ -49,6 +49,17 @@ describe('simulateBuyOut', () => {
     expect(discounted.purchases.length).toBeGreaterThan(full.purchases.length)
   })
 
+  it('OQ-8/AC-2: prices Enhancements with the entered Enhancement discount Labs', () => {
+    const budget = 1e11
+    const full = simulateBuyOut({ budget })
+    const discounted = simulateBuyOut({
+      budget,
+      enhancementDiscountLabLevels: { attack: 50, defense: 50, utility: 50 },
+    })
+    const firstEnhancement = (plan) => plan.purchases.find((p) => p.source === 'enhancement')
+    expect(firstEnhancement(discounted).cost).toBeLessThan(firstEnhancement(full).cost)
+  }, 120_000)
+
   it('OQ-8/AC-3: a budget above everything maxes every upgrade, or lists it as unpriced', () => {
     const plan = simulateBuyOut({ budget: Number.MAX_VALUE })
     expect(plan.endedBy).toBe('everything-bought')
