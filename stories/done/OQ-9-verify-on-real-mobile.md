@@ -20,18 +20,18 @@ the situation it is designed for.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — Every screen the tool has is opened on a real touch device and
+- [x] **AC-1** — Every screen the tool has is opened on a real touch device and
       the result recorded per screen: usable, or what specifically was wrong.
-- [ ] **AC-2** — The record names the device, its screen size, the browser and
+- [x] **AC-2** — The record names the device, its screen size, the browser and
       the date, because "works on mobile" without those is not reproducible and
       expires silently.
-- [ ] **AC-3** — Touch-specific behaviour is exercised rather than assumed:
+- [x] **AC-3** — Touch-specific behaviour is exercised rather than assumed:
       every control is reachable and operable by tapping, scrolling works within
       any scrollable region, and nothing depends on hover to be discoverable.
       Hover is the failure an emulated viewport driven by a mouse cannot find.
-- [ ] **AC-4** — Each defect found becomes its own story in `stories/`, with the
+- [x] **AC-4** — Each defect found becomes its own story in `stories/`, with the
       device details from AC-2 attached. This story observes; it does not fix.
-- [ ] **AC-5** — If the pass finds nothing, that is recorded as a dated result
+- [x] **AC-5** — If the pass finds nothing, that is recorded as a dated result
       too. A verification with no written outcome is indistinguishable from one
       nobody ran.
 

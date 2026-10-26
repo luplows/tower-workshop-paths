@@ -17,7 +17,7 @@ citations that point here for entries which are not here.
 |---|---|
 | OQ-1 — Workshop max levels | [`stories/OQ-1-confirm-max-levels-in-game.md`](stories/OQ-1-confirm-max-levels-in-game.md) |
 | OQ-8 — Buy-out from lifetime coins | [`stories/OQ-8-buyout-from-lifetime-coins.md`](stories/OQ-8-buyout-from-lifetime-coins.md) |
-| OQ-9 — Verify on a real mobile device | [`stories/OQ-9-verify-on-real-mobile.md`](stories/OQ-9-verify-on-real-mobile.md) |
+| OQ-9 — Verify on a real mobile device | [`stories/done/OQ-9-verify-on-real-mobile.md`](stories/done/OQ-9-verify-on-real-mobile.md) |
 | OQ-45 — Enhancement drift detection | [`stories/OQ-45-verify-enhancement-costs.md`](stories/OQ-45-verify-enhancement-costs.md) |
 | OQ-46 — Batch walkthrough every ~10 PRs | [`stories/OQ-46-batch-walkthrough.md`](stories/OQ-46-batch-walkthrough.md) |
 | OQ-47 — Review block rate | [`stories/done/OQ-47-review-block-rate.md`](stories/done/OQ-47-review-block-rate.md) |
