@@ -5,7 +5,7 @@ tier: normal
 kind: product
 depends_on: []
 model: sonnet
-blocked: null
+blocked: "review-round-bound: 3 blocking verdicts, the bound; the unresolved findings of the latest: **Review verdict: block** Head confirmed at f2cca8c. Full Vitest passed (56 files/1050 tests), lint is clean and e2e/buy-out.spec.js passed (2). The code delivers AC-1–AC-9: it calls the unchanged getPrioritizedNextUpgrades once per purchase, applies each purchase's gate before the next choice, reads the discount Labs from their existing localStorage keys, derives the summary from the purchase list alone, reveals the granular list in pages of 100 with 'Show more', and leaves existing tests untouched. Blocked on the description alone: the Docs check says 'no change' for Open-Questions.md and Pr…"
 ---
 
 ## Intent
