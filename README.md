@@ -66,7 +66,7 @@ OQ-43 / [Completed-Questions.md](Completed-Questions.md) for why.
 - [x] Apply Workshop discount-lab savings to costs
 - [x] Apply Enhancement discount-lab savings to costs
 - [x] Source Workshop and Enhancement cost/max-level data from an independently-verified source, dropping the last third-party game-data dependency entirely (OQ-39, ~78% smaller production bundle)
-- [ ] Confirm Workshop upgrade max levels against the current patch, in-game (OQ-1)
+- [x] Confirm Workshop upgrade max levels against the current patch, in-game (OQ-1; game 29.1.3, 2026-10-26)
 - [x] Full buy-out simulation from lifetime coins (OQ-8)
 - [ ] Verify the UI on a real mobile device (OQ-9)
 

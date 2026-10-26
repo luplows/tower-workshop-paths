@@ -20,18 +20,18 @@ has actually seen rather than one inherited from a third party.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — Every Workshop upgrade in `src/data/workshopLevels.js` has its
+- [x] **AC-1** — Every Workshop upgrade in `src/data/workshopLevels.js` has its
       maximum level checked against the live game, and the result recorded per
       upgrade in [`OQ-1-Checklist.md`](../OQ-1-Checklist.md) — confirmed, or the
       observed value where it differs.
-- [ ] **AC-2** — The checklist records **when** the confirmation was made and
+- [x] **AC-2** — The checklist records **when** the confirmation was made and
       against **which game version**, because the answer expires: a patch can
       raise a ceiling, and a confirmation with no date cannot be told from a
       stale one.
-- [ ] **AC-3** — Any upgrade whose real maximum differs from the stored value is
+- [x] **AC-3** — Any upgrade whose real maximum differs from the stored value is
       filed as its own story for correcting the data. This story records the
       observation; it does not change `src/data/workshopLevels.js`.
-- [ ] **AC-4** — If any upgrade cannot be confirmed — not yet unlocked on the
+- [x] **AC-4** — If any upgrade cannot be confirmed — not yet unlocked on the
       account doing the checking, for instance — that is recorded as such, with
       the reason, rather than left blank or assumed correct.
 
