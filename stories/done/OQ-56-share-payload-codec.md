@@ -18,21 +18,21 @@ is versioned and tested before anything produces or consumes one.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — `encodeTower(levels)` returns a string safe to place in a URL
+- [x] **AC-1** — `encodeTower(levels)` returns a string safe to place in a URL
       with no percent-encoding, and `decodeTower` returns a value deeply equal to
       the input for any valid input. The round trip is property-tested, not only
       example-tested.
-- [ ] **AC-2** — The payload carries a format version. `decodeTower` rejects an
+- [x] **AC-2** — The payload carries a format version. `decodeTower` rejects an
       unknown version with a distinguishable error rather than mis-parsing it, and
       a test pins the version-1 encoding of a fixed tower as a literal string, so
       a change to the format cannot pass silently.
-- [ ] **AC-3** — A tower with every Workshop and Enhancement level at maximum
+- [x] **AC-3** — A tower with every Workshop and Enhancement level at maximum
       encodes to a payload that keeps the complete share URL at or under 2,000
       characters. The test asserts this against the real item set, so it fails if
       the item set later grows past the budget.
-- [ ] **AC-4** — `decodeTower` rejects a truncated, corrupted, or non-payload
+- [x] **AC-4** — `decodeTower` rejects a truncated, corrupted, or non-payload
       string with an error and never returns a partially populated tower.
-- [ ] **AC-5** — A payload always carries a complete level set, including levels
+- [x] **AC-5** — A payload always carries a complete level set, including levels
       at zero. A payload missing any known level is rejected under AC-4 rather
       than defaulted, so "absent" is never a state the decoder interprets and the
       format cannot inherit the ambiguity OQ-53 is still resolving.
