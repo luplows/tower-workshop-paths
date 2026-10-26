@@ -28,9 +28,11 @@ copy, and an old link never stops working.
 
       Every read, write and removal in `src/` takes its key from that module.
       A test fails, naming the file and line, if any non-test file under
-      `src/` (any file not named `*.test.*`) passes
-      a key as a string literal to `useLocalStorageState`, to a
-      `localStorage` method, or through a `storageKey` prop.
+      `src/` (any file not named `*.test.*`), other than that module,
+      contains any of the 12 key names as a string literal, whatever it is
+      passed to. That catches a key passed through a helper, such as
+      `BuyOutPlan.jsx`'s `readStored('workshopDiscountLabs')`, as well as
+      direct calls and `storageKey` props.
 - [ ] **AC-2** — Every stored item has a permanent numeric ID, in one table:
       - each Workshop upgrade and each Enhancement;
       - each Workshop and Enhancement discount Lab;
@@ -69,13 +71,17 @@ copy, and an old link never stops working.
       listed. Unchanged from OQ-56: a payload that is malformed, truncated,
       or fails its checksum, or whose format version is unknown, throws
       `ShareCodecError` with the same codes, and never returns a partial
-      tower.
+      tower. The version byte is checked first, before the checksum, so a
+      payload from a future version is `unknown-version` even though this
+      version cannot check its checksum. OQ-56's test at
+      `src/utils/shareCodec.test.js` lines 78–82 relies on that.
 - [ ] **AC-6** — Tests cover:
       - round trips for an empty tower, an all-max tower with every Lab,
         unlock and Buy-out input set, and a mixed one;
       - a pinned literal for one fixed tower, replacing OQ-56's;
-      - a changed byte anywhere, including `0x00` and `0xFF` swapped,
-        failing the checksum;
+      - a changed byte anywhere after the version byte, including `0x00` and
+        `0xFF` swapped, failing the checksum (a changed version byte is
+        `unknown-version`, per AC-5);
       - each case in AC-5;
       - a record of each type with an unknown ID, skipped, and a record of
         type `3`, rejected as `malformed`.
