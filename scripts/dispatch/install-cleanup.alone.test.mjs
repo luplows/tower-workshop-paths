@@ -44,7 +44,10 @@ const isLinux = process.platform === 'linux'
 // substitutes only: the GitHub Actions `${{ }}` expression bash cannot evaluate, the install
 // command itself (for a stand-in that can be driven from a test), the 2-minute try limit (for
 // test speed), the dpkg lock's path (for a file the test can lock), `sudo` on the probe (the
-// test's lock file is its own), and the repair (which needs a real dpkg, so a stand-in command).
+// test's lock file is its own), the repair (which needs a real dpkg, so a stand-in command), and
+// OQ-140's copy of the cached files and switch of the mirror list, which would change the
+// machine's apt cache and configuration (and whose paths point at nothing, so reading them is
+// harmless). It also adds two lines that print the time the clean-up starts and ends.
 function testableScript(text, standinPath, lockPath, { dpkgLock, repair = 'true' }) {
   // No quotes round the paths: the step runs `$cmd` unquoted, and word splitting keeps quote
   // characters, so a quoted path names a file that does not exist (mkdtemp paths have no spaces).
@@ -57,6 +60,19 @@ function testableScript(text, standinPath, lockPath, { dpkgLock, repair = 'true'
     .replace('dpkg_lock=/var/lib/dpkg/lock-frontend', `dpkg_lock=${dpkgLock}`)
     .replace('sudo python3 -c "$probe"', 'python3 -c "$probe"')
     .replace('sudo timeout 20s dpkg --configure -a', repair)
+    .replace('${{ steps.apt-cache.outputs.cache-hit }}', 'true')
+    .replace('apt_cache="$HOME/apt-archives"', 'apt_cache=/nonexistent-apt-archives')
+    .replace('sudo timeout 10s cp "$apt_cache"/*.deb /var/cache/apt/archives/', 'true')
+    .replace('mirror_list=/etc/apt/apt-mirrors.txt', 'mirror_list=/nonexistent-apt-mirrors.txt')
+    .replace(`sudo timeout 10s sh -c 'echo "http://archive.ubuntu.com/ubuntu/" > "$0"' "$mirror_list"`, 'true')
+    .replace(
+      '  echo "Playwright install attempt $attempt failed or timed out"\n',
+      '  echo "Playwright install attempt $attempt failed or timed out"\n  echo "CLEANUP_START $(date +%s%N)"\n',
+    )
+    .replace(
+      '    echo "No leftover processes from attempt $attempt"\n  fi\n',
+      '    echo "No leftover processes from attempt $attempt"\n  fi\n  echo "CLEANUP_END $(date +%s%N)"\n',
+    )
 }
 
 // GitHub Actions runs a `run:` block as `bash -e {0}`, so the tests do too.
@@ -75,9 +91,20 @@ describe('OQ-136/AC-4: a detached child holding the lock in a session of its own
       expect(script).toContain('dpkg_lock=/d\n')
       expect(script).toContain('! python3 -c "$probe" "$dpkg_lock"')
       expect(script).toContain('if ! false; then')
-      for (const gone of ['${{', 'npx playwright', 'timeout 2m', 'sudo python3', 'sudo timeout', '/var/lib/dpkg']) {
+      for (const gone of [
+        '${{',
+        'npx playwright',
+        'timeout 2m',
+        'sudo python3',
+        'sudo timeout',
+        '/var/lib/dpkg',
+        '/var/cache/apt',
+        '/etc/apt',
+      ]) {
         expect(script, `still contains ${gone}`).not.toContain(gone)
       }
+      expect(script).toContain('echo "CLEANUP_START $(date +%s%N)"')
+      expect(script).toContain('echo "CLEANUP_END $(date +%s%N)"')
     }
   })
 
@@ -153,6 +180,41 @@ describe('OQ-136/AC-4: a detached child holding the lock in a session of its own
         expect(unrelatedAlive, `the unrelated process's child, pid ${unrelatedPid}, did not survive\n${output}`).toBe(
           true,
         )
+      }
+    },
+    30000,
+  )
+})
+
+describe('OQ-140/AC-6: the clean-up after the first try, from its `failed or timed out` line to the end of the loop that kills leftover processes, takes under 5 seconds (skips on non-Linux platforms, named here)', () => {
+  it.skipIf(!isLinux)(
+    'with a leftover process from attempt 1 to stop, the clean-up of each workflow takes under 5s, and the step output is reported if not',
+    () => {
+      for (const [, file] of WORKFLOWS) {
+        const dir = mkdtempSync(path.join(tmpdir(), 'oq140-'))
+        const standinPath = path.join(dir, 'standin.sh')
+        writeFileSync(
+          standinPath,
+          [
+            '#!/bin/bash',
+            'if [ "$2" = "1" ]; then',
+            '  setsid sleep 30 </dev/null >/dev/null 2>&1 &',
+            '  disown',
+            '  exit 1',
+            'fi',
+          ].join('\n'),
+        )
+        const script = testableScript(readFileSync(file, 'utf8'), standinPath, path.join(dir, 'x'), {
+          dpkgLock: path.join(dir, 'lock-frontend'),
+        })
+        const result = runStep(script)
+        const output = report(result)
+        expect(result.status, `expected exit 0 for ${file}\n${output}`).toBe(0)
+        expect(result.stdout, output).toContain('Stopping leftover processes from attempt 1')
+        const start = BigInt(result.stdout.match(/CLEANUP_START (\d+)/)?.[1] ?? NaN)
+        const end = BigInt(result.stdout.match(/CLEANUP_END (\d+)/)?.[1] ?? NaN)
+        const seconds = Number(end - start) / 1e9
+        expect(seconds, `the clean-up took ${seconds}s, not under 5s, for ${file}\n${output}`).toBeLessThan(5)
       }
     },
     30000,
