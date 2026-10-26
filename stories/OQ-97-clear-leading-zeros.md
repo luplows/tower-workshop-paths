@@ -43,6 +43,12 @@ levels is quick and what I see is what is stored.
 - It is the app's only `<input>` (`grep -rn "<input" src --include=*.jsx`
   on 2026-09-28), so a fix there reaches every level input.
 - Raised by the owner on 2026-09-28 as a draft.
+- Also seen on a phone, in OQ-9's real-device pass on 2026-10-26: an iPhone
+  16 Pro, running Chrome 156.0.8078.54 (WebKit), against the live site built
+  from 2d6e966. A typed level kept its leading zero. The owner had thought
+  this was fixed on desktop, but nothing on main changes it:
+  `git log origin/main -i --grep='leading zero'` finds only #164, which
+  added this draft. So it is not specific to mobile.
 
 ## Open questions
 
