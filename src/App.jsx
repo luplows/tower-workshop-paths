@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import './App.css'
 import { AppSectionTabs } from './components/AppSectionTabs'
+import { BuyOutPlan } from './components/BuyOutPlan'
 import { EnhancementInputs } from './components/EnhancementInputs'
 import { HeaderMenu } from './components/HeaderMenu'
 import { LabsInputs } from './components/LabsInputs'
@@ -107,6 +108,7 @@ function App() {
           className="app__mode-panel"
         >
           <LabsInputs key={resetNonce} />
+          <BuyOutPlan key={`buy-out-${resetNonce}`} />
         </div>
       )}
 

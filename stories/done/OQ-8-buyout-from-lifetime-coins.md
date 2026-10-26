@@ -17,10 +17,10 @@ once: every purchase in order, and a short summary of where the coins go.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — The tool accepts a lifetime-coins figure and a coins-spent-on-Labs
+- [x] **AC-1** — The tool accepts a lifetime-coins figure and a coins-spent-on-Labs
       figure, and computes the coin budget from them: lifetime coins less coins
       spent on Labs.
-- [ ] **AC-2** — From that budget it produces a purchase sequence simulated from
+- [x] **AC-2** — From that budget it produces a purchase sequence simulated from
       level zero, covering Workshop upgrades, their unlock groups, the
       Workshop Enhancements Lab and Enhancements. Each purchase is chosen by
       the existing buy order, `getPrioritizedNextUpgrades` in
@@ -28,7 +28,7 @@ once: every purchase in order, and a short summary of where the coins go.
       The plan prices purchases with the Workshop and Enhancement discount-Lab
       levels the player has entered in the tool, and with none if none are
       entered.
-- [ ] **AC-3** — Each purchase in the plan is applied to the state the buy
+- [x] **AC-3** — Each purchase in the plan is applied to the state the buy
       order reads (levels, unlocked groups, the Enhancements Lab) before the
       next one is chosen, so a gate the plan opens takes effect for the
       purchases after it. A unit test runs the plan with a budget larger than
@@ -36,7 +36,7 @@ once: every purchase in order, and a short summary of where the coins go.
       `WORKSHOP_CATEGORIES` and every Enhancement listed under
       `ENHANCEMENT_CATEGORIES` (each tree's `upgrades`) either reaches its max
       level in the plan, or is listed as unpriced (AC-6).
-- [ ] **AC-4** — Two views of the plan are presented:
+- [x] **AC-4** — Two views of the plan are presented:
       - a **granular** list of the purchases in order, each with what is
         bought, the levels it goes from and to, and its cost, from which every
         purchase in the plan can be reached. It need not show them all at once
@@ -46,14 +46,14 @@ once: every purchase in order, and a short summary of where the coins go.
         purchase in the plan, its level after its last, how many purchases it
         took, and their total cost. Rows are in the order of each upgrade's
         first purchase in the plan.
-- [ ] **AC-5** — **The summary is computed from the granular list alone**, by a
+- [x] **AC-5** — **The summary is computed from the granular list alone**, by a
       function that takes the list and nothing else. A unit test asserts, for a
       plan with at least two upgrades bought more than once:
       - the summary's purchase counts add up to the granular list's length;
       - its total costs add up to the plan's total spend;
       - each row's levels equal the first and last granular entries for that
         upgrade.
-- [ ] **AC-6** — The plan ends in one of two ways, and the interface says
+- [x] **AC-6** — The plan ends in one of two ways, and the interface says
       which, with the budget, the amount spent and the amount left:
       - **the budget runs out**: the plan stops before the first recommended
         purchase that costs more than what is left;
@@ -61,14 +61,14 @@ once: every purchase in order, and a short summary of where the coins go.
 
       Anything the buy order reports in `unknownCost` is listed as unpriced,
       in both cases.
-- [ ] **AC-7** — An input that cannot produce a plan is reported clearly, and
+- [x] **AC-7** — An input that cannot produce a plan is reported clearly, and
       no plan is shown: coins spent on Labs exceeding lifetime coins, or a
       non-numeric or negative entry.
-- [ ] **AC-8** — Unit tests cover the budget computation, the sequence
+- [x] **AC-8** — Unit tests cover the budget computation, the sequence
       generation, AC-3's full buy-out and the summary's derivation. A
       Playwright test covers the real user flow: entering both figures and
       reading a plan out of both views.
-- [ ] **AC-9** — This does not change the existing flows. A player who enters
+- [x] **AC-9** — This does not change the existing flows. A player who enters
       current levels by hand gets exactly what they get today on Input, Path and
       Labs, and the existing tests of those flows pass unmodified.
 
