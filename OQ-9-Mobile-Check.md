@@ -14,8 +14,11 @@ owner's reports.
 | Browser | Chrome 156.0.8078.54 for iOS, which renders with WebKit |
 | Site | The live site, <https://luplows.github.io/tower-workshop-paths/>, deployed from 2d6e966 |
 
-This result is for that build. Screens added since then are not covered: the
-buy-out plan from OQ-8, #260, had not landed.
+This result is for that build. Screens added since then are not covered. The
+buy-out plan from OQ-8, #260, had not landed. Since b844534 it sits on the Labs
+tab, below the Labs inputs (`src/App.jsx:111` at a743b37), and its two text
+inputs have not been checked on a real device. The owner checks them on the
+phone together with the rechecks OQ-139 and OQ-97 ask for once they land.
 
 ## Per screen (AC-1, AC-3)
 
@@ -38,8 +41,10 @@ scrolling worked, and nothing depended on hover to be found.
 ## Defects (AC-4)
 
 - **A tapped button stays highlighted**, even after the content around it
-  changes. New draft
-  [OQ-139](stories/OQ-139-touch-sticky-hover.md).
-- **A typed level keeps its leading zero.** This was already the draft
+  changes. New story
+  [OQ-139](stories/OQ-139-touch-sticky-hover.md): a draft when this was
+  written, and made ready in #261.
+- **A typed level keeps its leading zero.** This was already
   [OQ-97](stories/OQ-97-clear-leading-zeros.md), whose Context records this
-  sighting. It is not specific to mobile.
+  sighting. It was a draft when this was written, and #261 refined it to
+  ready. It is not specific to mobile.

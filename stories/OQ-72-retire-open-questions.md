@@ -61,8 +61,8 @@ text is what identifies the place.
       - line 73, which offers it as "the full backlog". The backlog readers
         should be sent to is `stories/`.
 - [ ] **AC-8** — The two pointers to OQ-1 resolve to
-      `stories/OQ-1-confirm-max-levels-in-game.md`: `Project-Outline.md`
-      line 26, and `OQ-1-Checklist.md`'s header link (line 3).
+      `stories/done/OQ-1-confirm-max-levels-in-game.md`: `Project-Outline.md`
+      line 27, and `OQ-1-Checklist.md`'s header link (line 3).
 - [ ] **AC-9** — `Completed-Questions.md`'s three links into
       `Open-Questions.md` resolve to where each story is: `[OQ-45]` on line
       221, and `[OQ-47]` and `[OQ-48]` on line 252. This is the only edit to
