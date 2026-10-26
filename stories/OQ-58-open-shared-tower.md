@@ -3,7 +3,7 @@ id: OQ-58
 title: Open a shared tower read-only
 tier: normal
 kind: product
-depends_on: [OQ-56]
+depends_on: [OQ-141]
 model: sonnet
 blocked: null
 ---
@@ -17,10 +17,12 @@ touching my own data or being able to edit theirs by accident.
 ## Acceptance criteria
 
 - [ ] **AC-1** — Opening a URL carrying a valid share payload displays those
-      levels read-only. No level input on the shared view accepts entry.
+      levels, Labs, unlocks and Buy-out inputs read-only. No input on the shared
+      view accepts entry.
 - [ ] **AC-2** — Opening a shared link neither reads nor writes the recipient's
-      stored levels. A test seeds the recipient's state, opens a share link, and
-      asserts the stored state is identical afterwards.
+      stored data, levels, Labs, unlocks and Buy-out inputs included. A test
+      seeds the recipient's state, opens a share link, and asserts the stored
+      state is identical afterwards.
 - [ ] **AC-3** — An invalid, truncated, or unknown-version payload reports that
       the link is the problem and leaves the recipient on their own tower — never
       a blank view and never a half-populated one.
@@ -32,19 +34,24 @@ touching my own data or being able to edit theirs by accident.
 - [ ] **AC-6** — A shared link opens correctly for a recipient who has never used
       the app and has no stored levels. Nothing on the shared view requires their
       own data to exist, and no empty-state or first-run flow interrupts it.
+- [ ] **AC-7** — A link whose data revision differs from the app's
+      (`decodeTower` returns `stale: true`, OQ-141's AC-5) opens, under a
+      banner saying the link was made with different game data and some
+      values might be wrong. A link that is current shows no banner. A
+      Playwright test covers both.
 
 ## Out of scope
 
 - **Adopting a shared tower into your own data.** Its own story, and framed as a
   second *source* into the same import path as `playerInfo.dat` rather than as a
-  share feature — a complete overwrite of the recipient's levels, differing from
+  share feature — a complete overwrite of the recipient's data, differing from
   OQ-53 only in where the complete level set comes from. Sequenced after OQ-53 so
   the two cannot answer the overwrite question differently. This story ships
   read-only with no adopt control at all; a control that does nothing is worse
   than no control.
 - Editing the shared tower, commenting on it, or sending anything back.
 - Showing the shared tower against the recipient's own side by side. That is the
-  compare use case, and it needs the payload to carry more than levels.
+  compare use case, its own story if wanted.
 
 ## Constraints
 
@@ -59,8 +66,11 @@ touching my own data or being able to edit theirs by accident.
 
 ## Context
 
-- `stories/OQ-56-share-payload-codec.md` — supplies `decodeTower` and the
-  version-rejection behaviour AC-3 surfaces.
+- `stories/OQ-141-share-format-stable-ids.md` — supplies `decodeTower`, the
+  rejection behaviour AC-3 surfaces, and the `stale` flag AC-7 shows. It
+  replaced OQ-56's format (`stories/done/`) before any link was shared.
+- AC-7 is the owner's decision of 2026-10-26: a link from older game data
+  tries to open, and says its data might be wrong.
 - `stories/OQ-57-create-share-link.md` — produces the links this consumes.
 - OQ-25 in `Completed-Questions.md` — the backlog entry this refines, with OQ-56
   and OQ-57. Its open question — overwrite the recipient's levels, or show a
