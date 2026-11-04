@@ -124,13 +124,4 @@ describe('OQ-131/AC-2: cli.mjs runs the project in the working directory, not th
     expect(result.stderr).toBe('')
   })
 
-  it('`lint` reports a violation from the temporary project\'s own story, naming its file', () => {
-    const storiesDir = path.join(tmpRoot, 'stories')
-    const broken = '## Intent\n\nNo frontmatter at all.\n'
-    return writeFile(path.join(storiesDir, 'ST-2-broken.md'), broken, 'utf8').then(() => {
-      const result = run(['lint'], tmpRoot)
-      expect(result.status).not.toBe(0)
-      expect(result.stderr).toMatch(/ST-2-broken\.md/)
-    })
-  })
 })

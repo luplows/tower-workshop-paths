@@ -16,21 +16,21 @@ without the rest of it, so that OQ-132 can remove the old engine and steward's
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — `scripts/story-prefix.mjs` exports `STORY_PREFIX`, which is
+- [x] **AC-1** — `scripts/story-prefix.mjs` exports `STORY_PREFIX`, which is
       `'OQ'`. `scripts/lint-stories.mjs` takes the prefix from it and no longer
       imports anything from `scripts/dispatch/`.
-- [ ] **AC-2** — `story-containment.mjs` and its test are at
+- [x] **AC-2** — `story-containment.mjs` and its test are at
       `scripts/story-containment.mjs` and `scripts/story-containment.test.mjs`.
       They import nothing from `scripts/dispatch/`, the script holds its own
       `resolveStory` and takes the prefix from `STORY_PREFIX`, and the test's
       existing test names and assertions are unchanged. `ci.yml` runs it at the
       new path, and `REVIEW.md` item 18 names the new path.
-- [ ] **AC-3** — `install-cleanup.alone.test.mjs` is at
+- [x] **AC-3** — `install-cleanup.alone.test.mjs` is at
       `scripts/install-cleanup.alone.test.mjs`, changed only in the paths it reads
       the workflow files from, and `ci.yml`'s
       `Run the install clean-up test alone (OQ-136)` step runs it there, still with
       `VITEST_ALONE=1`.
-- [ ] **AC-4** — A new `scripts/ci-workflows.test.mjs` holds the tests in
+- [x] **AC-4** — A new `scripts/ci-workflows.test.mjs` holds the tests in
       `scripts/dispatch/ci.test.mjs` that read this repository's workflow files:
       OQ-117's, OQ-118/AC-3's, OQ-124's, OQ-136's and OQ-140's. They leave
       `ci.test.mjs`. Their test names are unchanged, and it holds its own copies of
@@ -40,14 +40,14 @@ without the rest of it, so that OQ-132 can remove the old engine and steward's
       - the setup-step prefix is the string `'Setup: '`, not `ci.mjs`'s constant;
       - the name a `workflow_run` trigger must match is the string
         `'Land approved PRs'`, not read from `land-approved.yml`.
-- [ ] **AC-5** — `.github/pull_request_template.md` starts with a `Unit:` line and
+- [x] **AC-5** — `.github/pull_request_template.md` starts with a `Unit:` line and
       a comment saying it takes the path of the story the pull request implements,
       or `none`. `REVIEW.md`'s "Reading the PR body" says so too. The template's
       three sections are unchanged.
-- [ ] **AC-6** — `OQ-148` is taken out of the **Planned (…)** marker in
+- [x] **AC-6** — `OQ-148` is taken out of the **Planned (…)** marker in
       `docs/agent-workflow-design.md`, "Portability", "Decided so far", as that
       document's "Reading this document" note says.
-- [ ] **AC-7** — `npm run lint`, `npm test`, the alone test, `npm run build`,
+- [x] **AC-7** — `npm run lint`, `npm test`, the alone test, `npm run build`,
       `npm run test:e2e` and `node scripts/lint-stories.mjs` pass, and a `git grep`
       in the pull request body shows that no file kept by OQ-132 imports from
       `scripts/dispatch/`, `scripts/land/` or `scripts/report/`.

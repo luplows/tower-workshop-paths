@@ -9,8 +9,9 @@ exists and how the gating around it is meant to work.
 ## Reading the PR body
 
 Every PR uses [`.github/pull_request_template.md`](.github/pull_request_template.md),
-which has three required sections: **What changed**, **Verification**, and
-**Docs check**.
+which starts with a `Unit:` line giving the path of the story the PR implements,
+or `none`, and has three required sections: **What changed**, **Verification**,
+and **Docs check**.
 
 **Check the content of each section, not that the heading exists.** A template
 auto-populates, so an unfilled one is structurally identical to a filled one.
@@ -93,7 +94,7 @@ standard it was supposed to meet.
 18. **Containment** — nothing in the diff falls under the story's
     **Out of scope**, and nothing implements a decision the story left open.
     CI enforces the `stories/` part of this mechanically
-    (`scripts/dispatch/story-containment.mjs`, OQ-82): the only changes a
+    (`scripts/story-containment.mjs`, OQ-82): the only changes a
     story's own pull request may make under `stories/` are that story's move
     into `stories/done/`, its acceptance-criterion lines ticking, and its
     `blocked:` edit. The reviewer's judgement is still needed for the rest —

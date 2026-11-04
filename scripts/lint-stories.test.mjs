@@ -78,13 +78,8 @@ function storySource(frontmatterOpts, sectionOpts) {
 
 let tmpRoot
 
-async function writeSettings(root, storyPrefix) {
-  await writeFile(path.join(root, 'steward.config.json'), JSON.stringify({ repo: 'owner/repo', storyPrefix }), 'utf8')
-}
-
 beforeEach(async () => {
   tmpRoot = await mkdtemp(path.join(tmpdir(), 'lint-stories-test-'))
-  await writeSettings(tmpRoot, 'OQ')
 })
 
 afterEach(async () => {
@@ -365,46 +360,20 @@ describe('OQ-61: frontmatter and section parsing helpers', () => {
   })
 })
 
-describe('OQ-127/AC-2: the story-id patterns come from settings, not a hardcoded OQ-', () => {
-  it('lintStory passes a well-formed ST-3-thing.md for a project whose settings say ST', () => {
+describe('OQ-127/AC-2: lintStory checks story ids against the prefix it is given', () => {
+  it('lintStory passes a well-formed ST-3-thing.md, given the prefix ST', () => {
     const violations = lintStory('ST-3-thing.md', storySource({ id: 'ST-3' }), 'ST')
     expect(violations).toEqual([])
   })
 
-  it("lintStory fails a story whose id is 'OQ-3' for a project whose settings say ST", () => {
+  it("lintStory fails a story whose id is 'OQ-3', given the prefix ST", () => {
     const violations = lintStory('ST-3-thing.md', storySource({ id: 'OQ-3' }), 'ST')
     expect(violations.some((v) => v.rule === 'AC-2' && /'id'/.test(v.message))).toBe(true)
   })
 
-  it("lintStory fails a story with a depends_on: [OQ-1] entry for a project whose settings say ST", () => {
+  it("lintStory fails a story with a depends_on: [OQ-1] entry, given the prefix ST", () => {
     const violations = lintStory('ST-3-thing.md', storySource({ id: 'ST-3', dependsOn: ['OQ-1'] }), 'ST')
     expect(violations.some((v) => v.rule === 'AC-2' && /depends_on' entry does not match/.test(v.message))).toBe(true)
-  })
-
-  it('lintAll lints stories/ST-3-thing.md and ignores stories/OQ-3-thing.md, for a project whose settings say ST', async () => {
-    await writeSettings(tmpRoot, 'ST')
-    await writeStory(path.join(tmpRoot, 'stories'), 'ST-3-thing.md', storySource({ id: 'ST-3' }))
-    await writeStory(path.join(tmpRoot, 'stories'), 'OQ-3-thing.md', storySource({ id: 'OQ-3' }))
-
-    const violations = await lintAll(tmpRoot)
-
-    expect(violations.some((v) => v.file.endsWith('ST-3-thing.md'))).toBe(false)
-    expect(violations.some((v) => v.file.endsWith('OQ-3-thing.md'))).toBe(false)
-  })
-
-  it('a **Planned (ST-3)** marker fails when stories/done/ST-3-thing.md exists, and passes when only stories/ST-3-thing.md does, for a project whose settings say ST', async () => {
-    await writeSettings(tmpRoot, 'ST')
-    await mkdir(path.join(tmpRoot, 'docs'), { recursive: true })
-    await writeFile(path.join(tmpRoot, 'docs', 'design.md'), '**Planned (ST-3):** not built yet.\n', 'utf8')
-
-    await writeStory(path.join(tmpRoot, 'stories'), 'ST-3-thing.md', storySource({ id: 'ST-3' }))
-    const openOnly = await lintDocs(tmpRoot)
-    expect(openOnly.some((v) => v.rule === 'AC-7')).toBe(false)
-
-    await rm(path.join(tmpRoot, 'stories', 'ST-3-thing.md'))
-    await writeStory(path.join(tmpRoot, 'stories', 'done'), 'ST-3-thing.md', storySource({ id: 'ST-3' }))
-    const done = await lintDocs(tmpRoot)
-    expect(done.some((v) => v.rule === 'AC-7' && /already in stories\/done/.test(v.message))).toBe(true)
   })
 })
 
