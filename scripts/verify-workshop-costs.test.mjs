@@ -1,7 +1,34 @@
 // @vitest-environment node
 
 import { describe, expect, it } from 'vitest'
-import { checklistLevels, classify, exitCodeForResults, parseAbbreviated } from './verify-workshop-costs.mjs'
+import {
+  checklistLevels,
+  classify,
+  exitCodeForResults,
+  levelFromCellText,
+  parseAbbreviated,
+  scrollTopForLevel,
+} from './verify-workshop-costs.mjs'
+
+describe('OQ-147/AC-1 levelFromCellText', () => {
+  it('returns the level number at the end of the cell text', () => {
+    expect(levelFromCellText('3000')).toBe(3000)
+    expect(levelFromCellText('Legendary8000')).toBe(8000)
+    expect(levelFromCellText('Ancestral10000')).toBe(10000)
+  })
+
+  it('returns null when the text does not end in a number', () => {
+    expect(levelFromCellText('')).toBeNull()
+    expect(levelFromCellText('—')).toBeNull()
+    expect(levelFromCellText('Ancestral')).toBeNull()
+  })
+})
+
+describe('OQ-147/AC-2 scrollTopForLevel', () => {
+  it("matches the value measured on Damage's table", () => {
+    expect(Math.abs(scrollTopForLevel(3000, 320160, 10000) - 96038)).toBeLessThan(1)
+  })
+})
 
 describe('checklistLevels', () => {
   it('picks Lv1, the midpoint, and the last covered index -- matching OQ-1-Checklist.md', () => {

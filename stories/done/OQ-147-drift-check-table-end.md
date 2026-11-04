@@ -21,33 +21,33 @@ The script is `scripts/verify-workshop-costs.mjs`, and its tests are in
 `scripts/verify-workshop-costs.test.mjs`. Neither the tests nor the module's
 import reach the network.
 
-- [ ] **AC-1** — The script exports `levelFromCellText(text)`, which returns the
+- [x] **AC-1** — The script exports `levelFromCellText(text)`, which returns the
       level number at the end of a level cell's text, or `null` if the text does
       not end in a number. `'3000'` gives `3000`, `'Legendary8000'` gives `8000`
       and `'Ancestral10000'` gives `10000`. `''`, `'—'` and `'Ancestral'` give
       `null`.
-- [ ] **AC-2** — The script exports `scrollTopForLevel(level, scrollHeight,
+- [x] **AC-2** — The script exports `scrollTopForLevel(level, scrollHeight,
       lastLevel)`, which returns `level * (scrollHeight / (lastLevel + 1))`. A
       test checks it with the values measured on Damage's table:
       `scrollTopForLevel(3000, 320160, 10000)` is within 1 of `96038`.
-- [ ] **AC-3** — Once for each upgrade's page, before reading any cost, the
+- [x] **AC-3** — Once for each upgrade's page, before reading any cost, the
       script scrolls the grid to its bottom and passes the last level cell's text
       through `levelFromCellText`. `readMytowerCost` works out where to scroll
       with `scrollTopForLevel`, given that last level and not the `M` value from
       `readMaxLevelOnPage`.
-- [ ] **AC-4** — If AC-3 cannot read the last level, the script records an
+- [x] **AC-4** — If AC-3 cannot read the last level, the script records an
       `ERROR` result for that upgrade with the detail `could not read table end`,
       reads no costs for it, and moves on to the next upgrade.
       `exitCodeForResults` does not change, so this exits 1, as `could not read
       page` does.
-- [ ] **AC-5** — The `M` value stays the purchase cap, and rows past it stay
+- [x] **AC-5** — The `M` value stays the purchase cap, and rows past it stay
       unchecked. The `MAX LEVEL DRIFT` comparison still compares `M` with the
       upgrade's `quantity`, `checklistLevels` still takes `quantity`, and a table
       whose last level is above `M` produces no result of its own.
-- [ ] **AC-6** — The comment above `readMytowerCost` says that a table's rows can
+- [x] **AC-6** — The comment above `readMytowerCost` says that a table's rows can
       run past `M`, with no coin cost shown on those rows, and that `M` is the
       purchase cap. It no longer says that only about 17 rows exist in the DOM.
-- [ ] **AC-7** — The script still makes one navigation per upgrade: this story
+- [x] **AC-7** — The script still makes one navigation per upgrade: this story
       adds no `page.goto`. The pull request's Verification gives the result lines
       of one run of `npm run verify:workshop-costs -- Damage Health "Health
       Regen"`, each `MATCH` or `NEAR (rounding)`, and that command's exit code,
