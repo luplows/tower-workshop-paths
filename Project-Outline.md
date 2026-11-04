@@ -8,7 +8,7 @@ A tool to help decide how to spend coins in the **Workshop** tab of the mobile g
 - Client-only: no backend. All user data (current upgrade levels, custom priority lists) persists in browser `localStorage`.
 
 ## Inputs
-- Current level of each Workshop upgrade, e.g. `Health: 5500 / max 6000`, `Thorn Damage: 99 / max 99`.
+- Current level of each Workshop upgrade, e.g. `Health: 5500 / max 6000`, `Thorn Damage: 99 / max 99`. The max is the coin purchase cap. A module lets in-game values go higher through free upgrades (up to 10000 on an upgrade whose cap is 6000), and those levels have no coin cost, so the tool stops at the cap.
 - Cost-per-level data for each upgrade, looked up from a table (not computed from a formula) — sourced from mytower.app, no third-party npm dependency involved. Implemented; see `Completed-Questions.md` OQ-39 for data sourcing and `README.md` for data credit.
 - The user's current level (0-99) in each of the three per-category **Workshop discount Labs** (Attack/Defense/Utility), each worth 0.5%/level off that category's Workshop upgrade costs (up to 49.5% at max level), not its unlock-group costs. Implemented; see `Completed-Questions.md` OQ-4.
 - Optionally, **lifetime coins** and **coins spent on Labs**, from which the tool simulates a full buy-out from level zero (budget = lifetime coins less coins spent on Labs), priced with the entered discount Labs and ignoring the entered levels. Implemented; see `stories/done/OQ-8-buyout-from-lifetime-coins.md`.
