@@ -42,7 +42,8 @@ this repository's own convention (`docs/steward-bootstrap.md`, D-13).
 - **The moved documents** (OQ-134). `CLAUDE.md`'s "Where things are
   documented" table points at steward's copies once this lands, so OQ-134
   can remove the local ones.
-- **The code** (OQ-132, which runs after this).
+- **The code** (OQ-132, which now runs before this, and corrects only the
+  passages of these two files that name what it removes).
 - **`.github/pull_request_template.md`**, which stays as it is.
 
 ## Constraints
@@ -61,10 +62,10 @@ this repository's own convention (`docs/steward-bootstrap.md`, D-13).
   whole … the diff does not touch either, and `node scripts/lint-stories.mjs`
   passes", could not fail. It now requires `CLAUDE.md`'s pointer to this
   repository's `stories/README.md`.
-- The coder reads `CLAUDE.md` and `REVIEW.md` from the repository root
-  (`.claude/prompts/coder.md` line 140), and the reviewer reads `REVIEW.md`
-  there (`reviewer.md` line 171). The reviewer cites `REVIEW.md` items by
-  number (for example items 16–18, `reviewer.md` line 152).
+- Until OQ-132 removes these prompts, the coder reads `CLAUDE.md` and `REVIEW.md`
+  from the repository root (`.claude/prompts/coder.md` line 140), and the reviewer
+  reads `REVIEW.md` there (`reviewer.md` line 172). The reviewer cites `REVIEW.md`
+  items by number (for example items 16–18, `reviewer.md` line 153).
 - R1 removes items 8 and 10 from steward's copy of `REVIEW.md`, leaving gaps,
   and a steward story closes them.
 - AC-1 was reworded on 2026-10-12, when OQ-72 was refined to retire

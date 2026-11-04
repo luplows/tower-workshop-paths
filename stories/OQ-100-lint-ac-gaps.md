@@ -81,8 +81,8 @@ the function behind it.
     `process.exitCode` to 1 if any violation is blocking, and 0 otherwise.
   - The command runs only when
     `process.argv[1] === fileURLToPath(import.meta.url)`.
-    `scripts/report/review-verdicts.mjs` compares `realpathSync` of both
-    instead. AC-3 tests the behaviour, not which comparison is used.
+    `scripts/report/review-verdicts.mjs`, until OQ-132 removes it, compares
+    `realpathSync` of both instead. AC-3 tests the behaviour, not which comparison is used.
 - Three stories under `stories/` have a line in `Acceptance criteria` that
   starts with `*` and is italic text, not a list item (AC-2): line 19 of
   `OQ-95-gold-box-max-level.md`, `OQ-96-deprioritize-enhancements.md` and

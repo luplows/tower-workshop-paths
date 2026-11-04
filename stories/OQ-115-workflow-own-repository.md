@@ -1,89 +1,80 @@
 ---
 id: OQ-115
-title: Cut this repository over to steward, by hand, so the loop and the gate run on the pinned engine
-tier: normal
+title: Install steward's review gate here through init, pinned at 935fb5b
+tier: next
 kind: workflow
-depends_on: [OQ-80, OQ-117, OQ-118, OQ-122, OQ-123, OQ-130, OQ-131]
+depends_on: [OQ-132]
 model: sonnet
-blocked: "Owner-only: the cut-over is done by the owner with Session A, by hand, as one pull request through the gate. Never dispatched by the loop (decided 2026-10-08 by the owner)."
+blocked: "Owner-only: the installation is run by the owner with Session A, by hand, for steward's ST-48 validation. Never dispatched (decided 2026-10-08 by the owner, and revised 2026-11-04)."
 ---
 
 ## Intent
 
-As the owner, I want this repository to run its loop and its gate on steward,
-pinned as a dependency, so that the workflow's code lives in one place and this
-repository stays about the product (goals 1 and 4 in
-`docs/agent-workflow-design.md`, "Portability"). The cut-over is the one step
-where the thing being changed is the engine running the change, so the owner and
-Session A do it by hand, in one pull request that the gate still reviews and
-lands. The clean-up after it is ordinary stories run on steward's engine:
-OQ-133 (`CLAUDE.md` and `REVIEW.md`), then OQ-132 (the
-moved code), then OQ-134 (the moved documents).
+As the owner, I want this repository's review gate and landing to run on steward,
+installed the way any other project installs it, so that the workflow's code lives
+in one place and this repository stays about the product. It is also the second
+project in steward's ST-48 validation.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — `package.json` has `steward` as a development dependency,
-      installed from `luplows/steward` by git tag (R2), and `package-lock.json`
-      matches it.
-- [ ] **AC-2** — `review-gate.yml` and `land-approved.yml` are the thin files
-      steward's `init` writes: this repository's triggers and permissions, then
-      steward's command. `ci.yml`'s story containment step keeps running this
-      repository's `scripts/dispatch/story-containment.mjs` (D-13, which keeps
-      the story tooling here). `ci.yml`'s product checks, its `Setup: ` step names (OQ-118) and
-      its after-sweep trigger (OQ-124) are unchanged.
-- [ ] **AC-3** — This project's lines reach the coder's and the reviewer's
-      prompts through steward's project section (R1): its repository name,
-      Vitest and Playwright, the screenshot-baseline rules, `mytower.app`, and
-      the pointer to `Completed-Questions.md`.
-- [ ] **AC-4** — Run from this repository, steward's `lint` and `queue` commands
-      report what `node scripts/lint-stories.mjs` and
-      `node scripts/dispatch/queue.mjs` report at the same commit.
-- [ ] **AC-5** — `OQ-115` is taken out of the **Planned (…)** marker in
-      `docs/agent-workflow-design.md`, "Portability", "Decided so far", as that
-      document's "Reading this document" note says.
+- [ ] **AC-1** — The pull request's body gives the command that opened it, from
+      `main` with OQ-132 landed, on steward at
+      935fb5b81398420acd5e7476d2b94bec94bbad02 (`npx --yes
+      --package=github:luplows/steward#<that commit> steward <command>`), and its
+      output: `steward init --yes --ref <that commit> --land no --unit-links file
+      --rules-file REVIEW.md`.
+- [ ] **AC-2** — It adds `steward.config.json`, `review-gate.yml`,
+      `land-approved.yml` and `inspection.yml`, and leaves `REVIEW.md` and
+      `.github/pull_request_template.md`. Every steward command in those workflows is
+      pinned to that commit's full SHA. `steward.config.json` has `land: false` and
+      `unitLinks: ["file"]`. No steward script or prompt is copied.
+- [ ] **AC-3** — `package.json`, `package-lock.json`, `ci.yml` and the story files
+      are unchanged by `init`. The only other changes in the pull request are this
+      story's move and ticks, and taking `OQ-115` out of every **Planned (…)**
+      marker that names it in `docs/agent-workflow-design.md`.
+- [ ] **AC-4** — It is titled "Install steward at 935fb5b", and its body has
+      `Unit: stories/OQ-115-workflow-own-repository.md` and the three filled sections.
+      Steward's version, 0.0.0 at this commit, is not in the title or the commit
+      message.
 
 ## Out of scope
 
-- **Removing anything that moved.** The code is OQ-132, the rule files OQ-133,
-  the documents OQ-134. The cut-over leaves them in place, unused, so that it
-  can be undone by reverting one pull request.
-- **Retiring the moved stories.** Session A does that in a `write-story/` pull
-  request, each with a note naming its `ST-<n>`, once the bootstrap's B1 has
-  fixed the mapping (`stories/README.md`, "Lifecycle"). Done on 2026-10-12
-  (`docs/agent-workflow-design.md`, R4).
-- **A second project.** That is steward's (R6, R7), not this repository's
-  (decided 2026-10-08 by the owner, dropping this story's earlier AC-1).
-- **Supporting other companies' models** (OQ-114, now steward's ST-15).
+- **Removing the old engine** (OQ-132, before this), the rule files (OQ-133) and the
+  documents (OQ-134).
+- **Moving to steward's stories, schema, queue or `stories/stories.json`.** This
+  repository keeps its file stories and `OQ` prefix.
+- **A later pin.** Moving to a tag once steward has one is separate work.
+- **Fixing any steward defect found.** Each is recorded and raised with the crew.
 
 ## Constraints
 
-- One pull request, reviewed by the gate and landed by the sweep, not a direct
-  push.
+- These steps surround the pull request, so no diff can show them, and steward's
+  ST-48 evidence records them, not an AC here:
+  - Before it merges, only `review/agent` is removed from `main`'s required checks,
+    and `test` and `enforce_admins` stay.
+  - The owner agrees the merge. It is merged by hand with `gh pr merge --squash
+    --subject "Install steward at 935fb5b"`, with `test` green, and no verdict or
+    marker is written for it. The gate cannot review it, since it runs from `main`,
+    where it is not yet installed. This is the one exception to `CLAUDE.md`'s rule
+    on merging.
+  - After it merges, `steward protect` exits 0, and `main` requires both `test` and
+    `review/agent`, with `enforce_admins` on. Unattended landing stays off, and no
+    coder is enabled.
 
 ## Context
 
-- Rewritten 2026-10-08 with the owner ("The move, in order", step 4). The
-  order is forced: the gate's files must call steward before `scripts/land/`
-  is removed, and the loop must be started with steward's command before
-  `scripts/dispatch/` is removed. After this pull request lands, the owner
-  starts the loop with steward's command. That step is outside the
-  repository, so it is recorded in the pull request, not an AC.
-- Until OQ-133 lands, this repository's `CLAUDE.md` and `REVIEW.md` keep the
-  workflow rules in full. The coder and the reviewer read both from the
-  repository root (`.claude/prompts/coder.md` line 140, `reviewer.md` line
-  171), so the cut-over does not wait on how steward will deliver a project's
-  rules.
-- What this repository runs by path today, outside the moved paths, on `main`
-  at `c97aa50`: `ci.yml` line 33 (`story-containment.mjs`);
-  `land-approved.yml` lines 89, 110 and 186 (`scripts/land/`);
-  `review-gate.yml` line 187 (`apply-review-blocked.mjs`).
-- What this needs from steward is listed in the design doc, "Portability",
-  "What adopting steward needs from it".
+- Rewritten 2026-11-04 with the owner, for steward's ST-48. It replaces the earlier
+  cut-over, which swapped the workflow files in place, pinned steward in
+  `package.json` by tag, and left the old engine in place. `init` writes no file
+  `main` already has, and does not touch `package.json`.
+- The plan is in `docs/agent-workflow-design.md`, "Portability", "Decided so far",
+  "This repository adopts steward through `init`".
+- `steward protect` keeps existing protection and adds `review/agent`, so `test`
+  stays required.
+- `ci.yml` and `deploy-pages.yml` trigger on the workflow named `Land approved PRs`
+  (OQ-124), and steward's thin `land-approved.yml` has that name. So a landing here
+  should run CI on `main`, which a landing on pinpoint did not (its evidence, D3).
 
 ## Open questions
 
-- The command names AC-2 and AC-4 call, and the files `init` writes: known once
-  steward builds `init` (R2).
-- The form of the prompts' project section (AC-3): known once steward builds it.
-- How the loop's worktree installs the pinned engine after each update (OQ-123's
-  Out of scope): a steward story, built before this one.
+*(none)*

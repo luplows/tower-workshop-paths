@@ -1624,7 +1624,8 @@ deciding what is next. It is the harness's product outline, and moves with this 
   stories it recommends build it. See R5.
 - **A project takes the workflow as a package pinned by git tag**, with no npm publishing planned,
   runs the loop from its own worktree, and keeps thin gate workflow files written by an `init`
-  command (decided 2026-10-07 by the owner). See R2.
+  command (decided 2026-10-07 by the owner). See R2. This repository, for now, takes only the review
+  side, without the package ("This repository adopts steward through `init`", below).
 - **The workflow's repository is public** (decided 2026-10-07 by the owner). If its stories come
   from issues, only issues a writer created or labelled may enter its queue. See R8.
 - **The workflow is named `steward`**: the repository `luplows/steward` and the package `steward`
@@ -1652,13 +1653,13 @@ deciding what is next. It is the harness's product outline, and moves with this 
   2026-10-09 by the owner, from #223's review: each needs what the one before it removes gone).
   Retiring the moved stories is Session A's, as soon as the bootstrap fixes the OQ-to-ST mapping.
   (Done on 2026-10-12: R4.)
-  The tests that stay go to a new `scripts/ci-workflows.test.mjs`, which takes the setup-step prefix
-  from the pinned package. The passages about this project go to `README.md` and
-  `Project-Outline.md`: no project needs a document about steward (R1). Which rules are steward's
+  The tests that stay go to a new `scripts/ci-workflows.test.mjs`. The passages about this project
+  go to `README.md` and `Project-Outline.md`: no project needs a document about steward (R1). Which rules are steward's
   and which this project's is settled; how steward's reach a project's sessions, and the form of
   this project's review items, are decided once steward is built. `docs/steward-bootstrap.md` moves
   to steward with its history (R1). OQ-115's old AC-1, a second project running the workflow, is
-  dropped: that is steward's (R6, R7).
+  dropped: that is steward's (R6, R7). **Replaced on 2026-11-04** for the order, the pin and who
+  moves the tests by "This repository adopts steward through `init`", below.
 - **The bootstrap checklist gains D-7 and D-8** (decided 2026-10-08 by the owner): a rewritten `#N`
   is checked at the real run, and only tests of files that move go to steward. See R1.
 - **The bootstrap checklist is agreed**, [`steward-bootstrap.md`](steward-bootstrap.md), with its
@@ -1697,8 +1698,9 @@ deciding what is next. It is the harness's product outline, and moves with this 
   step's worst case counts the clean-up after the first try, and the clean-up test checks its
   allowance ("What CI runs"). #242's two held observations were already resolved by OQ-136's own
   pull request, #241. OQ-137 stays here, as a story about this repository's CI (R4), and is built
-  after OQ-132, which now also carries OQ-136's tests and its clean-up test out of
-  `scripts/dispatch/` (decided the same day by the owner). OQ-131's held observation, that this
+  after OQ-132, which then also carried OQ-136's tests and its clean-up test out of
+  `scripts/dispatch/` (decided the same day by the owner; OQ-148 carries them since 2026-11-04).
+  OQ-131's held observation, that this
   document and `cli.mjs` say "this repository's own package" will point `bin` at `cli.mjs` though
   the package is steward's (`steward-bootstrap.md`, B4), is left as it is: the words are true in
   steward's copies, and OQ-132 and OQ-134 remove the copies here. The held observations on #240,
@@ -1777,8 +1779,39 @@ deciding what is next. It is the harness's product outline, and moves with this 
     revisited with the stop measure. The rest move as they are.
 
   OQ-100 and OQ-105 stay here, held until the extraction (next entry).
+- **This repository adopts steward through `init`** (decided 2026-11-04 by the owner, for steward's
+  ST-48, at steward 935fb5b). This replaces the 2026-10-08 entry "Adopting steward is a hand-run
+  cut-over, then dispatched clean-up", above, and "The move, in order", step 4, and it revises "What
+  adopting steward needs from it", R1 and R2, each of which says so where it is affected. Other
+  passages here that describe the old engine stay as they are until OQ-134 removes this document.
+  **Planned (OQ-115, OQ-132, OQ-148):**
+  - **The order.** `init` writes no file `main` already has, and the old engine's tests fail without
+    its workflow files and settings, so the old copies leave first. OQ-148 makes what stays stand
+    apart from the old engine. OQ-132 removes the old engine, as the last pull request to use it.
+    The owner then removes only `review/agent` from `main`'s required checks, keeping `test` and
+    `enforce_admins`. OQ-115 is `init`'s pull request, merged by hand since the gate cannot review
+    what installs it. `steward protect` then requires `review/agent` again. OQ-133 and OQ-134
+    follow, on steward's gate.
+  - **The coder loop ends for now.** Steward's coding side is not built, so after OQ-132 no coder
+    runs here until the owner decides otherwise. OQ-72, OQ-94 and OQ-105 name files this moves or
+    removes, so each is held with `blocked:`, and refined again after OQ-115.
+  - **Landing.** After OQ-132, a pull request lands only through `steward land <pr-number>`, on the
+    owner's word, once its head has passed review. `steward.config.json` has `land: false`, so
+    nothing lands unattended, and the coordinator only reviews.
+  - **Units.** Pull requests name their story with a `Unit:` line, in the template and in
+    `REVIEW.md` (OQ-148), and `steward.config.json` has `unitLinks: ["file"]`. The stories and the
+    `OQ` prefix do not change.
+  - **No package.** Steward is not added to `package.json`. `init`'s thin workflows run it with
+    `npx` at a commit's full SHA, so the workflows hold the pin.
+  - **What this repository's own checks use in place of the package.** The prefix is a local
+    constant, since steward's settings reject `storyPrefix`. `scripts/ci-workflows.test.mjs` uses
+    the literal `'Setup: '` for the setup-step prefix and the literal `'Land approved PRs'` for the
+    sweep's name, so it does not depend on steward or on a workflow file that OQ-132 removes before
+    OQ-115 restores it (OQ-148).
+  Considered and not chosen: renaming the old workflows so that they could review `init`'s pull
+  request, which leaves two gates writing one status.
 - **Until it adopts steward, this repository runs its own engine, frozen** (decided 2026-10-10 by
-  the owner, from Session A's proposal):
+  the owner, from Session A's proposal; it ends when OQ-132 lands):
   - **Product stories dispatch** on the engine here, as they do today. When the dispatcher session
     resumes dispatching is the owner's call, apart from this decision.
   - **The engine gets no new work here**: no new workflow stories, and only `fix` stories for a
@@ -1852,16 +1885,18 @@ starts with the gate only, and dispatches no stories until its coder works ("Dec
 3. **In steward:** first the stories that get its coder working (revised 2026-10-10 by the owner,
    "Decided so far"); `init` and the thin gate workflow files (R2); the second project's gate-only
    start (R6, R7); then OQ-73's container spike and the stories it recommends, and OQ-101.
-4. **Here:** adopting steward (split 2026-10-08, "Decided so far"). OQ-115, the cut-over, by hand:
-   pin steward and switch to the thin workflow files, then start the loop with steward's command.
-   Then OQ-133 (the rule files), OQ-132 (the moved code) and OQ-134 (the moved documents), in
-   that order, run on steward's engine. Session A retired the moved stories on 2026-10-12, each
-   with a note naming its `ST-<n>` (R4). Until OQ-115, this repository runs its own engine, frozen
-   (decided 2026-10-10 by the owner, "Decided so far").
+4. **Here:** adopting steward, as revised on 2026-11-04 ("This repository adopts steward through
+   `init`", "Decided so far"). OQ-148, then OQ-132 (the old engine), on this repository's engine.
+   Then OQ-115, `init`'s pull request, and `steward protect`, by hand. Then OQ-133 (the rule files)
+   and OQ-134 (the moved documents), on steward's gate. Session A retired the moved stories on
+   2026-10-12, each with a note naming its `ST-<n>` (R4). Until OQ-132, this repository runs its own
+   engine, frozen (decided 2026-10-10 by the owner, "Decided so far").
 
 ### What adopting steward needs from it
 
-Found 2026-10-08 while refining OQ-115. Each is built in steward, before OQ-115 unless marked:
+Found 2026-10-08 while refining OQ-115. Revised 2026-11-04: OQ-115 now installs the review side
+only, at a commit, so of these it needs only `init` and the thin gate files. The rest are built in
+steward before this repository has a coder or a tag to move to, not before OQ-115:
 
 - **A tag to pin**, and **the loop's worktree installing the pinned engine** after each update
   (OQ-123's Out of scope).
@@ -1870,8 +1905,6 @@ Found 2026-10-08 while refining OQ-115. Each is built in steward, before OQ-115 
 - **Delivering steward's rules and checklist to a project's sessions**, and **a project's own
   review items to the reviewer** (R3). Before OQ-133. Today `coder.md` reads `CLAUDE.md` and
   `REVIEW.md` from the repository root, and `reviewer.md` reads `REVIEW.md` there.
-- **The setup-step prefix exported** from the package, for this repository's
-  `scripts/ci-workflows.test.mjs`. Before OQ-132.
 - **The screenshot directory as a project setting.** `coder.mjs` line 125 (`main` at `c97aa50`)
   has `SCREENSHOT_DIR = 'e2e/__screenshots__/'`, this project's convention, in the coder's
   exception for new baselines (OQ-84). No deadline here, since the value is this repository's;
@@ -1975,7 +2008,8 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   of the prompts have this repository's lines stripped by hand: its name, Vitest and Playwright,
   the screenshot-baseline rules, `mytower.app`, and the pointer to `Completed-Questions.md`
   (`coder.md`). The slot and the project section are built in steward afterwards, before this
-  repository adopts it (OQ-115), since this project's lines have to come back through them.
+  repository has a coder on steward, since this project's lines have to come back through them
+  (revised 2026-11-04: OQ-115 no longer waits for them).
 
   **`REVIEW.md` items 8 and 10 are removed from steward's copy** (decided 2026-10-08 by the owner),
   leaving gaps in the numbering. A story in steward closes the gaps and updates every reference to
@@ -1997,8 +2031,10 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   The tables comparing a cloud session with a local one ("Everything runs locally" and "Where
   commands run") give `mytower.app` as their example of network egress. That example is **dropped
   here, not placed** (decided 2026-10-08 by the owner, after #223's review): `README.md` already
-  names `mytower.app` as the data source, and the coder prompt's line that it is reachable comes
-  back through steward's project section (OQ-115). OQ-134 removes it with this document.
+  names `mytower.app` as the data source, and the coder prompt's line that it is reachable goes
+  with that prompt (OQ-132), coming back through steward's project section if a coder runs here on
+  steward.
+  OQ-134 removes it with this document.
 
   The example story under "The story artifact" (a `playerInfo.dat` import) is replaced with a
   neutral one. `Project-Outline.md` stays the product's design of record. Once moved, a workflow
@@ -2048,14 +2084,16 @@ Checked on 2026-10-07 against `main` at `66c578d`:
   only the `deploy-pages.yml` cases. The fresh dry run (2026-10-09) found OQ-136's too: its tests in
   `ci.test.mjs`, and all of `install-cleanup.alone.test.mjs`, read the Playwright install step,
   and one reads `vite.config.js` (`steward-bootstrap.md`, B7a). OQ-118's tests, which read
-  steward's own `ci.yml`, move. OQ-132 keeps the tests that stay, in a new
-  `scripts/ci-workflows.test.mjs`, when it removes the moved code from this repository.
+  steward's own `ci.yml`, move. OQ-148 moves the tests that stay to a new
+  `scripts/ci-workflows.test.mjs`, before OQ-132 removes the moved code from this repository.
 - **R2. How a project uses it.** Proposed by Session A, 2026-10-07; **decided 2026-10-07 by the
   owner, as proposed, with the git-tag pin** (below):
   - **A Node package with a command-line entry point**, added as a development dependency of each
     project and pinned to a tagged version. To begin with it is installed straight from the
     workflow's public repository by git tag, so no package registry account is needed; publishing
     to npm can come later.
+  - **This repository takes the review side without the dependency** for now (revised 2026-11-04,
+    "This repository adopts steward through `init`"): the thin workflows run steward at a commit.
   - **The loop runs from the project's own worktree, as now** (`loop.mjs --init`). Today every story
     runs the dispatch code as it is on `origin/main` (OQ-86). With a pinned dependency, that becomes
     the engine version `origin/main` pins, so a project takes a new workflow version only through
