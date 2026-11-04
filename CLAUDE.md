@@ -8,8 +8,7 @@ Instructions only. Rationale, mechanism and history live in the files listed und
 - Never commit or push to `main`. It is protected.
 - For every change: feature branch, commit, push, open a pull request.
 - Work in a git worktree of your own, never the repository's main checkout, so that sessions running
-  at the same time cannot collide. This applies to every session, the dispatcher session and
-  Session A included. The dispatch scripts make the coder's and reviewer's worktrees themselves.
+  at the same time cannot collide. This applies to every session, Session A included.
 - Address anything arising from an open pull request with a new commit on its existing branch. New
   branch only for unrelated work.
 - When a change both regenerates data files and alters logic, commit the regeneration separately.
@@ -21,24 +20,17 @@ Instructions only. Rationale, mechanism and history live in the files listed und
 - Open a pull request as a draft if it is not finished. Mark it ready when it is. Session A is the
   exception: it opens every pull request as a draft and marks it ready only when the owner says so
   (see [`docs/session-a.md`](docs/session-a.md)).
-- Do not merge a pull request, your own or any other. The sweep is the only thing that merges.
-- Do not delete the head branch. The sweep deletes it (see
-  [`scripts/land/delete-merged-heads.mjs`](scripts/land/delete-merged-heads.mjs)); the repository's
+- Do not merge a pull request, your own or any other, by any route. A pull request lands only
+  through
+  `steward land <pr-number>`, run on the owner's word, once its head has passed review. The one
+  exception is steward's installation pull request, whose story says how it is merged
+  (`stories/OQ-115-workflow-own-repository.md`, until it moves to `stories/done/`).
+- Do not trigger `.github/workflows/land-approved.yml` yourself. `steward land` does that.
+- Do not delete the head branch. That same workflow deletes it after a landing, and the repository's
   `delete_branch_on_merge` setting is not relied on.
-- Do not trigger [`land-approved.yml`](.github/workflows/land-approved.yml). Only the owner, or
-  [`scripts/dispatch/land.mjs`](scripts/dispatch/land.mjs) run by the dispatcher, may. The
-  dispatcher is either a script or the **dispatcher session**: the one session the owner has asked
-  to run `scripts/dispatch/` (see `docs/agent-workflow-design.md`, "The dispatcher session").
-  - The dispatcher session lands only by running `land.mjs`, directly or through `story.mjs`. It
-    never runs `gh workflow run`, and never merges through the API or any other way. No other
-    agent session triggers the sweep at all.
-  - It runs `land.mjs` only for a pull request whose head has an honoured `pass` or
-    `pass-with-observations` verdict and green CI. `land.mjs` re-checks both through `review/agent`
-    and `mergeable_state`; its header defines landable.
-- The sweep lands one eligible pull request per run, only when triggered, so a merge-ready pull
-  request waits. A run given a pull request (`land.mjs` always gives one) considers only that one;
-  a run given none lands the oldest. Its eligibility rules and the `review-blocked` circuit breaker are defined in
-  `land-approved.yml`.
+- No coder runs in this repository until the owner decides otherwise. Steward's coding side is not
+  built, and this repository's old engine is gone (see `docs/agent-workflow-design.md`, "This
+  repository adopts steward through `init`").
 - Agent containers have no `gh` CLI: use the GitHub MCP tools where the session has them, otherwise
   `git` plus the REST API. A spawned session may have neither.
 
@@ -57,7 +49,7 @@ recalled — in story files, docs, commit messages, pull request bodies and revi
 
 ## Stories
 
-- [`stories/`](stories/README.md) is the dispatchable queue. Its README defines the schema, status
+- [`stories/`](stories/README.md) is the queue of work. Its README defines the schema, status
   derivation, ordering and readiness test.
 - **Nothing dispatches from [`Open-Questions.md`](Open-Questions.md).** It is the idea backlog.
 - A pull request implementing a story ticks each acceptance criterion it delivered, in the story

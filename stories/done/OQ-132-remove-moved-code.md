@@ -17,15 +17,15 @@ now: steward's coding side is not built yet.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — These are removed: `.github/workflows/review-gate.yml` and
+- [x] **AC-1** — These are removed: `.github/workflows/review-gate.yml` and
       `land-approved.yml`; `steward.config.json`; `scripts/land/`;
       `scripts/report/`; all that is left of `scripts/dispatch/`;
       `scripts/no-project-literals.test.mjs`; and `.claude/prompts/coder.md` and
       `reviewer.md`.
-- [ ] **AC-2** — `npm run lint`, `npm test`, the alone test, `npm run build`,
+- [x] **AC-2** — `npm run lint`, `npm test`, the alone test, `npm run build`,
       `npm run test:e2e` and `node scripts/lint-stories.mjs` pass with those gone,
       and no remaining test reads a removed file.
-- [ ] **AC-3** — `CLAUDE.md`'s "Branches and pull requests" no longer names the
+- [x] **AC-3** — `CLAUDE.md`'s "Branches and pull requests" no longer names the
       sweep, `land.mjs`, the dispatcher or `scripts/dispatch/`. It says:
       - a pull request lands only through `steward land <pr-number>`, run on the
         owner's word, once its head has passed review;
@@ -34,16 +34,16 @@ now: steward's coding side is not built yet.
       - no coder runs in this repository until the owner decides otherwise;
       - the one exception is steward's installation pull request (OQ-115), which
         its story says how to merge.
-- [ ] **AC-4** — `REVIEW.md` stays, and is what a reviewer here reads. Its "For the
+- [x] **AC-4** — `REVIEW.md` stays, and is what a reviewer here reads. Its "For the
       coder: opening a PR" section is removed. Its "For the reviewer: reporting a
       verdict" section no longer cites `.claude/prompts/reviewer.md`, or a runner
       recording a verdict. Its numbered items keep their numbers.
-- [ ] **AC-5** — A `git grep` in the pull request body shows that nothing outside
+- [x] **AC-5** — A `git grep` in the pull request body shows that nothing outside
       `docs/`, `stories/` and `Completed-Questions.md` refers to `scripts/dispatch/`,
       `scripts/land/`, `scripts/report/`, `.claude/prompts/` or
       `no-project-literals`. `review-gate.yml`, `land-approved.yml` and
       `steward.config.json` are left out, since OQ-115 installs files of those names.
-- [ ] **AC-6** — `OQ-132` is taken out of every **Planned (…)** marker in
+- [x] **AC-6** — `OQ-132` is taken out of every **Planned (…)** marker in
       `docs/agent-workflow-design.md` that names it, as that document's "Reading this
       document" note says. The passages it names stay until OQ-134.
 

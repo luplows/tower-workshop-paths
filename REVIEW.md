@@ -134,9 +134,8 @@ code.
 
 ## For the reviewer: reporting a verdict
 
-The prompt a reviewer session is spawned with lives in
-[`.claude/prompts/reviewer.md`](.claude/prompts/reviewer.md). It must be spawned
-as its own session, never as a continuation of the one that wrote the PR: the
+A reviewer runs as its own session, never as a continuation of the one that
+wrote the PR: the
 independence this gate provides comes from context isolation, and a reviewer
 told what the change was *meant* to do cannot see that the diff does something
 else.
@@ -150,8 +149,8 @@ all. It could only compare the diff to the PR body, which the same worker wrote.
 
 **The PR body is given too, as an exhibit rather than as testimony.** The
 reviewer is required to judge whether that account is honest, which is
-impossible without reading it — so `reviewer.md` injects it as `{{PR_BODY}}`
-rather than leaving the reviewer to fetch it. It is supplied for judging, never
+impossible without reading it — so it is given to the reviewer rather than
+left for the reviewer to fetch. It is supplied for judging, never
 for believing: where the body and the diff disagree, the diff is what happened.
 Reading it after the findings are formed is what keeps it from framing them.
 
@@ -173,8 +172,8 @@ from, ending with exactly one marker line:
 ```
 
 That split is deliberate: the reviewer is handed no GitHub credential and posts
-nothing. It returns its verdict and findings, and the runner — a person today,
-the dispatcher once it exists — records them. A reviewer that had to post its
+nothing. It returns its verdict and findings, and steward, which started it,
+records them. A reviewer that had to post its
 own verdict needed credentials, and hunting for them is what turned the old
 reviewer prompt into something a reviewer session correctly refused as an
 injection attack.
@@ -254,49 +253,3 @@ status is what blocks the merge; failing the run is what makes the block
 *noticeable*, since GitHub's built-in Actions failure notifications only fire on
 a failed run. A job reporting success while recording a blocking review would be
 silent exactly when someone needs to hear about it.
-
-## For the coder: opening a PR
-
-The prompt a coder session is spawned with lives in
-[`.claude/prompts/coder.md`](.claude/prompts/coder.md). The coder commits and
-does not push: the dispatcher pushes its branch after the session
-(`pushBranch` in `scripts/dispatch/coder.mjs`), so a model session has no write
-access to the remote. Holding both a push and the means to clear the gate it
-feeds was the gap OQ-63 closed: with the owner's `repo`-scoped token, a coder
-could set `review/agent` to `success` on its own head and then dispatch
-`land-approved.yml`, breaking two rules that nothing but prose enforced: a
-session does not clear its own gate, and no session but the dispatcher session
-running `land.mjs` triggers the sweep (`CLAUDE.md`, "Branches and pull
-requests").
-
-**The coder holds no credential capable of a commit status, a workflow
-dispatch, or a pull-request write.** `scripts/dispatch/coder-env.mjs`
-(`coderEnv`) strips `GH_TOKEN`, `GITHUB_TOKEN` and `GH_ENTERPRISE_TOKEN` from
-its process environment and redirects `GH_CONFIG_DIR` to an empty directory,
-so nothing reachable from the session — `gh` directly, `gh` spawned from inside
-`node -e` via `child_process`, or an `npm`/`npx` script doing either — can
-authenticate as anything more than git over SSH, which none of that touches
-(removing that is OQ-73's, now steward's ST-6). `gh` is absent from `coderAllowedTools`, and
-`git push` is not allowed and is denied in `CODER_DISALLOWED_TOOLS`.
-
-**Opening the PR moves to whoever ran the coder.** The coder emits the PR title
-and body — the `pull_request_template.md` sections it always filled in — under
-`## PR title` and `## PR body` at the end of its final report, then
-`## Open as` and a line that is only `draft` or `ready`. Nothing may follow
-it, so that `parsePrBlock` in `scripts/dispatch/outcome.mjs` can read it;
-`coder.md` pins the exact block. The runner creates the PR from that text with
-the owner's credential. What keeps the thing that opens the PR from clearing the
-gate is not that credential's scope: `review/agent` is derived by
-`review-gate.yml` from the reviewer's verdict, and the runner triggers the sweep
-only through `land.mjs` (`docs/agent-workflow-design.md`, "Credential
-minimalism" and "The dispatcher session"). This is the same shape as "Recording
-a verdict" above: the party with the judgement (or, here, the text) is not the
-party with the credential.
-
-**Answering a review finding the coder disagrees with** no longer means
-replying on the PR — AC-3 of OQ-63 removes commenting from the coder's reach
-along with everything else. The coder states its reasoning in its final report
-instead, and the runner posts it as an ordinary PR comment, the same relay this
-section already uses for the verdict.
-
-

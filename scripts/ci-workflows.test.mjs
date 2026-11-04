@@ -1,7 +1,7 @@
 // @vitest-environment node
 
-// The tests of this repository's own workflow files, moved here from scripts/dispatch/ci.test.mjs
-// by OQ-148, so that they stay when OQ-132 removes the rest of that directory.
+// The tests of this repository's own workflow files, moved here by OQ-148, so that they stayed when
+// OQ-132 removed the old engine they sat beside.
 
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
