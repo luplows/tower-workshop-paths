@@ -33,7 +33,7 @@ by the owner).
         `Project-Outline.md`, "Core Feature: Recommended Buy Order";
       - validating scraped data (item 5): `README.md`, "Data drift".
 - [ ] **AC-3** — `README.md` has one short paragraph saying the agent workflow
-      is steward, pinned in `package.json`, with a link to `luplows/steward`,
+      is steward, pinned in its workflow files, with a link to `luplows/steward`,
       and its pointer at `docs/agent-workflow-design.md` (line 7) points there
       instead.
 - [ ] **AC-4** — Outside `stories/` and `Completed-Questions.md`, nothing refers

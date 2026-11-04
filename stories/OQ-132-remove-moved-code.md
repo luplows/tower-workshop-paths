@@ -1,123 +1,81 @@
 ---
 id: OQ-132
-title: Remove the workflow code that moved to steward, keeping the tests of this repository's own CI
+title: Remove the old engine, so that steward's init can install in its place
 tier: next
 kind: workflow
-depends_on: [OQ-115, OQ-133]
+depends_on: [OQ-148]
 model: sonnet
-blocked: null
+blocked: "Owner-only: written by Session A for steward's ST-48 validation, reviewed and landed on the old engine, as the last pull request to use it. Never dispatched (decided 2026-11-04 by the owner)."
 ---
 
 ## Intent
 
-As the owner, I want the workflow's code gone from this repository once it runs
-on steward (OQ-115), so that there is one copy of the engine and this repository
-stays about the product. The tests that check this repository's own CI files are
-kept, since steward does not have those files (decided 2026-10-08 by the owner:
-only tests of files that move go to steward).
+As the owner, I want this repository's copies of steward's engine gone, so that
+there is one copy of it and steward's `init`, which never overwrites a file, can
+install its own gate here (OQ-115). I accept that this ends the coder loop for
+now: steward's coding side is not built yet.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — These paths are removed: `scripts/dispatch/`, apart from
-      the story containment check below, `scripts/land/`, `scripts/report/`,
-      and `.claude/prompts/coder.md` and `reviewer.md`. This repository's own
-      story tooling stays (`docs/steward-bootstrap.md`, D-13):
-      `scripts/lint-stories.mjs` and `scripts/lint-stories.test.mjs`;
-      `test/fixtures/`, which only that test reads; and
-      `scripts/dispatch/story-containment.mjs` and its test, which `ci.yml`
-      runs.
-- [ ] **AC-2** — A new `scripts/ci-workflows.test.mjs` holds the tests of this
-      repository's workflow files that were in `scripts/dispatch/ci.test.mjs`:
-      OQ-117's, OQ-118/AC-3's check that `ci.yml` names its setup steps with the
-      `Setup: ` prefix, OQ-124's, and OQ-136's (AC-1 to AC-3, and AC-4's check
-      of how the clean-up test is run). Their test names and assertions are
-      unchanged, except that OQ-136/AC-4's check names the clean-up test's new
-      path (AC-2a). It holds its own copies of the text-scanning helpers they
-      use.
-- [ ] **AC-2a** — OQ-136's clean-up test file moves from
-      `scripts/dispatch/install-cleanup.alone.test.mjs` to
-      `scripts/install-cleanup.alone.test.mjs`, with its test names and
-      assertions unchanged and only the paths it reads the workflow files from
-      adjusted, and `ci.yml`'s `Run the install clean-up test alone (OQ-136)`
-      step runs it there. CI still runs it alone, with `VITEST_ALONE=1`.
-- [ ] **AC-3** — `scripts/ci-workflows.test.mjs` takes the setup-step prefix
-      from the pinned `steward` package, not from a string of its own, so a
-      change of prefix in steward fails this repository's test when the pin
-      moves.
-- [ ] **AC-4** — Nothing outside `docs/`, `stories/` and `Completed-Questions.md`
-      refers to a removed path, shown by a `git grep` in the pull request body.
-      `npm run lint`, `npm test`, the build and `node scripts/lint-stories.mjs`
-      pass.
-- [ ] **AC-5** — `OQ-132` is taken out of the **Planned (…)** marker in
-      `docs/agent-workflow-design.md`, "Portability", "Decided so far", as that
-      document's "Reading this document" note says.
+- [ ] **AC-1** — These are removed: `.github/workflows/review-gate.yml` and
+      `land-approved.yml`; `steward.config.json`; `scripts/land/`;
+      `scripts/report/`; all that is left of `scripts/dispatch/`;
+      `scripts/no-project-literals.test.mjs`; and `.claude/prompts/coder.md` and
+      `reviewer.md`.
+- [ ] **AC-2** — `npm run lint`, `npm test`, the alone test, `npm run build`,
+      `npm run test:e2e` and `node scripts/lint-stories.mjs` pass with those gone,
+      and no remaining test reads a removed file.
+- [ ] **AC-3** — `CLAUDE.md`'s "Branches and pull requests" no longer names the
+      sweep, `land.mjs`, the dispatcher or `scripts/dispatch/`. It says:
+      - a pull request lands only through `steward land <pr-number>`, run on the
+        owner's word, once its head has passed review;
+      - no session merges by any other way, triggers `land-approved.yml` itself, or
+        deletes a head branch;
+      - no coder runs in this repository until the owner decides otherwise;
+      - the one exception is steward's installation pull request (OQ-115), which
+        its story says how to merge.
+- [ ] **AC-4** — `REVIEW.md` stays, and is what a reviewer here reads. Its "For the
+      coder: opening a PR" section is removed. Its "For the reviewer: reporting a
+      verdict" section no longer cites `.claude/prompts/reviewer.md`, or a runner
+      recording a verdict. Its numbered items keep their numbers.
+- [ ] **AC-5** — A `git grep` in the pull request body shows that nothing outside
+      `docs/`, `stories/` and `Completed-Questions.md` refers to a removed path.
+- [ ] **AC-6** — `OQ-132` is taken out of every **Planned (…)** marker in
+      `docs/agent-workflow-design.md` that names it, as that document's "Reading this
+      document" note says. The passages it names stay until OQ-134.
 
 ## Out of scope
 
-- **`CLAUDE.md` and `REVIEW.md`** (OQ-133, which this depends on), and **the
-  moved documents** (OQ-134, which depends on this). `stories/README.md` and
-  `stories/_TEMPLATE.md` stay, with the rest of the story tooling (D-13).
-- **The four built stories that are steward's test fixtures** (OQ-51, OQ-68,
-  OQ-69, OQ-70). Their originals stay in `stories/done/` here, as history.
+- **Installing steward** (OQ-115). `main` has no gate between this pull request and
+  that one, and nothing else merges in between.
+- **Changing required status checks.** The owner lowers and restores them around
+  OQ-115.
+- **Cutting `CLAUDE.md` and `REVIEW.md` down to this project's own rules** (OQ-133),
+  and **the moved documents** (OQ-134).
 - **`.github/pull_request_template.md`, `.oxlintrc.json` and `.gitignore`.**
-  Steward took copies; the originals stay.
-- **The workflow files.** OQ-115 already made them call steward.
+- **The four built stories that are steward's test fixtures** (OQ-51, OQ-68, OQ-69,
+  OQ-70). Their originals stay in `stories/done/`, as history.
 
 ## Constraints
 
-- No new dependency beyond the `steward` package OQ-115 pins.
+- No new dependency. Steward is not added to `package.json`.
 
 ## Context
 
-- Decided 2026-10-08 by the owner, refining OQ-115: the cut-over first, by hand,
-  then this as an ordinary story run on steward's engine.
-- **After OQ-133** (owner, 2026-10-09, from #223's review, item 24): AC-4 needs
-  nothing outside `docs/`, `stories/` and `Completed-Questions.md` to refer to a
-  removed path, and
-  `CLAUDE.md` and `REVIEW.md`, which refer to `scripts/dispatch/` and
-  `scripts/land/`, are OQ-133's to cut.
-- On `main` at `c97aa50`, `scripts/dispatch/ci.test.mjs` holds OQ-117's tests
-  (`describe` blocks from line 394), OQ-118/AC-3 (line 353), and the helpers
-  `testJobStepBlocks`, `runTextOf` and `fieldsOfStep` (lines 311–351).
-  `SETUP_STEP_PREFIX` comes from `ci.mjs`. OQ-124's tests are added later; their
-  file is that story's choice.
-- Added 2026-10-09 by the owner: OQ-136's tests read this repository's workflow
-  files too. On `main` at `9943619`, `scripts/dispatch/ci.test.mjs` holds them
-  at lines 452 (AC-1), 467 (AC-2), 485 (AC-3) and 508 (AC-4, how the clean-up
-  test is run), and `scripts/dispatch/install-cleanup.alone.test.mjs` holds
-  OQ-136's behavioural tests (AC-4 at line 67, AC-2 at line 162). `ci.yml`
-  line 37 runs that file; `vite.config.js` leaves `**/*.alone.test.mjs` out of
-  `npm test` (line 32), wherever it is. OQ-140, which changes both files,
-  does not wait for this story (it replaced OQ-137, which did, on
-  2026-10-26). If OQ-140 lands first, this story moves its tests too.
-- `scripts/verify-workshop-costs.test.mjs` is the one existing test this project
-  keeps under `scripts/`, the precedent for the new file's place. The other
-  two there on `main` at `b2a02bf` are `scripts/lint-stories.test.mjs`, which
-  stays (D-13, below), and `scripts/no-project-literals.test.mjs` (OQ-129),
-  which goes to steward at the bootstrap and is removed here (Open questions).
-- AC-1 and AC-4 were reworded on 2026-10-12 for D-13 (decided 2026-10-10),
-  which keeps this repository's story tooling: before, AC-1 removed
-  `scripts/lint-stories.mjs`, its test and `test/fixtures/`, and AC-4 ran
-  steward's story lint. At `f5cb7b1`, `scripts/lint-stories.mjs` imports
-  `readSettings` from `scripts/dispatch/settings.mjs`, and
-  `scripts/dispatch/story-containment.mjs` imports it too, with
-  `resolveStory` from `scripts/dispatch/review.mjs`. OQ-105, which stays
-  here, changes `story-containment.mjs`.
+- The plan is in `docs/agent-workflow-design.md`, "Portability", "Decided so far",
+  "This repository adopts steward through `init`". It replaces this story's earlier
+  order, which ran it after OQ-115 and OQ-133, on steward's engine.
+- Removing the two workflow files and `steward.config.json` alone fails 76 tests in
+  12 files (a local experiment at caf4cb7, 2026-11-04), so they cannot leave before
+  the engine's tests do.
+- The `pull_request` event runs a pull request's own copy of a workflow, so this
+  pull request should get no `pending` status from `review-gate.yml`, which it
+  deletes. A verdict comment still runs the gate on `main`, and that sets
+  `review/agent`.
+- After this lands, these go until steward's coding side exists: `loop`, `story.mjs`,
+  `coder.mjs`, `queue.mjs` and the verdict report (the owner accepted this on
+  2026-11-04: "I'm happy with ending it for now").
 
 ## Open questions
 
-- Where the kept story tooling gets `readSettings` and `resolveStory` once
-  the rest of `scripts/dispatch/` is gone: from the pinned `steward` package,
-  or from local copies. Also whether `story-containment.mjs` and its test
-  move out of `scripts/dispatch/`, and if so where (AC-1). Raised by Session
-  A on 2026-10-12, rewording AC-1 for D-13.
-
-- The name steward's package exports the setup-step prefix under (AC-3): a
-  steward-side requirement, listed in the design doc ("What adopting steward
-  needs from it").
-- Re-derive AC-2's list when this is refined to `ready`: OQ-124's tests, and
-  any other test in a moved file that reads a file staying here (the
-  bootstrap's B7a finds the same set).
-- Add `scripts/no-project-literals.test.mjs` (OQ-129) to AC-1's list. It reads
-  only files AC-1 removes, and goes to steward at the bootstrap (decided
-  2026-10-09 by the owner; `docs/steward-bootstrap.md`, D-11).
+*(none)*

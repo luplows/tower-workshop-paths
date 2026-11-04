@@ -42,7 +42,8 @@ this repository's own convention (`docs/steward-bootstrap.md`, D-13).
 - **The moved documents** (OQ-134). `CLAUDE.md`'s "Where things are
   documented" table points at steward's copies once this lands, so OQ-134
   can remove the local ones.
-- **The code** (OQ-132, which runs after this).
+- **The code** (OQ-132, which now runs before this, and corrects only the
+  passages of these two files that name what it removes).
 - **`.github/pull_request_template.md`**, which stays as it is.
 
 ## Constraints

@@ -1777,6 +1777,19 @@ deciding what is next. It is the harness's product outline, and moves with this 
     revisited with the stop measure. The rest move as they are.
 
   OQ-100 and OQ-105 stay here, held until the extraction (next entry).
+- **This repository adopts steward through `init`** (decided 2026-11-04 by the owner, for steward's
+  ST-48, at steward 935fb5b; it replaces the order in "The move, in order", step 4, and in "What
+  adopting steward needs from it").
+  **Planned (OQ-115, OQ-132, OQ-148):** `init` writes no file `main` already has, and the old
+  engine's tests fail without its workflow files and settings, so the old copies leave first. In
+  order: OQ-148 makes what stays stand apart from the old engine, with the prefix a local constant
+  in place of `storyPrefix`, which steward's settings reject. OQ-132 removes the old engine, as the
+  last pull request to use it, and this ends the coder loop for now, as steward's coding side is not
+  built. The owner then removes only `review/agent` from `main`'s required checks, keeping `test` and
+  `enforce_admins`. OQ-115 is `init`'s pull request, merged by hand since the gate cannot review what
+  installs it. `steward protect` then requires `review/agent` again. OQ-133 and OQ-134 follow, on
+  steward's gate. Considered and not chosen: renaming the old workflows so that they could review
+  `init`'s pull request, which leaves two gates writing one status.
 - **Until it adopts steward, this repository runs its own engine, frozen** (decided 2026-10-10 by
   the owner, from Session A's proposal):
   - **Product stories dispatch** on the engine here, as they do today. When the dispatcher session
