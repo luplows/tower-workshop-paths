@@ -1784,7 +1784,7 @@ deciding what is next. It is the harness's product outline, and moves with this 
   cut-over, then dispatched clean-up", above, and "The move, in order", step 4, and it revises "What
   adopting steward needs from it", R1 and R2, each of which says so where it is affected. Other
   passages here that describe the old engine stay as they are until OQ-134 removes this document.
-  **Planned (OQ-115, OQ-132, OQ-148):**
+  **Planned (OQ-115, OQ-132):**
   - **The order.** `init` writes no file `main` already has, and the old engine's tests fail without
     its workflow files and settings, so the old copies leave first. OQ-148 makes what stays stand
     apart from the old engine. OQ-132 removes the old engine, as the last pull request to use it.
@@ -1801,6 +1801,11 @@ deciding what is next. It is the harness's product outline, and moves with this 
   - **Units.** Pull requests name their story with a `Unit:` line, in the template and in
     `REVIEW.md` (OQ-148), and `steward.config.json` has `unitLinks: ["file"]`. The stories and the
     `OQ` prefix do not change.
+  - **The checklist.** `REVIEW.md` stays, as the `rulesFile` (`--rules-file REVIEW.md`), and is what
+    steward's reviewer reads here, from `main`. So this project's review items reach it without
+    waiting for steward's later delivery of them, and OQ-132 keeps the items' numbers.
+  - **Inspection.** `init` also adds `inspection.yml`, as on pinpoint, and its first run may raise the
+    hand merge of OQ-115 as an issue, which the crew closes once.
   - **No package.** Steward is not added to `package.json`. `init`'s thin workflows run it with
     `npx` at a commit's full SHA, so the workflows hold the pin.
   - **What this repository's own checks use in place of the package.** The prefix is a local
@@ -1903,8 +1908,9 @@ steward before this repository has a coder or a tag to move to, not before OQ-11
 - **`init` and the thin gate files** (R2), including OQ-124's after-sweep trigger.
 - **The prompts' `{{REPO}}` slot and project section** (R1), so this project's lines come back.
 - **Delivering steward's rules and checklist to a project's sessions**, and **a project's own
-  review items to the reviewer** (R3). Before OQ-133. Today `coder.md` reads `CLAUDE.md` and
-  `REVIEW.md` from the repository root, and `reviewer.md` reads `REVIEW.md` there.
+  review items to the reviewer** (R3). Before OQ-133. Until OQ-132, `coder.md` reads `CLAUDE.md` and
+  `REVIEW.md` from the repository root, and `reviewer.md` reads `REVIEW.md` there. After it, steward's
+  reviewer reads `REVIEW.md` from `main`, as the `rulesFile`.
 - **The screenshot directory as a project setting.** `coder.mjs` line 125 (`main` at `c97aa50`)
   has `SCREENSHOT_DIR = 'e2e/__screenshots__/'`, this project's convention, in the coder's
   exception for new baselines (OQ-84). No deadline here, since the value is this repository's;

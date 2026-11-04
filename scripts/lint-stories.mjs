@@ -22,7 +22,7 @@
 import { readFile, readdir } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
-import { readSettings } from './dispatch/settings.mjs'
+import { STORY_PREFIX } from './story-prefix.mjs'
 
 /** The filename pattern for a project's stories, built from its story-id prefix (OQ-127). */
 export function storyFilenameRe(prefix) {
@@ -375,7 +375,7 @@ export async function lintDocs(rootDir) {
   }
 
   const mdFiles = entries.filter((entry) => entry.isFile() && entry.name.endsWith('.md')).map((entry) => path.join(docsDir, entry.name))
-  const { storyPrefix: prefix } = await readSettings(rootDir)
+  const prefix = STORY_PREFIX
   const { open, done } = await collectStoryIds(rootDir, prefix)
   const idRe = new RegExp(`^${prefix}-\\d+$`)
 
@@ -408,7 +408,7 @@ export async function lintAll(rootDir = process.cwd()) {
   const violations = []
   const storiesDir = path.join(rootDir, 'stories')
   const doneDir = path.join(storiesDir, 'done')
-  const { storyPrefix } = await readSettings(rootDir)
+  const storyPrefix = STORY_PREFIX
 
   for (const file of [...(await listStoryFiles(storiesDir, storyPrefix)), ...(await listStoryFiles(doneDir, storyPrefix))]) {
     const source = await readFile(file, 'utf8')

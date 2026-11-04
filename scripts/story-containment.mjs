@@ -8,11 +8,11 @@
  * restricted -- that is Session A's territory, covered by `REVIEW.md`'s
  * "PRs that add or change a story" items instead.
  *
- * `resolveStory` (review.mjs) decides whether a diff implements a story --
- * reused here rather than re-derived, per this story's Context.
+ * `resolveStory`, below, decides whether a diff implements a story. It is this
+ * project's own since OQ-148.
  *
  * Usage:
- *   node scripts/dispatch/story-containment.mjs <base-sha> <head-sha> [branch]
+ *   node scripts/story-containment.mjs <base-sha> <head-sha> [branch]
  *
  * Run from a checkout where both commits are reachable (`ci.yml` fetches full
  * history before this step). Exit code 0 when nothing blocking was found;
@@ -21,10 +21,33 @@
 import { execFile } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { promisify } from 'node:util'
-import { resolveStory } from './review.mjs'
-import { readSettings } from './settings.mjs'
+import { STORY_PREFIX } from './story-prefix.mjs'
 
 const execFileAsync = promisify(execFile)
+
+function storyFilenameRe(prefix) {
+  return new RegExp(`^${prefix}-\\d+-[\\w-]+\\.md$`)
+}
+
+function resolveStory({ nameStatus, branch, prefix }) {
+  const filenameRe = storyFilenameRe(prefix)
+  const deleted = new Set()
+  const added = []
+  for (const line of nameStatus.split(/\r?\n/)) {
+    const [status, file] = line.split('\t')
+    if (!file) continue
+    const open = file.match(/^stories\/([^/]+)$/)
+    const done = file.match(/^stories\/done\/([^/]+)$/)
+    if (status === 'D' && open && filenameRe.test(open[1])) deleted.add(open[1])
+    if (status === 'A' && done && filenameRe.test(done[1])) added.push(done[1])
+  }
+  const moved = added.filter((name) => deleted.has(name))
+  const idRe = new RegExp(`^(${prefix}-\\d+)-`)
+  if (moved.length === 1) return { kind: 'moved', file: moved[0], id: moved[0].match(idRe)[1] }
+  if (moved.length > 1) return { kind: 'ambiguous', files: moved }
+  const named = new RegExp(`^story/(${prefix}-\\d+)-`).exec(branch ?? '')
+  return named ? { kind: 'branch-only', id: named[1] } : { kind: 'none' }
+}
 
 async function git(cwd, args) {
   const { stdout } = await execFileAsync('git', ['-c', 'core.quotepath=off', ...args], {
@@ -132,7 +155,7 @@ function checkOtherFile(file, oldText, newText) {
  * conforms (AC-2), or `{ ok: false, violations: [{ file, line, message }] }`.
  */
 export async function checkStoryContainment({ cwd, base, head, branch }) {
-  const { storyPrefix } = await readSettings(cwd)
+  const storyPrefix = STORY_PREFIX
   const nameStatus = await git(cwd, ['diff', '--name-status', '--no-renames', `${base}...${head}`, '--', 'stories/'])
   const resolved = resolveStory({ nameStatus, branch, prefix: storyPrefix })
   if (resolved.kind === 'none') return { ok: true }
@@ -190,7 +213,7 @@ export async function checkStoryContainment({ cwd, base, head, branch }) {
 async function main(argv) {
   const [base, head, branch] = argv
   if (!base || !head) {
-    throw new Error('usage: node scripts/dispatch/story-containment.mjs <base-sha> <head-sha> [branch]')
+    throw new Error('usage: node scripts/story-containment.mjs <base-sha> <head-sha> [branch]')
   }
   const result = await checkStoryContainment({ cwd: process.cwd(), base, head, branch })
   if (!result.ok) {

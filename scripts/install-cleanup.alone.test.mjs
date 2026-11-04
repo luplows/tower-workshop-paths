@@ -16,8 +16,8 @@ import { describe, expect, it } from 'vitest'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
 const WORKFLOWS = [
-  ['ci.yml', path.join(HERE, '..', '..', '.github', 'workflows', 'ci.yml')],
-  ['update-screenshots.yml', path.join(HERE, '..', '..', '.github', 'workflows', 'update-screenshots.yml')],
+  ['ci.yml', path.join(HERE, '..', '.github', 'workflows', 'ci.yml')],
+  ['update-screenshots.yml', path.join(HERE, '..', '.github', 'workflows', 'update-screenshots.yml')],
 ]
 
 // The `run: |` body of the `Setup: Playwright browsers` step, with its indentation removed: the
