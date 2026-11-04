@@ -86,6 +86,11 @@ copy them straight from the game's settings screen.
   `1.18q coins` (line 48 at 75e723e).
 - `e2e/buy-out.spec.js`: the existing flow enters `1500000` and `500000` and
   expects `Budget 1M coins`. Those tests keep passing.
+- `src/utils/buyOutPlan.test.js` line 9 at 4d0b44a, in the `OQ-8/AC-1` test,
+  expects `computeBuyOutBudget('5e9', '0')` to give `{ budget: 5e9 }`. AC-1
+  rejects exponents, so the implementing pull request changes that line to an
+  amount AC-1 accepts. OQ-8's story does not mention exponents, so this takes
+  away nothing it asked for.
 - OQ-141 (#266) carries these inputs as strings in share links, so a typed `1.18q`
   travels as typed.
 

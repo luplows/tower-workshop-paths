@@ -43,7 +43,10 @@ where every Workshop coin goes, using the Labs I really have.
       already use:
       - its button is styled like Path's Buy button;
       - its rows are styled like the Path list's;
-      - its headings are styled like the rest of the tool's;
+      - its `h2` uses `font: 600 17px/1.3 var(--heading)`, as
+        `.enhancement-lock__title` does, and its `h3`s use
+        `font: 600 15px/1.4 var(--heading)`, as `.upgrade-path__confirm-body`
+        does, both with `color: var(--text-h)`;
       - its error text uses a theme colour from `index.css`, not the fixed
         `#b3261e`.
 
@@ -51,10 +54,10 @@ where every Workshop coin goes, using the Labs I really have.
       a plan shown, `respec-mobile.png` in the light theme and
       `respec-mobile-dark.png` in the dark. CI's `update-screenshots.yml`
       creates their baselines.
-- [ ] **AC-6** — Vitest covers AC-3's simulation: with the Lab at 0, no
-      purchase has `source: 'lab'` and no Enhancement is bought. With it at 1
-      and a budget large enough to buy everything, Enhancements are bought,
-      and the Lab still is not.
+- [ ] **AC-6** — Vitest covers AC-3's simulation: with the Lab at 0 and a
+      budget of `1e11`, no purchase has `source: 'lab'` and no Enhancement is
+      bought. With it at 1 and a budget large enough to buy everything,
+      Enhancements are bought, and the Lab still is not.
 - [ ] **AC-7** — Playwright:
       - `e2e/buy-out.spec.js` reaches the plan through Path → Respec, not
         Labs;
@@ -101,6 +104,17 @@ where every Workshop coin goes, using the Labs I really have.
   `<BuyOutPlan>` (line 111). The Path panel renders `<UpgradePath>`.
   `src/components/BuyOutPlan.css`: the fixed `#b3261e`, and a button with no
   class of its own.
+- `ENHANCEMENT_LAB_COST` is 5B, so a budget of `1e11` buys the Lab on today's
+  `simulateBuyOut`. AC-6's Lab-at-0 test therefore fails until AC-3 is built.
+- This replaces part of `stories/done/OQ-8-buyout-from-lifetime-coins.md`: the
+  plan no longer buys the Lab (AC-2 and AC-3), and it now reads the Lab's level
+  (Out of scope said that only the discount Labs are read). So these tests in
+  `src/utils/buyOutPlan.test.js`, at 4d0b44a, must change, and the implementing
+  pull request changes them as this story's work:
+  - `OQ-8/AC-2: prices Enhancements…` (lines 52-61) sets the Lab to 1, so that
+    Enhancements are bought;
+  - `OQ-8/AC-3: a budget above everything…` (lines 63-87) sets the Lab to 1, and
+    line 86, which expects the Lab to be bought, goes.
 - `e2e/appearance.spec.js` takes `path-${name}.png` (line 84) and
   `path-desktop-dark.png` (line 130). This is the first change to a captured
   screen since OQ-138. That story pushes one empty commit after

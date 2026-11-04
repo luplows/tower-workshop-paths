@@ -24,12 +24,13 @@ sequence on screen.
       A heading with no rows is left out.
 - [ ] **AC-2** — Within each group, rows are in the game's order, as
       `WORKSHOP_CATEGORIES` and `ENHANCEMENT_CATEGORIES` list the upgrades.
-      Purchase order no longer decides it. An unlock-group purchase sits at
-      the end of its Workshop tab's group, after its upgrades, where
-      `WorkshopCategoryPanel.jsx` shows the Unlock button.
+      Purchase order no longer decides it. Unlock-group purchases come first
+      in their Workshop tab's group, before its upgrades, in the order
+      `WORKSHOP_UNLOCK_GROUPS` lists them.
 - [ ] **AC-3** — The ordering is a function of the summary rows and the
       category data alone, tested in Vitest: a plan bought out of game order
-      summarises in game order, and an unlock row lands in its tab.
+      summarises in game order, and unlock rows come first in their tab, in
+      the order `WORKSHOP_UNLOCK_GROUPS` lists them.
       `summarisePurchases` still derives the rows from the purchase list
       alone (OQ-8's AC-5).
 - [ ] **AC-4** — The "Purchases in order" list, and its "Show more"
@@ -41,7 +42,13 @@ sequence on screen.
       - the purchase list is absent without `?debug` and present with it.
 
       `e2e/buy-out.spec.js`'s existing purchase-list assertions run with
-      `?debug`.
+      `?debug`, and so does the purchase-list assertion in
+      `src/components/BuyOutPlan.test.jsx`.
+
+      The summary's new layout changes OQ-143's Respec screenshots. The pull
+      request deletes `respec-mobile.png` and `respec-mobile-dark.png` and says
+      why, as `CLAUDE.md`'s Testing section requires, and
+      `update-screenshots.yml` regenerates them.
 
 ## Out of scope
 
@@ -65,6 +72,18 @@ sequence on screen.
     verify the expected path in testing … I don't need it on the screen";
   - a debug flag in the URL was chosen over removing the list or collapsing
     it.
+- The owner's decision of 2026-11-04 on unlock rows: "At the beginning of the
+  buyout summary by tab - you can't buy an upgrade for something that is not
+  unlocked."
+- This replaces part of `stories/done/OQ-8-buyout-from-lifetime-coins.md`'s
+  AC-4: what the summary shows is no longer in first-purchase order, and the
+  granular list is no longer shown by default. `summarisePurchases` itself keeps
+  first-purchase order, so its tests in `src/utils/buyOutPlan.test.js` do not
+  change. `src/components/BuyOutPlan.test.jsx` line 30 at 4d0b44a reads the
+  purchase list, so that test needs `?debug`.
+- `src/data/workshopUnlockGroups.js`: `WORKSHOP_UNLOCK_GROUPS`, keyed by category
+  id, lists each tree's groups in the fixed order they unlock. An unlock row's
+  `name` is its group's name, and its `categoryId` is the tree's.
 - `src/utils/buyOutPlan.js`, `summarisePurchases` (line 104 at 75e723e): one
   row per upgrade, in the order first bought, each carrying `source`,
   `name` and `categoryId`.

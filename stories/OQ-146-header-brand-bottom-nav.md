@@ -53,6 +53,8 @@ one-handed while I play.
       player is once the title is gone.
 - [ ] **AC-5** — Playwright:
       - At 390×844 (the mobile viewport `e2e/appearance.spec.js` uses):
+        - `getByRole('heading', { name: 'Tower Workshop Paths', level: 1 })`
+          finds the brand mark, and the name's text is not visible on screen;
         - the section tabs are in the bottom bar and not in the header;
         - switching section works from it;
         - on each of the three sections, the bar's bottom edge is at the
@@ -92,11 +94,12 @@ one-handed while I play.
   above the new bar. AC-3 keeps them at the bottom, since `BottomTabBar`
   mirrors the game's own tree tabs and is coloured by tree. If the trial
   shows that two bars are too many, moving them up is a follow-up story.
-- Also Session A's choice, not settled by the owner: the 1024 px threshold, and
-  the bar spanning the column. This story adds the tool's first layout
-  breakpoint. 1024 px is the one width the CSS already names, and it takes in a
-  phone on its side and a tablet, where a bottom bar is as useful. If the trial
-  says otherwise, changing the threshold is a follow-up story.
+- Session A's choice, which the owner accepted as a trial on 2026-11-04: the
+  1024 px threshold, and the bar spanning the column. This story adds the tool's
+  first layout breakpoint. 1024 px is the one width a media query in the CSS
+  already names, and it takes in a phone on its side and a tablet, where a bottom
+  bar is as useful. If the trial says otherwise, changing the threshold is a
+  follow-up story.
 - At 64c9bb9:
   - `src/App.jsx`'s header holds `<h1 className="app__title">Workshop
     Input</h1>`, `AppSectionTabs` and `HeaderMenu`, with `ModeTabBar` below
