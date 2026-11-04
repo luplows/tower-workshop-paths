@@ -164,12 +164,20 @@ async function readMytowerCost(page, mytowerLevel, lastLevel) {
 // Scrolls the grid to its bottom and reads the last level cell.
 async function readLastLevel(page) {
   const grid = page.locator('div.data-grid')
-  await grid.evaluate((el) => {
-    el.scrollTop = el.scrollHeight
-  })
-  await page.waitForTimeout(200)
-  const text = await grid.locator('td.sticky.sticky-1').last().innerText().catch(() => null)
-  return text === null ? null : levelFromCellText(text)
+  try {
+    await grid.evaluate(
+      (el) => {
+        el.scrollTop = el.scrollHeight
+      },
+      undefined,
+      { timeout: 5000 },
+    )
+    await page.waitForTimeout(200)
+    const text = await grid.locator('td.sticky.sticky-1').last().innerText({ timeout: 5000 })
+    return levelFromCellText(text)
+  } catch {
+    return null
+  }
 }
 
 async function readMaxLevelOnPage(page) {
