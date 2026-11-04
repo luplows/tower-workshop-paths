@@ -438,7 +438,7 @@ describe('OQ-117/AC-2: a cache hit installs only system packages; a miss install
 
 describe('OQ-117/AC-3: the install step tries at most twice, each try bounded within the step limit, logging which try runs', () => {
   for (const [label, file] of OQ117_WORKFLOWS) {
-    it(`${label}'s install step runs at most 2 tries of 2 minutes each (<= its 5-minute timeout-minutes), naming each try`, () => {
+    it(`${label}'s install step runs at most 2 tries of 2 minutes each (<= its 6-minute timeout-minutes, OQ-140/AC-4), naming each try`, () => {
       const block = installStepOf(readFileSync(file, 'utf8'))
       expect(block).toMatch(/for attempt in 1 2; do/)
       expect(block).toContain('echo "Playwright install attempt $attempt of 2"')
@@ -446,19 +446,19 @@ describe('OQ-117/AC-3: the install step tries at most twice, each try bounded wi
       const perTryMinutesMatches = [...block.matchAll(/timeout (\d+)m /g)].map((m) => Number(m[1]))
       expect(perTryMinutesMatches).toEqual([2]) // one `timeout …m` call inside the loop, run once per try
       const stepTimeout = Number(block.match(/timeout-minutes: (\d+)/)[1])
-      expect(stepTimeout).toBe(5)
+      expect(stepTimeout).toBe(6)
       expect(perTryMinutesMatches[0] * tries).toBeLessThanOrEqual(stepTimeout)
     })
   }
 })
 
-describe('OQ-117/AC-4: the install step limits itself to 5 minutes, and the job limits itself to 20', () => {
+describe('OQ-117/AC-4: the install step limits itself to 6 minutes (5 until OQ-140), and the job limits itself to 20', () => {
   for (const [label, file] of OQ117_WORKFLOWS) {
-    it(`${label} sets job timeout-minutes: 20 and the install step's own timeout-minutes: 5`, () => {
+    it(`${label} sets job timeout-minutes: 20 and the install step's own timeout-minutes: 6`, () => {
       const text = readFileSync(file, 'utf8')
       expect(text).toMatch(/^ {4}timeout-minutes: 20$/m)
       const block = installStepOf(text)
-      expect(block).toMatch(/timeout-minutes: 5/)
+      expect(block).toMatch(/timeout-minutes: 6/)
     })
   }
 })
@@ -496,25 +496,134 @@ describe('OQ-136/AC-2: before the second try, the step waits at most 30s for the
   }
 })
 
-describe('OQ-136/AC-3: the retry limits are unchanged, and the tries, the wait and the repair still fit inside the 5-minute step timeout', () => {
+// The allowance for the clean-up after the first try, which install-cleanup.alone.test.mjs holds
+// the clean-up to (OQ-140/AC-6).
+const CLEANUP_ALLOWANCE_SECONDS = 5
+
+describe('OQ-136/AC-3, as OQ-140/AC-5 counts it: everything that runs before the second try ends (the cached files copy, two tries, the clean-up allowance, the wait, the repair and the mirror switch) fits inside the 6-minute step timeout', () => {
   for (const [label, file] of OQ117_WORKFLOWS) {
-    it(`${label} still tries at most twice at timeout 2m each, keeps timeout-minutes: 5 / 20, and caps the wait at 30s and the repair at 20s within that budget`, () => {
+    it(`${label} still tries at most twice at timeout 2m each, keeps the job's timeout-minutes: 20, and its worst case before the second try ends, 10 + 2 × 120 + 5 + 30 + 20 + 10 = 315 seconds, is below the step's timeout-minutes: 6`, () => {
       const text = readFileSync(file, 'utf8')
       const block = installStepOf(text)
       expect(block).toMatch(/for attempt in 1 2; do/)
       const perTryMinutesMatches = [...block.matchAll(/timeout (\d+)m /g)].map((m) => Number(m[1]))
       expect(perTryMinutesMatches).toEqual([2]) // unchanged from OQ-117: one `timeout …m` call, run once per try
       const stepTimeout = Number(block.match(/timeout-minutes: (\d+)/)[1])
-      expect(stepTimeout).toBe(5)
+      expect(stepTimeout).toBe(6)
       expect(text).toMatch(/^ {4}timeout-minutes: 20$/m)
       const waitCapMatches = [...block.matchAll(/waited" -lt (\d+)/g)].map((m) => Number(m[1]))
       expect(waitCapMatches).toEqual([30])
       const repairCapMatches = [...block.matchAll(/timeout (\d+)s dpkg --configure -a/g)].map((m) => Number(m[1]))
       expect(repairCapMatches).toEqual([20])
+      const copyCapMatches = [...block.matchAll(/timeout (\d+)s cp /g)].map((m) => Number(m[1]))
+      expect(copyCapMatches).toEqual([10])
+      const switchCapMatches = [...block.matchAll(/timeout (\d+)s sh -c /g)].map((m) => Number(m[1]))
+      expect(switchCapMatches).toEqual([10])
       const tries = 2
-      const worstCaseSeconds = perTryMinutesMatches[0] * 60 * tries + waitCapMatches[0] + repairCapMatches[0]
-      expect(worstCaseSeconds).toBe(290)
+      const worstCaseSeconds =
+        copyCapMatches[0] +
+        perTryMinutesMatches[0] * 60 * tries +
+        CLEANUP_ALLOWANCE_SECONDS +
+        waitCapMatches[0] +
+        repairCapMatches[0] +
+        switchCapMatches[0]
+      expect(worstCaseSeconds).toBe(315)
       expect(worstCaseSeconds).toBeLessThan(stepTimeout * 60)
+    })
+  }
+})
+
+describe('OQ-140/AC-1: a cache of apt package files is restored before the install step, and its files are copied into /var/cache/apt/archives/ before the first try', () => {
+  for (const [label, file] of OQ117_WORKFLOWS) {
+    it(`${label} restores ~/apt-archives with actions/cache/restore@v4 on a key of runner.os, ImageOS, ImageVersion and the Playwright version, and the install step copies the .deb files under sudo timeout 10s before the loop, not fatally`, () => {
+      const text = readFileSync(file, 'utf8')
+      const fields = testJobStepBlocks(text).map(fieldsOfStep)
+      const installAt = fields.findIndex((f) => f.name === 'Setup: Playwright browsers')
+      const keyAt = fields.findIndex((f) => f.name === 'Resolve apt package cache key')
+      const restoreAt = fields.findIndex((f) => f.name === 'Restore apt package cache')
+      expect(keyAt).toBeGreaterThan(-1)
+      expect(restoreAt).toBeGreaterThan(keyAt)
+      expect(restoreAt).toBeLessThan(installAt)
+      const blocks = testJobStepBlocks(text)
+      expect(blocks[restoreAt]).toContain('uses: actions/cache/restore@v4')
+      expect(blocks[restoreAt]).toContain('path: ~/apt-archives')
+      expect(blocks[restoreAt]).toContain('key: ${{ steps.apt-cache-key.outputs.key }}')
+      expect(blocks[keyAt]).toContain(
+        'key=${{ runner.os }}-apt-${ImageOS}-${ImageVersion}-playwright-${{ steps.playwright-version.outputs.version }}',
+      )
+      const install = blocks[installAt]
+      expect(install).toContain('if [ "${{ steps.apt-cache.outputs.cache-hit }}" = "true" ]; then')
+      expect(install).toContain('if sudo timeout 10s cp "$apt_cache"/*.deb /var/cache/apt/archives/; then')
+      expect(install).toContain(
+        `echo "Copied $(find "$apt_cache" -name '*.deb' | wc -l) cached .deb files into /var/cache/apt/archives/"`,
+      )
+      expect(install).toContain(
+        'echo "Copying the cached .deb files failed or ran past 10s; making the first try anyway"',
+      )
+      expect(install.indexOf('sudo timeout 10s cp')).toBeLessThan(install.indexOf('for attempt in 1 2; do'))
+    })
+  }
+})
+
+describe('OQ-140/AC-2: when the install succeeds and the cache was not restored, the .deb files are copied and saved under the same key', () => {
+  for (const [label, file] of OQ117_WORKFLOWS) {
+    it(`${label} collects /var/cache/apt/archives/*.deb into ~/apt-archives and saves it with actions/cache/save@v4, both only when apt-cache's cache-hit is not 'true' and only after the install step succeeds`, () => {
+      const text = readFileSync(file, 'utf8')
+      const blocks = testJobStepBlocks(text)
+      const fields = blocks.map(fieldsOfStep)
+      const installAt = fields.findIndex((f) => f.name === 'Setup: Playwright browsers')
+      const collectAt = fields.findIndex((f) => f.name === 'Collect apt package files for the cache')
+      const saveAt = fields.findIndex((f) => f.name === 'Save apt package cache')
+      expect(collectAt).toBe(installAt + 1)
+      expect(saveAt).toBe(collectAt + 1)
+      for (const at of [collectAt, saveAt]) {
+        // No `always()` or `failure()`: the default success() leaves a failed install saving nothing.
+        expect(blocks[at]).toContain("if: steps.apt-cache.outputs.cache-hit != 'true'")
+        expect(blocks[at]).not.toMatch(/always\(\)|failure\(\)/)
+      }
+      expect(blocks[collectAt]).toContain("find /var/cache/apt/archives -maxdepth 1 -name '*.deb' -exec cp -t ~/apt-archives {} +")
+      expect(blocks[saveAt]).toContain('uses: actions/cache/save@v4')
+      expect(blocks[saveAt]).toContain('path: ~/apt-archives')
+      expect(blocks[saveAt]).toContain('key: ${{ steps.apt-cache-key.outputs.key }}')
+    })
+  }
+})
+
+describe('OQ-140/AC-3: before the second try, after the wait and the repair, apt is pointed at archive.ubuntu.com in place of the runner mirror list', () => {
+  for (const [label, file] of OQ117_WORKFLOWS) {
+    it(`${label} logs /etc/apt/apt-mirrors.txt before and after, switches it under sudo timeout 10s, and makes the second try if the switch fails`, () => {
+      const block = installStepOf(readFileSync(file, 'utf8'))
+      const repairAt = block.indexOf('sudo timeout 20s dpkg --configure -a')
+      const switchAt = block.indexOf('sudo timeout 10s sh -c')
+      expect(repairAt).toBeGreaterThan(-1)
+      expect(switchAt).toBeGreaterThan(repairAt)
+      expect(block.indexOf('for attempt in 1 2; do')).toBeLessThan(switchAt)
+      expect(block.indexOf('if [ "$attempt" -eq 1 ]; then')).toBeLessThan(switchAt) // inside the first try's block
+      expect(block).toContain('mirror_list=/etc/apt/apt-mirrors.txt')
+      expect(block).toContain('echo "$mirror_list before the switch:"')
+      expect(block).toContain('echo "$mirror_list after the switch:"')
+      expect(block).toContain(
+        `if ! sudo timeout 10s sh -c 'echo "http://archive.ubuntu.com/ubuntu/" > "$0"' "$mirror_list"; then`,
+      )
+      expect(block).toContain('echo "Switching $mirror_list failed or ran past 10s; making the second try anyway"')
+      // before < switch < after, in the order the log should show
+      expect(block.indexOf('before the switch')).toBeLessThan(switchAt)
+      expect(block.indexOf('after the switch')).toBeGreaterThan(switchAt)
+    })
+  }
+})
+
+describe('OQ-140/AC-4: the install step limit is 6 minutes, and the per-try, wait, repair and job limits are unchanged', () => {
+  for (const [label, file] of OQ117_WORKFLOWS) {
+    it(`${label} sets the step's timeout-minutes: 6, with timeout 2m per try, a 30s wait, a 20s repair and the job's timeout-minutes: 20`, () => {
+      const text = readFileSync(file, 'utf8')
+      const block = installStepOf(text)
+      expect(block).toMatch(/^ {8}timeout-minutes: 6$/m)
+      expect(block).not.toMatch(/timeout-minutes: 5/)
+      expect([...block.matchAll(/timeout (\d+)m /g)].map((m) => Number(m[1]))).toEqual([2])
+      expect(block).toContain('while [ "$waited" -lt 30 ]')
+      expect(block).toContain('sudo timeout 20s dpkg --configure -a')
+      expect(text).toMatch(/^ {4}timeout-minutes: 20$/m)
     })
   }
 })

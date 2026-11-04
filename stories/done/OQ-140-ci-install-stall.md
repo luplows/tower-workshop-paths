@@ -19,7 +19,7 @@ download that has nothing to do with its change.
 The step is `Setup: Playwright browsers`, in `.github/workflows/ci.yml` and in
 `.github/workflows/update-screenshots.yml`. Every AC applies to both files.
 
-- [ ] **AC-1** — Before the install step, a step restores a cache of apt
+- [x] **AC-1** — Before the install step, a step restores a cache of apt
       package files with `actions/cache/restore@v4`. Its path is a directory
       the runner user owns, and its key is built from `runner.os`, the
       `ImageOS` and `ImageVersion` environment variables, and the Playwright
@@ -28,21 +28,21 @@ The step is `Setup: Playwright browsers`, in `.github/workflows/ci.yml` and in
       before the first try, under `sudo timeout 10s`, and logs how many it
       copied. A copy that fails or times out is logged and does not stop the
       first try, which then downloads what is missing.
-- [ ] **AC-2** — When the install succeeds and AC-1's cache was not
+- [x] **AC-2** — When the install succeeds and AC-1's cache was not
       restored, a step copies `/var/cache/apt/archives/*.deb` into that
       directory and saves it with `actions/cache/save@v4` under the same key.
       A failed install saves nothing.
-- [ ] **AC-3** — Before the second try, after the wait and the repair, the
+- [x] **AC-3** — Before the second try, after the wait and the repair, the
       step points apt at `http://archive.ubuntu.com/ubuntu/` in place of the
       runner's mirror list, `/etc/apt/apt-mirrors.txt`. The switch:
       - runs under `sudo timeout 10s`;
       - logs the mirror list before and after;
       - if it fails or times out, is logged and does not stop the second try,
         as the repair does today.
-- [ ] **AC-4** — The step's `timeout-minutes` goes from 5 to 6. The per-try
+- [x] **AC-4** — The step's `timeout-minutes` goes from 5 to 6. The per-try
       `timeout 2m`, the 30-second wait, the 20-second repair and the job's
       `timeout-minutes: 20` do not change.
-- [ ] **AC-5** — The worst-case test, today OQ-136/AC-3's in
+- [x] **AC-5** — The worst-case test, today OQ-136/AC-3's in
       `scripts/dispatch/ci.test.mjs`, counts everything that runs before the
       second try ends:
       - two tries;
@@ -54,7 +54,7 @@ The step is `Setup: Playwright browsers`, in `.github/workflows/ci.yml` and in
       That is 10 + 2 × 120 + 5 + 30 + 20 + 10 = 315 seconds, below the step's
       360. Every number except the allowance is read from the step's text, as
       today, and the test's name says what it counts.
-- [ ] **AC-6** — The behavioural test, `install-cleanup.alone.test.mjs`
+- [x] **AC-6** — The behavioural test, `install-cleanup.alone.test.mjs`
       (OQ-136/AC-4), fails if the clean-up after the first try takes 5
       seconds or more, and reports the step's output. The clean-up is the
       part of the step from the first try's `failed or timed out` log line to
@@ -62,7 +62,7 @@ The step is `Setup: Playwright browsers`, in `.github/workflows/ci.yml` and in
       mirror switch are replaced in the test's substitutions, as the try's
       command is, so that running the test never changes the machine's apt
       cache or configuration.
-- [ ] **AC-7** — Tests named `OQ-140/AC-1` to `OQ-140/AC-4`, in
+- [x] **AC-7** — Tests named `OQ-140/AC-1` to `OQ-140/AC-4`, in
       `scripts/dispatch/ci.test.mjs`, read both workflow files. Each asserts
       its AC's text: the restore step and its key, the copy into
       `/var/cache/apt/archives/`, the save step and the condition it runs
@@ -71,7 +71,7 @@ The step is `Setup: Playwright browsers`, in `.github/workflows/ci.yml` and in
       Existing tests that pin `timeout-minutes: 5` or the 290-second worst
       case are updated to the new numbers. This story authorises that, and
       the pull request names each one.
-- [ ] **AC-8** — The **Planned (OQ-140)** passage in
+- [x] **AC-8** — The **Planned (OQ-140)** passage in
       `docs/agent-workflow-design.md`, "What CI runs", is resolved as that
       document's "Reading this document" note says.
 
