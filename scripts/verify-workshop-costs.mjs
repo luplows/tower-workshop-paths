@@ -125,20 +125,32 @@ async function dismissConsent(page) {
   }
 }
 
+// The level number at the end of a level cell's text, or null if there is
+// none. A row past the purchase cap can carry a label before its number
+// (e.g. "Legendary8000").
+export const levelFromCellText = (text) => {
+  const match = text.trim().match(/(\d+)$/)
+  return match ? Number.parseInt(match[1], 10) : null
+}
+
+// Where to set `scrollTop` to land on `level`: the grid is virtualized over
+// lastLevel + 1 rows of equal height.
+export const scrollTopForLevel = (level, scrollHeight, lastLevel) => level * (scrollHeight / (lastLevel + 1))
+
 // mytower's "Level N" row shows the cost of buying from N-1 to N -- the
 // same value as our own WORKSHOP_LEVELS[name][N-1]. So checking our
-// index L means reading mytower's row "Level L+1". The grid is virtualized
-// (only ~17 rows ever exist in the DOM), reachable by setting `scrollTop`
-// proportionally -- confirmed exact against a known value (Damage, index
-// 2999) before this script was written.
-async function readMytowerCost(page, mytowerLevel, maxLevelOnPage) {
+// index L means reading mytower's row "Level L+1". The grid is virtualized,
+// reachable by setting `scrollTop` proportionally to the table's last level.
+// A table's rows can run past M (Damage's last row is 10000, M is 6000), with
+// no coin cost shown on those rows: M is the purchase cap, not the table's
+// length, so the scroll is scaled by the last level, not by M.
+async function readMytowerCost(page, mytowerLevel, lastLevel) {
   const grid = page.locator('div.data-grid')
-  await grid.evaluate(
-    (el, { level, max }) => {
-      el.scrollTop = level * (el.scrollHeight / (max + 1))
-    },
-    { level: mytowerLevel, max: maxLevelOnPage },
-  )
+  const scrollHeight = await grid.evaluate((el) => el.scrollHeight)
+  const scrollTop = scrollTopForLevel(mytowerLevel, scrollHeight, lastLevel)
+  await grid.evaluate((el, top) => {
+    el.scrollTop = top
+  }, scrollTop)
   await page.waitForTimeout(200)
   // The level cell is a leaf <td> (no child elements), so an exact-text
   // regex against it is unambiguous -- unlike matching a whole <tr>, whose
@@ -147,6 +159,25 @@ async function readMytowerCost(page, mytowerLevel, maxLevelOnPage) {
   const row = levelCell.locator('xpath=..')
   const cost = await row.locator('td.cost-step.currency-coins').first().innerText().catch(() => null)
   return cost
+}
+
+// Scrolls the grid to its bottom and reads the last level cell.
+async function readLastLevel(page) {
+  const grid = page.locator('div.data-grid')
+  try {
+    await grid.evaluate(
+      (el) => {
+        el.scrollTop = el.scrollHeight
+      },
+      undefined,
+      { timeout: 5000 },
+    )
+    await page.waitForTimeout(200)
+    const text = await grid.locator('td.sticky.sticky-1').last().innerText({ timeout: 5000 })
+    return levelFromCellText(text)
+  } catch {
+    return null
+  }
 }
 
 async function readMaxLevelOnPage(page) {
@@ -189,10 +220,16 @@ async function main() {
         })
       }
 
+      const lastLevel = await readLastLevel(page)
+      if (lastLevel === null) {
+        results.push({ name: upgrade.name, level: '?', status: 'ERROR', detail: 'could not read table end' })
+        continue
+      }
+
       for (const ourIndex of checklistLevels(upgrade.quantity)) {
         const ours = formatCoins(WORKSHOP_LEVELS[upgrade.name]?.[ourIndex] ?? 0).replace(' coins', '')
         const mytowerLevel = ourIndex + 1
-        const theirs = await readMytowerCost(page, mytowerLevel, maxLevelOnPage)
+        const theirs = await readMytowerCost(page, mytowerLevel, lastLevel)
         if (theirs === null) {
           results.push({ name: upgrade.name, level: ourIndex, status: 'ERROR', detail: 'row not found' })
           continue
