@@ -46,6 +46,11 @@ have to type every level back in to bring the tool up to date.
       - see the Labs unchanged;
       - a second run cancels instead, and sees nothing changed.
 
+      The new button changes OQ-143's Respec screenshots. The pull request
+      deletes `respec-mobile.png` and `respec-mobile-dark.png` and says why, as
+      `CLAUDE.md`'s Testing section requires, and `update-screenshots.yml`
+      regenerates them.
+
 ## Out of scope
 
 - Undo. The confirmation is the guard.
@@ -64,6 +69,9 @@ have to type every level back in to bring the tool up to date.
     groups, lowering where needed;
   - Labs are untouched;
   - it asks for confirmation first.
+- This replaces part of `stories/done/OQ-8-buyout-from-lifetime-coins.md`'s Out
+  of scope, which said the plan "writes nothing back". Planning still writes
+  nothing. Only confirming Apply plan does.
 - `src/utils/buyOutPlan.js`, `simulateBuyOut` (line 44 at 75e723e), holds
   `workshopLevels`, `enhancementLevels` and `unlockedGroups` while it runs,
   and returns only `purchases`, `unpriced`, `budget`, `spent`, `remaining`
