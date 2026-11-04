@@ -64,8 +64,8 @@ this repository's own convention (`docs/steward-bootstrap.md`, D-13).
   repository's `stories/README.md`.
 - Until OQ-132 removes these prompts, the coder reads `CLAUDE.md` and `REVIEW.md`
   from the repository root (`.claude/prompts/coder.md` line 140), and the reviewer
-  reads `REVIEW.md` there (`reviewer.md` line 171). The reviewer cites `REVIEW.md`
-  items by number (for example items 16–18, `reviewer.md` line 152).
+  reads `REVIEW.md` there (`reviewer.md` line 172). The reviewer cites `REVIEW.md`
+  items by number (for example items 16–18, `reviewer.md` line 153).
 - R1 removes items 8 and 10 from steward's copy of `REVIEW.md`, leaving gaps,
   and a steward story closes them.
 - AC-1 was reworded on 2026-10-12, when OQ-72 was refined to retire
