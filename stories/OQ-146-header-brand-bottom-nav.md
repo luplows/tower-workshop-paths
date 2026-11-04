@@ -56,8 +56,9 @@ one-handed while I play.
         - `getByRole('heading', { name: 'Tower Workshop Paths', level: 1 })`
           finds the brand mark, and the name's text is not visible on screen:
           every text node in the `h1` that holds the name has a parent element
-          whose bounding box is at most 1 px wide. There may be no such text
-          node. The test does not use `not.toBeVisible`;
+          that either has no boxes (`getClientRects()` is empty), or is at most
+          1 px wide with a computed `overflow-x` of `hidden` or `clip`. There may
+          be no such text node. The test does not use `not.toBeVisible`;
         - the section tabs are in the bottom bar and not in the header;
         - switching section works from it;
         - on each of the three sections, the bar's bottom edge is at the
@@ -128,6 +129,11 @@ one-handed while I play.
     lookup finds it;
   - a `display: none` span and no `aria-label`: the heading lookup finds nothing,
     so AC-1's lookup fails this one by itself.
+- Why AC-5 also checks `overflow-x`: a span 1 px or 0 px wide with
+  `white-space: nowrap` and no clipping overflows its box, so width alone would
+  pass it with the name still painted. Measured the same way, AC-5's rule accepts
+  the clipped span and both `aria-label` forms, and rejects those narrow spans, a
+  visible span, and the name as text directly in the `h1`.
 - `e2e/appearance.spec.js` captures `upgrade-`, `path-` and `enhance-`
   screens at desktop and mobile widths, and `path-desktop-dark.png`. All of
   them show the header.
