@@ -17,10 +17,11 @@ project in steward's ST-48 validation.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — The pull request is the one this command opens, from `main` with
-      OQ-132 landed, on steward at 935fb5b81398420acd5e7476d2b94bec94bbad02 (`npx
-      --yes --package=github:luplows/steward#<that commit> steward <command>`):
-      `steward init --yes --ref <that commit> --land no --unit-links file
+- [ ] **AC-1** — The pull request's body gives the command that opened it, from
+      `main` with OQ-132 landed, on steward at
+      935fb5b81398420acd5e7476d2b94bec94bbad02 (`npx --yes
+      --package=github:luplows/steward#<that commit> steward <command>`), and its
+      output: `steward init --yes --ref <that commit> --land no --unit-links file
       --rules-file REVIEW.md`.
 - [ ] **AC-2** — It adds `steward.config.json`, `review-gate.yml`,
       `land-approved.yml` and `inspection.yml`, and leaves `REVIEW.md` and
@@ -35,14 +36,6 @@ project in steward's ST-48 validation.
       `Unit: stories/OQ-115-workflow-own-repository.md` and the three filled sections.
       Steward's version, 0.0.0 at this commit, is not in the title or the commit
       message.
-- [ ] **AC-5** — Before it merges, only `review/agent` is removed from `main`'s
-      required checks, and `test` and `enforce_admins` stay. The owner agrees the
-      merge, it is merged by hand with `gh pr merge --squash --subject "Install
-      steward at 935fb5b"` with `test` green, and no verdict or marker is written for
-      it.
-- [ ] **AC-6** — After it merges, `steward protect` exits 0, and `main` requires both
-      `test` and `review/agent`, with `enforce_admins` on. Unattended landing stays
-      off, and no coder is enabled.
 
 ## Out of scope
 
@@ -55,9 +48,18 @@ project in steward's ST-48 validation.
 
 ## Constraints
 
-- The merge in AC-5 is the only one by hand, and the gate cannot review it: it runs
-  from `main`, where it is not yet installed. This is the one exception to
-  `CLAUDE.md`'s rule on merging.
+- These steps surround the pull request, so no diff can show them, and steward's
+  ST-48 evidence records them, not an AC here:
+  - Before it merges, only `review/agent` is removed from `main`'s required checks,
+    and `test` and `enforce_admins` stay.
+  - The owner agrees the merge. It is merged by hand with `gh pr merge --squash
+    --subject "Install steward at 935fb5b"`, with `test` green, and no verdict or
+    marker is written for it. The gate cannot review it, since it runs from `main`,
+    where it is not yet installed. This is the one exception to `CLAUDE.md`'s rule
+    on merging.
+  - After it merges, `steward protect` exits 0, and `main` requires both `test` and
+    `review/agent`, with `enforce_admins` on. Unattended landing stays off, and no
+    coder is enabled.
 
 ## Context
 

@@ -1788,7 +1788,8 @@ deciding what is next. It is the harness's product outline, and moves with this 
   built. The owner then removes only `review/agent` from `main`'s required checks, keeping `test` and
   `enforce_admins`. OQ-115 is `init`'s pull request, merged by hand since the gate cannot review what
   installs it. `steward protect` then requires `review/agent` again. OQ-133 and OQ-134 follow, on
-  steward's gate. Considered and not chosen: renaming the old workflows so that they could review
+  steward's gate. OQ-72, OQ-94 and OQ-105 name files this moves or removes, so each is held with
+  `blocked:`, and refined again after OQ-115. Considered and not chosen: renaming the old workflows so that they could review
   `init`'s pull request, which leaves two gates writing one status.
 - **Until it adopts steward, this repository runs its own engine, frozen** (decided 2026-10-10 by
   the owner, from Session A's proposal):

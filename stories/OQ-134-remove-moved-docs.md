@@ -46,8 +46,7 @@ by the owner).
 
 - **`mytower.app` as an example of network egress.** It is dropped here
   (decided 2026-10-08 by the owner, after #223's review; the design doc's R1).
-  The coder's line about it reaches the prompt through steward's project
-  section (OQ-115).
+  OQ-132 removes the coder's prompt, so no coder's line about it stays here.
 - **Stories that stay here and cite a removed document**, such as OQ-72 and
   OQ-94. A coder's pull request may not change other stories (OQ-82), so
   Session A repoints them in a `write-story/` pull request.
@@ -61,7 +60,7 @@ by the owner).
 
 - **After OQ-132 as well as OQ-133** (owner, 2026-10-09, from #223's review,
   item 24): the moved code refers to `docs/agent-workflow-design.md`, so AC-4
-  needs it gone, and OQ-132's own AC-5 edits that document's marker, which this
+  needs it gone, and OQ-132's own AC-6 edits that document's marker, which this
   story deletes.
 - Decided 2026-10-08 by the owner, refining OQ-115: the passages go to
   `README.md` and `Project-Outline.md`, not to a document about the workflow;

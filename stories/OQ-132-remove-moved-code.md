@@ -39,7 +39,10 @@ now: steward's coding side is not built yet.
       verdict" section no longer cites `.claude/prompts/reviewer.md`, or a runner
       recording a verdict. Its numbered items keep their numbers.
 - [ ] **AC-5** — A `git grep` in the pull request body shows that nothing outside
-      `docs/`, `stories/` and `Completed-Questions.md` refers to a removed path.
+      `docs/`, `stories/` and `Completed-Questions.md` refers to `scripts/dispatch/`,
+      `scripts/land/`, `scripts/report/`, `.claude/prompts/` or
+      `no-project-literals`. `review-gate.yml`, `land-approved.yml` and
+      `steward.config.json` are left out, since OQ-115 installs files of those names.
 - [ ] **AC-6** — `OQ-132` is taken out of every **Planned (…)** marker in
       `docs/agent-workflow-design.md` that names it, as that document's "Reading this
       document" note says. The passages it names stay until OQ-134.

@@ -5,7 +5,7 @@ tier: normal
 kind: workflow
 depends_on: []
 model: sonnet
-blocked: null
+blocked: "Held for steward's install: its acceptance criteria name files that OQ-148 moves or OQ-132 removes. Session A refines it again after OQ-115 lands."
 ---
 
 ## Intent
