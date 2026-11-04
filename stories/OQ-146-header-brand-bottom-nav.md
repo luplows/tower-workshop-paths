@@ -54,7 +54,10 @@ one-handed while I play.
 - [ ] **AC-5** — Playwright:
       - At 390×844 (the mobile viewport `e2e/appearance.spec.js` uses):
         - `getByRole('heading', { name: 'Tower Workshop Paths', level: 1 })`
-          finds the brand mark, and the name's text is not visible on screen;
+          finds the brand mark, and the name's text is not visible on screen:
+          every text node in the `h1` that holds the name has a parent element
+          whose bounding box is at most 1 px wide. There may be no such text
+          node. The test does not use `not.toBeVisible`;
         - the section tabs are in the bottom bar and not in the header;
         - switching section works from it;
         - on each of the three sections, the bar's bottom edge is at the
@@ -117,6 +120,14 @@ one-handed while I play.
   - `vite.config.js` sets `base` to `/tower-workshop-paths/` for a build or a
     preview, while Playwright runs against `npm run dev`, whose base is `/`. A
     hard-coded `/favicon.svg` would pass every test and could fail on Pages.
+- Why AC-5 does not use `not.toBeVisible`, measured in Playwright's Chromium on
+  2026-11-04 at 390×844, on three ways of hiding the name:
+  - a span clipped to 1 px: the heading lookup finds it, but `isVisible()` is
+    `true`, so `not.toBeVisible` would fail a valid approach;
+  - `aria-label` on the `h1`, with or without a `display: none` span: the heading
+    lookup finds it;
+  - a `display: none` span and no `aria-label`: the heading lookup finds nothing,
+    so AC-1's lookup fails this one by itself.
 - `e2e/appearance.spec.js` captures `upgrade-`, `path-` and `enhance-`
   screens at desktop and mobile widths, and `path-desktop-dark.png`. All of
   them show the header.

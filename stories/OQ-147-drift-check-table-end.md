@@ -99,7 +99,8 @@ None.
   in-game values reach 10000 through free upgrades, and those levels have no coin
   cost a player can pay. `Project-Outline.md`, "Inputs", records this.
 - `.github/workflows/detect-drift.yml` — runs the script weekly. Exit 1 gets one
-  retry and files no issue, which is why these failures raised nothing.
+  retry and files no issue, so these failures showed only as failed runs, through
+  GitHub's failure notification (the header, lines 25-29 at 3936389).
 - OQ-43, in `Completed-Questions.md` — why the check exists.
 
 ## Open questions
