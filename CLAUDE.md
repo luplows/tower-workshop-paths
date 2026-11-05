@@ -22,9 +22,10 @@ Instructions only. Rationale, mechanism and history live in the files listed und
   (see [`docs/session-a.md`](docs/session-a.md)).
 - Do not merge a pull request, your own or any other, by any route. A pull request lands only
   through
-  `steward land <pr-number>`, run on the owner's word, once its head has passed review. The one
-  exception is steward's installation pull request, whose story says how it is merged
-  (`stories/OQ-115-workflow-own-repository.md`, until it moves to `stories/done/`).
+  `steward land <pr-number>`, run on the owner's word, once its head has passed review. Two pull
+  requests were merged by hand, on the owner's word, since the gate could not review them: steward's
+  installation and the first fix to `REVIEW.md` (`docs/agent-workflow-design.md`, "This repository
+  adopts steward through `init`"). No others are.
 - Do not trigger `.github/workflows/land-approved.yml` yourself. `steward land` does that.
 - Do not delete the head branch. That same workflow deletes it after a landing, and the repository's
   `delete_branch_on_merge` setting is not relied on.
