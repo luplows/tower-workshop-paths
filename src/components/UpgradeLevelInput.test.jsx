@@ -22,6 +22,18 @@ describe('UpgradeLevelInput', () => {
     expect(onChange).toHaveBeenLastCalledWith(99)
   })
 
+  it('OQ-97/AC-3: shows blank while emptied and focused, and the level once it loses focus', () => {
+    render(<UpgradeLevelInput upgrade={upgrade} level={0} onChange={() => {}} />)
+    const input = screen.getByLabelText('Thorns')
+
+    fireEvent.focus(input)
+    fireEvent.change(input, { target: { value: '' } })
+    expect(input).toHaveValue(null)
+
+    fireEvent.blur(input)
+    expect(input).toHaveValue(0)
+  })
+
   it('renders no max bound when the upgrade has no known quantity', () => {
     const unbounded = { name: 'Rend Armor' }
     render(<UpgradeLevelInput upgrade={unbounded} level={0} onChange={() => {}} />)

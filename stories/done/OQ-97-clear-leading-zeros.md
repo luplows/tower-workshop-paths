@@ -16,19 +16,19 @@ levels is quick and what I see is what is stored.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — Focusing a level input selects its whole contents, so the
+- [x] **AC-1** — Focusing a level input selects its whole contents, so the
       next digit typed replaces them. Clicking into an input showing `123`
       and typing `7` leaves it showing `7`.
-- [ ] **AC-2** — A level input never shows leading zeros. With the caret
+- [x] **AC-2** — A level input never shows leading zeros. With the caret
       placed after an existing `0` (focus, then `End`), typing `5` leaves it
       showing `5`, not `05`, and the stored level is `5`.
-- [ ] **AC-3** — Emptying a level input while it has focus leaves it showing
+- [x] **AC-3** — Emptying a level input while it has focus leaves it showing
       blank, not `0`, and stores `0` at once, as `clampLevel('')` does today.
       When the input then loses focus, it shows `0`.
-- [ ] **AC-4** — A value above the upgrade's max is clamped, both stored
+- [x] **AC-4** — A value above the upgrade's max is clamped, both stored
       and shown: typing `7000` into Damage (max 6000) stores `6000` and
       shows `6000`.
-- [ ] **AC-5** — Playwright tests in `e2e/workshop-inputs.spec.js` cover
+- [x] **AC-5** — Playwright tests in `e2e/workshop-inputs.spec.js` cover
       AC-1 to AC-4. Each asserts both the input's displayed value
       (`inputValue()`) and the stored level, read from the `workshopLevels`
       key in `localStorage`.
