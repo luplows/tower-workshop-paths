@@ -1,8 +1,12 @@
+import { useState } from 'react'
 import { clampLevel } from '../utils/clampLevel'
 
 export function UpgradeLevelInput({ upgrade, level, onChange, formatValue, nameSuffix = '' }) {
   const inputId = `upgrade-level-${upgrade.name}`
   const hasMax = Number.isFinite(upgrade.quantity)
+  // The text shown while editing, as a string: React leaves a number input's text alone when its
+  // number equals the new value, so a numeric `value` of 5 would leave `05` showing.
+  const [draft, setDraft] = useState(null)
 
   return (
     <div className="upgrade-row">
@@ -17,10 +21,21 @@ export function UpgradeLevelInput({ upgrade, level, onChange, formatValue, nameS
         max={hasMax ? upgrade.quantity : undefined}
         step={1}
         className="upgrade-row__input"
-        value={level}
-        onChange={(event) =>
-          onChange(clampLevel(event.target.value, upgrade.quantity))
-        }
+        value={draft ?? level}
+        onChange={(event) => {
+          const clamped = clampLevel(event.target.value, upgrade.quantity)
+          setDraft(event.target.value === '' ? '' : String(clamped))
+          onChange(clamped)
+        }}
+        onMouseDown={(event) => {
+          // The browser places the caret after focus, which would undo the selection below.
+          if (document.activeElement !== event.target) {
+            event.preventDefault()
+            event.target.focus()
+          }
+        }}
+        onFocus={(event) => event.target.select()}
+        onBlur={() => setDraft(null)}
         onWheel={(event) => event.target.blur()}
       />
       {hasMax && <span className="upgrade-row__max">/ {upgrade.quantity}</span>}
