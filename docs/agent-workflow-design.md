@@ -1804,7 +1804,13 @@ deciding what is next. It is the harness's product outline, and moves with this 
     `OQ` prefix do not change.
   - **The checklist.** `REVIEW.md` stays, as the `rulesFile` (`--rules-file REVIEW.md`), and is what
     steward's reviewer reads here, from `main`. So this project's review items reach it without
-    waiting for steward's later delivery of them, and OQ-132 keeps the items' numbers.
+    waiting for steward's later delivery of them, and OQ-132 keeps the items' numbers. Steward's
+    parser (`rules.mjs`) requires every `## ` section to have a numbered item, and refuses a review
+    before any model starts if one does not. This file's "Reading the PR body" had none, which
+    nothing found until the first review, and steward reads the checklist from `main`, so no pull
+    request here could be reviewed, the fix included. On 2026-11-05 the owner agreed a second hand
+    merge, as for OQ-115, which numbers that section's rule and removes "For the reviewer: reporting
+    a verdict", since steward's own reviewer prompt covers verdicts and how they are reported.
   - **Inspection.** `init` also adds `inspection.yml`, as on pinpoint, and its first run may raise the
     hand merge of OQ-115 as an issue, which the crew closes once.
   - **No package.** Steward is not added to `package.json`. `init`'s thin workflows run it with
