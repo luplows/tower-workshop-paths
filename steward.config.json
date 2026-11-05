@@ -1,0 +1,12 @@
+{
+  "repo": "luplows/tower-workshop-paths",
+  "setup": null,
+  "check": null,
+  "landWhen": "all-checks",
+  "land": false,
+  "unitLinks": [
+    "file"
+  ],
+  "rulesFile": "REVIEW.md",
+  "inspectAfterHours": 24
+}

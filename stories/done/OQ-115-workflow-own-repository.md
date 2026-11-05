@@ -17,22 +17,22 @@ project in steward's ST-48 validation.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — The pull request's body gives the command that opened it, from
+- [x] **AC-1** — The pull request's body gives the command that opened it, from
       `main` with OQ-132 landed, on steward at
       935fb5b81398420acd5e7476d2b94bec94bbad02 (`npx --yes
       --package=github:luplows/steward#<that commit> steward <command>`), and its
       output: `steward init --yes --ref <that commit> --land no --unit-links file
       --rules-file REVIEW.md`.
-- [ ] **AC-2** — It adds `steward.config.json`, `review-gate.yml`,
+- [x] **AC-2** — It adds `steward.config.json`, `review-gate.yml`,
       `land-approved.yml` and `inspection.yml`, and leaves `REVIEW.md` and
       `.github/pull_request_template.md`. Every steward command in those workflows is
       pinned to that commit's full SHA. `steward.config.json` has `land: false` and
       `unitLinks: ["file"]`. No steward script or prompt is copied.
-- [ ] **AC-3** — `package.json`, `package-lock.json`, `ci.yml` and the story files
+- [x] **AC-3** — `package.json`, `package-lock.json`, `ci.yml` and the story files
       are unchanged by `init`. The only other changes in the pull request are this
       story's move and ticks, and taking `OQ-115` out of every **Planned (…)**
       marker that names it in `docs/agent-workflow-design.md`.
-- [ ] **AC-4** — It is titled "Install steward at 935fb5b", and its body has
+- [x] **AC-4** — It is titled "Install steward at 935fb5b", and its body has
       `Unit: stories/OQ-115-workflow-own-repository.md` and the three filled sections.
       Steward's version, 0.0.0 at this commit, is not in the title or the commit
       message.

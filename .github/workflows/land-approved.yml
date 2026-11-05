@@ -1,0 +1,104 @@
+name: Land approved PRs
+
+# The merge half of the review gate. `review-gate.yml` decides whether a PR
+# is allowed to land; this decides nothing at all. Every condition `runway` checks was
+# already established by CI and by an independent reviewer -- this only notices
+# that they hold, and acts.
+#
+# Landing is a job of its own, not the author's: a worker session usually finishes long before its
+# verdict arrives, so a merge-ready PR would otherwise wait for someone to notice it. Whatever runs
+# this must therefore not depend on any session being alive.
+#
+# This file holds the trigger, permissions, concurrency and environment, sets up Node, and runs
+# steward's commands. What `runway` decides is in scripts/land/runway.mjs in steward's package, and
+# steward's design document (docs/agent-workflow-design.md in steward's repository), "What the gate
+# enforces", says why.
+#
+# One PR per run. Given a `pr` input, only that PR is considered, and if it does
+# not land the run lands nothing. Given none, oldest first, and only unattended. GitHub recomputes
+# mergeability asynchronously, so a second merge in the same run would be decided on a
+# `mergeable_state` read before the first one landed -- it would still say `clean` because nothing
+# had recalculated yet. Stopping after one costs a few minutes and removes that whole class of
+# mistake. Oldest first, for a run given no PR, so a PR cannot be starved by newer ones.
+#
+# There is deliberately no `schedule:` trigger. GitHub delivers scheduled runs late and unevenly,
+# which is the worst of both: too slow to rely on, yet automatic enough that nobody notices when
+# it stops. Landing is explicit: `gh workflow run land-approved.yml`.
+#
+# Two authorizations, chosen by the `mode` input. `unattended` (the default) is the project's
+# standing permission: it lands only where `land` is true in the project's settings on `main`.
+# `manual` is one explicit request: it names one `pr` and the full `head` SHA it authorizes, and
+# lands only that pull request at that head, with `land` either true or false. The run checks
+# against GitHub that whoever started it has write, maintain or admin permission on the repository.
+# The event and the actor come from the workflow's own context, never from an input. Everything
+# else the gate requires holds in both modes.
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: 'Pull request to land, only it. Empty: the oldest landable (unattended only).'
+        required: false
+        type: string
+        default: ''
+      mode:
+        description: 'unattended (standing permission) or manual (one explicit request).'
+        required: false
+        type: string
+        default: 'unattended'
+      head:
+        description: 'Manual only: the full 40-character head SHA that is authorized.'
+        required: false
+        type: string
+        default: ''
+
+permissions:
+  contents: write
+  pull-requests: write
+  statuses: read
+  # For reading the head's check runs (`runway`); nothing else.
+  checks: read
+
+# Never two sweeps at once: both would read the same pre-merge state.
+concurrency:
+  group: land-approved
+  cancel-in-progress: false
+
+jobs:
+  land:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Node
+        # Node 24 ships npm 11; the runner's default npm cannot install steward from GitHub.
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Land the oldest ready PR, or the one named
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          # Only through env, never interpolated into a script; `runway` validates each.
+          MODE_INPUT: ${{ inputs.mode }}
+          PR_INPUT: ${{ inputs.pr }}
+          HEAD_INPUT: ${{ inputs.head }}
+          # The workflow's own context, which no input can set. `runway` checks the actor's
+          # permission with GitHub.
+          EVENT_NAME: ${{ github.event_name }}
+          ACTOR: ${{ github.actor }}
+        run: npx --yes --package=github:luplows/steward#935fb5b81398420acd5e7476d2b94bec94bbad02 steward runway
+
+      # Deleting a merged PR's head branch is an explicit act of the sweep. The
+      # repository's `delete_branch_on_merge` setting is not relied on, and a branch
+      # it already deleted is skipped. This is cleanup and
+      # never a gate: it runs even when the step above landed nothing, and
+      # `continue-on-error` means it cannot fail the run or un-record a merge.
+      # It also sweeps branches already left behind by earlier merges. See
+      # steward's scripts/land/delete-merged-heads.mjs for what it will and will not delete.
+      - name: Delete head branches of merged PRs
+        if: always()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: npx --yes --package=github:luplows/steward#935fb5b81398420acd5e7476d2b94bec94bbad02 steward delete-merged-heads

@@ -1609,7 +1609,7 @@ deciding what is next. It is the harness's product outline, and moves with this 
 ### Decided so far
 
 - **The move comes first** (decided 2026-10-07 by the owner).
-  **Planned (OQ-115, OQ-133, OQ-134):** the workflow moves to a repository of its own, and
+  **Planned (OQ-133, OQ-134):** the workflow moves to a repository of its own, and
   this repository uses it. **Steward's, not built here (ST-15, formerly OQ-114):** coder and
   reviewer sessions run through an adapter per agent tool, so that a role can be given another
   company's model. ST-15 is a draft, to be split before it is dispatched; OQ-115 was split on
@@ -1784,13 +1784,14 @@ deciding what is next. It is the harness's product outline, and moves with this 
   cut-over, then dispatched clean-up", above, and "The move, in order", step 4, and it revises "What
   adopting steward needs from it", R1 and R2, each of which says so where it is affected. Other
   passages here that describe the old engine stay as they are until OQ-134 removes this document.
-  **Planned (OQ-115):**
   - **The order.** `init` writes no file `main` already has, and the old engine's tests fail without
     its workflow files and settings, so the old copies leave first. OQ-148 makes what stays stand
     apart from the old engine. OQ-132 removes the old engine, as the last pull request to use it.
-    The owner then removes only `review/agent` from `main`'s required checks, keeping `test` and
-    `enforce_admins`. OQ-115 is `init`'s pull request, merged by hand since the gate cannot review
-    what installs it. `steward protect` then requires `review/agent` again. OQ-133 and OQ-134
+    OQ-115 is `init`'s pull request. Once it is ready to merge, the owner removes only `review/agent`
+    from `main`'s required checks, keeping `test` and `enforce_admins`, and it is merged by hand since
+    the gate cannot review what installs it. `steward protect` then requires `review/agent` again.
+    OQ-132's own landing ran no CI or Deploy (405c678), since they trigger on the workflow it deleted;
+    the hand merge is the next push to `main`. OQ-133 and OQ-134
     follow, on steward's gate.
   - **The coder loop ends for now.** Steward's coding side is not built, so after OQ-132 no coder
     runs here until the owner decides otherwise. OQ-72, OQ-94 and OQ-105 name files this moves or
