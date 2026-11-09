@@ -11,6 +11,13 @@ describe('parseCoins', () => {
     expect(parseCoins('1.18q coins')).toBe(1.18e15)
   })
 
+  it('OQ-142/AC-1: gives the number the text writes, where multiplying by the tier would not', () => {
+    expect(4.35 * 1e15).not.toBe(4.35e15)
+    expect(parseCoins('4.35q')).toBe(4.35e15)
+    expect(1.1 * 1e15).not.toBe(1.1e15)
+    expect(parseCoins('1.1q')).toBe(1.1e15)
+  })
+
   it('OQ-142/AC-1: suffixes are case-sensitive, q against Q and s against S', () => {
     expect(parseCoins('1q')).toBe(1e15)
     expect(parseCoins('1Q')).toBe(1e18)

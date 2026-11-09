@@ -22,8 +22,8 @@ export function parseCoins(text) {
   const match = AMOUNT_RE.exec(String(text ?? ''))
   if (!match) return null
   const [, number, suffix] = match
-  // Applied as a decimal exponent, so that 1.18q is exactly 1.18e15 rather
-  // than 1.18 * 1e15, which floating point puts a hair below it.
+  // Applied as a decimal exponent, so that the amount is the number the text
+  // writes: 4.35q is 4.35e15, where 4.35 * 1e15 gives 4349999999999999.5.
   const value = Number(suffix ? `${number}e${EXPONENT_BY_SUFFIX[suffix]}` : number)
   return Number.isFinite(value) ? value : null
 }
