@@ -16,7 +16,7 @@ copy them straight from the game's settings screen.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — A new `parseCoins(text)` in `src/utils/` reads a coin
+- [x] **AC-1** — A new `parseCoins(text)` in `src/utils/` reads a coin
       amount: a number, then optionally one of `formatCoins.js`'s suffixes,
       then optionally the word ` coins`. `1.18q` is `1.18 × 10^15`, `66.5T` is
       `66.5 × 10^12`, and `1.18q coins` is `1.18q`.
@@ -31,20 +31,20 @@ copy them straight from the game's settings screen.
       - A plain number, with no suffix, is still accepted.
       - Leading and trailing spaces are ignored, and so are spaces between
         the number and its suffix: `1.18 q` is `1.18q`.
-- [ ] **AC-2** — `parseCoins` takes its suffixes and their values from the
+- [x] **AC-2** — `parseCoins` takes its suffixes and their values from the
       same table `formatCoins` uses, exported from `formatCoins.js`, so the
       two cannot drift apart. A test checks that
       `parseCoins(formatCoins(x))` returns `x`, for one value in each tier,
       to `formatCoins`'s two-decimal truncation. `formatCoins` ends with
       ` coins`, which AC-1 accepts.
-- [ ] **AC-3** — `computeBuyOutBudget` reads both inputs with `parseCoins`.
+- [x] **AC-3** — `computeBuyOutBudget` reads both inputs with `parseCoins`.
       An amount it rejects gives an error naming the input and listing the
       accepted suffixes, in place of today's "must be a number". The other
       errors (empty, negative, Lab spend above lifetime coins) do not change.
-- [ ] **AC-4** — Each input stores the text exactly as typed, as it does today
+- [x] **AC-4** — Each input stores the text exactly as typed, as it does today
       (`buyOutLifetimeCoins` and `buyOutLabCoinsSpent`), so `1.18q` is shown
       as `1.18q` on reload.
-- [ ] **AC-5** — Vitest tests cover AC-1 to AC-3, including:
+- [x] **AC-5** — Vitest tests cover AC-1 to AC-3, including:
       - `q` against `Q`;
       - a rejected `K`;
       - a plain number;
@@ -53,7 +53,7 @@ copy them straight from the game's settings screen.
       - `1.18 q`, with a space;
       - a decimal with each suffix;
       - spaces around the amount.
-- [ ] **AC-6** — A Playwright test in `e2e/buy-out.spec.js` enters `1.18q`
+- [x] **AC-6** — A Playwright test in `e2e/buy-out.spec.js` enters `1.18q`
       and `66.5T`, plans, and sees `Budget 1.11q coins`, which is
       `1.18q − 66.5T = 1.1135 × 10^15` as `formatCoins` shows it.
 

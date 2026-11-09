@@ -1,4 +1,4 @@
-const TIERS = [
+export const TIERS = [
   { value: 1e27, suffix: 'O' },
   { value: 1e24, suffix: 'S' },
   { value: 1e21, suffix: 's' },

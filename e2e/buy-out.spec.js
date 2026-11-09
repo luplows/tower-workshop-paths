@@ -32,3 +32,20 @@ test('OQ-8/AC-7: coins spent on Labs above lifetime coins shows an error and no 
   await expect(page.getByRole('alert')).toContainText('cannot exceed')
   await expect(page.getByRole('list', { name: 'Buy-out purchases' })).toHaveCount(0)
 })
+
+test('OQ-142/AC-6: short-form amounts plan a budget, and stay as typed after a reload', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('tab', { name: 'Labs', exact: true }).click()
+
+  await page.getByLabel('Lifetime coins').fill('1.18q')
+  await page.getByLabel('Coins spent on Labs').fill('66.5T')
+  await page.getByRole('button', { name: 'Plan buy-out' }).click()
+
+  await expect(page.getByText(/Budget 1\.11q coins, spent/)).toBeVisible()
+
+  // AC-4: each input keeps the text as typed.
+  await page.reload()
+  await page.getByRole('tab', { name: 'Labs', exact: true }).click()
+  await expect(page.getByLabel('Lifetime coins')).toHaveValue('1.18q')
+  await expect(page.getByLabel('Coins spent on Labs')).toHaveValue('66.5T')
+})
