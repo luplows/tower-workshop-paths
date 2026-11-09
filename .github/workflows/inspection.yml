@@ -45,4 +45,4 @@ jobs:
       - name: Inspect
         env:
           GH_TOKEN: ${{ github.token }}
-        run: npx --yes --package=github:luplows/steward#935fb5b81398420acd5e7476d2b94bec94bbad02 steward inspect
+        run: npx --yes --package=github:luplows/steward#v0.2.0 steward inspect

@@ -3,7 +3,7 @@
   "setup": null,
   "check": null,
   "landWhen": "all-checks",
-  "land": false,
+  "land": true,
   "unitLinks": [
     "file"
   ],

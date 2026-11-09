@@ -1796,9 +1796,12 @@ deciding what is next. It is the harness's product outline, and moves with this 
   - **The coder loop ends for now.** Steward's coding side is not built, so after OQ-132 no coder
     runs here until the owner decides otherwise. OQ-72, OQ-94 and OQ-105 name files this moves or
     removes, so each is held with `blocked:`, and refined again after OQ-115.
-  - **Landing.** After OQ-132, a pull request lands only through `steward land <pr-number>`, on the
-    owner's word, once its head has passed review. `steward.config.json` has `land: false`, so
-    nothing lands unattended, and the coordinator only reviews.
+  - **Landing.** After OQ-132, a pull request landed only through `steward land <pr-number>`, on
+    the owner's word, once its head had passed review, as `steward.config.json` had `land: false`.
+    On 2026-11-09 the owner turned unattended landing on, with the upgrade to steward v0.2.0:
+    `land` is `true`, so steward v0.2.0's coordinator asks for a ready pull request's landing once
+    its head has passed review and its checks are green. `steward land <pr-number>` still lands one
+    by hand. A draft is neither reviewed nor landed.
   - **Units.** Pull requests name their story with a `Unit:` line, in the template and in
     `REVIEW.md` (OQ-148), and `steward.config.json` has `unitLinks: ["file"]`. The stories and the
     `OQ` prefix do not change.
@@ -1813,8 +1816,10 @@ deciding what is next. It is the harness's product outline, and moves with this 
     a verdict", since steward's own reviewer prompt covers verdicts and how they are reported.
   - **Inspection.** `init` also adds `inspection.yml`, as on pinpoint, and its first run may raise the
     hand merge of OQ-115 as an issue, which the crew closes once.
-  - **No package.** Steward is not added to `package.json`. `init`'s thin workflows run it with
-    `npx` at a commit's full SHA, so the workflows hold the pin.
+  - **No package.** Steward is not added to `package.json`. The thin workflows run it with `npx`,
+    so they hold the pin: `init` wrote a commit's full SHA, 935fb5b, and `steward upgrade` moved it
+    to the tag `v0.2.0` on 2026-11-09. A tag is pinned because steward's crew does not move a tag
+    once it is created (the owner, 2026-11-09).
   - **What this repository's own checks use in place of the package.** The prefix is a local
     constant, since steward's settings reject `storyPrefix`. `scripts/ci-workflows.test.mjs` uses
     the literal `'Setup: '` for the setup-step prefix and the literal `'Land approved PRs'` for the
@@ -2106,7 +2111,8 @@ Checked on 2026-10-07 against `main` at `66c578d`:
     workflow's public repository by git tag, so no package registry account is needed; publishing
     to npm can come later.
   - **This repository takes the review side without the dependency** for now (revised 2026-11-04,
-    "This repository adopts steward through `init`"): the thin workflows run steward at a commit.
+    "This repository adopts steward through `init`"): the thin workflows run steward at a tag,
+    `v0.2.0` since 2026-11-09, which `init` first pinned at a commit.
   - **The loop runs from the project's own worktree, as now** (`loop.mjs --init`). Today every story
     runs the dispatch code as it is on `origin/main` (OQ-86). With a pinned dependency, that becomes
     the engine version `origin/main` pins, so a project takes a new workflow version only through

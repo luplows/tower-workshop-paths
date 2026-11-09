@@ -86,7 +86,7 @@ jobs:
           # permission with GitHub.
           EVENT_NAME: ${{ github.event_name }}
           ACTOR: ${{ github.actor }}
-        run: npx --yes --package=github:luplows/steward#935fb5b81398420acd5e7476d2b94bec94bbad02 steward runway
+        run: npx --yes --package=github:luplows/steward#v0.2.0 steward runway
 
       # Deleting a merged PR's head branch is an explicit act of the sweep. The
       # repository's `delete_branch_on_merge` setting is not relied on, and a branch
@@ -101,4 +101,4 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
-        run: npx --yes --package=github:luplows/steward#935fb5b81398420acd5e7476d2b94bec94bbad02 steward delete-merged-heads
+        run: npx --yes --package=github:luplows/steward#v0.2.0 steward delete-merged-heads

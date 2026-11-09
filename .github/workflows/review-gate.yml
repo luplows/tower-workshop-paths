@@ -85,7 +85,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
           SHA: ${{ github.event.pull_request.head.sha }}
-        run: npx --yes --package=github:luplows/steward#935fb5b81398420acd5e7476d2b94bec94bbad02 steward mark-pending
+        run: npx --yes --package=github:luplows/steward#v0.2.0 steward mark-pending
 
   verdict:
     # issue_comment fires for issues as well as PRs, so the pull_request
@@ -113,7 +113,7 @@ jobs:
           BODY: ${{ github.event.comment.body }}
           ASSOC: ${{ github.event.comment.author_association }}
           COMMENT_URL: ${{ github.event.comment.html_url }}
-        run: npx --yes --package=github:luplows/steward#935fb5b81398420acd5e7476d2b94bec94bbad02 steward apply-verdict
+        run: npx --yes --package=github:luplows/steward#v0.2.0 steward apply-verdict
 
       # Runs whether or not the step above found a block, and whatever that step did with
       # ASSOC or the marker on *this* comment: the round bound is counted across every
@@ -127,4 +127,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
           PR: ${{ github.event.issue.number }}
-        run: npx --yes --package=github:luplows/steward#935fb5b81398420acd5e7476d2b94bec94bbad02 steward apply-review-blocked
+        run: npx --yes --package=github:luplows/steward#v0.2.0 steward apply-review-blocked
