@@ -20,13 +20,14 @@ Instructions only. Rationale, mechanism and history live in the files listed und
 - Open a pull request as a draft if it is not finished. Mark it ready when it is. Session A is the
   exception: it opens every pull request as a draft and marks it ready only when the owner says so
   (see [`docs/session-a.md`](docs/session-a.md)).
-- Do not merge a pull request, your own or any other, by any route. A pull request lands only
-  through
-  `steward land <pr-number>`, run on the owner's word, once its head has passed review. Two pull
-  requests were merged by hand, on the owner's word, since the gate could not review them: steward's
-  installation and the first fix to `REVIEW.md` (`docs/agent-workflow-design.md`, "This repository
-  adopts steward through `init`"). No others are.
-- Do not trigger `.github/workflows/land-approved.yml` yourself. `steward land` does that.
+- Do not merge a pull request, your own or any other, by any route. Steward lands it: with `land`
+  true in `steward.config.json`, the coordinator asks for a landing once a ready pull request's head
+  has passed review and its checks are green, so marking a pull request ready hands it over to be
+  landed. A draft is neither reviewed nor landed. `steward land <pr-number>`, on the owner's word,
+  also lands one. Two pull requests were merged by hand, on the owner's word, since the gate could
+  not review them: steward's installation and the first fix to `REVIEW.md`
+  (`docs/agent-workflow-design.md`, "This repository adopts steward through `init`"). No others are.
+- Do not trigger `.github/workflows/land-approved.yml` yourself. Steward does that.
 - Do not delete the head branch. That same workflow deletes it after a landing, and the repository's
   `delete_branch_on_merge` setting is not relied on.
 - No coder runs in this repository until the owner decides otherwise. Steward's coding side is not
