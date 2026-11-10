@@ -6,7 +6,7 @@ import { computeBuyOutBudget, simulateBuyOut, summarisePurchases } from './buyOu
 describe('computeBuyOutBudget', () => {
   it('OQ-8/AC-1: budget is lifetime coins less coins spent on Labs', () => {
     expect(computeBuyOutBudget('1000', '250')).toEqual({ budget: 750 })
-    expect(computeBuyOutBudget('5e9', '0')).toEqual({ budget: 5e9 })
+    expect(computeBuyOutBudget('5B', '0')).toEqual({ budget: 5e9 })
     expect(computeBuyOutBudget('100', '100')).toEqual({ budget: 0 })
   })
 
@@ -25,6 +25,31 @@ describe('computeBuyOutBudget', () => {
       expect(result.error, `${lifetime}/${spent}`).toBeTruthy()
       expect(result.budget).toBeUndefined()
     }
+  })
+})
+
+describe('computeBuyOutBudget with short-form amounts', () => {
+  it('OQ-142/AC-3: reads both inputs with parseCoins', () => {
+    expect(computeBuyOutBudget('1.18q', '66.5T')).toEqual({ budget: 1.18e15 - 66.5e12 })
+    expect(computeBuyOutBudget('1.18q coins', '0')).toEqual({ budget: 1.18e15 })
+  })
+
+  it('OQ-142/AC-3: an amount parseCoins rejects names its input and lists the suffixes', () => {
+    const lifetime = computeBuyOutBudget('1K', '0')
+    expect(lifetime.budget).toBeUndefined()
+    expect(lifetime.error).toMatch(/^Lifetime coins /)
+    expect(lifetime.error).toContain('k, M, B, T, q, Q, s, S, O')
+    expect(lifetime.error).not.toMatch(/must be a number/)
+
+    const spent = computeBuyOutBudget('1q', '5e9')
+    expect(spent.error).toMatch(/^Coins spent on Labs /)
+    expect(spent.error).toContain('k, M, B, T, q, Q, s, S, O')
+  })
+
+  it("OQ-142/AC-3: the other errors are unchanged", () => {
+    expect(computeBuyOutBudget('', '0')).toEqual({ error: 'Enter Lifetime coins.' })
+    expect(computeBuyOutBudget('-1q', '0')).toEqual({ error: 'Lifetime coins cannot be negative.' })
+    expect(computeBuyOutBudget('1T', '1q')).toEqual({ error: 'Coins spent on Labs cannot exceed lifetime coins.' })
   })
 })
 

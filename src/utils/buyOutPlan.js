@@ -1,4 +1,5 @@
 import { getPrioritizedNextUpgrades } from './cheapestNextUpgrades'
+import { COIN_SUFFIXES, parseCoins } from './parseCoins'
 import { unlockGroupKey } from './workshopUnlockGroups'
 
 /**
@@ -16,8 +17,12 @@ export function computeBuyOutBudget(lifetimeCoins, labCoinsSpent) {
   const parse = (raw, label) => {
     const text = String(raw ?? '').trim()
     if (text === '') return { error: `Enter ${label}.` }
-    const value = Number(text)
-    if (!Number.isFinite(value)) return { error: `${label} must be a number.` }
+    const value = parseCoins(text)
+    if (value === null) {
+      return {
+        error: `${label} must be an amount like 1.18q: a number, optionally followed by one of ${COIN_SUFFIXES.join(', ')}.`,
+      }
+    }
     if (value < 0) return { error: `${label} cannot be negative.` }
     return { value }
   }
