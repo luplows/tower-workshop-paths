@@ -41,7 +41,13 @@
   cursor: pointer;
 }
 
-.header-menu__item:hover {
+@media (hover: hover) {
+  .header-menu__item:hover {
+    background: var(--accent-bg);
+  }
+}
+
+.header-menu__item:active {
   background: var(--accent-bg);
 }
 
@@ -142,7 +148,13 @@
   cursor: pointer;
 }
 
-.header-menu__confirm-actions button:hover {
+@media (hover: hover) {
+  .header-menu__confirm-actions button:hover {
+    background: var(--accent-bg);
+  }
+}
+
+.header-menu__confirm-actions button:active {
   background: var(--accent-bg);
 }
 
@@ -152,7 +164,14 @@
   color: var(--danger);
 }
 
-.header-menu__confirm-actions .header-menu__confirm-clear:hover {
+@media (hover: hover) {
+  .header-menu__confirm-actions .header-menu__confirm-clear:hover {
+    background: var(--danger);
+    color: var(--bg);
+  }
+}
+
+.header-menu__confirm-actions .header-menu__confirm-clear:active {
   background: var(--danger);
   color: var(--bg);
 }

@@ -87,7 +87,14 @@
   cursor: pointer;
 }
 
-.category-panel__unlock:hover {
+@media (hover: hover) {
+  .category-panel__unlock:hover {
+    background: var(--accent);
+    color: var(--bg);
+  }
+}
+
+.category-panel__unlock:active {
   background: var(--accent);
   color: var(--bg);
 }
