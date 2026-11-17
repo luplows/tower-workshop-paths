@@ -24,11 +24,27 @@ const stripComments = (css) => css.replace(/\/\*[\s\S]*?\*\//g, '')
 
 const normalize = (text) => text.replace(/\s+/g, ' ').trim()
 
-// Walks the stylesheet, tracking the stack of enclosing blocks, and returns
-// every style rule that declares something, or has no nested rules, as
-// { selectors, selector, declarations, atRules }. selectors is the chain of
-// enclosing style selectors, outermost first, ending with the rule's own, so a
-// nested rule such as `.a:hover { & > span { ... } }` keeps its :hover.
+// An @media block whose only condition is the hover feature: (hover: hover)
+// or (hover: none).
+const isHoverMedia = (prelude) => /^@media\s*\(\s*hover\s*:\s*[\w-]+\s*\)$/.test(prelude)
+
+// Walks the stylesheet, tracking the stack of enclosing blocks, style rules and
+// at-rules (@media, @supports, @container, @layer, ...) mixed at any depth, and
+// returns a record for every block that is a style rule or sits inside one and
+// that declares something, or has no nested blocks, as
+// { path, selectors, selector, declarations, atRules }.
+// - path is the stack of blocks down to and including this one, outermost
+//   first, as { prelude, isAt }.
+// - selectors is the chain of enclosing style selectors, outermost first, so a
+//   nested rule such as `.a:hover { & > span { ... } }` keeps its :hover, and
+//   declarations directly inside an at-rule nested in a style rule, as in
+//   `.a:hover { @media (...) { color: red; } }`, belong to `.a:hover`.
+// - atRules is every enclosing at-rule's prelude, this block's included.
+// - selector names the record: the path's preludes joined with ' { ', leaving
+//   out @media (hover: ...) blocks, so a guarded rule and its unguarded :active
+//   twin can be compared, while every other condition must match.
+// Declarations in an at-rule with no enclosing style rule, such as @font-face,
+// belong to no selector and are skipped.
 const rulesIn = (css) => {
   const rules = []
   const stack = []
@@ -41,18 +57,20 @@ const rulesIn = (css) => {
       stack.push({ prelude, isAt: prelude.startsWith('@'), declarations: '', nested: false })
       start = i + 1
     } else if (css[i] === ';') {
-      if (top && !top.isAt) top.declarations += `${css.slice(start, i + 1)} `
+      if (top) top.declarations += `${css.slice(start, i + 1)} `
       start = i + 1
     } else if (css[i] === '}') {
-      if (top && !top.isAt) top.declarations += css.slice(start, i)
+      if (top) top.declarations += css.slice(start, i)
+      const path = stack.map(({ prelude, isAt }) => ({ prelude, isAt }))
       stack.pop()
-      if (top && !top.isAt && (normalize(top.declarations) || !top.nested)) {
-        const selectors = [...stack, top].filter((b) => !b.isAt).map((b) => b.prelude)
+      const selectors = path.filter((b) => !b.isAt).map((b) => b.prelude)
+      if (top && selectors.length > 0 && (normalize(top.declarations) || !top.nested)) {
         rules.push({
+          path,
           selectors,
-          selector: selectors.join(' { '),
+          selector: nameOf(path),
           declarations: normalize(top.declarations),
-          atRules: stack.filter((b) => b.isAt).map((b) => b.prelude),
+          atRules: path.filter((b) => b.isAt).map((b) => b.prelude),
         })
       }
       start = i + 1
@@ -60,6 +78,12 @@ const rulesIn = (css) => {
   }
   return rules
 }
+
+const nameOf = (path) =>
+  path
+    .filter((b) => !(b.isAt && isHoverMedia(b.prelude)))
+    .map((b) => b.prelude)
+    .join(' { ')
 
 const inHoverMedia = (rule) =>
   rule.atRules.some((a) => /^@media\s*\(\s*hover\s*:\s*hover\s*\)$/.test(a))
@@ -69,7 +93,8 @@ const isHoverRule = (rule) => rule.selectors.some((s) => s.includes(':hover'))
 
 // Returns the guard's findings for rules from rulesIn, each tagged with a file:
 // hover rules outside @media (hover: hover), and hover rules without an :active
-// twin outside any @media (hover: ...) block that declares the same things.
+// twin outside any @media (hover: ...) block, under the same other conditions,
+// that declares the same things.
 const hoverProblems = (rules) => {
   const hoverRules = rules.filter(isHoverRule)
   const outside = hoverRules
@@ -77,7 +102,9 @@ const hoverProblems = (rules) => {
     .map((r) => `${r.file}: ${r.selector}`)
   const unpaired = []
   for (const hover of hoverRules) {
-    const activeSelector = hover.selectors.map((s) => s.replace(/:hover/g, ':active')).join(' { ')
+    const activeSelector = nameOf(
+      hover.path.map((b) => (b.isAt ? b : { ...b, prelude: b.prelude.replace(/:hover/g, ':active') })),
+    )
     const twins = rules.filter(
       (r) => r.file === hover.file && r.selector === activeSelector && !inAnyHoverMedia(r),
     )
@@ -150,5 +177,55 @@ describe('the :hover guard on nested CSS (OQ-139)', () => {
     expect(hoverRules).toHaveLength(2)
     expect(outside).toEqual([])
     expect(unpaired).toEqual([])
+  })
+
+  it('catches a :hover whose declarations sit only in a nested @media, unguarded and unpaired', () => {
+    const { outside, unpaired } = checkCss('.probe:hover { @media (min-width: 0px) { color: red; } }')
+    expect(outside).toEqual(['probe.css: .probe:hover { @media (min-width: 0px)'])
+    expect(unpaired).toEqual([
+      'probe.css: .probe:hover { @media (min-width: 0px) has no matching .probe:active { @media (min-width: 0px) rule',
+    ])
+  })
+
+  it('catches the same inside @media (hover: hover) with no :active twin', () => {
+    const { outside, unpaired } = checkCss(
+      '@media (hover: hover) { .probe:hover { @media (min-width: 0px) { color: red; } } }',
+    )
+    expect(outside).toEqual([])
+    expect(unpaired).toEqual([
+      'probe.css: .probe:hover { @media (min-width: 0px) has no matching .probe:active { @media (min-width: 0px) rule',
+    ])
+  })
+
+  it('passes the same when its :active twin is written the same way', () => {
+    const { hoverRules, outside, unpaired } = checkCss(`
+      @media (hover: hover) { .probe:hover { @media (min-width: 0px) { color: red; } } }
+      .probe:active { @media (min-width: 0px) { color: red; } }
+    `)
+    expect(hoverRules).toHaveLength(1)
+    expect(outside).toEqual([])
+    expect(unpaired).toEqual([])
+  })
+
+  it('follows style rules and at-rules mixed two levels deep', () => {
+    const nested = (state) =>
+      `.probe { @media (min-width: 0px) { &${state} { @supports (display: grid) { color: red; } } } }`
+    const name = (state) => `.probe { @media (min-width: 0px) { &${state} { @supports (display: grid)`
+
+    const bare = checkCss(nested(':hover'))
+    expect(bare.outside).toEqual([`probe.css: ${name(':hover')}`])
+    expect(bare.unpaired).toEqual([`probe.css: ${name(':hover')} has no matching ${name(':active')} rule`])
+
+    const paired = checkCss(`@media (hover: hover) { ${nested(':hover')} } ${nested(':active')}`)
+    expect(paired.hoverRules).toHaveLength(1)
+    expect(paired.outside).toEqual([])
+    expect(paired.unpaired).toEqual([])
+
+    const differing = checkCss(
+      `@media (hover: hover) { ${nested(':hover')} } ${nested(':active').replace('red', 'blue')}`,
+    )
+    expect(differing.unpaired).toEqual([
+      `probe.css: ${name(':hover')} and ${name(':active')} declare different things`,
+    ])
   })
 })
