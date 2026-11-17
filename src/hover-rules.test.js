@@ -24,34 +24,37 @@ const stripComments = (css) => css.replace(/\/\*[\s\S]*?\*\//g, '')
 
 const normalize = (text) => text.replace(/\s+/g, ' ').trim()
 
-// Walks the stylesheet, tracking the stack of enclosing at-rule preludes, and
-// returns every plain style rule as { selector, declarations, atRules }.
+// Walks the stylesheet, tracking the stack of enclosing blocks, and returns
+// every style rule that declares something, or has no nested rules, as
+// { selectors, selector, declarations, atRules }. selectors is the chain of
+// enclosing style selectors, outermost first, ending with the rule's own, so a
+// nested rule such as `.a:hover { & > span { ... } }` keeps its :hover.
 const rulesIn = (css) => {
   const rules = []
   const stack = []
   let start = 0
   for (let i = 0; i < css.length; i++) {
+    const top = stack[stack.length - 1]
     if (css[i] === '{') {
       const prelude = normalize(css.slice(start, i))
-      const closes = css.indexOf('}', i)
-      const nextOpen = css.indexOf('{', i + 1)
-      if (prelude.startsWith('@') && prelude !== '@font-face') {
-        stack.push(prelude)
-      } else if (nextOpen === -1 || closes < nextOpen) {
-        rules.push({
-          selector: prelude,
-          declarations: normalize(css.slice(i + 1, closes)),
-          atRules: [...stack],
-        })
-        i = closes
-      } else {
-        stack.push(prelude)
-      }
+      if (top) top.nested = true
+      stack.push({ prelude, isAt: prelude.startsWith('@'), declarations: '', nested: false })
+      start = i + 1
+    } else if (css[i] === ';') {
+      if (top && !top.isAt) top.declarations += `${css.slice(start, i + 1)} `
       start = i + 1
     } else if (css[i] === '}') {
+      if (top && !top.isAt) top.declarations += css.slice(start, i)
       stack.pop()
-      start = i + 1
-    } else if (css[i] === ';' && stack.length === 0) {
+      if (top && !top.isAt && (normalize(top.declarations) || !top.nested)) {
+        const selectors = [...stack, top].filter((b) => !b.isAt).map((b) => b.prelude)
+        rules.push({
+          selectors,
+          selector: selectors.join(' { '),
+          declarations: normalize(top.declarations),
+          atRules: stack.filter((b) => b.isAt).map((b) => b.prelude),
+        })
+      }
       start = i + 1
     }
   }
@@ -62,6 +65,34 @@ const inHoverMedia = (rule) =>
   rule.atRules.some((a) => /^@media\s*\(\s*hover\s*:\s*hover\s*\)$/.test(a))
 const inAnyHoverMedia = (rule) => rule.atRules.some((a) => /\(\s*hover\s*:/.test(a))
 
+const isHoverRule = (rule) => rule.selectors.some((s) => s.includes(':hover'))
+
+// Returns the guard's findings for rules from rulesIn, each tagged with a file:
+// hover rules outside @media (hover: hover), and hover rules without an :active
+// twin outside any @media (hover: ...) block that declares the same things.
+const hoverProblems = (rules) => {
+  const hoverRules = rules.filter(isHoverRule)
+  const outside = hoverRules
+    .filter((r) => !inHoverMedia(r))
+    .map((r) => `${r.file}: ${r.selector}`)
+  const unpaired = []
+  for (const hover of hoverRules) {
+    const activeSelector = hover.selectors.map((s) => s.replace(/:hover/g, ':active')).join(' { ')
+    const twins = rules.filter(
+      (r) => r.file === hover.file && r.selector === activeSelector && !inAnyHoverMedia(r),
+    )
+    if (twins.length === 0) {
+      unpaired.push(`${hover.file}: ${hover.selector} has no matching ${activeSelector} rule`)
+    } else if (!twins.some((t) => t.declarations === hover.declarations)) {
+      unpaired.push(`${hover.file}: ${hover.selector} and ${activeSelector} declare different things`)
+    }
+  }
+  return { hoverRules, outside, unpaired }
+}
+
+const checkCss = (css) =>
+  hoverProblems(rulesIn(stripComments(css)).map((rule) => ({ ...rule, file: 'probe.css' })))
+
 describe('every :hover rule under src/ (OQ-139)', () => {
   const rules = cssFiles(srcDir).flatMap((file) =>
     rulesIn(stripComments(readFileSync(file, 'utf8'))).map((rule) => ({
@@ -69,32 +100,55 @@ describe('every :hover rule under src/ (OQ-139)', () => {
       file: relative(srcDir, file).replace(/\\/g, '/'),
     })),
   )
-  const hoverRules = rules.filter((r) => r.selector.includes(':hover'))
+  const { hoverRules, outside, unpaired } = hoverProblems(rules)
 
   it('finds the :hover rules, so the checks below are not vacuous', () => {
     expect(hoverRules.length).toBeGreaterThan(0)
   })
 
   it('sits inside an @media (hover: hover) block', () => {
-    const outside = hoverRules
-      .filter((r) => !inHoverMedia(r))
-      .map((r) => `${r.file}: ${r.selector}`)
     expect(outside).toEqual([])
   })
 
   it('has an :active rule outside any @media (hover: ...) block with the same declarations', () => {
-    const problems = []
-    for (const hover of hoverRules) {
-      const activeSelector = hover.selector.replace(/:hover/g, ':active')
-      const twins = rules.filter(
-        (r) => r.file === hover.file && r.selector === activeSelector && !inAnyHoverMedia(r),
-      )
-      if (twins.length === 0) {
-        problems.push(`${hover.file}: ${hover.selector} has no matching ${activeSelector} rule`)
-      } else if (!twins.some((t) => t.declarations === hover.declarations)) {
-        problems.push(`${hover.file}: ${hover.selector} and ${activeSelector} declare different things`)
+    expect(unpaired).toEqual([])
+  })
+})
+
+describe('the :hover guard on nested CSS (OQ-139)', () => {
+  it('catches a :hover in an enclosing selector, unguarded and unpaired', () => {
+    const { outside, unpaired } = checkCss('.probe:hover { & > span { color: red; } }')
+    expect(outside).toEqual(['probe.css: .probe:hover { & > span'])
+    expect(unpaired).toEqual([
+      'probe.css: .probe:hover { & > span has no matching .probe:active { & > span rule',
+    ])
+  })
+
+  it('catches a nested &:hover rule, unguarded and unpaired', () => {
+    const { outside, unpaired } = checkCss('.probe { &:hover { background: red; } }')
+    expect(outside).toEqual(['probe.css: .probe { &:hover'])
+    expect(unpaired).toEqual(['probe.css: .probe { &:hover has no matching .probe { &:active rule'])
+  })
+
+  it('catches a nested :active twin that declares something different', () => {
+    const { unpaired } = checkCss(`
+      @media (hover: hover) { .probe { &:hover { background: red; } } }
+      .probe { &:active { background: blue; } }
+    `)
+    expect(unpaired).toEqual(['probe.css: .probe { &:hover and .probe { &:active declare different things'])
+  })
+
+  it('passes nested :hover rules that are guarded and paired', () => {
+    const { hoverRules, outside, unpaired } = checkCss(`
+      @media (hover: hover) {
+        .probe:hover { & > span { color: red; } }
+        .other { &:hover { background: red; } }
       }
-    }
-    expect(problems).toEqual([])
+      .probe:active { & > span { color: red; } }
+      .other { &:active { background: red; } }
+    `)
+    expect(hoverRules).toHaveLength(2)
+    expect(outside).toEqual([])
+    expect(unpaired).toEqual([])
   })
 })
