@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useLocalStorageState } from '../hooks/useLocalStorageState'
+import { STORAGE_KEYS } from '../storageKeys'
 import { getPrioritizedNextUpgrades } from '../utils/cheapestNextUpgrades'
 import { formatCoins } from '../utils/formatCoins'
 import { unlockGroupKey } from '../utils/workshopUnlockGroups'
@@ -18,24 +19,33 @@ const displayName = (entry) => {
 }
 
 export function UpgradePath() {
-  const [workshopLevels, setWorkshopLevels] = useLocalStorageState('workshopLevels', {})
+  const [workshopLevels, setWorkshopLevels] = useLocalStorageState(
+    STORAGE_KEYS.workshopLevels,
+    {},
+  )
   const [enhancementLevels, setEnhancementLevels] = useLocalStorageState(
-    'enhancementLevels',
+    STORAGE_KEYS.enhancementLevels,
     {},
   )
   const [enhancementLabLevel, setEnhancementLabLevel] = useLocalStorageState(
-    'enhancementLabLevel',
+    STORAGE_KEYS.enhancementLabLevel,
     0,
   )
   const [unlockedGroups, setUnlockedGroups] = useLocalStorageState(
-    'workshopUnlockedGroups',
+    STORAGE_KEYS.workshopUnlockedGroups,
     {},
   )
   // Read-only here -- discount Lab levels are only ever entered on the
   // Labs page (LabsInputs, OQ-4/OQ-37), same independent-read pattern as
   // `unlockedGroups`/`enhancementLabLevel` above.
-  const [discountLabLevels] = useLocalStorageState('workshopDiscountLabs', {})
-  const [enhancementDiscountLabLevels] = useLocalStorageState('enhancementDiscountLabs', {})
+  const [discountLabLevels] = useLocalStorageState(
+    STORAGE_KEYS.workshopDiscountLabs,
+    {},
+  )
+  const [enhancementDiscountLabLevels] = useLocalStorageState(
+    STORAGE_KEYS.enhancementDiscountLabs,
+    {},
+  )
   const [pendingBuy, setPendingBuy] = useState(null)
   const { ranked, unknownCost } = getPrioritizedNextUpgrades({
     workshopLevels,

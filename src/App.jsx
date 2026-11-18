@@ -9,6 +9,7 @@ import { ModeTabBar } from './components/ModeTabBar'
 import { UpgradePath } from './components/UpgradePath'
 import { WorkshopInputs } from './components/WorkshopInputs'
 import { useLocalStorageState } from './hooks/useLocalStorageState'
+import { STORAGE_KEYS } from './storageKeys'
 
 // "Labs" sits alongside Input/Path rather than as a third ModeTabBar entry
 // (below), for the same reason Path does: no in-game equivalent to mirror,
@@ -26,10 +27,10 @@ const MODES = [
 ]
 
 function App() {
-  const [sectionId, setSectionId] = useLocalStorageState('appSection', SECTIONS[0].id)
-  const [modeId, setModeId] = useLocalStorageState('workshopMode', MODES[0].id)
+  const [sectionId, setSectionId] = useLocalStorageState(STORAGE_KEYS.appSection, SECTIONS[0].id)
+  const [modeId, setModeId] = useLocalStorageState(STORAGE_KEYS.workshopMode, MODES[0].id)
   const [activeCategoryId, setActiveCategoryId] = useLocalStorageState(
-    'activeCategoryId',
+    STORAGE_KEYS.activeCategoryId,
     'attack',
   )
   // 'auto' (the default) follows the OS's prefers-color-scheme, same as
@@ -37,7 +38,10 @@ function App() {
   // of OS preference, via a data-theme attribute on <html> (index.css picks
   // it up) -- not on the React #root div, since CSS's :root selector always
   // means the document root element (<html>), never #root.
-  const [themePreference, setThemePreference] = useLocalStorageState('themePreference', 'auto')
+  const [themePreference, setThemePreference] = useLocalStorageState(
+    STORAGE_KEYS.themePreference,
+    'auto',
+  )
   // Bumped to force WorkshopInputs/EnhancementInputs to remount and re-read
   // localStorage after a Clear (OQ-22) -- not persisted, just an in-memory
   // signal, since it only needs to matter for the lifetime of this page.
@@ -52,12 +56,12 @@ function App() {
   }, [themePreference])
 
   const handleClearAllLevels = () => {
-    window.localStorage.removeItem('workshopLevels')
-    window.localStorage.removeItem('enhancementLevels')
-    window.localStorage.removeItem('enhancementLabLevel')
-    window.localStorage.removeItem('workshopUnlockedGroups')
-    window.localStorage.removeItem('workshopDiscountLabs')
-    window.localStorage.removeItem('enhancementDiscountLabs')
+    window.localStorage.removeItem(STORAGE_KEYS.workshopLevels)
+    window.localStorage.removeItem(STORAGE_KEYS.enhancementLevels)
+    window.localStorage.removeItem(STORAGE_KEYS.enhancementLabLevel)
+    window.localStorage.removeItem(STORAGE_KEYS.workshopUnlockedGroups)
+    window.localStorage.removeItem(STORAGE_KEYS.workshopDiscountLabs)
+    window.localStorage.removeItem(STORAGE_KEYS.enhancementDiscountLabs)
     setResetNonce((n) => n + 1)
   }
 
