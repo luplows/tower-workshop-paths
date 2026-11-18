@@ -105,7 +105,14 @@
   text-overflow: ellipsis;
 }
 
-.upgrade-path__buy:hover {
+@media (hover: hover) {
+  .upgrade-path__buy:hover {
+    background: var(--accent);
+    color: var(--bg);
+  }
+}
+
+.upgrade-path__buy:active {
   background: var(--accent);
   color: var(--bg);
 }
@@ -156,7 +163,13 @@
   cursor: pointer;
 }
 
-.upgrade-path__confirm-actions button:hover {
+@media (hover: hover) {
+  .upgrade-path__confirm-actions button:hover {
+    background: var(--accent-bg);
+  }
+}
+
+.upgrade-path__confirm-actions button:active {
   background: var(--accent-bg);
 }
 
@@ -166,7 +179,14 @@
   color: var(--success);
 }
 
-.upgrade-path__confirm-actions .upgrade-path__confirm-buy-all:hover {
+@media (hover: hover) {
+  .upgrade-path__confirm-actions .upgrade-path__confirm-buy-all:hover {
+    background: var(--success);
+    color: var(--bg);
+  }
+}
+
+.upgrade-path__confirm-actions .upgrade-path__confirm-buy-all:active {
   background: var(--success);
   color: var(--bg);
 }
@@ -177,7 +197,14 @@
   color: var(--danger);
 }
 
-.upgrade-path__confirm-actions .upgrade-path__confirm-cancel:hover {
+@media (hover: hover) {
+  .upgrade-path__confirm-actions .upgrade-path__confirm-cancel:hover {
+    background: var(--danger);
+    color: var(--bg);
+  }
+}
+
+.upgrade-path__confirm-actions .upgrade-path__confirm-cancel:active {
   background: var(--danger);
   color: var(--bg);
 }

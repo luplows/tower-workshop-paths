@@ -34,7 +34,14 @@
   cursor: pointer;
 }
 
-.enhancement-lock__unlock:hover {
+@media (hover: hover) {
+  .enhancement-lock__unlock:hover {
+    background: var(--accent);
+    color: var(--bg);
+  }
+}
+
+.enhancement-lock__unlock:active {
   background: var(--accent);
   color: var(--bg);
 }

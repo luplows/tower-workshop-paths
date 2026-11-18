@@ -17,14 +17,14 @@ around it has changed.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — Every `:hover` rule under `src/` applies only where the
+- [x] **AC-1** — Every `:hover` rule under `src/` applies only where the
       device can hover: it sits inside an `@media (hover: hover)` block. On a
       device that can hover, every control looks as it does today.
-- [ ] **AC-2** — A Vitest test reads every `.css` file under `src/` and fails
+- [x] **AC-2** — A Vitest test reads every `.css` file under `src/` and fails
       if any `:hover` selector is outside an `@media (hover: hover)` block.
       It names the file and the selector, so a `:hover` rule added later
       cannot bring the defect back unnoticed.
-- [ ] **AC-3** — A Playwright test runs in a touch-emulating context
+- [x] **AC-3** — A Playwright test runs in a touch-emulating context
       (`hasTouch: true, isMobile: true`). It first asserts that
       `matchMedia('(hover: none)').matches` is true, so that it fails rather
       than passing vacuously if the emulation stops producing a touch device.
@@ -33,17 +33,17 @@ around it has changed.
       `:hover` applies: each must sit inside an `@media` rule whose
       `conditionText` does not match. It names any that do. On main at
       c48dadd, all nine of today's `:hover` rules apply, so it fails there.
-- [ ] **AC-4** — No screenshot baseline in `e2e/__screenshots__/` changes.
+- [x] **AC-4** — No screenshot baseline in `e2e/__screenshots__/` changes.
       `e2e/appearance.spec.js` moves the pointer away before each shot, so
       none should, and a baseline that does change is a finding.
-- [ ] **AC-5** — Every selector that has a `:hover` rule also has an
+- [x] **AC-5** — Every selector that has a `:hover` rule also has an
       `:active` rule, outside any `@media (hover: …)` block, with the same
       declarations as its `:hover` rule. So a press shows the hover look on
       every device, but only while the button is held.
-- [ ] **AC-6** — AC-2's Vitest test also fails if a selector with a `:hover`
+- [x] **AC-6** — AC-2's Vitest test also fails if a selector with a `:hover`
       rule has no matching `:active` rule, or if the two rules'
       declarations differ, and names the selector.
-- [ ] **AC-7** — `src/main.jsx` adds one passive, empty `touchstart`
+- [x] **AC-7** — `src/main.jsx` adds one passive, empty `touchstart`
       listener on `document`, with a comment saying it is there so that iOS
       WebKit applies `:active` on a tap.
 
