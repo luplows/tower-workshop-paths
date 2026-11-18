@@ -56,6 +56,7 @@ around it has changed.
 - A Playwright test of `:active`. Chromium in Playwright gives no reliable
   way to observe it (see Context), so AC-6 guards it statically, and the
   owner rechecks pressed feedback on the phone once this lands.
+- **After review:** CSS cases the project's `:hover` rules do not use, which AC-2, AC-3 and AC-6's tests need not handle: a `:hover` rule nested inside a style rule, or containing nested style rules or at-rules, braces inside quoted strings, and whitespace differences inside quoted values; the tests check the project's `:hover` rules as written, none of them nested in a style rule or containing one (crew, 2026-11-17). Follow-up: none.
 
 ## Constraints
 
