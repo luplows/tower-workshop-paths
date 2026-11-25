@@ -16,9 +16,9 @@ As a player who just respecced, I want a practical purchase checklist for a save
 
 - [ ] **AC-1** — A player selects a saved target configuration and can request a reconstruction plan without changing that saved target or the active current configuration.
 
-- [ ] **AC-2** — The plan itemizes the Workshop purchases and applicable unlock costs needed to reach the target levels, using the app's cost data and applicable discount Labs rather than reprioritizing the target by the general eHP scoring heuristic.
+- [ ] **AC-2** — The plan itemizes the base Workshop **and Enhancement** purchases needed to reach the saved target levels, plus applicable Workshop unlock costs according to OQ-153's resolved unlock-group rule. It uses existing cost data and global applicable discount Labs rather than reprioritizing the target using the eHP scoring heuristic.
 
-- [ ] **AC-3** — The UI presents a game-ordered grouped checklist suitable for following while buying in-game, with target level, purchase cost, and total cost visible; it reuses the established Respec summary ordering from OQ-144 rather than generating a competing presentation.
+- [ ] **AC-3** — The UI presents a game-ordered grouped checklist covering Workshop and Enhancement tabs, with target level, purchase cost, and total cost visible. It reuses the established Respec summary ordering from OQ-144 rather than generating a competing presentation.
 
 - [ ] **AC-4** — The plan reports when the target cannot be fully reconstructed under the chosen available-coin budget, without silently substituting a different optimized build.
 
@@ -39,10 +39,11 @@ As a player who just respecced, I want a practical purchase checklist for a save
 - `src/utils/buyOutPlan.js` — current from-zero prioritized simulation, distinct from exact-target reconstruction.
 - `stories/OQ-144-respec-summary-game-order.md` — game-ordered summary.
 - `stories/OQ-145-apply-respec-plan.md` — confirmed state updates; `stories/OQ-153-saved-workshop-configurations.md` — stored targets.
+- Owner confirmation, 2026-11-25 — Workshop upgrades and Enhancements are both preset-specific, so exact-target rebuilding covers both.
 
 ## Open questions
 
 1. Does rebuilding always start from all-zero Workshop levels after respec, or should it support a nonzero currently selected configuration and detect purchases that cannot be undone without another respec?
-2. Does a reconstruction plan target only base Workshop upgrades, or Enhancements and unlock groups too? Confirm what the saved-config story captures.
+2. Rebuilding a saved preset includes both base Workshop and Enhancement target levels. How should the plan account for Workshop unlock groups once OQ-153 decides whether they are preset-specific or shared?
 3. Should this workflow generate a single static checklist or support progress checkoffs and persistence across sessions?
 4. Do we offer a budget estimate only or a strict budget constraint, and how should an underfunded target be presented?
