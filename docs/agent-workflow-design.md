@@ -1808,8 +1808,7 @@ deciding what is next. It is the harness's product outline, and moves with this 
     OQ-143 (H-3, #297) here this way first, on the owner's word, before this repository moved to
     v0.3.0. `steward.config.json`'s `setup` is `npm ci`, so a coder's worktree has the project's
     dependencies before the coder starts and its **Verification** can run the real checks (decided
-    2026-11-25 by the owner). It was `null` until then, and the coders of H-1 to H-3 installed them
-    themselves. Nothing is run before a review.
+    2026-11-25 by the owner). It was `null` until then. Nothing is run before a review.
   - **No AI attribution** (decided 2026-11-24 by the owner). Steward's handoff coder follows a
     project's own rule on attribution, and this repository had none: #288's coder added a
     `Co-Authored-By:` trailer. `CLAUDE.md` now forbids AI attribution, and `.claude/settings.json`
