@@ -19,9 +19,9 @@ config, and skipped linting. The reviewer of OQ-91 (#161) did the same.
 Steward's handoff coder reads `CLAUDE.md` and runs the checks it names, and
 steward's reviewer reads `REVIEW.md` and judges **Verification** without
 running anything, so the commands have to be reachable from both files. And
-steward's `steward.config.json` has a `check` setting, "the command that checks
-a change, which the coder runs", which is `null` here, so this project has no
-one command a coder can run to get what CI's fast checks would say.
+this project has no one command a coder can run to get what CI's fast checks
+would say, which is what steward's handoff coder is told to run before it
+finishes (Out of scope, "Steward's prompts").
 
 ## Acceptance criteria
 
@@ -29,41 +29,36 @@ one command a coder can run to get what CI's fast checks would say.
       `npm run lint`, `npm test` and `npm run build`, in that order, which is
       CI's. It stops at the first that fails, and exits non-zero when any
       does. It does not run `npm run test:e2e`.
-- [ ] **AC-2** — `steward.config.json`'s `check` is
-      `{ "command": "npm run check", "timeoutMinutes": 10 }`. Nothing else in
-      that file changes.
-- [ ] **AC-3** — The first bullet of `CLAUDE.md`'s **Testing** section names
+- [ ] **AC-2** — The first bullet of `CLAUDE.md`'s **Testing** section names
       the command for each check CI runs, in CI's order: `npm run lint`,
       `npm test`, `npm run build` and `npm run test:e2e`. It says that lint
       is oxlint, and that the project has no ESLint configuration, so
       `npx eslint` is not the project's linter. It says that `npm run check`
-      runs the first three, is what a session runs before it reports
-      **Verification**, and is `steward.config.json`'s `check`, and that
-      `npm run test:e2e` is run separately, since it needs Playwright's
-      browsers. It marks the list as a restatement of
+      runs the first three and is what a session runs before it reports
+      **Verification**, and that `npm run test:e2e` is run separately, since
+      it needs Playwright's browsers. It marks the list as a restatement of
       `.github/workflows/ci.yml` and `package.json` that must not drift from
       them, as `CLAUDE.md`'s "Claims about this repository" requires.
-- [ ] **AC-4** — A Vitest test under `scripts/` reads
-      `.github/workflows/ci.yml`, `package.json`, `steward.config.json` and
-      `CLAUDE.md`. It takes every `run:` step of the `test` job that starts
-      with `npm `, and fails, naming the command:
+- [ ] **AC-3** — A Vitest test under `scripts/` reads
+      `.github/workflows/ci.yml`, `package.json` and `CLAUDE.md`. It takes
+      every `run:` step of the `test` job that starts with `npm `, and fails,
+      naming the command:
       - when the command does not appear, in backticks, in the first bullet of
         `CLAUDE.md`'s **Testing** section;
       - when it is not `npm run test:e2e` and `package.json`'s `check` script
-        does not run it, or runs it out of CI's order;
-      - when `steward.config.json`'s `check.command` is not `npm run check`.
+        does not run it, or runs it out of CI's order.
 
       It also fails if it finds no such `run:` step, so the check cannot pass
       by reading nothing. `npm ci` counts as setup, not a check, and is
       exempt, and so is `npm run test:e2e` from the `check` script's
       comparison, and the test names both exemptions.
-- [ ] **AC-5** — `REVIEW.md` item 12 says that a check is run by the command
+- [ ] **AC-4** — `REVIEW.md` item 12 says that a check is run by the command
       `CLAUDE.md`'s **Testing** section names for it, that `npm run check`
       runs lint, Vitest and the build, and that lint is `npm run lint`, not
       `npx eslint`. It points at that section for the rest rather than copying
-      the list, so AC-4's test still has only one list to check. No other
+      the list, so AC-3's test still has only one list to check. No other
       item is renumbered or reworded.
-- [ ] **AC-6** — The PR body's **Verification** gives `npm run check`'s
+- [ ] **AC-5** — The PR body's **Verification** gives `npm run check`'s
       result on the branch, and the result of `npm run check` with one
       deliberate lint error added and then removed, showing a non-zero exit.
 
@@ -72,23 +67,28 @@ one command a coder can run to get what CI's fast checks would say.
 - **Steward's prompts.** They live in `luplows/steward`, not here. At
   `release/v0.3.0`, `.claude/prompts/coder-handoff.md` tells the coder to read
   `CLAUDE.md` (line 63) and to run "the project's own checks, as its
-  instructions or its `package.json` or equivalent say" (line 82), so AC-3
+  instructions or its `package.json` or equivalent say" (line 82), so AC-2
   reaches it. `.claude/prompts/reviewer.md` gives the reviewer the checklist
   (`REVIEW.md`, this project's `rulesFile`) and tells it not to run the
-  project's tests or lint (line 225), so AC-5 reaches it.
-- **Steward running `check` itself**, for example after the coder's session
-  and before the push. At `v0.3.0` nothing in steward reads `check`: AC-2 sets
-  it so that it is ready when steward does, and the owner asked on 2026-11-25
-  for that to be raised with steward's crew. CI runs every check as a
-  required one, so a failure is already caught. This story is about what the
-  PR body reports.
+  project's tests or lint (line 225), so AC-4 reaches it.
+- **`steward.config.json`'s `check`.** It stays `null`. Nothing in steward
+  reads it at `v0.3.0`, and steward's crew decided on 2026-11-25, when the
+  owner had it raised, to retire it rather than give it a use (ST-105,
+  luplows/steward#186): a coder's check is whatever the project's own
+  instructions name, which is AC-2. `v0.3.0` requires the key, so it is not
+  removed here either; the upgrade to a release with ST-105 removes it.
+- **Running the check for the coder**, for example in steward after the
+  coder's session and before the push. Steward's crew decided against it on
+  2026-11-25. CI runs every check as a required one, and `landWhen` keeps a
+  red pull request from landing, so a failure is already caught. This story
+  is about what the PR body reports.
 - **CI running `npm run check`.** `ci.yml` keeps one step per check, so a
   failed run names the check that failed.
 - **Playwright in `check`.** It needs the browsers that CI's "Setup:
   Playwright browsers" installs, and `setup` installs only the project's
   dependencies (`npm ci`).
-- **The steps that do not start with `npm `.** AC-4's filter leaves them out,
-  and AC-3 does not list them:
+- **The steps that do not start with `npm `.** AC-3's filter leaves them out,
+  and AC-2 does not list them:
   - the Playwright and cache steps ("Resolve Playwright version", "Setup:
     cache Playwright browsers", the apt package cache steps and "Setup:
     Playwright browsers") are setup, not checks;
@@ -106,9 +106,6 @@ one command a coder can run to get what CI's fast checks would say.
   and on Linux (`sh`). Read the YAML as text, as
   `scripts/ci-workflows.test.mjs` reads `ci.yml` (its OQ-118/AC-3 scan). Do
   not add a YAML parser.
-- Handed off only once #292 has landed: it sets `setup` in the same
-  `steward.config.json`, and AC-2 is written against that file as #292
-  leaves it.
 
 ## Context
 
@@ -141,24 +138,23 @@ one command a coder can run to get what CI's fast checks would say.
   results — actual numbers, taken the same way across a before/after
   comparison — rather than an assertion that checks passed."
 - `steward.config.json` after #292: `"setup": { "command": "npm ci",
-  "timeoutMinutes": 10 }` and `"check": null`. Steward's `docs/settings.md`
-  at `v0.3.0`, "Keys": `check` is "The command that checks a change, which
-  the coder runs", and `null` "suits only a project without a coder"; and,
-  under "`setup` and `check`", a command should be a project script "rather
-  than chaining commands". At `v0.3.0`, `scripts/dispatch/settings.mjs`
-  validates `check` (line 47), and a grep of `scripts/` and
-  `.claude/prompts/` there finds nothing else that reads it:
+  "timeoutMinutes": 10 }`, so a handoff coder's worktree has the
+  dependencies `npm run check` needs, and `"check": null`. At `v0.3.0`,
+  `scripts/dispatch/settings.mjs` validates `check` (line 47), and a grep of
+  `scripts/` and `.claude/prompts/` there finds nothing else that reads it:
   `scripts/dispatch/handoff-coder.mjs` reads only `setup` and `rulesFile`
   (line 399).
 - On Session A's machine on 2026-11-25, lint took about 2 s, `npm test` 36 s
   and the build 2 s. One of `npm test`'s 39 files did not run, since that
   checkout's `node_modules` predated `fast-check`, so the whole suite takes a
-  little longer. AC-2's 10 minutes is ample.
+  little longer.
 - Held from 2026-11-04 for steward's install, since its Constraints and Out
   of scope named the old engine's files. Refined again on 2026-11-24, after
   OQ-115: its acceptance criteria were unaffected. Refined on 2026-11-25 to
-  add the `check` script and setting (AC-1, AC-2, AC-4, AC-6), which the owner
-  chose to fold in here rather than give a story of its own.
+  add the `check` script (AC-1, AC-3 and AC-5), which the owner chose to fold
+  in here rather than give a story of its own. Setting `steward.config.json`'s
+  `check` to it was dropped the same day, once steward's crew decided to
+  retire the setting.
 
 ## Open questions
 
