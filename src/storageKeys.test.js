@@ -10,7 +10,7 @@ const sourceFiles = (dir) =>
   readdirSync(dir).flatMap((entry) => {
     const path = join(dir, entry)
     if (statSync(path).isDirectory()) return sourceFiles(path)
-    return /\.(js|jsx)$/.test(entry) && !/\.test\./.test(entry) ? [path] : []
+    return !/\.test\./.test(entry) ? [path] : []
   })
 
 describe('OQ-141 storageKeys', () => {
