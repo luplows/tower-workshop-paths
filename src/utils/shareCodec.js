@@ -174,7 +174,7 @@ export function encodeTower(tower) {
       const text = new TextEncoder().encode(value)
       pushVarint(bytes, header)
       pushVarint(bytes, text.length)
-      bytes.push(...text)
+      for (const byte of text) bytes.push(byte)
     }
   }
   const sum = crc16(bytes)
