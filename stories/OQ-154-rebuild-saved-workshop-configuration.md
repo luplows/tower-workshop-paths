@@ -39,7 +39,7 @@ As a player who just respecced, I want a practical purchase checklist for a save
 - `src/utils/buyOutPlan.js` — current from-zero prioritized simulation, distinct from exact-target reconstruction.
 - `stories/OQ-144-respec-summary-game-order.md` — game-ordered summary.
 - `stories/OQ-145-apply-respec-plan.md` — confirmed state updates; `stories/OQ-153-saved-workshop-configurations.md` — stored targets.
-- Owner confirmations, 2026-11-25 — Workshop upgrades, Enhancements, and purchased Workshop unlock groups are all preset-specific, so exact-target rebuilding covers all three.
+- Owner confirmations, 2026-11-25 — Workshop upgrades, Enhancements, and purchased Workshop unlock groups are all preset-specific, so exact-target rebuilding covers all three. Lifetime coins and coins spent on Labs are global Respec inputs, not properties of a saved target.
 
 ## Open questions
 
