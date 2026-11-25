@@ -16,11 +16,11 @@ As a player rebuilding after a respec, I want the buy-out to follow the curated 
 
 - [ ] **AC-1** — `simulateBuyOut` accepts the curated profile associated with the active Workshop configuration and uses the same eligibility and scoring as Buy order at every purchase step. If no profile is supplied it uses `ehp`; the lifetime-coins-minus-Lab-coins budget calculation is unchanged.
 
-- [ ] **AC-2** — Respec identifies the active configuration's associated profile used for a plan. Changing that association immediately invalidates the previously calculated plan until it is recomputed, and a stale plan cannot be applied through OQ-145's Apply plan action. When OQ-153 introduces configuration switching, a switch likewise invalidates the plan.
+- [ ] **AC-2** — Respec identifies the profile associated with the current Workshop configuration used for a plan. Editing that association invalidates the old generated plan immediately until recalculation; the stale plan cannot be applied by OQ-145's Apply plan action.
 
 - [ ] **AC-3** — A generated eHP plan omits unprioritized Enhancements except the existing necessary Coin Bonus prerequisite path. A test with a fixture alternative profile produces a differing plan under the same budget and discount Labs.
 
-- [ ] **AC-4** — Planning remains read-only until the player explicitly confirms Apply plan under OQ-145. Applying affects only the active Workshop configuration; editing its associated recommendation profile does not change its levels, unlocks, or Labs. A plan for another configuration must not be applied after switching.
+- [ ] **AC-4** — Planning remains read-only until the player explicitly confirms Apply plan under OQ-145. Applying affects the current Workshop configuration only; changing its associated recommendation profile never changes stored Workshop/Enhancement levels, unlocks, or Labs.
 
 - [ ] **AC-5** — Vitest covers different fixture profiles and budget/termination outcomes. Playwright covers editing the associated profile, obsolete plans becoming unavailable for Apply, and a newly calculated plan reflecting the changed profile.
 

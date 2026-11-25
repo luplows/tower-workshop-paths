@@ -18,11 +18,11 @@ As a player, I want each Workshop configuration to remember its curated recommen
 
 - [ ] **AC-2** — When the registry has at least two curated profiles, a labelled Recommendation profile control offers only registered profiles and edits the active Workshop configuration's associated profile. Changing it immediately recalculates the displayed Buy order without a reload. Component tests inject a second fixture profile rather than shipping invented GC/Hybrid ratios.
 
-- [ ] **AC-3** — The profile id persists as data associated with the current Workshop configuration, not as a global interface preference. Before OQ-153 the app has one implicit configuration; its profile survives reload and is preserved when OQ-153 migrates to named configurations. Missing or unregistered ids fall back to `ehp` without modifying Workshop levels.
+- [ ] **AC-3** — The profile id persists as data associated with the current implicit Workshop configuration, not as a global interface preference. It survives reload, defaults to `ehp` for a new user, and falls back to `ehp` when a saved id is not registered, without modifying Workshop levels.
 
 - [ ] **AC-4** — Changing the associated profile does not modify Workshop or Enhancement levels, unlocked groups, discount Labs, Enhancement Lab level, or Respec coin inputs. Playwright or component tests assert these values remain unchanged.
 
-- [ ] **AC-5** — On narrow mobile screens the active configuration's associated profile name and, when available, selector are distinguishable from the Workshop-configuration selector introduced in OQ-153. Switching configurations in OQ-153 must restore the selected configuration's profile rather than applying a global choice.
+- [ ] **AC-5** — On narrow mobile screens the current configuration's associated profile name is identifiable, and when at least two profiles exist its selector is usable and clearly distinguished from the existing Upgrade/Enhance and Path controls. A component or Playwright test verifies the selector's label and mobile behavior.
 
 ## Out of scope
 
