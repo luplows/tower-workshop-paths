@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useLocalStorageState } from '../hooks/useLocalStorageState'
+import { STORAGE_KEYS } from '../storageKeys'
 import { computeBuyOutBudget, simulateBuyOut, summarisePurchases } from '../utils/buyOutPlan'
 import { formatCoins } from '../utils/formatCoins'
 import './BuyOutPlan.css'
@@ -31,8 +32,11 @@ const readStored = (key) => {
  * entered on Input, and writes nothing back.
  */
 export function BuyOutPlan() {
-  const [lifetimeCoins, setLifetimeCoins] = useLocalStorageState('buyOutLifetimeCoins', '')
-  const [labCoinsSpent, setLabCoinsSpent] = useLocalStorageState('buyOutLabCoinsSpent', '')
+  const [lifetimeCoins, setLifetimeCoins] = useLocalStorageState(STORAGE_KEYS.buyOutLifetimeCoins, '')
+  const [labCoinsSpent, setLabCoinsSpent] = useLocalStorageState(
+    STORAGE_KEYS.buyOutLabCoinsSpent,
+    '',
+  )
   const [result, setResult] = useState(null)
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
 
@@ -45,8 +49,8 @@ export function BuyOutPlan() {
     }
     const plan = simulateBuyOut({
       budget,
-      discountLabLevels: readStored('workshopDiscountLabs'),
-      enhancementDiscountLabLevels: readStored('enhancementDiscountLabs'),
+      discountLabLevels: readStored(STORAGE_KEYS.workshopDiscountLabs),
+      enhancementDiscountLabLevels: readStored(STORAGE_KEYS.enhancementDiscountLabs),
     })
     setResult({ plan, summary: summarisePurchases(plan.purchases) })
   }
