@@ -24,7 +24,7 @@ As a player using multiple Workshop presets and experimental setups, I want to p
 
 - [ ] **AC-5** — Editing the active configuration's recommendation-profile association updates visible Buy order recommendations immediately without changing its Workshop/Enhancement levels, purchased unlock groups, or global Labs. Other configurations retain their own associated profiles.
 
-- [ ] **AC-6** — After reload, each configuration restores its Workshop levels, Enhancement levels, purchased unlock groups, and associated profile. All configurations use the same persisted global Lab values, lifetime coins, and coins spent on Labs; editing either Respec budget input while viewing one configuration updates that single global value used by all. Overwriting or deleting a configuration requires confirmation and cannot silently discard another configuration.
+- [ ] **AC-6** — After reload, each configuration restores its Workshop levels, Enhancement levels, purchased unlock groups, and associated profile. All configurations use the same persisted global Lab values, lifetime coins, and coins spent on Labs; editing either Respec budget input while viewing one configuration updates that single global value used by all. Overwriting or deleting a configuration requires an explicit confirmation before any stored configuration is discarded. Confirmation is the only required recovery safeguard for this first version; no Undo, automatic backup, or restore flow is provided.
 
 - [ ] **AC-7** — A player can assign an additional saved setup to an available in-game slot (1–5) without recreating it. The setup retains its identity, name, Workshop levels, Enhancement levels, purchased unlock groups, and associated profile; it then appears under that game slot, including after reload. Occupied slots cannot be silently overwritten, and assigning it in the tool never changes the player's in-game preset.
 
@@ -34,6 +34,7 @@ As a player using multiple Workshop presets and experimental setups, I want to p
 
 ## Out of scope
 
+- Undo after confirmed deletion or overwrite, automatic backups, and deleted-configuration restore functionality.
 - Automatic control of in-game Workshop preset slots, account sync, or server storage.
 - Generating a buy list for a saved target; OQ-154 covers rebuilding.
 - Sharing or importing the entire collection of saved configurations; the initial sharing scope is the active preset only. Do not change OQ-141's codec or OQ-57/OQ-58's established share-link behavior without an explicit compatible follow-up decision.
@@ -51,11 +52,11 @@ As a player using multiple Workshop presets and experimental setups, I want to p
 - Owner confirmations, 2026-11-25 — Workshop upgrade levels, Workshop Enhancement levels, purchased Workshop unlock groups, and the recommendation profile are preset-specific; Labs are global. Enhancement levels and purchased Workshop unlock groups are linked to the specific preset in the game, as reported by the owner.
 - Owner decisions, 2026-11-25 — offer both a blank new configuration and a copy of the active configuration, including its associated profile; allow an additional saved setup to be assigned to an available in-game slot without rebuilding it. Lifetime coins and coins spent on Labs are global across all presets.
 - `stories/done/OQ-141-share-format-stable-ids.md` and `stories/OQ-57-create-share-link.md` — established tower-data vs interface-setting boundaries. OQ-141's existing payload has stable ids for the eight current tower-data keys, but not yet an id for a recommendation-profile association.
-- Owner decisions, 2026-11-25 — share only the active preset initially, not every saved configuration; when future imports/adoptions are offered, **New configuration** is the default destination so existing presets are preserved. Deleting the last configuration leaves a newly saved default configuration; previously saved global values remain available.
+- Owner decisions, 2026-11-25 — share only the active preset initially, not every saved configuration; when future imports/adoptions are offered, **New configuration** is the default destination so existing presets are preserved. Deleting the last configuration leaves a newly saved default configuration; previously saved global values remain available. Explicit confirmation alone is sufficient for deletion/overwrite in the initial version, without Undo or backup recovery.
 - Tech Tree Games, v29 patch notes (2026-08-26) — Workshop preset switching and two starter slots: https://techtreegames.zendesk.com/hc/en-us/articles/54972978743707-v29-Patch-Notes-2026-08-26
 
 ## Open questions
 
-1. What is the required backup/recovery behavior for accidental overwrite or deletion (e.g., undo or backup), and which remaining configuration becomes active if the deleted configuration was active? The final-configuration case is decided in AC-9.
+1. If the active configuration is deleted while other configurations remain, which saved configuration becomes active? Deletion confirmation is sufficient for v1; Undo and backup/recovery are explicitly out of scope. The final-configuration case is decided in AC-9.
 2. **Import integration:** With **New configuration** agreed as the default destination, how should OQ-53's existing replace-levels criteria apply within that new destination, and how will the separately deferred OQ-58 shared-tower adoption be added? Is an optional, explicitly confirmed **Replace active configuration** action needed later? Do not change either existing story's implementation scope implicitly.
 3. How should the saved configuration/profile association be encoded compatibly with OQ-141's existing v1 share-payload contract? The shared tower should explain which recommendation strategy generated its advice, but the currently shipped stable-ID codec does not yet encode an associated profile. Do not silently change its on-wire format.
