@@ -30,6 +30,12 @@ Workshop upgrades are bought in batches, not single levels — the game doesn't 
 - **Predefined**: ship with a community-recommended default priority order to start.
 - **User-defined**: let users define, edit, and save their own custom priority lists (longer-term goal).
 
+## Curated recommendation profiles (planned)
+- **Initial eHP eligibility (OQ-149):** the six Enhancements explicitly listed in QuietFanta's current eHP priorities are the ordinary Enhancement recommendation set. Other Enhancements remain editable and their recorded levels still count for gating, but cheap unprioritized Enhancements are excluded from automatic Path/Respec purchases; the existing Coin Bonus prerequisite path remains supported. This is eligibility, not a statement that every other Enhancement has zero value.
+- **Reusable profiles (OQ-150 to OQ-152):** each built-in profile identifies the Enhancements eligible for ranking and their sourced relative ratios. The shared cost-and-priority algorithm remains in place, and a chosen profile affects both Buy order and Respec. Initially only eHP is shipped; selection UI need not appear until another curated profile exists.
+- **Saved configurations (OQ-153 and OQ-154):** named local Workshop setups and target rebuild checklists are separate from recommendation profiles. An app configuration change never switches the player's preset in the game. The exact fields and rebuild interactions remain draft questions in their stories.
+- **Additional profiles (OQ-155, draft):** investigate sourced GC, Hybrid, and Dissonance-specific priorities; do not ship guessed ratios or a full stat-benefit calculator.
+
 ## Non-Goals (for now)
 - No backend or server component.
 - No cross-device sync — data lives in a single browser's `localStorage`.
