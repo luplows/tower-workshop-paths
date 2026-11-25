@@ -79,9 +79,12 @@ running anything, so the commands have to be reachable from both files.
   order: `npm ci` (in "Setup: npm ci"), `npm run lint`, `npm test`, the
   OQ-136 alone test (`npx vitest run scripts/install-cleanup.alone.test.mjs`),
   the containment check (`node scripts/story-containment.mjs …`, on pull
-  requests only), `npm run build`, "Resolve Playwright version", the apt
-  package cache steps, "Setup: Playwright browsers" (a retry loop around
-  `npx playwright install`), and `npm run test:e2e`. When this story was
+  requests only), `npm run build`, "Resolve Playwright version" (line 48),
+  "Resolve apt package cache key" (line 59), "Setup: Playwright browsers"
+  (line 68, a retry loop around `npx playwright install`), "Collect apt
+  package files for the cache" (line 141), and `npm run test:e2e` (line 152).
+  "Setup: cache Playwright browsers", "Restore apt package cache" and "Save
+  apt package cache" use actions and have no `run:`. When this story was
   written (`c063e8d`), the steps were `npm ci`, the four `npm` checks and
   `npx playwright install`, and nothing else.
 - `package.json` scripts: `"lint": "oxlint"`, `"test": "vitest run"`,
