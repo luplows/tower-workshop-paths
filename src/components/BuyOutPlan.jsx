@@ -2,8 +2,12 @@ import { useState } from 'react'
 import { useLocalStorageState } from '../hooks/useLocalStorageState'
 import { STORAGE_KEYS } from '../storageKeys'
 import { computeBuyOutBudget, simulateBuyOut, summarisePurchases } from '../utils/buyOutPlan'
+import { ENHANCEMENT_LAB_NAME } from '../utils/cheapestNextUpgrades'
 import { formatCoins } from '../utils/formatCoins'
+import { UpgradeLevelInput } from './UpgradeLevelInput'
 import './BuyOutPlan.css'
+import './UpgradePath.css'
+import './WorkshopInputs.css'
 
 // The granular list of a full buy-out is thousands of rows (OQ-8), so it is
 // shown a page at a time, "Show more" reaching every purchase in the plan.
@@ -14,6 +18,12 @@ const displayName = (entry) => {
   if (entry.source === 'unlock') return `Unlock: ${entry.name}`
   return entry.name
 }
+
+const ENHANCEMENT_LAB_UPGRADE = { name: ENHANCEMENT_LAB_NAME, quantity: 1 }
+const formatUnlockState = (level) => (level >= 1 ? 'Unlocked' : 'Locked')
+
+const rowClass = (entry) => `upgrade-path__row upgrade-path__row--${entry.categoryId} buy-out__row`
+const buttonClass = 'upgrade-path__buy buy-out__button'
 
 // Read when the plan is computed rather than held in state: the discount
 // Labs are owned by LabsInputs, which writes them to localStorage as they
@@ -27,15 +37,21 @@ const readStored = (key) => {
 }
 
 /**
- * Full buy-out from lifetime coins (OQ-8). Enter lifetime coins and the coins
- * spent on Labs; the plan is simulated from level zero, ignoring the levels
- * entered on Input, and writes nothing back.
+ * The Respec view of Path (OQ-143), the full buy-out from lifetime coins
+ * (OQ-8). Enter lifetime coins and the coins spent on Labs; the plan is
+ * simulated from level zero, ignoring the levels entered on Input, and writes
+ * nothing back. The Enhancements Lab is the player's own, the same
+ * `enhancementLabLevel` the Labs page sets, and is never bought.
  */
 export function BuyOutPlan() {
   const [lifetimeCoins, setLifetimeCoins] = useLocalStorageState(STORAGE_KEYS.buyOutLifetimeCoins, '')
   const [labCoinsSpent, setLabCoinsSpent] = useLocalStorageState(
     STORAGE_KEYS.buyOutLabCoinsSpent,
     '',
+  )
+  const [enhancementLabLevel, setEnhancementLabLevel] = useLocalStorageState(
+    STORAGE_KEYS.enhancementLabLevel,
+    0,
   )
   const [result, setResult] = useState(null)
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
@@ -49,6 +65,7 @@ export function BuyOutPlan() {
     }
     const plan = simulateBuyOut({
       budget,
+      enhancementLabLevel,
       discountLabLevels: readStored(STORAGE_KEYS.workshopDiscountLabs),
       enhancementDiscountLabLevels: readStored(STORAGE_KEYS.enhancementDiscountLabs),
     })
@@ -59,7 +76,22 @@ export function BuyOutPlan() {
 
   return (
     <section className="buy-out" aria-label="Buy-out plan">
-      <h2 className="buy-out__heading">Buy-out plan</h2>
+      <h2 className="buy-out__heading">Respec</h2>
+      <UpgradeLevelInput
+        upgrade={ENHANCEMENT_LAB_UPGRADE}
+        level={enhancementLabLevel}
+        onChange={(level) => {
+          setEnhancementLabLevel(level)
+          setResult(null)
+        }}
+        formatValue={formatUnlockState}
+      />
+      {enhancementLabLevel < 1 && (
+        <p className="buy-out__note">
+          The Enhancements Lab is needed for Enhancements, so the plan has none until it is set.
+        </p>
+      )}
+      <p className="buy-out__note">Both amounts below are on the game's settings screen.</p>
       <label className="buy-out__field">
         Lifetime coins
         <input
@@ -78,8 +110,8 @@ export function BuyOutPlan() {
           onChange={(event) => setLabCoinsSpent(event.target.value)}
         />
       </label>
-      <button type="button" onClick={handleCompute}>
-        Plan buy-out
+      <button type="button" className={buttonClass} onClick={handleCompute}>
+        <span className="upgrade-path__buy-label">Plan buy-out</span>
       </button>
 
       {result?.error && (
@@ -109,12 +141,12 @@ export function BuyOutPlan() {
             </div>
           )}
 
-          <h3>Summary by upgrade</h3>
+          <h3 className="buy-out__subheading">Summary by upgrade</h3>
           <ul className="buy-out__list" aria-label="Buy-out summary">
             {result.summary.map((row) => (
-              <li key={`${row.source}-${row.name}`} className="buy-out__row">
-                <span>{displayName(row)}</span>
-                <span>
+              <li key={`${row.source}-${row.name}`} className={rowClass(row)}>
+                <span className="upgrade-path__name">{displayName(row)}</span>
+                <span className="upgrade-path__level">
                   Lv {row.levelBefore} → {row.levelAfter}
                 </span>
                 <span>
@@ -125,12 +157,12 @@ export function BuyOutPlan() {
             ))}
           </ul>
 
-          <h3>Purchases in order ({plan.purchases.length})</h3>
+          <h3 className="buy-out__subheading">Purchases in order ({plan.purchases.length})</h3>
           <ol className="buy-out__list" aria-label="Buy-out purchases">
             {plan.purchases.slice(0, visibleCount).map((entry, index) => (
-              <li key={index} className="buy-out__row">
-                <span>{displayName(entry)}</span>
-                <span>
+              <li key={index} className={rowClass(entry)}>
+                <span className="upgrade-path__name">{displayName(entry)}</span>
+                <span className="upgrade-path__level">
                   Lv {entry.currentLevel} → {entry.nextLevel}
                 </span>
                 <span>{formatCoins(entry.cost)}</span>
@@ -138,8 +170,14 @@ export function BuyOutPlan() {
             ))}
           </ol>
           {visibleCount < plan.purchases.length && (
-            <button type="button" onClick={() => setVisibleCount((count) => count + PAGE_SIZE)}>
-              Show more ({plan.purchases.length - visibleCount} left)
+            <button
+              type="button"
+              className={buttonClass}
+              onClick={() => setVisibleCount((count) => count + PAGE_SIZE)}
+            >
+              <span className="upgrade-path__buy-label">
+                Show more ({plan.purchases.length - visibleCount} left)
+              </span>
             </button>
           )}
         </>

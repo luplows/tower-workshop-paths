@@ -21,6 +21,11 @@ const SECTIONS = [
   { id: 'labs', label: 'Labs' },
 ]
 
+const PATH_VIEWS = [
+  { id: 'order', label: 'Buy order' },
+  { id: 'respec', label: 'Respec' },
+]
+
 const MODES = [
   { id: 'upgrade', label: 'Upgrade' },
   { id: 'enhance', label: 'Enhance' },
@@ -28,6 +33,7 @@ const MODES = [
 
 function App() {
   const [sectionId, setSectionId] = useLocalStorageState(STORAGE_KEYS.appSection, SECTIONS[0].id)
+  const [pathViewId, setPathViewId] = useLocalStorageState(STORAGE_KEYS.pathView, PATH_VIEWS[0].id)
   const [modeId, setModeId] = useLocalStorageState(STORAGE_KEYS.workshopMode, MODES[0].id)
   const [activeCategoryId, setActiveCategoryId] = useLocalStorageState(
     STORAGE_KEYS.activeCategoryId,
@@ -91,6 +97,15 @@ function App() {
         {sectionId === 'input' && (
           <ModeTabBar modes={MODES} activeModeId={modeId} onSelect={setModeId} />
         )}
+        {sectionId === 'path' && (
+          <ModeTabBar
+            modes={PATH_VIEWS}
+            activeModeId={pathViewId}
+            onSelect={setPathViewId}
+            label="Path view"
+            idPrefix="path-view"
+          />
+        )}
       </div>
 
       {sectionId === 'path' && (
@@ -100,7 +115,18 @@ function App() {
           aria-labelledby="section-tab-path"
           className="app__mode-panel"
         >
-          <UpgradePath key={resetNonce} />
+          <div
+            role="tabpanel"
+            id={`path-view-panel-${pathViewId}`}
+            aria-labelledby={`path-view-tab-${pathViewId}`}
+            className="app__mode-panel"
+          >
+            {pathViewId === 'respec' ? (
+              <BuyOutPlan key={`buy-out-${resetNonce}`} />
+            ) : (
+              <UpgradePath key={resetNonce} />
+            )}
+          </div>
         </div>
       )}
 
@@ -112,7 +138,6 @@ function App() {
           className="app__mode-panel"
         >
           <LabsInputs key={resetNonce} />
-          <BuyOutPlan key={`buy-out-${resetNonce}`} />
         </div>
       )}
 

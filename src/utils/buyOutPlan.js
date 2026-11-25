@@ -37,10 +37,14 @@ export function computeBuyOutBudget(lifetimeCoins, labCoinsSpent) {
   return { budget: lifetime.value - spent.value }
 }
 
+// How far down the buy order to look for a purchase other than the Lab.
+const LAB_SKIP_ROW_CAP = 16
+
 const entryKey = (entry) => `${entry.source}:${entry.name}`
 
 /**
- * Simulates the buy-out from zero. Returns `{ purchases, unpriced, budget,
+ * Simulates the buy-out from zero, with the Enhancements Lab at the level given
+ * (0 or 1) throughout. Returns `{ purchases, unpriced, budget,
  * spent, remaining, endedBy }`, `endedBy` being 'budget' (the next
  * recommended purchase costs more than what is left) or 'everything-bought'
  * (nothing priceable is left to buy). `purchases` are the buy order's own
@@ -48,13 +52,13 @@ const entryKey = (entry) => `${entry.source}:${entry.name}`
  */
 export function simulateBuyOut({
   budget,
+  enhancementLabLevel = 0,
   discountLabLevels = {},
   enhancementDiscountLabLevels = {},
 }) {
   const workshopLevels = {}
   const enhancementLevels = {}
   const unlockedGroups = {}
-  let enhancementLabLevel = 0
 
   const purchases = []
   const unpricedByKey = new Map()
@@ -77,7 +81,24 @@ export function simulateBuyOut({
       if (!unpricedByKey.has(entryKey(entry))) unpricedByKey.set(entryKey(entry), entry)
     }
 
-    const next = ranked[0]
+    // A respec gives back Workshop coins, not Lab coins (OQ-143), so the Lab is
+    // never bought here: it is read as the player has it. Unowned, it is
+    // ranked like any candidate, so when it comes first the next purchase is
+    // the first Workshop or unlock one after it, ranked as the buy order ranks them.
+    let next = ranked[0]
+    if (next?.source === 'lab') {
+      next = getPrioritizedNextUpgrades(
+        {
+          workshopLevels,
+          enhancementLevels,
+          enhancementLabLevel,
+          unlockedGroups,
+          discountLabLevels,
+          enhancementDiscountLabLevels,
+        },
+        { rowCap: LAB_SKIP_ROW_CAP },
+      ).ranked.find((entry) => entry.source === 'workshop' || entry.source === 'unlock')
+    }
     if (!next) break
     if (next.cost > budget - spent) {
       endedBy = 'budget'
@@ -86,9 +107,7 @@ export function simulateBuyOut({
 
     purchases.push(next)
     spent += next.cost
-    if (next.source === 'lab') {
-      enhancementLabLevel = 1
-    } else if (next.source === 'unlock') {
+    if (next.source === 'unlock') {
       unlockedGroups[unlockGroupKey(next.categoryId, next.name)] = true
     } else if (next.source === 'workshop') {
       workshopLevels[next.name] = next.nextLevel

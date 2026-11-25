@@ -2,13 +2,33 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  flex: 1;
+  overflow-y: auto;
   padding: 16px;
-  border-top: 1px solid var(--border);
 }
 
 .buy-out__heading {
   margin: 0;
-  font-size: 16px;
+  font: 600 17px/1.3 var(--heading);
+  color: var(--text-h);
+}
+
+.buy-out__subheading {
+  margin: 0;
+  font: 600 15px/1.4 var(--heading);
+  color: var(--text-h);
+}
+
+.buy-out__note {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.buy-out__button {
+  width: auto;
+  align-self: flex-start;
+  padding: 8px 16px;
 }
 
 .buy-out__field {
@@ -27,7 +47,7 @@
 
 .buy-out__error {
   margin: 0;
-  color: #b3261e;
+  color: var(--danger);
 }
 
 .buy-out__list {
@@ -40,10 +60,11 @@
 }
 
 .buy-out__row {
-  display: flex;
   flex-wrap: wrap;
-  gap: 4px 10px;
-  padding: 6px 8px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
+}
+
+/* upgrade-path__row:first-child marks the next purchase in the buy order; these lists have none. */
+.buy-out__row:first-child {
+  background: none;
+  font-weight: inherit;
 }

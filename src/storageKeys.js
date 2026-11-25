@@ -17,6 +17,7 @@ export const TOWER_DATA_KEYS = {
 
 export const INTERFACE_SETTING_KEYS = {
   appSection: 'appSection',
+  pathView: 'pathView',
   workshopMode: 'workshopMode',
   activeCategoryId: 'activeCategoryId',
   themePreference: 'themePreference',
