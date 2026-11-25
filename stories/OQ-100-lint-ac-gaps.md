@@ -38,7 +38,7 @@ the function behind it.
       - a story whose section holds an italic line starting with `*` and no
         space, beside well-formed ACs, has no `AC-5` violation;
       - `lintAll` over the repository still reports no blocking violation.
-        That covers the three italic lines named in Context and indented `-`
+        That covers the two italic lines named in Context and indented `-`
         sub-bullets such as OQ-105's AC-4. (OQ-99's was the example until
         2026-10-12. OQ-99 is retiring from here as steward's ST-10.)
 - [ ] **AC-3** — A test runs `node scripts/lint-stories.mjs` as a child
@@ -81,15 +81,17 @@ the function behind it.
     `process.exitCode` to 1 if any violation is blocking, and 0 otherwise.
   - The command runs only when
     `process.argv[1] === fileURLToPath(import.meta.url)`.
-    `scripts/report/review-verdicts.mjs`, until OQ-132 removes it, compares
-    `realpathSync` of both instead. AC-3 tests the behaviour, not which comparison is used.
-- Three stories under `stories/` have a line in `Acceptance criteria` that
+    `scripts/report/review-verdicts.mjs` compared `realpathSync` of both
+    instead, until OQ-132 removed it (405c678). AC-3 tests the behaviour, not
+    which comparison is used.
+- Two stories under `stories/` have a line in `Acceptance criteria` that
   starts with `*` and is italic text, not a list item (AC-2): line 19 of
-  `OQ-95-gold-box-max-level.md`, `OQ-96-deprioritize-enhancements.md` and
-  `OQ-97-clear-leading-zeros.md` (`*Barebones: to be refined in a planning
-  session.*`). No story in `stories/done/` has such a line. A fourth,
-  `OQ-66-parallel-flows.md` (`*(provisional — …`, line 19), was retired on
-  2026-10-10, and the lint does not read `stories/retired/`.
+  `OQ-95-gold-box-max-level.md` and of `OQ-96-deprioritize-enhancements.md`
+  (`*Barebones: to be refined in a planning session.*`). A third,
+  `OQ-97-clear-leading-zeros.md`, had one until it was refined, and is now in
+  `stories/done/` without it. No story in `stories/done/` has such a line. A
+  fourth, `OQ-66-parallel-flows.md` (`*(provisional — …`, line 19), was
+  retired on 2026-10-10, and the lint does not read `stories/retired/`.
 - `scripts/lint-stories.test.mjs` builds fixture roots with `mkdtemp` under
   `tmpdir()` (`tmpRoot`), and calls `lintAll` directly.
 - `stories/done/OQ-61-story-schema-lint.md`, AC-5: "The set of N across a
