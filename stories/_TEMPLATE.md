@@ -2,9 +2,9 @@
 id: OQ-NN
 title: One line, in the imperative or as the capability delivered
 tier: normal               # fix | next | normal | later — priority, nothing else
-kind: product              # product | workflow — for reading; never read by the dispatcher
-depends_on: []             # [OQ-45] — not dispatched until those are in done/
-model: sonnet              # per-story escalation; the reviewer is never this model
+kind: product              # product | workflow — for reading; never used to order
+depends_on: []             # [OQ-45] — not handed off until those are in done/
+model: sonnet              # the model asked for; steward's handoff coder does not read it
 blocked: null              # null | "reason text" — set by a kickback, cleared by Session A
 ---
 
@@ -33,7 +33,7 @@ One paragraph at most. This is the thing the story is for, not how to build it.
 
 Each one is independently checkable by someone holding only this file and the
 diff. AC ids are referenced in test names — `test('OQ-NN/AC-2: ...')` — so
-they must be stable once the story is dispatched.
+they must be stable once the story is handed off.
 
 Leave every box unticked. The PR that implements the story ticks each AC it
 delivered, and the reviewer checks those ticks — see "Acceptance criteria and
@@ -67,10 +67,11 @@ decided a thing, which file is the house style to match.
 ## Open questions
 
 <!--
-Must be empty to dispatch. Anything here beyond the marker below makes the
-story `draft`, and the dispatcher skips it. Anything here is Session A's to
-resolve — writing a question down and dispatching anyway is how the coder's
-guess becomes a permanent, unreviewed decision.
+Must be empty before the story is handed off. Anything here beyond the marker
+below makes the story `draft`, and it is not recommended for a handoff.
+Anything here is Session A's to resolve — writing a question down and handing
+the story off anyway is how the coder's guess becomes a permanent, unreviewed
+decision.
 
 When there is genuinely nothing outstanding, leave the marker rather than
 emptying the section: it says "considered, nothing open" rather than "nobody
