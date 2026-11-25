@@ -94,6 +94,33 @@ for (const { name, viewport } of VIEWPORTS) {
   })
 }
 
+// The Respec view of Path with a plan shown (OQ-143/AC-5), light and dark, at
+// the mobile viewport. A small budget keeps the plan to a screenful.
+for (const [file, colorScheme] of [
+  ['respec-mobile.png', 'light'],
+  ['respec-mobile-dark.png', 'dark'],
+]) {
+  test.describe(`respec appearance ${colorScheme}`, () => {
+    test.use({ viewport: VIEWPORTS[1].viewport, colorScheme, deviceScaleFactor: 1 })
+
+    test('Respec view', async ({ page }) => {
+      await page.addInitScript(() => {
+        window.localStorage.setItem('enhancementLabLevel', JSON.stringify(1))
+      })
+      await page.goto('/')
+      await page.getByRole('tab', { name: 'Path', exact: true }).click()
+      await page.getByRole('tab', { name: 'Respec', exact: true }).click()
+      await page.getByLabel('Lifetime coins').fill('1500000')
+      await page.getByLabel('Coins spent on Labs').fill('500000')
+      await page.getByRole('button', { name: 'Plan buy-out' }).click()
+      await expect(page.getByRole('list', { name: 'Buy-out summary' })).toBeVisible()
+
+      await settle(page)
+      await expect(page).toHaveScreenshot(file)
+    })
+  })
+}
+
 // Dark palette (OQ-44). index.css declares the dark values twice -- once
 // under `prefers-color-scheme: dark`, once under `:root[data-theme='dark']`,
 // because a selector list can't span in and out of a @media block -- with

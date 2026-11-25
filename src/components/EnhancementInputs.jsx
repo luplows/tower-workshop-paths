@@ -1,5 +1,6 @@
 import { ENHANCEMENT_CATEGORIES } from '../data/enhancementCategories'
 import { useLocalStorageState } from '../hooks/useLocalStorageState'
+import { STORAGE_KEYS } from '../storageKeys'
 import { ENHANCEMENT_LAB_COST } from '../utils/cheapestNextUpgrades'
 import { formatCoins } from '../utils/formatCoins'
 import { formatEnhancementValue } from '../utils/enhancementValue'
@@ -19,7 +20,7 @@ import './EnhancementInputs.css'
  */
 export function EnhancementInputs({ activeCategoryId, onCategoryChange }) {
   const [enhancementLabLevel, setEnhancementLabLevel] = useLocalStorageState(
-    'enhancementLabLevel',
+    STORAGE_KEYS.enhancementLabLevel,
     0,
   )
 
@@ -44,7 +45,7 @@ export function EnhancementInputs({ activeCategoryId, onCategoryChange }) {
   return (
     <CategoryLevelInputs
       categories={ENHANCEMENT_CATEGORIES}
-      storageKey="enhancementLevels"
+      storageKey={STORAGE_KEYS.enhancementLevels}
       formatValue={formatEnhancementValue}
       nameSuffix=" +"
       activeCategoryId={activeCategoryId}

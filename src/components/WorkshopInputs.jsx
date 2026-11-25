@@ -1,5 +1,6 @@
 import { WORKSHOP_CATEGORIES } from '../data/workshopCategories'
 import { useLocalStorageState } from '../hooks/useLocalStorageState'
+import { STORAGE_KEYS } from '../storageKeys'
 import { unlockGroupKey } from '../utils/workshopUnlockGroups'
 import { CategoryLevelInputs } from './CategoryLevelInputs'
 
@@ -10,7 +11,7 @@ import { CategoryLevelInputs } from './CategoryLevelInputs'
 // live-in-sync.
 export function WorkshopInputs({ activeCategoryId, onCategoryChange }) {
   const [unlockedGroups, setUnlockedGroups] = useLocalStorageState(
-    'workshopUnlockedGroups',
+    STORAGE_KEYS.workshopUnlockedGroups,
     {},
   )
 
@@ -24,7 +25,7 @@ export function WorkshopInputs({ activeCategoryId, onCategoryChange }) {
   return (
     <CategoryLevelInputs
       categories={WORKSHOP_CATEGORIES}
-      storageKey="workshopLevels"
+      storageKey={STORAGE_KEYS.workshopLevels}
       activeCategoryId={activeCategoryId}
       onCategoryChange={onCategoryChange}
       unlockedGroups={unlockedGroups}

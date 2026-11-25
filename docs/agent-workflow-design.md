@@ -317,7 +317,8 @@ than relaxed.
    access is reviewed at all, let alone landed (OQ-81). CI fails a coder's own
    pull request if it changes `stories/` beyond its own story's move, ticks and `blocked:` edit
    (OQ-82; `scripts/dispatch/story-containment.mjs`). **Planned (OQ-105):** it also fails one whose
-   head branch names a `story/OQ-<n>-…` other than the story its diff moves.
+   head branch names a story other than the one its diff moves, as `story/OQ-<n>-…` or as
+   steward's `handoff/H-<k>-stories-oq-<n>-…` (both forms decided 2026-11-24 by the owner).
 2. Dispatcher picks the highest-tier, lowest-id ready story; creates a worktree and the branch
    `story/OQ-49-import-player-info`. The loop (`scripts/dispatch/loop.mjs`, OQ-86) skips a ready
    story whose `story/OQ-<n>-*` branch already exists on `origin` (`stories/README.md`'s

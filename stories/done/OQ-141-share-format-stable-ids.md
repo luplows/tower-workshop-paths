@@ -17,7 +17,7 @@ copy, and an old link never stops working.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — Every `localStorage` key the app uses is named once, in one
+- [x] **AC-1** — Every `localStorage` key the app uses is named once, in one
       module, as either **tower data** or an **interface setting**:
       - Tower data: `workshopLevels`, `enhancementLevels`,
         `workshopDiscountLabs`, `enhancementDiscountLabs`,
@@ -36,7 +36,7 @@ copy, and an old link never stops working.
       review counted about 15 comments that name these keys in backticks, such as
       `cheapestNextUpgrades.js` lines 231–277 and `LabsInputs.jsx` lines 31–33
       at 825d78e, and stay as they are.
-- [ ] **AC-2** — Every stored item has a permanent numeric ID, in one table:
+- [x] **AC-2** — Every stored item has a permanent numeric ID, in one table:
       - each Workshop upgrade and each Enhancement;
       - each Workshop and Enhancement discount Lab;
       - the Enhancements Lab level;
@@ -46,7 +46,7 @@ copy, and an old link never stops working.
       IDs are only ever added. A test pins the table and fails if an ID is
       removed, reused, or given to a different item. A second test fails if
       any item in the data files, or any AC-1 tower-data key, has no ID.
-- [ ] **AC-3** — A payload is `[format version][data revision][records][CRC-16]`,
+- [x] **AC-3** — A payload is `[format version][data revision][records][CRC-16]`,
       encoded as unpadded base64url. The format version stays `1`: no v1
       payload has been shared, because OQ-57 is not built.
       - A record starts with a varint key, `ID × 4 + type`. The type says how
@@ -63,11 +63,11 @@ copy, and an old link never stops working.
         payload carried every level and a missing one was rejected. See
         Context for why.
       - The checksum is CRC-16/CCITT-FALSE over every byte before it.
-- [ ] **AC-4** — The data revision is a number in the codec. A test pins a
+- [x] **AC-4** — The data revision is a number in the codec. A test pins a
       fingerprint of the item table: every item's ID, name and current max.
       It fails, saying to raise the data revision, when the data files change
       the fingerprint without the revision changing.
-- [ ] **AC-5** — Decoding never fails because the game data has changed. A
+- [x] **AC-5** — Decoding never fails because the game data has changed. A
       payload whose data revision differs from the app's decodes, and the
       result says so (`stale: true`). Unknown IDs are skipped and listed in
       the result. A level above the item's current max is clamped to it and
@@ -78,7 +78,7 @@ copy, and an old link never stops working.
       payload from a future version is `unknown-version` even though this
       version cannot check its checksum. OQ-56's test at
       `src/utils/shareCodec.test.js` lines 78–82 relies on that.
-- [ ] **AC-6** — Tests cover:
+- [x] **AC-6** — Tests cover:
       - round trips for an empty tower, an all-max tower with every Lab,
         unlock and Buy-out input set, and a mixed one;
       - a pinned literal for one fixed tower, replacing OQ-56's;
@@ -92,7 +92,7 @@ copy, and an old link never stops working.
       The all-max payload keeps the complete share URL at or under 2,000
       characters, OQ-56's AC-3 budget, and a test reports the payload's
       length.
-- [ ] **AC-7** — `encodeTower` and `decodeTower` keep their names. They take
+- [x] **AC-7** — `encodeTower` and `decodeTower` keep their names. They take
       and return every tower-data key from AC-1, not only levels.
 
 ## Out of scope
@@ -104,6 +104,7 @@ copy, and an old link never stops working.
 - Interface settings. AC-1 names them only so that a new key has to be
   classified.
 - Compression.
+- **After review:** cases which AC-1's guard and the codec's round trips need not handle: a key name written as a string with escape sequences or as a backtick literal, or in quotes inside a comment, none of which the project's code writes; and a Buy-out input starting with a byte-order mark (U+FEFF), which the Buy-out fields store as typed, so a player could make one only by pasting that invisible character before an amount; AC-1's guard checks every non-test file under `src/` for a key name in single or double quotes, as the project writes them (crew, 2026-11-24). Follow-up: none.
 
 ## Constraints
 

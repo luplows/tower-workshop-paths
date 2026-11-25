@@ -1,5 +1,6 @@
 import { WORKSHOP_CATEGORIES } from '../data/workshopCategories'
 import { useLocalStorageState } from '../hooks/useLocalStorageState'
+import { STORAGE_KEYS } from '../storageKeys'
 import { ENHANCEMENT_LAB_NAME } from '../utils/cheapestNextUpgrades'
 import {
   ENHANCEMENT_DISCOUNT_LAB_MAX_LEVEL,
@@ -45,15 +46,15 @@ const formatUnlockState = (level) => (level >= 1 ? 'Unlocked' : 'Locked')
  */
 export function LabsInputs() {
   const [discountLabLevels, setDiscountLabLevels] = useLocalStorageState(
-    'workshopDiscountLabs',
+    STORAGE_KEYS.workshopDiscountLabs,
     {},
   )
   const [enhancementLabLevel, setEnhancementLabLevel] = useLocalStorageState(
-    'enhancementLabLevel',
+    STORAGE_KEYS.enhancementLabLevel,
     0,
   )
   const [enhancementDiscountLabLevels, setEnhancementDiscountLabLevels] = useLocalStorageState(
-    'enhancementDiscountLabs',
+    STORAGE_KEYS.enhancementDiscountLabs,
     {},
   )
 
