@@ -63,6 +63,14 @@
   flex-wrap: wrap;
 }
 
+/* The name says what is bought, so it wraps rather than being cut off; the
+   level, count and cost move to the next line when it needs the room. */
+.buy-out__row .upgrade-path__name {
+  flex: 1 1 12em;
+  overflow: visible;
+  white-space: normal;
+}
+
 /* upgrade-path__row:first-child marks the next purchase in the buy order; these lists have none. */
 .buy-out__row:first-child {
   background: none;
