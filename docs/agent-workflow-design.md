@@ -1804,8 +1804,12 @@ deciding what is next. It is the harness's product outline, and moves with this 
     next approval (`stories/README.md`, "Status and order"; `docs/session-a.md`, "Recommending a
     handoff"). Steward's handoff coder reads no story frontmatter, so `model` is not acted on. It
     holds a handoff whose file changed after approval, so a story is not edited while it is in
-    flight. Steward's 0.3.0 release review coded OQ-139 (H-1, #288) and OQ-141 (H-2, #290) here
-    this way first, on the owner's word, before this repository moved to v0.3.0.
+    flight. Steward's 0.3.0 release review coded OQ-139 (H-1, #288), OQ-141 (H-2, #290) and
+    OQ-143 (H-3, #297) here this way first, on the owner's word, before this repository moved to
+    v0.3.0. `steward.config.json`'s `setup` is `npm ci`, so a coder's worktree has the project's
+    dependencies before the coder starts and its **Verification** can run the real checks (decided
+    2026-11-25 by the owner). It was `null` until then, and the coders of H-1 to H-3 installed them
+    themselves. Nothing is run before a review.
   - **No AI attribution** (decided 2026-11-24 by the owner). Steward's handoff coder follows a
     project's own rule on attribution, and this repository had none: #288's coder added a
     `Co-Authored-By:` trailer. `CLAUDE.md` now forbids AI attribution, and `.claude/settings.json`
@@ -1813,7 +1817,7 @@ deciding what is next. It is the harness's product outline, and moves with this 
   - **Landing.** After OQ-132, a pull request landed only through `steward land <pr-number>`, on
     the owner's word, once its head had passed review, as `steward.config.json` had `land: false`.
     On 2026-11-09 the owner turned unattended landing on, with the upgrade to steward v0.2.0:
-    `land` is `true`, so steward v0.2.0's coordinator asks for a ready pull request's landing once
+    `land` is `true`, so steward's coordinator asks for a ready pull request's landing once
     its head has passed review and its checks are green. `steward land <pr-number>` still lands one
     by hand. A draft is neither reviewed nor landed.
   - **Units.** Pull requests name their story with a `Unit:` line, in the template and in
@@ -1832,8 +1836,8 @@ deciding what is next. It is the harness's product outline, and moves with this 
     hand merge of OQ-115 as an issue, which the crew closes once.
   - **No package.** Steward is not added to `package.json`. The thin workflows run it with `npx`,
     so they hold the pin: `init` wrote a commit's full SHA, 935fb5b, and `steward upgrade` moved it
-    to the tag `v0.2.0` on 2026-11-09. A tag is pinned because steward's crew does not move a tag
-    once it is created (the owner, 2026-11-09).
+    to the tag `v0.2.0` on 2026-11-09, and to `v0.3.0` on 2026-11-25 (#298). A tag is pinned
+    because steward's crew does not move a tag once it is created (the owner, 2026-11-09).
   - **What this repository's own checks use in place of the package.** The prefix is a local
     constant, since steward's settings reject `storyPrefix`. `scripts/ci-workflows.test.mjs` uses
     the literal `'Setup: '` for the setup-step prefix and the literal `'Land approved PRs'` for the
@@ -2126,7 +2130,7 @@ Checked on 2026-10-07 against `main` at `66c578d`:
     to npm can come later.
   - **This repository takes the review side without the dependency** for now (revised 2026-11-04,
     "This repository adopts steward through `init`"): the thin workflows run steward at a tag,
-    `v0.2.0` since 2026-11-09, which `init` first pinned at a commit.
+    `v0.3.0` since 2026-11-25 (`v0.2.0` from 2026-11-09), which `init` first pinned at a commit.
   - **The loop runs from the project's own worktree, as now** (`loop.mjs --init`). Today every story
     runs the dispatch code as it is on `origin/main` (OQ-86). With a pinned dependency, that becomes
     the engine version `origin/main` pins, so a project takes a new workflow version only through

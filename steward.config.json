@@ -1,6 +1,9 @@
 {
   "repo": "luplows/tower-workshop-paths",
-  "setup": null,
+  "setup": {
+    "command": "npm ci",
+    "timeoutMinutes": 10
+  },
   "check": null,
   "landWhen": "all-checks",
   "land": true,
