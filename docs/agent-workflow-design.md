@@ -1794,9 +1794,25 @@ deciding what is next. It is the harness's product outline, and moves with this 
     OQ-132's own landing ran no CI or Deploy (405c678), since they trigger on the workflow it deleted;
     the hand merge is the next push to `main`. OQ-133 and OQ-134
     follow, on steward's gate.
-  - **The coder loop ends for now.** Steward's coding side is not built, so after OQ-132 no coder
-    runs here until the owner decides otherwise. OQ-72, OQ-94 and OQ-105 name files this moves or
-    removes, so each is held with `blocked:`, and refined again after OQ-115.
+  - **The coder loop ends for now.** Steward's coding side was not built, so after OQ-132 no coder
+    ran here until the owner decided otherwise (next entry). OQ-72, OQ-94 and OQ-105 name files this
+    moves or removes, so each is held with `blocked:`, and refined again after OQ-115.
+  - **Coding through steward's handoffs** (decided 2026-11-24 by the owner, with the upgrade to
+    steward v0.3.0). The crew approves one story file at a time as a steward handoff, and steward's
+    coordinator codes the approved handoffs oldest first, on `handoff/H-<n>-…` branches. Nothing
+    here picks a story: the stories' status and order are what Session A reads to recommend the
+    next approval (`stories/README.md`, "Status and order"; `docs/session-a.md`, "Recommending a
+    handoff"). Steward's handoff coder reads no story frontmatter, so `model` is not acted on. It
+    holds a handoff whose file changed after approval, so a story is not edited while it is in
+    flight. Steward's 0.3.0 release review coded OQ-139 (H-1, #288), OQ-141 (H-2, #290) and
+    OQ-143 (H-3, #297) here this way first, on the owner's word, before this repository moved to
+    v0.3.0. `steward.config.json`'s `setup` is `npm ci`, so a coder's worktree has the project's
+    dependencies before the coder starts and its **Verification** can run the real checks (decided
+    2026-11-25 by the owner). It was `null` until then. Nothing is run before a review.
+  - **No AI attribution** (decided 2026-11-24 by the owner). Steward's handoff coder follows a
+    project's own rule on attribution, and this repository had none: #288's coder added a
+    `Co-Authored-By:` trailer. `CLAUDE.md` now forbids AI attribution, and `.claude/settings.json`
+    turns off Claude Code's default. Steward's `Coder:` provenance line is not attribution.
   - **Landing.** After OQ-132, a pull request landed only through `steward land <pr-number>`, on
     the owner's word, once its head had passed review, as `steward.config.json` had `land: false`.
     On 2026-11-09 the owner turned unattended landing on, with the upgrade to steward v0.2.0:

@@ -105,8 +105,8 @@ standard it was supposed to meet.
 ## PRs that add or change a story
 
 These apply to a PR that writes or edits files under `stories/` without
-implementing one: Session A's work. A story that lands `ready` is work the
-dispatch loop will carry out unattended, so it is reviewed as carefully as
+implementing one: Session A's work. A story that lands `ready` can be approved
+as a steward handoff and coded unattended, so it is reviewed as carefully as
 code.
 
 20. **Schema** — each added or changed story matches `stories/_TEMPLATE.md`:
@@ -121,9 +121,11 @@ code.
     at the PR's head: files, functions, line numbers, counts, behaviour, and
     what another story says. Check each one (`CLAUDE.md`, "Claims about this
     repository").
-23. **Stable ids** — a story that is already in flight (a `story/OQ-<n>-*`
-    branch exists on `origin`; check with `git ls-remote`) does not have its
-    AC ids renumbered. A new AC goes in with a letter suffix.
+23. **Stable ids** — a story that is already in flight (a
+    `handoff/H-<n>-stories-oq-<n>-…` branch exists on `origin`; check with
+    `git ls-remote`) does not have its AC ids renumbered. A new AC goes in
+    with a letter suffix. The PR body says the crew has been told, since
+    steward holds a handoff whose file has changed (`CLAUDE.md`).
 24. **Consistency** — the story does not contradict or duplicate another
     story's ACs. Where it takes over part of another story, that story is
     edited in the same PR, and every reference to the moved part is updated.
