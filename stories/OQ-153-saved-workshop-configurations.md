@@ -30,6 +30,8 @@ As a player using multiple Workshop presets and experimental setups, I want to p
 
 - [ ] **AC-8** — Sharing is scoped to the currently active configuration. When the current tower-data share format is used, the shared snapshot contains the active preset's Workshop and Enhancement levels and purchased Workshop unlock groups, together with the relevant global Lab and Respec budget values; values from inactive saved configurations are never included. A test with differing values in two presets verifies the active-only snapshot. Adding the associated recommendation profile to the share payload requires a separately reviewed, compatible codec decision (Open question 3); this story does not silently change OQ-141's shipped format.
 
+- [ ] **AC-9** — Deleting the final remaining saved configuration requires explicit confirmation and immediately creates and persists one new active default configuration, with zero Workshop and Enhancement levels, no purchased Workshop unlock groups, and the default `ehp` recommendation profile. Existing shared Lab levels/unlocks, lifetime coins, and coins spent on Labs remain stored and unchanged. After reload, the new default configuration is still active, and the app never has zero saved configurations. Tests cover deletion of the last configuration and preservation of global data.
+
 ## Out of scope
 
 - Automatic control of in-game Workshop preset slots, account sync, or server storage.
@@ -49,11 +51,11 @@ As a player using multiple Workshop presets and experimental setups, I want to p
 - Owner confirmations, 2026-11-25 — Workshop upgrade levels, Workshop Enhancement levels, purchased Workshop unlock groups, and the recommendation profile are preset-specific; Labs are global. Enhancement levels and purchased Workshop unlock groups are linked to the specific preset in the game, as reported by the owner.
 - Owner decisions, 2026-11-25 — offer both a blank new configuration and a copy of the active configuration, including its associated profile; allow an additional saved setup to be assigned to an available in-game slot without rebuilding it. Lifetime coins and coins spent on Labs are global across all presets.
 - `stories/done/OQ-141-share-format-stable-ids.md` and `stories/OQ-57-create-share-link.md` — established tower-data vs interface-setting boundaries. OQ-141's existing payload has stable ids for the eight current tower-data keys, but not yet an id for a recommendation-profile association.
-- Owner decisions, 2026-11-25 — share only the active preset initially, not every saved configuration; when future imports/adoptions are offered, **New configuration** is the default destination so existing presets are preserved.
+- Owner decisions, 2026-11-25 — share only the active preset initially, not every saved configuration; when future imports/adoptions are offered, **New configuration** is the default destination so existing presets are preserved. Deleting the last configuration leaves a newly saved default configuration; previously saved global values remain available.
 - Tech Tree Games, v29 patch notes (2026-08-26) — Workshop preset switching and two starter slots: https://techtreegames.zendesk.com/hc/en-us/articles/54972978743707-v29-Patch-Notes-2026-08-26
 
 ## Open questions
 
-1. What is the required backup/recovery behavior for an accidental overwrite or delete, including when the active configuration is deleted?
+1. What is the required backup/recovery behavior for accidental overwrite or deletion (e.g., undo or backup), and which remaining configuration becomes active if the deleted configuration was active? The final-configuration case is decided in AC-9.
 2. **Import integration:** With **New configuration** agreed as the default destination, how should OQ-53's existing replace-levels criteria apply within that new destination, and how will the separately deferred OQ-58 shared-tower adoption be added? Is an optional, explicitly confirmed **Replace active configuration** action needed later? Do not change either existing story's implementation scope implicitly.
 3. How should the saved configuration/profile association be encoded compatibly with OQ-141's existing v1 share-payload contract? The shared tower should explain which recommendation strategy generated its advice, but the currently shipped stable-ID codec does not yet encode an associated profile. Do not silently change its on-wire format.
