@@ -1800,7 +1800,7 @@ deciding what is next. It is the harness's product outline, and moves with this 
   - **Landing.** After OQ-132, a pull request landed only through `steward land <pr-number>`, on
     the owner's word, once its head had passed review, as `steward.config.json` had `land: false`.
     On 2026-11-09 the owner turned unattended landing on, with the upgrade to steward v0.2.0:
-    `land` is `true`, so steward v0.2.0's coordinator asks for a ready pull request's landing once
+    `land` is `true`, so steward's coordinator asks for a ready pull request's landing once
     its head has passed review and its checks are green. `steward land <pr-number>` still lands one
     by hand. A draft is neither reviewed nor landed.
   - **Units.** Pull requests name their story with a `Unit:` line, in the template and in
@@ -1819,8 +1819,8 @@ deciding what is next. It is the harness's product outline, and moves with this 
     hand merge of OQ-115 as an issue, which the crew closes once.
   - **No package.** Steward is not added to `package.json`. The thin workflows run it with `npx`,
     so they hold the pin: `init` wrote a commit's full SHA, 935fb5b, and `steward upgrade` moved it
-    to the tag `v0.2.0` on 2026-11-09. A tag is pinned because steward's crew does not move a tag
-    once it is created (the owner, 2026-11-09).
+    to the tag `v0.2.0` on 2026-11-09, and to `v0.3.0` on 2026-11-25 (#298). A tag is pinned
+    because steward's crew does not move a tag once it is created (the owner, 2026-11-09).
   - **What this repository's own checks use in place of the package.** The prefix is a local
     constant, since steward's settings reject `storyPrefix`. `scripts/ci-workflows.test.mjs` uses
     the literal `'Setup: '` for the setup-step prefix and the literal `'Land approved PRs'` for the
@@ -2113,7 +2113,7 @@ Checked on 2026-10-07 against `main` at `66c578d`:
     to npm can come later.
   - **This repository takes the review side without the dependency** for now (revised 2026-11-04,
     "This repository adopts steward through `init`"): the thin workflows run steward at a tag,
-    `v0.2.0` since 2026-11-09, which `init` first pinned at a commit.
+    `v0.3.0` since 2026-11-25 (`v0.2.0` from 2026-11-09), which `init` first pinned at a commit.
   - **The loop runs from the project's own worktree, as now** (`loop.mjs --init`). Today every story
     runs the dispatch code as it is on `origin/main` (OQ-86). With a pinned dependency, that becomes
     the engine version `origin/main` pins, so a project takes a new workflow version only through
