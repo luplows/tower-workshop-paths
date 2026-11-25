@@ -38,7 +38,8 @@ As a player using multiple Workshop presets and experimental setups, I want to p
 
 ## Constraints
 
-*(none)*
+- For future import/adopt functionality after saved configurations exist, the default destination is a **new** saved configuration; importing must not silently overwrite the active or any other configuration. This is a product rule for later integration, not an instruction for this story to implement import.
+- `stories/OQ-53-import-player-info.md` currently specifies replacing the imported level fields, and `stories/OQ-58-open-shared-tower.md` explicitly defers adoption of a shared tower. Preserve those story boundaries until the import destination and compatibility contract are reconciled.
 
 ## Context
 
@@ -48,11 +49,11 @@ As a player using multiple Workshop presets and experimental setups, I want to p
 - Owner confirmations, 2026-11-25 — Workshop upgrade levels, Workshop Enhancement levels, purchased Workshop unlock groups, and the recommendation profile are preset-specific; Labs are global. Enhancement levels and purchased Workshop unlock groups are linked to the specific preset in the game, as reported by the owner.
 - Owner decisions, 2026-11-25 — offer both a blank new configuration and a copy of the active configuration, including its associated profile; allow an additional saved setup to be assigned to an available in-game slot without rebuilding it. Lifetime coins and coins spent on Labs are global across all presets.
 - `stories/done/OQ-141-share-format-stable-ids.md` and `stories/OQ-57-create-share-link.md` — established tower-data vs interface-setting boundaries. OQ-141's existing payload has stable ids for the eight current tower-data keys, but not yet an id for a recommendation-profile association.
-- Owner decision, 2026-11-25 — share only the active preset initially, not every saved configuration.
+- Owner decisions, 2026-11-25 — share only the active preset initially, not every saved configuration; when future imports/adoptions are offered, **New configuration** is the default destination so existing presets are preserved.
 - Tech Tree Games, v29 patch notes (2026-08-26) — Workshop preset switching and two starter slots: https://techtreegames.zendesk.com/hc/en-us/articles/54972978743707-v29-Patch-Notes-2026-08-26
 
 ## Open questions
 
 1. What is the required backup/recovery behavior for an accidental overwrite or delete, including when the active configuration is deleted?
-2. Should imports or other future exports target only the active preset or offer broader choices? Active-preset-only **sharing** is decided, not the behavior of importing.
+2. **Import integration:** With **New configuration** agreed as the default destination, how should OQ-53's existing replace-levels criteria apply within that new destination, and how will the separately deferred OQ-58 shared-tower adoption be added? Is an optional, explicitly confirmed **Replace active configuration** action needed later? Do not change either existing story's implementation scope implicitly.
 3. How should the saved configuration/profile association be encoded compatibly with OQ-141's existing v1 share-payload contract? The shared tower should explain which recommendation strategy generated its advice, but the currently shipped stable-ID codec does not yet encode an associated profile. Do not silently change its on-wire format.
