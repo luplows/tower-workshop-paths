@@ -14,7 +14,7 @@ As a player using multiple Workshop presets and experimental setups, I want to p
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — Players can create and name multiple locally persisted configurations, marked either as an in-game Workshop preset slot (at most five) or as an additional saved setup (not counted toward that limit). Every configuration has exactly one associated registered curated recommendation profile; a new configuration defaults to `ehp` unless another profile is chosen.
+- [ ] **AC-1** — Players can create and name multiple locally persisted configurations, marked either as an in-game Workshop preset slot (at most five) or as an additional saved setup (not counted toward that limit). Every configuration has exactly one associated registered curated recommendation profile; the initial profile for newly created configurations is decided in Open question 2.
 
 - [ ] **AC-2** — When the feature is introduced, existing single-configuration Workshop state and its OQ-151 profile association become a named default configuration. Migration must not zero levels, discard unlocks, or silently replace an existing valid associated profile.
 
