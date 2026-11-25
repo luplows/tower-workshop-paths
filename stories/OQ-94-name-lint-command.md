@@ -1,22 +1,24 @@
 ---
 id: OQ-94
-title: Name the command for each CI check where the coder and the reviewer read, so both run the real linter
+title: Name each CI check's command where the coder and the reviewer read, lint included
 tier: normal
 kind: workflow
 depends_on: []
 model: sonnet
-blocked: "Held for steward's install: its acceptance criteria name files that OQ-148 moves or OQ-132 removes. Session A refines it again after OQ-115 lands."
+blocked: null
 ---
 
 ## Intent
 
 As the owner, I want every session to run the same checks CI runs, by the
 same commands, so that a pull request's **Verification** reports the project's
-real lint result. `CLAUDE.md`'s Testing section names the commands for Vitest
-and Playwright but not for lint or the build. The coder for OQ-90 (#159) guessed
-`npx eslint`, found no ESLint config, and skipped linting. The reviewer of
-OQ-91 (#161) did the same. The reviewer reads `REVIEW.md`, not `CLAUDE.md`, so
-the commands have to be reachable from there too.
+real lint result, and a reviewer can tell when it does not. `CLAUDE.md`'s
+Testing section names the commands for Vitest and Playwright but not for lint
+or the build. The coder for OQ-90 (#159) guessed `npx eslint`, found no ESLint
+config, and skipped linting. The reviewer of OQ-91 (#161) did the same.
+Steward's handoff coder reads `CLAUDE.md` and runs the checks it names, and
+steward's reviewer reads `REVIEW.md` and judges **Verification** without
+running anything, so the commands have to be reachable from both files.
 
 ## Acceptance criteria
 
@@ -43,18 +45,21 @@ the commands have to be reachable from there too.
 
 ## Out of scope
 
-- **`.claude/prompts/coder.md` and `reviewer.md`.** The coder reads
-  `CLAUDE.md` before it writes anything (`coder.md`, "Before you write
-  anything"), and the reviewer reads `REVIEW.md` first (`reviewer.md`, step
-  1, "Read `REVIEW.md`"), so AC-1 and AC-3 reach both. A spawned session
-  also cannot edit `.claude/prompts/`.
-- **Running lint for the coder**, for example in `coder.mjs` before the push.
-  CI runs `npm run lint` as a required check, so a lint failure is already
-  caught and retried. This story is about what the PR body reports.
+- **Steward's prompts.** They live in `luplows/steward`, not here. At
+  `release/v0.3.0`, `.claude/prompts/coder-handoff.md` tells the coder to read
+  `CLAUDE.md` (line 63) and to run "the project's own checks, as its
+  instructions or its `package.json` or equivalent say" (line 82), so AC-1
+  reaches it. `.claude/prompts/reviewer.md` gives the reviewer the checklist
+  (`REVIEW.md`, this project's `rulesFile`) and tells it not to run the
+  project's tests or lint (line 225), so AC-3 reaches it.
+- **Running lint for the coder**, for example in steward's handoff coder
+  before the push. CI runs `npm run lint` as a required check, so a lint
+  failure is already caught. This story is about what the PR body reports.
 - **The steps that do not start with `npm `.** AC-2's filter leaves them out,
   and AC-1 does not list them:
-  - the Playwright steps, "Resolve Playwright version" and "Setup: Playwright
-    browsers", are setup, not checks;
+  - the Playwright and cache steps ("Resolve Playwright version", "Setup:
+    cache Playwright browsers", the apt package cache steps and "Setup:
+    Playwright browsers") are setup, not checks;
   - "Run the install clean-up test alone (OQ-136)" and "Check story diff
     containment (OQ-82)" are checks, but CI-only ones. The first runs the one
     test file that `vite.config.js` leaves out of `npm test` unless
@@ -65,20 +70,23 @@ the commands have to be reachable from there too.
 ## Constraints
 
 - Node, ESM, no new runtime dependencies. Read the YAML as text, as
-  `scripts/land/delete-merged-heads.test.mjs` reads `land-approved.yml`.
-  Do not add a YAML parser.
+  `scripts/ci-workflows.test.mjs` reads `ci.yml` (its OQ-118/AC-3 scan). Do
+  not add a YAML parser.
 
 ## Context
 
-- `.github/workflows/ci.yml`, job `test`, its `run:` steps at `f5cb7b1`, in
-  order: `npm ci`, `npm run lint`, `npm test`, the OQ-136 alone test
-  (`npx vitest run scripts/dispatch/install-cleanup.alone.test.mjs`), the
-  containment check (`node scripts/dispatch/story-containment.mjs …`, on pull
-  requests only), `npm run build`, "Resolve Playwright version", "Setup:
-  Playwright browsers" (a retry loop around `npx playwright install`), and
-  `npm run test:e2e`. When this story was written (`c063e8d`), the steps were
-  `npm ci`, the four `npm` checks and `npx playwright install`, and nothing
-  else.
+- `.github/workflows/ci.yml`, job `test`, its `run:` steps at `7656e00`, in
+  order: `npm ci` (in "Setup: npm ci"), `npm run lint`, `npm test`, the
+  OQ-136 alone test (`npx vitest run scripts/install-cleanup.alone.test.mjs`),
+  the containment check (`node scripts/story-containment.mjs …`, on pull
+  requests only), `npm run build`, "Resolve Playwright version" (line 48),
+  "Resolve apt package cache key" (line 59), "Setup: Playwright browsers"
+  (line 68, a retry loop around `npx playwright install`), "Collect apt
+  package files for the cache" (line 141), and `npm run test:e2e` (line 152).
+  "Setup: cache Playwright browsers", "Restore apt package cache" and "Save
+  apt package cache" use actions and have no `run:`. When this story was
+  written (`c063e8d`), the steps were `npm ci`, the four `npm` checks and
+  `npx playwright install`, and nothing else.
 - `package.json` scripts: `"lint": "oxlint"`, `"test": "vitest run"`,
   `"build": "vite build"`, `"test:e2e": "playwright test"`. The oxlint
   configuration is `.oxlintrc.json`. There is no `eslint.config.*` or
@@ -95,7 +103,9 @@ the commands have to be reachable from there too.
 - `REVIEW.md` item 12 today: "The **Verification** section reports real
   results — actual numbers, taken the same way across a before/after
   comparison — rather than an assertion that checks passed."
-- `.claude/prompts/reviewer.md` does not mention `CLAUDE.md`.
+- Held from 2026-11-04 for steward's install, since its Constraints and Out
+  of scope named the old engine's files. Refined again on 2026-11-24, after
+  OQ-115: its acceptance criteria were unaffected.
 
 ## Open questions
 
