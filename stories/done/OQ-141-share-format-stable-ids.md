@@ -104,6 +104,7 @@ copy, and an old link never stops working.
 - Interface settings. AC-1 names them only so that a new key has to be
   classified.
 - Compression.
+- **After review:** cases which AC-1's guard and the codec's round trips need not handle: a key name written as a string with escape sequences or as a backtick literal, or in quotes inside a comment, none of which the project's code writes; and a Buy-out input starting with a byte-order mark (U+FEFF), which the Buy-out fields store as typed, so a player could make one only by pasting that invisible character before an amount; AC-1's guard checks every non-test file under `src/` for a key name in single or double quotes, as the project writes them (crew, 2026-11-24). Follow-up: none.
 
 ## Constraints
 
