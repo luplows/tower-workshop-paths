@@ -5,7 +5,7 @@ tier: normal
 kind: workflow
 depends_on: []
 model: sonnet
-blocked: "Held for steward's install: its acceptance criteria name files that OQ-148 moves or OQ-132 removes. Session A refines it again after OQ-115 lands."
+blocked: null
 ---
 
 ## Intent
@@ -17,23 +17,24 @@ there.
 
 ## Acceptance criteria
 
-Line numbers are at `f5cb7b1`. Where a file has changed since, the quoted
+Line numbers are at `7656e00`. Where a file has changed since, the quoted
 text is what identifies the place.
 
 - [ ] **AC-1** — `Open-Questions.md` is deleted.
 - [ ] **AC-2** — The docs check names two files, not three:
-      `README.md` and `Project-Outline.md`. `CLAUDE.md` line 19 and
-      `.github/pull_request_template.md` lines 14–17 are updated, and they
+      `README.md` and `Project-Outline.md`. `CLAUDE.md` line 18 and
+      `.github/pull_request_template.md` lines 19–22 are updated, and they
       agree with each other. The template's sentence about noting an open
       question's move to `Completed-Questions.md` goes, since nothing is moved
       there any more (AC-4).
 - [ ] **AC-3** — `CLAUDE.md`'s "Stories" bullet "Nothing dispatches from
-      `Open-Questions.md`. It is the idea backlog." (line 62) is replaced by
+      `Open-Questions.md`. It is the idea backlog." (line 56) is replaced by
       one saying where an unrefined idea goes: a story file under `stories/`
-      whose **Open questions** section is not empty, which the queue shows as
-      `draft` and never dispatches (`stories/README.md`, status derivation).
-- [ ] **AC-4** — `REVIEW.md` items 3, 4 and 5 are updated, and no item is
-      renumbered, since other files cite items by number:
+      whose **Open questions** section is not empty, which reads `draft` and
+      is never recommended for a handoff (`stories/README.md`, status
+      derivation).
+- [ ] **AC-4** — `REVIEW.md` items 3, 4 and 5 (lines 32–42) are updated, and
+      no item is renumbered, since other files cite items by number:
       - item 3 requires a docs check outcome for the two files of AC-2;
       - item 4 no longer tells a pull request to move an `Open-Questions.md`
         entry into `Completed-Questions.md`. It says instead that
@@ -67,11 +68,10 @@ text is what identifies the place.
       `Open-Questions.md` resolve to where each story is: `[OQ-45]` on line
       221, and `[OQ-47]` and `[OQ-48]` on line 252. This is the only edit to
       the archive. Its prose is history and is not rewritten.
-- [ ] **AC-10** — Three stale workflow citations of "Open-Questions.md" for
-      OQ-42 and OQ-43 point at `Completed-Questions.md`, where both entries
-      have been since they were resolved: `.github/workflows/review-gate.yml`
-      line 3 (OQ-42), and `.github/workflows/detect-drift.yml` lines 3 (OQ-43)
-      and 121 (OQ-43, in the issue text the workflow writes). These are wrong
+- [ ] **AC-10** — Two stale workflow citations of "Open-Questions.md" for
+      OQ-43 point at `Completed-Questions.md`, where the entry has been since
+      it was resolved: `.github/workflows/detect-drift.yml` lines 3 and 121
+      (the second in the issue text the workflow writes). These are wrong
       today, independently of this story.
 - [ ] **AC-11** — The same correction in `.claude/hooks/session-start.sh`,
       lines 60 and 86 (OQ-42).
@@ -102,8 +102,6 @@ text is what identifies the place.
       - `docs/agent-workflow-design.md`'s accounts of the extraction: the
         "Checked again at the real run" paragraph, and R4's list of the
         stories that stay here;
-      - `scripts/dispatch/fixtures/oq75-coder-envelope.json`, a recorded
-        session envelope;
       - files under `stories/`, this story's own included once it is in
         `stories/done/`. A coder's pull request may not change other stories
         (OQ-82), and this one's mentions describe what it did.
@@ -131,13 +129,11 @@ text is what identifies the place.
 ## Constraints
 
 - No entry may be lost. Every story that was in `Open-Questions.md` exists in
-  `stories/` or `stories/done/` before this story is dispatched, which is what
+  `stories/` or `stories/done/` before this story is handed off, which is what
   makes AC-1 a deletion rather than a migration. The file's own table lists
   them.
-- If a write under `.claude/hooks/` is refused, handle AC-11 the way
-  `.claude/prompts/coder.md` says to handle a refused write under
-  `.claude/prompts/`: give the edit as a diff in the PR body, and leave AC-11
-  unticked.
+- If a write under `.claude/hooks/` is refused, give the edit as a diff in the
+  PR body, and leave AC-11 unticked.
 
 ## Context
 
@@ -159,6 +155,15 @@ references had grown since 2026-09-19. Each one in AC-2 to AC-13 was re-derived
 at `f5cb7b1` with `git grep -n "Open-Questions"`. The first version's AC-8,
 "no reference anywhere outside three files", could not be met, since a coder
 may not edit other story files. AC-14 lists what stays instead.
+
+**Held again from 2026-11-04 for steward's install, and refined again on
+2026-11-24.** Every reference was re-derived at `7656e00` with `git grep -n
+"Open-Questions"`. Since `f5cb7b1`, OQ-132 removed this repository's
+`review-gate.yml` and `scripts/dispatch/` (405c678), and steward's `init`
+installed a `review-gate.yml` of its own (80ceb89) that does not cite the file.
+So AC-10 lost its OQ-42 citation, AC-14 lost its recorded-envelope exception,
+and the Constraints no longer point at the old coder prompt. The other places are
+unchanged apart from their line numbers.
 
 The migration plan anticipated this ending: *"Two queues coexist during the
 drain"*, mitigated by documenting that nothing dispatches from the backlog. The
