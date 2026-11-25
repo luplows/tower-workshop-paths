@@ -14,7 +14,7 @@ As a player using multiple Workshop presets and experimental setups, I want to p
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — Players can create and name multiple locally persisted configurations, marked either as an in-game Workshop preset slot (at most five) or as an additional saved setup (not counted toward that limit). Every configuration has exactly one associated registered curated recommendation profile; the initial profile for newly created configurations is decided in Open question 2.
+- [ ] **AC-1** — Players can create and name multiple locally persisted configurations, marked either as an in-game Workshop preset slot (at most five) or as an additional saved setup (not counted toward that limit). Each has exactly one associated registered curated recommendation profile. Creation offers both **New** (an empty, zero-level Workshop configuration with the default `ehp` profile) and **Copy current** (a separate configuration duplicating the active configuration's saved levels, unlock state, and associated profile).
 
 - [ ] **AC-2** — When the feature is introduced, existing single-configuration Workshop state and its OQ-151 profile association become a named default configuration. Migration must not zero levels, discard unlocks, or silently replace an existing valid associated profile.
 
@@ -41,13 +41,14 @@ As a player using multiple Workshop presets and experimental setups, I want to p
 - `src/storageKeys.js`, `src/App.jsx`, `src/components/WorkshopInputs.jsx`, and `src/components/EnhancementInputs.jsx` — currently one set of localStorage-backed levels.
 - `stories/OQ-145-apply-respec-plan.md` — Apply plan currently targets stored single-tower levels.
 - `stories/OQ-151-recommendation-profile-selection.md` — supplies the per-configuration association that this story must preserve during migration and switching.
+- Owner decision, 2026-11-25 — offer both a blank new configuration and a copy of the active configuration, including its associated profile.
 - `stories/done/OQ-141-share-format-stable-ids.md` and `stories/OQ-57-create-share-link.md` — established tower-data vs interface-setting boundaries.
 - Tech Tree Games, v29 patch notes (2026-08-26) — Workshop preset switching and two starter slots: https://techtreegames.zendesk.com/hc/en-us/articles/54972978743707-v29-Patch-Notes-2026-08-26
 
 ## Open questions
 
 1. Exactly which fields belong to a saved Workshop configuration versus global tower state? Verify in-game preset behavior for Enhancements and unlock groups; do not assume Labs or coin-history inputs are per-preset.
-2. Should a new configuration copy the active configuration's levels and associated profile, or start from zero with eHP? May an additional saved setup later be assigned to an in-game slot?
+2. May an additional saved setup later be assigned to an in-game slot, and should that assignment preserve all its saved state? New and Copy current are both required creation paths; they do not depend on this decision.
 3. How should existing share/export/import stories operate with several configurations: active-only or all, and which existing payload contract remains stable?
 4. What is the required backup/recovery behavior for an accidental overwrite or delete, including when the active configuration is deleted?
 5. How should stored configuration/profile associations respect OQ-141's share payload and tower-data key contracts?
