@@ -14,7 +14,7 @@ const sourceFiles = (dir) =>
   })
 
 describe('OQ-141 storageKeys', () => {
-  it('OQ-141/AC-1 names the 8 tower-data keys and 4 interface settings, each under its own name', () => {
+  it('OQ-141/AC-1 names the 8 tower-data keys and 5 interface settings, each under its own name', () => {
     expect(Object.keys(TOWER_DATA_KEYS).sort()).toEqual(
       [
         'buyOutLabCoinsSpent',
@@ -28,10 +28,10 @@ describe('OQ-141 storageKeys', () => {
       ].sort(),
     )
     expect(Object.keys(INTERFACE_SETTING_KEYS).sort()).toEqual(
-      ['activeCategoryId', 'appSection', 'themePreference', 'workshopMode'].sort(),
+      ['activeCategoryId', 'appSection', 'pathView', 'themePreference', 'workshopMode'].sort(),
     )
     for (const [name, value] of Object.entries(STORAGE_KEYS)) expect(value).toBe(name)
-    expect(Object.keys(STORAGE_KEYS)).toHaveLength(12)
+    expect(Object.keys(STORAGE_KEYS)).toHaveLength(13)
   })
 
   it('OQ-141/AC-1 finds no key name as a string literal in any non-test file under src/ but storageKeys.js', () => {

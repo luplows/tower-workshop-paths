@@ -16,16 +16,16 @@ where every Workshop coin goes, using the Labs I really have.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — Path has two views, **Buy order** (today's list) and
+- [x] **AC-1** — Path has two views, **Buy order** (today's list) and
       **Respec** (the Buy-out Plan), switched by a tab bar under the header.
       - The tab bar is a `tablist`, and each view is a `tabpanel`, as
         `AppSectionTabs` and `ModeTabBar` do it.
       - Buy order is the default, and the chosen view is remembered in
         `localStorage`.
       - Buy order is unchanged.
-- [ ] **AC-2** — The Buy-out Plan is no longer on the Labs page. Labs shows
+- [x] **AC-2** — The Buy-out Plan is no longer on the Labs page. Labs shows
       only its Lab inputs.
-- [ ] **AC-3** — The Respec view's first control is the **Enhancements Lab**,
+- [x] **AC-3** — The Respec view's first control is the **Enhancements Lab**,
       the same setting as on the Labs page: the same stored key,
       `enhancementLabLevel`, so changing it in either place changes both. The
       plan uses it as set.
@@ -36,10 +36,10 @@ where every Workshop coin goes, using the Labs I really have.
       The plan never buys the Lab out of the Workshop budget, because a respec
       gives back Workshop coins, not Lab coins. Today `simulateBuyOut` starts
       the Lab at 0 and buys it (`source === 'lab'`).
-- [ ] **AC-4** — Below the Lab, **Lifetime coins** and **Coins spent on
+- [x] **AC-4** — Below the Lab, **Lifetime coins** and **Coins spent on
       Labs** sit together, under a line saying both are on the game's
       settings screen. The discount Labs are used as stored, as they are today.
-- [ ] **AC-5** — The view uses the classes and colours the other screens
+- [x] **AC-5** — The view uses the classes and colours the other screens
       already use:
       - its button is styled like Path's Buy button;
       - its rows are styled like the Path list's;
@@ -54,11 +54,11 @@ where every Workshop coin goes, using the Labs I really have.
       a plan shown, `respec-mobile.png` in the light theme and
       `respec-mobile-dark.png` in the dark. CI's `update-screenshots.yml`
       creates their baselines.
-- [ ] **AC-6** — Vitest covers AC-3's simulation: with the Lab at 0 and a
+- [x] **AC-6** — Vitest covers AC-3's simulation: with the Lab at 0 and a
       budget of `1e11`, no purchase has `source: 'lab'` and no Enhancement is
       bought. With it at 1 and a budget large enough to buy everything,
       Enhancements are bought, and the Lab still is not.
-- [ ] **AC-7** — Playwright:
+- [x] **AC-7** — Playwright:
       - `e2e/buy-out.spec.js` reaches the plan through Path → Respec, not
         Labs;
       - a test sets the Enhancements Lab in the Respec view and sees it set

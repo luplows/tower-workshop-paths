@@ -1,6 +1,12 @@
-export function ModeTabBar({ modes, activeModeId, onSelect }) {
+export function ModeTabBar({
+  modes,
+  activeModeId,
+  onSelect,
+  label = 'Workshop mode',
+  idPrefix = 'mode',
+}) {
   return (
-    <nav className="mode-tab-bar" role="tablist" aria-label="Workshop mode">
+    <nav className="mode-tab-bar" role="tablist" aria-label={label}>
       {modes.map((mode) => {
         const isActive = mode.id === activeModeId
         return (
@@ -8,9 +14,9 @@ export function ModeTabBar({ modes, activeModeId, onSelect }) {
             key={mode.id}
             type="button"
             role="tab"
-            id={`mode-tab-${mode.id}`}
+            id={`${idPrefix}-tab-${mode.id}`}
             aria-selected={isActive}
-            aria-controls={`mode-panel-${mode.id}`}
+            aria-controls={`${idPrefix}-panel-${mode.id}`}
             className={`mode-tab-bar__tab${isActive ? ' mode-tab-bar__tab--active' : ''}`}
             onClick={() => onSelect(mode.id)}
           >

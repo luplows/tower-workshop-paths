@@ -76,9 +76,10 @@ describe('simulateBuyOut', () => {
 
   it('OQ-8/AC-2: prices Enhancements with the entered Enhancement discount Labs', () => {
     const budget = 1e11
-    const full = simulateBuyOut({ budget })
+    const full = simulateBuyOut({ budget, enhancementLabLevel: 1 })
     const discounted = simulateBuyOut({
       budget,
+      enhancementLabLevel: 1,
       enhancementDiscountLabLevels: { attack: 50, defense: 50, utility: 50 },
     })
     const firstEnhancement = (plan) => plan.purchases.find((p) => p.source === 'enhancement')
@@ -86,7 +87,7 @@ describe('simulateBuyOut', () => {
   }, 120_000)
 
   it('OQ-8/AC-3: a budget above everything maxes every upgrade, or lists it as unpriced', () => {
-    const plan = simulateBuyOut({ budget: Number.MAX_VALUE })
+    const plan = simulateBuyOut({ budget: Number.MAX_VALUE, enhancementLabLevel: 1 })
     expect(plan.endedBy).toBe('everything-bought')
 
     const reached = {}
@@ -108,7 +109,19 @@ describe('simulateBuyOut', () => {
     }
     check(WORKSHOP_CATEGORIES, 'workshop')
     check(ENHANCEMENT_CATEGORIES, 'enhancement')
-    expect(reached['lab:Workshop Enhancements Lab']).toBe(1)
+  }, 120_000)
+
+  it('OQ-143/AC-6: with the Enhancements Lab at 0, the plan buys no Lab and no Enhancement', () => {
+    const plan = simulateBuyOut({ budget: 1e11, enhancementLabLevel: 0 })
+    expect(plan.purchases.length).toBeGreaterThan(0)
+    expect(plan.purchases.filter((p) => p.source === 'lab')).toEqual([])
+    expect(plan.purchases.filter((p) => p.source === 'enhancement')).toEqual([])
+  }, 120_000)
+
+  it('OQ-143/AC-6: with the Enhancements Lab at 1 and everything affordable, Enhancements are bought and the Lab is not', () => {
+    const plan = simulateBuyOut({ budget: Number.MAX_VALUE, enhancementLabLevel: 1 })
+    expect(plan.purchases.some((p) => p.source === 'enhancement')).toBe(true)
+    expect(plan.purchases.filter((p) => p.source === 'lab')).toEqual([])
   }, 120_000)
 
   it('OQ-8/AC-6: lists what the buy order reports as unknownCost, in both endings', () => {

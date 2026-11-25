@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it } from 'vitest'
 import App from './App'
@@ -51,6 +51,45 @@ describe('App', () => {
     expect(screen.getByLabelText('Attack Discount Lab')).toBeInTheDocument()
     expect(screen.queryByRole('tab', { name: 'Upgrade' })).not.toBeInTheDocument()
     expect(screen.queryByRole('tab', { name: 'Enhance' })).not.toBeInTheDocument()
+  })
+
+  it('OQ-143/AC-1, AC-2: Path has Buy order and Respec views, Respec is remembered, and Labs has no plan', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    await user.click(screen.getByRole('tab', { name: 'Path' }))
+
+    const buyOrder = screen.getByRole('tab', { name: 'Buy order' })
+    expect(buyOrder.closest('[role="tablist"]')).toHaveAttribute('aria-label', 'Path view')
+    expect(buyOrder).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('list', { name: 'Recommended buy order' })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('tab', { name: 'Respec' }))
+    expect(screen.getByLabelText('Lifetime coins')).toBeInTheDocument()
+    expect(screen.queryByRole('list', { name: 'Recommended buy order' })).not.toBeInTheDocument()
+    expect(JSON.parse(window.localStorage.getItem('pathView'))).toBe('respec')
+
+    cleanup()
+    render(<App />)
+    expect(screen.getByRole('tab', { name: 'Respec' })).toHaveAttribute('aria-selected', 'true')
+
+    await user.click(screen.getByRole('tab', { name: 'Labs' }))
+    expect(screen.queryByLabelText('Lifetime coins')).not.toBeInTheDocument()
+    expect(screen.getByLabelText('Attack Discount Lab')).toBeInTheDocument()
+  })
+
+  it('OQ-143/AC-3: the Enhancements Lab in the Respec view is the one on the Labs page', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    await user.click(screen.getByRole('tab', { name: 'Path' }))
+    await user.click(screen.getByRole('tab', { name: 'Respec' }))
+    expect(screen.getByText(/needed for Enhancements/)).toBeInTheDocument()
+
+    await user.clear(screen.getByLabelText('Workshop Enhancements Lab'))
+    await user.type(screen.getByLabelText('Workshop Enhancements Lab'), '1')
+    expect(screen.queryByText(/needed for Enhancements/)).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('tab', { name: 'Labs' }))
+    expect(screen.getByLabelText('Workshop Enhancements Lab')).toHaveValue(1)
   })
 
   it('defaults to the Upgrade mode, showing Workshop upgrade categories', () => {
