@@ -122,6 +122,57 @@ describe('getPrioritizedNextUpgrades (OQ-2)', () => {
     ])
   })
 
+  describe('strict eHP Enhancement eligibility (OQ-149)', () => {
+    const rows = (enh, extra = {}, rowCap = 3) =>
+      getPrioritizedNextUpgrades(
+        {
+          workshopLevels: maxedWorkshopLevels(),
+          unlockedGroups: allUnlockedGroups(),
+          enhancementLabLevel: 1,
+          enhancementLevels: enh,
+          ...extra,
+        },
+        { rowCap },
+      ).ranked
+
+    it('AC-1: ranks an eligible Enhancement (Health)', () => {
+      const enh = maxedEnhancementLevels()
+      enh.Health = 0
+      expect(rows(enh, {}, 1).map((e) => [e.source, e.name])).toEqual([['enhancement', 'Health']])
+    })
+
+    it('AC-1/AC-5: omits a cheaper Enhancement outside the curated set (Rend Armor, 5.04B vs Health 6.25B... never listed)', () => {
+      const enh = maxedEnhancementLevels()
+      enh['Rend Armor'] = 0
+      enh.Health = 1
+      const ranked = rows(enh, {}, 5)
+      expect(ranked.map((e) => e.name)).toEqual(['Health', 'Health', 'Health', 'Health', 'Health'])
+      expect(ranked.some((e) => e.name === 'Rend Armor')).toBe(false)
+    })
+
+    it('AC-2: an excluded Enhancement with no eligible candidate left yields no rows', () => {
+      const enh = maxedEnhancementLevels()
+      enh['Rend Armor'] = 0
+      expect(rows(enh)).toEqual([])
+    })
+
+    it('AC-3: still buys Cash Bonus as the Coin Bonus prerequisite while the gate is unmet', () => {
+      const enh = maxedEnhancementLevels()
+      // Zero the whole Utility tree so its spend is under Coin Bonus's 50B gate.
+      const utility = ENHANCEMENT_CATEGORIES.find((category) => category.id === 'utility')
+      for (const upgrade of utility.upgrades) enh[upgrade.name] = 0
+      const ranked = rows(enh, {}, 1)
+      expect(ranked[0]).toMatchObject({ source: 'enhancement', name: 'Cash Bonus' })
+    })
+
+    it('AC-4: a base Workshop upgrade still competes and wins at the fallback ratio', () => {
+      const workshopLevels = maxedWorkshopLevels()
+      delete workshopLevels.Damage
+      const ranked = rows(maxedEnhancementLevels(), { workshopLevels }, 1)
+      expect(ranked[0]).toMatchObject({ source: 'workshop', name: 'Damage' })
+    })
+  })
+
   it('never applies a ranked Enhancement ratio to a same-named Workshop upgrade', () => {
     // Workshop "Health" and "Health Regen" share the exact same per-batch
     // cost curve, but also each collide in name with a differently-ranked
@@ -407,10 +458,10 @@ describe('getPrioritizedNextUpgrades (OQ-2)', () => {
 
   describe('Enhancement discount Labs (OQ-37)', () => {
     it("applies a tree's discount to that tree's own Enhancement category costs", () => {
-      // Rend Armor (Attack) costs 5,000,000,000 at level 0 undiscounted --
-      // level 10 in the Attack Enhancement discount Lab is 3% off.
+      // Health (Defense) costs 5,000,000,000 at level 0 undiscounted --
+      // level 10 in the Defense Enhancement discount Lab is 3% off.
       const enh = maxedEnhancementLevels()
-      enh['Rend Armor'] = 0
+      enh.Health = 0
 
       const { ranked } = getPrioritizedNextUpgrades(
         {
@@ -418,19 +469,19 @@ describe('getPrioritizedNextUpgrades (OQ-2)', () => {
           unlockedGroups: allUnlockedGroups(),
           enhancementLabLevel: 1,
           enhancementLevels: enh,
-          enhancementDiscountLabLevels: { attack: 10 },
+          enhancementDiscountLabLevels: { defense: 10 },
         },
         { rowCap: 1 },
       )
 
       expect(ranked).toEqual([
-        expect.objectContaining({ name: 'Rend Armor', cost: 5_000_000_000 * 0.97 }),
+        expect.objectContaining({ name: 'Health', cost: 5_000_000_000 * 0.97 }),
       ])
     })
 
     it("doesn't apply one tree's Enhancement discount to a different tree's Enhancement costs", () => {
       const enh = maxedEnhancementLevels()
-      enh['Rend Armor'] = 0
+      enh.Health = 0
 
       const { ranked } = getPrioritizedNextUpgrades(
         {
@@ -438,12 +489,12 @@ describe('getPrioritizedNextUpgrades (OQ-2)', () => {
           unlockedGroups: allUnlockedGroups(),
           enhancementLabLevel: 1,
           enhancementLevels: enh,
-          enhancementDiscountLabLevels: { defense: 100, utility: 100 },
+          enhancementDiscountLabLevels: { attack: 100, utility: 100 },
         },
         { rowCap: 1 },
       )
 
-      expect(ranked).toEqual([expect.objectContaining({ name: 'Rend Armor', cost: 5_000_000_000 })])
+      expect(ranked).toEqual([expect.objectContaining({ name: 'Health', cost: 5_000_000_000 })])
     })
 
     it("doesn't apply an Enhancement discount to Workshop costs, even for the matching tree id", () => {

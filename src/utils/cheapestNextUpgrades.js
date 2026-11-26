@@ -1,6 +1,7 @@
 import { ENHANCEMENT_CATEGORIES } from '../data/enhancementCategories'
 import { ENHANCEMENT_LEVELS } from '../data/enhancementLevels'
 import {
+  ENHANCEMENT_PRIORITY_RATIOS,
   FALLBACK_RATIO,
   PRIORITY_BASE_NAME,
   priorityRatio,
@@ -504,6 +505,11 @@ function resolveBaseCost(cursors, enhancementLevels, enhancementLabLevel, enhanc
 const cursorPriorityRatio = (cursor) =>
   cursor.source === 'enhancement' ? priorityRatio(cursor.name) : FALLBACK_RATIO
 
+// Only the curated eHP Enhancements are ordinary Path purchases; every
+// non-Enhancement candidate (Workshop upgrade, unlock group, Lab) stays eligible.
+const isEligibleCursor = (cursor) =>
+  cursor.source !== 'enhancement' || cursor.name in ENHANCEMENT_PRIORITY_RATIOS
+
 const cursorRankIndex = (cursor) => {
   if (cursor.source !== 'enhancement') return RANKED_PRIORITY_ORDER.length
   const index = RANKED_PRIORITY_ORDER.indexOf(cursor.name)
@@ -605,6 +611,12 @@ export function getPrioritizedNextUpgrades(
 
     for (const [key, cursor] of cursors) {
       if (stuck.has(key)) continue
+
+      // Strict eHP (OQ-149): an Enhancement outside the curated set is not an
+      // ordinary purchase. Its cursor stays in the map -- resolveBaseCost
+      // reads Cash Bonus's live level -- but it only competes as the
+      // Coin Bonus prerequisite (`criticalPathKey`).
+      if (key !== criticalPathKey && !isEligibleCursor(cursor)) continue
 
       const priced = nextBatchCost(cursor)
       if (!priced.priceable) {

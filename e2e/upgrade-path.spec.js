@@ -116,7 +116,7 @@ test('shows and buys an Enhancement row as "{name} +", the game\'s own conventio
   // that lone Enhancement is unambiguously the only, first row.
   const workshopLevels = maxedLevels(WORKSHOP_CATEGORIES)
   const enhancementLevels = maxedLevels(ENHANCEMENT_CATEGORIES)
-  delete enhancementLevels['Recovery Package']
+  delete enhancementLevels.Health
 
   await page.addInitScript(
     ([workshop, enhancement]) => {
@@ -134,17 +134,44 @@ test('shows and buys an Enhancement row as "{name} +", the game\'s own conventio
 
   const list = page.getByRole('list', { name: 'Recommended buy order' })
   const firstRow = list.getByRole('listitem').first()
-  await expect(firstRow).toContainText('Recovery Package +')
+  await expect(firstRow).toContainText('Health +')
   await expect(firstRow).toContainText('5B coins')
 
-  await firstRow
-    .getByRole('button', { name: 'Buy 1 level of Recovery Package + for 5B coins' })
-    .click()
+  await firstRow.getByRole('button', { name: 'Buy 1 level of Health + for 5B coins' }).click()
 
   await page.getByRole('tab', { name: 'Input', exact: true }).click()
   await page.getByRole('tab', { name: 'Enhance', exact: true }).click()
-  await page.getByRole('tab', { name: 'Utility', exact: true }).click()
-  await expect(page.getByLabel('Recovery Package +', { exact: true })).toHaveValue('1')
+  await page.getByRole('tab', { name: 'Defense', exact: true }).click()
+  await expect(page.getByLabel('Health +', { exact: true })).toHaveValue('1')
+})
+
+test('OQ-149/AC-6: an Enhancement outside the curated eHP set stays on Input but is not recommended on Path', async ({
+  page,
+}) => {
+  // Everything maxed except Rend Armor (Attack, 5.04B first level -- not in
+  // the curated set) and Health (Defense, curated, 5B first level).
+  const workshopLevels = maxedLevels(WORKSHOP_CATEGORIES)
+  const enhancementLevels = maxedLevels(ENHANCEMENT_CATEGORIES)
+  delete enhancementLevels['Rend Armor']
+  delete enhancementLevels.Health
+
+  await page.addInitScript(
+    ([workshop, enhancement]) => {
+      window.localStorage.setItem('workshopLevels', JSON.stringify(workshop))
+      window.localStorage.setItem('enhancementLevels', JSON.stringify(enhancement))
+      window.localStorage.setItem('enhancementLabLevel', JSON.stringify(1))
+    },
+    [workshopLevels, enhancementLevels],
+  )
+  await page.goto('/')
+
+  await page.getByRole('tab', { name: 'Enhance', exact: true }).click()
+  await expect(page.getByLabel('Rend Armor +', { exact: true })).toHaveValue('0')
+
+  await page.getByRole('tab', { name: 'Path', exact: true }).click()
+  const list = page.getByRole('list', { name: 'Recommended buy order' })
+  await expect(list.getByRole('listitem').first()).toContainText('Health +')
+  await expect(list.getByText('Rend Armor')).toHaveCount(0)
 })
 
 test('shows the Workshop Enhancements Lab while locked, buying it unlocks Enhancements (OQ-31)', async ({

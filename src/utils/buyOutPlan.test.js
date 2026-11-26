@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { ENHANCEMENT_CATEGORIES } from '../data/enhancementCategories'
+import { ENHANCEMENT_PRIORITY_RATIOS } from '../data/enhancementPriority'
 import { WORKSHOP_CATEGORIES } from '../data/workshopCategories'
 import { computeBuyOutBudget, simulateBuyOut, summarisePurchases } from './buyOutPlan'
 
@@ -108,7 +109,23 @@ describe('simulateBuyOut', () => {
       }
     }
     check(WORKSHOP_CATEGORIES, 'workshop')
-    check(ENHANCEMENT_CATEGORIES, 'enhancement')
+    // Only the curated eHP Enhancements are ordinary purchases (OQ-149).
+    const curated = ENHANCEMENT_CATEGORIES.map((category) => ({
+      ...category,
+      upgrades: category.upgrades.filter((upgrade) => upgrade.name in ENHANCEMENT_PRIORITY_RATIOS),
+    }))
+    check(curated, 'enhancement')
+  }, 120_000)
+
+  it('OQ-149/AC-5: the respec simulation buys no Enhancement outside the curated set, and no Lab', () => {
+    const plan = simulateBuyOut({ budget: Number.MAX_VALUE, enhancementLabLevel: 1 })
+    const bought = new Set(plan.purchases.filter((p) => p.source === 'enhancement').map((p) => p.name))
+    expect(bought.has('Rend Armor')).toBe(false)
+    expect(bought.has('Health')).toBe(true)
+    for (const name of bought) {
+      expect(name in ENHANCEMENT_PRIORITY_RATIOS || name === 'Cash Bonus', name).toBe(true)
+    }
+    expect(plan.purchases.filter((p) => p.source === 'lab')).toEqual([])
   }, 120_000)
 
   it('OQ-143/AC-6: with the Enhancements Lab at 0, the plan buys no Lab and no Enhancement', () => {
