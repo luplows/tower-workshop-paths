@@ -30,9 +30,18 @@ Instructions only. Rationale, mechanism and history live in the files listed und
 - Do not trigger `.github/workflows/land-approved.yml` yourself. Steward does that.
 - Do not delete the head branch. That same workflow deletes it after a landing, and the repository's
   `delete_branch_on_merge` setting is not relied on.
-- No coder runs in this repository until the owner decides otherwise. Steward's coding side is not
-  built, and this repository's old engine is gone (see `docs/agent-workflow-design.md`, "This
-  repository adopts steward through `init`").
+- Code is written here through steward's coding handoffs. A member of the crew approves one story
+  file on `main` at a time (`steward handoff add`), and steward's coordinator codes the approved
+  handoffs one at a time, oldest first, each on a `handoff/H-<n>-…` branch. It never picks a story
+  by itself. Session A recommends which story to approve next (see
+  [`docs/session-a.md`](docs/session-a.md)). Steward's README, "Approving a coding handoff", defines
+  how a handoff is approved and chosen; this bullet restates it and must not drift from it.
+- Do not edit a story file between its handoff's approval and its pull request's landing. Steward
+  holds a handoff whose file has changed until the crew reapproves it.
+- No AI attribution: no `Co-Authored-By:` trailer naming an agent or a model in a commit message,
+  and no "Generated with" line in a pull request body, issue or comment. `.claude/settings.json`
+  turns off the attribution Claude Code adds by default. The `Coder:` provenance line steward writes
+  on the pull requests it opens is not attribution, and stays.
 - Agent containers have no `gh` CLI: use the GitHub MCP tools where the session has them, otherwise
   `git` plus the REST API. A spawned session may have neither.
 
@@ -58,9 +67,12 @@ recalled — in story files, docs, commit messages, pull request bodies and revi
   file. See `stories/README.md`, "Acceptance criteria and tests".
 - A pull request implementing a story moves that story file to `stories/done/` in the same pull
   request, and is reviewed against the story.
-- Record a design decision in `docs/agent-workflow-design.md` in the pull request that makes it,
-  marked as not yet built. The story that builds it removes the mark. See that document's "Reading
-  this document" note.
+- Record a design decision in the pull request that makes it, in the design of record for its
+  kind:
+  - a workflow decision in `docs/agent-workflow-design.md`, marked as not yet built. The story that
+    builds it removes the mark. See that document's "Reading this document" note.
+  - a product decision in `Project-Outline.md`, saying it is planned and naming the story. The
+    story that builds it updates that text, as part of its docs check.
 - Look things up in `Completed-Questions.md` by OQ number rather than reading it whole.
 
 ## Testing

@@ -105,8 +105,8 @@ standard it was supposed to meet.
 ## PRs that add or change a story
 
 These apply to a PR that writes or edits files under `stories/` without
-implementing one: Session A's work. A story that lands `ready` is work the
-dispatch loop will carry out unattended, so it is reviewed as carefully as
+implementing one: Session A's work. A story that lands `ready` can be approved
+as a steward handoff and coded unattended, so it is reviewed as carefully as
 code.
 
 20. **Schema** — each added or changed story matches `stories/_TEMPLATE.md`:
@@ -121,13 +121,21 @@ code.
     at the PR's head: files, functions, line numbers, counts, behaviour, and
     what another story says. Check each one (`CLAUDE.md`, "Claims about this
     repository").
-23. **Stable ids** — a story that is already in flight (a `story/OQ-<n>-*`
-    branch exists on `origin`; check with `git ls-remote`) does not have its
-    AC ids renumbered. A new AC goes in with a letter suffix.
+23. **Stable ids** — a story that is already in flight (a
+    `handoff/H-<n>-stories-oq-<n>-…` branch exists on `origin`; check with
+    `git ls-remote`) does not have its AC ids renumbered. A new AC goes in
+    with a letter suffix. The PR body says the crew has been told, since
+    steward holds a handoff whose file has changed (`CLAUDE.md`).
 24. **Consistency** — the story does not contradict or duplicate another
     story's ACs. Where it takes over part of another story, that story is
     edited in the same PR, and every reference to the moved part is updated.
-25. **Decisions recorded** — a design decision the story makes is written into
-    `docs/agent-workflow-design.md` in this PR, marked as that document's
-    "Reading this document" note says, and the story has an AC to resolve the
-    marker. A decision that exists only in a story is a finding.
+25. **Decisions recorded** — a decision the story makes is written into the
+    design of record for its kind, in this PR (`CLAUDE.md`, "Stories"):
+    - a workflow decision into `docs/agent-workflow-design.md`, marked as that
+      document's "Reading this document" note says, and the story has an AC to
+      resolve the marker;
+    - a product decision into `Project-Outline.md`, saying it is planned and
+      naming the story. It needs no marker and no AC: the pull request that
+      implements the story updates that text, under item 3.
+
+    A decision that exists only in a story is a finding.
