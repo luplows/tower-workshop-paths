@@ -39,11 +39,11 @@ jobs:
           VITEST_ALONE: '1'
       - name: Check story diff containment (OQ-82)
         if: github.event_name == 'pull_request'
-        run: >-
-          node scripts/story-containment.mjs
-          ${{ github.event.pull_request.base.sha }}
-          ${{ github.event.pull_request.head.sha }}
-          ${{ github.head_ref }}
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          HEAD_BRANCH: ${{ github.head_ref }}
+        run: node scripts/story-containment.mjs "$BASE_SHA" "$HEAD_SHA" "$HEAD_BRANCH"
       - run: npm run build
       - name: Resolve Playwright version
         id: playwright-version

@@ -187,6 +187,65 @@ describe('OQ-82/AC-1 and AC-2: a story branch with no move that adds a story', (
   }, CONTAINMENT_TEST_TIMEOUT)
 })
 
+const moveOtherStory = () => {
+  move('stories/OQ-90-other.md', 'stories/done/OQ-90-other.md')
+  write('stories/done/OQ-90-other.md', STORY('OQ-90').replace('- [ ] **AC-1**', '- [x] **AC-1**'))
+}
+
+describe('OQ-105/AC-1: a story/ branch naming one story while the diff moves another', () => {
+  it('fails, naming the moved story\'s file and both ids', async () => {
+    const args = scenario('wrong-story-by-hand', MAIN(), moveOtherStory)
+    const result = await checkStoryContainment({ ...args, branch: 'story/OQ-82-foo' })
+    expect(result.ok).toBe(false)
+    expect(result.violations).toHaveLength(1)
+    expect(result.violations[0].file).toBe('stories/done/OQ-90-other.md')
+    expect(result.violations[0].message).toContain('OQ-82')
+    expect(result.violations[0].message).toContain('OQ-90')
+  }, CONTAINMENT_TEST_TIMEOUT)
+})
+
+describe('OQ-105/AC-1: a handoff/ branch naming one story while the diff moves another', () => {
+  it('fails, naming the moved story\'s file and both ids', async () => {
+    const args = scenario('wrong-story-handoff', MAIN(), moveOtherStory)
+    const result = await checkStoryContainment({ ...args, branch: 'handoff/H-1-stories-oq-82-foo-md' })
+    expect(result.ok).toBe(false)
+    expect(result.violations).toHaveLength(1)
+    expect(result.violations[0].file).toBe('stories/done/OQ-90-other.md')
+    expect(result.violations[0].message).toContain('OQ-82')
+    expect(result.violations[0].message).toContain('OQ-90')
+  }, CONTAINMENT_TEST_TIMEOUT)
+})
+
+describe('OQ-105/AC-1: a handoff/ branch moving the story it names', () => {
+  it('passes', async () => {
+    const args = scenario('right-story-handoff', MAIN(), () => {
+      move('stories/OQ-82-foo.md', 'stories/done/OQ-82-foo.md')
+      write('stories/done/OQ-82-foo.md', STORY('OQ-82').replace('- [ ] **AC-1**', '- [x] **AC-1**'))
+    })
+    const result = await checkStoryContainment({ ...args, branch: 'handoff/H-1-stories-oq-82-foo-md' })
+    expect(result).toEqual({ ok: true })
+  }, CONTAINMENT_TEST_TIMEOUT)
+})
+
+describe('OQ-105/AC-2: a handoff/ branch with no move that adds a story', () => {
+  it('is caught by the branch-name fallback and flagged', async () => {
+    const args = scenario('handoff-no-move-adds-story', MAIN(), () => {
+      write('stories/OQ-203-added.md', STORY('OQ-203'))
+    })
+    const result = await checkStoryContainment({ ...args, branch: 'handoff/H-1-stories-oq-82-foo-md' })
+    expect(result.ok).toBe(false)
+    expect(result.violations).toContainEqual(expect.objectContaining({ file: 'stories/OQ-203-added.md' }))
+  }, CONTAINMENT_TEST_TIMEOUT)
+})
+
+describe('OQ-105/AC-3: a move on a branch in neither form', () => {
+  it('is decided as before: not restricted by the branch', async () => {
+    const args = scenario('write-story-move', MAIN(), moveOtherStory)
+    const result = await checkStoryContainment({ ...args, branch: 'write-story/something' })
+    expect(result).toEqual({ ok: true })
+  }, CONTAINMENT_TEST_TIMEOUT)
+})
+
 describe('OQ-82/AC-3: a story-writing PR is not restricted', () => {
   it('passes regardless of what it changes under stories/', async () => {
     git(repo, 'checkout', '-q', '-B', 'chore/add-stories', 'main')

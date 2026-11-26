@@ -186,6 +186,8 @@ jobs:
         run: npm run test:e2e
 
       - name: Commit the baselines
+        env:
+          PUSH_REF: ${{ github.event.pull_request.head.ref || github.ref_name }}
         run: |
           if [ -z "$(git status --porcelain -- e2e/__screenshots__)" ]; then
             echo "Baselines unchanged; nothing to commit."
@@ -196,7 +198,7 @@ jobs:
           git add e2e/__screenshots__
           git status --short -- e2e/__screenshots__
           git commit -m 'Generate Playwright screenshot baselines on CI'
-          git push origin HEAD:${{ github.event.pull_request.head.ref || github.ref_name }}
+          git push origin HEAD:"$PUSH_REF"
 
       - uses: actions/upload-artifact@v4
         if: failure()
