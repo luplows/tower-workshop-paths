@@ -14,7 +14,7 @@ As a player rebuilding after a respec, I want the buy-out to follow the curated 
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — `simulateBuyOut` accepts the curated profile associated with the active Workshop configuration and uses the same **core curated eligibility and scoring as Buy order's default profile-based path** at every purchase step. If no profile is supplied it uses `ehp`; the lifetime-coins-minus-Lab-coins budget calculation is unchanged. A future, explicitly selected **Buy order-only prerequisite unlock route** (OQ-155) is not a Respec input and does not modify these calculations.
+- [ ] **AC-1** — `simulateBuyOut` accepts the curated profile associated with the active Workshop configuration and uses the same core curated eligibility and scoring as Buy order at every purchase step. If no profile is supplied it uses `ehp`; the lifetime-coins-minus-Lab-coins budget calculation is unchanged. Future **read-only side-by-side Enhancement unlock-route comparisons** displayed in Buy order (OQ-155) are not simulation inputs and do not modify Respec calculations.
 
 - [ ] **AC-2** — Respec identifies the profile associated with the current Workshop configuration used for a plan. Editing that association invalidates the old generated plan immediately until recalculation; the stale plan cannot be applied by OQ-145's Apply plan action.
 
@@ -28,7 +28,7 @@ As a player rebuilding after a respec, I want the buy-out to follow the curated 
 
 - Changing the Respec summary's game-tab ordering or debug-only purchase list (OQ-144).
 - Changing the budget stop rule to spend leftover coins on cheaper, lower-ranked purchases.
-- Letting a player-selected alternative unlock route in Buy order change Respec purchases; future route choices are scoped to Buy order (OQ-155).
+- Letting informational alternate unlock routes displayed in Buy order change Respec purchases; OQ-155 specifies no route selection or change to Respec.
 - Saving or switching multiple Workshop configurations (OQ-153) or implementing target-configuration rebuilds (OQ-154).
 
 ## Constraints
