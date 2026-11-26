@@ -16,20 +16,20 @@ every level to them.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — A share control on the tower view builds a URL carrying the
+- [x] **AC-1** — A share control on the tower view builds a URL carrying the
       encoded payload for the current tower, every tower-data key OQ-141's
       AC-1 names, and writes it to the
       clipboard, with visible confirmation that it was copied.
-- [ ] **AC-2** — The URL is absolute and carries the deployed base path, so it
+- [x] **AC-2** — The URL is absolute and carries the deployed base path, so it
       resolves when pasted into a chat regardless of which page it was generated
       from.
-- [ ] **AC-3** — Generating a share link does not modify the user's stored
+- [x] **AC-3** — Generating a share link does not modify the user's stored
       data. A test seeds state, shares, and asserts stored state is
       unchanged.
-- [ ] **AC-4** — If the share URL would exceed the 2,000-character budget from
+- [x] **AC-4** — If the share URL would exceed the 2,000-character budget from
       OQ-56 AC-3, which OQ-141 keeps, the control reports why and produces no link, rather than
       emitting a truncated URL that fails on the recipient's side.
-- [ ] **AC-5** — When the clipboard write is refused or unavailable, the URL is
+- [x] **AC-5** — When the clipboard write is refused or unavailable, the URL is
       displayed for manual copying instead of the action silently doing nothing.
 
 ## Out of scope

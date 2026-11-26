@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { buildShareUrl, readStoredTower, ShareLinkError } from '../utils/shareLink'
 import './HeaderMenu.css'
 
 const THEME_OPTIONS = [
@@ -19,6 +20,9 @@ const THEME_OPTIONS = [
 export function HeaderMenu({ onClearAllLevels, themePreference, onThemeChange }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
+  // null, or { kind: 'copied' | 'error' | 'manual', text }: what the last
+  // share attempt did, shown in the menu so it never silently does nothing.
+  const [shareResult, setShareResult] = useState(null)
   const menuRef = useRef(null)
 
   useEffect(() => {
@@ -33,6 +37,27 @@ export function HeaderMenu({ onClearAllLevels, themePreference, onThemeChange })
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [menuOpen])
+
+  const handleShareClick = async () => {
+    let url
+    try {
+      url = buildShareUrl(readStoredTower(), {
+        origin: window.location.origin,
+        basePath: import.meta.env.BASE_URL,
+      })
+    } catch (error) {
+      const message =
+        error instanceof ShareLinkError ? error.message : 'The share link could not be made.'
+      setShareResult({ kind: 'error', text: message })
+      return
+    }
+    try {
+      await navigator.clipboard.writeText(url)
+      setShareResult({ kind: 'copied', text: 'Share link copied to the clipboard.' })
+    } catch {
+      setShareResult({ kind: 'manual', text: url })
+    }
+  }
 
   const handleClearClick = () => {
     setMenuOpen(false)
@@ -62,6 +87,27 @@ export function HeaderMenu({ onClearAllLevels, themePreference, onThemeChange })
           <button type="button" className="header-menu__item" onClick={handleClearClick}>
             Clear all levels
           </button>
+          <button type="button" className="header-menu__item" onClick={handleShareClick}>
+            Copy share link
+          </button>
+          {shareResult !== null && (
+            <div className="header-menu__share-result" role="status">
+              {shareResult.kind === 'manual' ? (
+                <>
+                  <span>Couldn't copy automatically. Copy this link:</span>
+                  <input
+                    type="text"
+                    readOnly
+                    aria-label="Share link"
+                    value={shareResult.text}
+                    onFocus={(event) => event.target.select()}
+                  />
+                </>
+              ) : (
+                <span>{shareResult.text}</span>
+              )}
+            </div>
+          )}
           <div className="header-menu__divider" />
           <div className="header-menu__section">
             <span className="header-menu__section-label">Theme</span>
