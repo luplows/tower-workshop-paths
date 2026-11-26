@@ -35,9 +35,11 @@ rather than restating it. The role itself is described in
   gave one.
 - Work in a separate git worktree, not the repository's main checkout
   (`CLAUDE.md`, "Branches and pull requests").
-- Record a design decision the story makes in
-  `docs/agent-workflow-design.md`, in the same pull request, marked as that
-  document's "Reading this document" note says (`CLAUDE.md`, "Stories").
+- Record a decision the story makes in the same pull request, in the design
+  of record for its kind (`CLAUDE.md`, "Stories"): a workflow decision in
+  `docs/agent-workflow-design.md`, marked as that document's "Reading this
+  document" note says; a product decision in `Project-Outline.md`, saying it
+  is planned and naming the story.
 - Before opening the pull request, run `node scripts/lint-stories.mjs`. The
   story should lint with no blocking violation, and have the status you
   intend, derived as `stories/README.md`, "Status and order", says: `ready`

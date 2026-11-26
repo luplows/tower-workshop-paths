@@ -189,7 +189,10 @@ delivered. Their PRs and reviews are the record.
 **A story whose decision is recorded in the design doc** carries an AC to
 resolve its `**Planned (OQ-n)**` markers there. The design doc's "Reading this
 document" note defines the markers, and the PR that writes the story records the
-decision, marked, so that the goal state reaches `main` when it is decided.
+decision, marked, so that the goal state reaches `main` when it is decided. This
+applies to workflow decisions. A product decision is recorded in
+`Project-Outline.md` instead, saying it is planned and naming the story, with no
+marker and no AC (`REVIEW.md` item 25).
 
 ## Lifecycle
 
