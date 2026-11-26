@@ -20,11 +20,11 @@ the function behind it.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — An `**AC-0**` item is a blocking `AC-5` violation. OQ-61's
+- [x] **AC-1** — An `**AC-0**` item is a blocking `AC-5` violation. OQ-61's
       AC-5 requires the ids to run `1..n`, and the gap check today starts at
       1, so nothing rejects 0. A test lints a story with `AC-0`, `AC-1` and
       `AC-2` and asserts one blocking `AC-5` violation, on the `AC-0` line.
-- [ ] **AC-2** — In the `Acceptance criteria` section, a list item marked
+- [x] **AC-2** — In the `Acceptance criteria` section, a list item marked
       with `*` or `+` is a blocking `AC-5` violation, the same as a malformed
       `-` item is today. A list item here is a line that starts, at its
       first character, with `*` or `+` followed by a space. A line such as
@@ -41,7 +41,7 @@ the function behind it.
         That covers the two italic lines named in Context and indented `-`
         sub-bullets such as OQ-105's AC-4. (OQ-99's was the example until
         2026-10-12. OQ-99 is retiring from here as steward's ST-10.)
-- [ ] **AC-3** — A test runs `node scripts/lint-stories.mjs` as a child
+- [x] **AC-3** — A test runs `node scripts/lint-stories.mjs` as a child
       process, by the script's absolute path, with its working directory set
       to a temporary fixture root, and asserts:
       - with a story that has a blocking violation: exit code 1, and stderr

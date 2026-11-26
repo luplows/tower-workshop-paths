@@ -172,10 +172,15 @@ function lintAcceptanceCriteria(filePath, section) {
   const violations = []
   const items = []
   for (const { text, line } of section.lines) {
-    if (!/^-/.test(text)) continue
+    // A list item starts at its first character with `-`, or `*` / `+` and a
+    // space. `*italic*` lines and indented continuations are not list items.
+    if (!/^(-|[*+] )/.test(text)) continue
     const match = text.match(AC_ITEM_RE)
     if (match) {
       items.push({ n: Number(match[1]), suffix: match[2] ?? '', line })
+      if (Number(match[1]) === 0) {
+        violations.push(violation(filePath, line, 'AC-5', `'AC-0' is not allowed: ids must run 1..n`))
+      }
     } else {
       violations.push(violation(filePath, line, 'AC-5', `list item is not a well-formed '- [ ] **AC-N**' task-list item: ${JSON.stringify(text.trim())}`))
     }
