@@ -19,7 +19,7 @@ run as a command.
 
 ## Acceptance criteria
 
-- [ ] **AC-1** — A head branch **names** story OQ-n when it matches either
+- [x] **AC-1** — A head branch **names** story OQ-n when it matches either
       form:
       - `story/OQ-<n>-…`, the form used for stories implemented by hand;
       - `handoff/H-<k>-stories-oq-<n>-…`, the form steward's coordinator
@@ -30,14 +30,14 @@ run as a command.
       OQ-m, and the head branch names OQ-n with n ≠ m. One violation names the
       moved story's file under `stories/done/`, and its message names both
       ids.
-- [ ] **AC-2** — `resolveStory`'s fallback, used when the diff moves no story,
+- [x] **AC-2** — `resolveStory`'s fallback, used when the diff moves no story,
       resolves a branch that names OQ-n in either form of AC-1 as
       `branch-only` with id OQ-n. Today only the `story/` form does.
-- [ ] **AC-3** — Nothing else about the check's result changes. In particular:
+- [x] **AC-3** — Nothing else about the check's result changes. In particular:
       a branch in either form and a move of the story it names, a move with a
       branch in neither form (for example `write-story/…` or `chore/…`), and a
       move with no branch given are all decided exactly as at `7656e00`.
-- [ ] **AC-4** — `scripts/story-containment.test.mjs` adds fixtures, named
+- [x] **AC-4** — `scripts/story-containment.test.mjs` adds fixtures, named
       `OQ-105/AC-…`, for:
       - a `story/OQ-82-…` branch whose diff moves and ticks a different story,
         which fails as AC-1 says;
@@ -49,21 +49,21 @@ run as a command.
       - a move on a `write-story/…` branch, which is decided as at `7656e00`.
 
       The OQ-82 fixtures already in that file still pass, unmodified.
-- [ ] **AC-5** — In `.github/workflows/ci.yml`, the "Check story diff
+- [x] **AC-5** — In `.github/workflows/ci.yml`, the "Check story diff
       containment (OQ-82)" step passes the head branch name to the script
       through an `env:` entry, referenced as a quoted shell variable. No
       `${{ github.head_ref }}` appears in that step's `run:`.
-- [ ] **AC-6** — In `.github/workflows/update-screenshots.yml`, the
+- [x] **AC-6** — In `.github/workflows/update-screenshots.yml`, the
       `git push` step passes `github.event.pull_request.head.ref ||
       github.ref_name` through an `env:` entry, referenced as a quoted shell
       variable. No `${{ … }}` expression appears in that step's `run:`. The
       `concurrency.group` and `actions/checkout` `ref:` uses are not shell, and
       are left as they are.
-- [ ] **AC-7** — After the change, no `run:` block in any file under
+- [x] **AC-7** — After the change, no `run:` block in any file under
       `.github/workflows/` contains `github.head_ref`, `head.ref`,
       `pull_request.title` or `pull_request.body`. The PR body gives the grep
       used and its output.
-- [ ] **AC-8** — The `**Planned (OQ-105)**` marker in
+- [x] **AC-8** — The `**Planned (OQ-105)**` marker in
       `docs/agent-workflow-design.md` is resolved as that document's "Reading
       this document" note says.
 

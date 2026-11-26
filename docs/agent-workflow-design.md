@@ -316,7 +316,7 @@ than relaxed.
    (OQ-83; `scripts/dispatch/writer-prs.mjs`). Only a pull request from an account with write
    access is reviewed at all, let alone landed (OQ-81). CI fails a coder's own
    pull request if it changes `stories/` beyond its own story's move, ticks and `blocked:` edit
-   (OQ-82; `scripts/dispatch/story-containment.mjs`). **Planned (OQ-105):** it also fails one whose
+   (OQ-82; `scripts/dispatch/story-containment.mjs`). It also fails one (OQ-105) whose
    head branch names a story other than the one its diff moves, as `story/OQ-<n>-…` or as
    steward's `handoff/H-<k>-stories-oq-<n>-…` (both forms decided 2026-11-24 by the owner).
 2. Dispatcher picks the highest-tier, lowest-id ready story; creates a worktree and the branch

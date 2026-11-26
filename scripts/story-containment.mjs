@@ -29,6 +29,16 @@ function storyFilenameRe(prefix) {
   return new RegExp(`^${prefix}-\\d+-[\\w-]+\\.md$`)
 }
 
+// OQ-105 AC-1: the story a head branch names, in either form -- `story/OQ-<n>-…`
+// (by hand) or steward's `handoff/H-<k>-stories-oq-<n>-…`. Null when neither.
+function branchNamedStory(branch, prefix) {
+  const text = branch ?? ''
+  const byHand = new RegExp(`^story/(${prefix}-\\d+)-`).exec(text)
+  if (byHand) return byHand[1]
+  const handoff = new RegExp(`^handoff/H-\\d+-stories-${prefix.toLowerCase()}-(\\d+)-`).exec(text)
+  return handoff ? `${prefix}-${handoff[1]}` : null
+}
+
 function resolveStory({ nameStatus, branch, prefix }) {
   const filenameRe = storyFilenameRe(prefix)
   const deleted = new Set()
@@ -45,8 +55,8 @@ function resolveStory({ nameStatus, branch, prefix }) {
   const idRe = new RegExp(`^(${prefix}-\\d+)-`)
   if (moved.length === 1) return { kind: 'moved', file: moved[0], id: moved[0].match(idRe)[1] }
   if (moved.length > 1) return { kind: 'ambiguous', files: moved }
-  const named = new RegExp(`^story/(${prefix}-\\d+)-`).exec(branch ?? '')
-  return named ? { kind: 'branch-only', id: named[1] } : { kind: 'none' }
+  const named = branchNamedStory(branch, prefix)
+  return named ? { kind: 'branch-only', id: named } : { kind: 'none' }
 }
 
 async function git(cwd, args) {
@@ -149,7 +159,7 @@ function checkOtherFile(file, oldText, newText) {
 
 /**
  * `cwd` is a git checkout with both `base` and `head` reachable as commits.
- * `branch` is the head branch name, used only as `resolveStory`'s fallback.
+ * `branch` is the head branch name, used as `resolveStory`'s fallback, and to check it names the story moved (OQ-105).
  *
  * Returns `{ ok: true }` when the pull request implements no story (AC-3) or
  * conforms (AC-2), or `{ ok: false, violations: [{ file, line, message }] }`.
@@ -185,6 +195,17 @@ export async function checkStoryContainment({ cwd, base, head, branch }) {
 
   const mergeBase = (await git(cwd, ['merge-base', base, head])).trim()
   const violations = []
+  // OQ-105 AC-1: a branch that names one story while the diff moves another.
+  if (resolved.kind === 'moved') {
+    const named = branchNamedStory(branch, storyPrefix)
+    if (named && named !== resolved.id) {
+      violations.push({
+        file: ownAfter,
+        line: 1,
+        message: `the head branch names ${named} but this pull request moves ${resolved.id}`,
+      })
+    }
+  }
   for (const file of touched.keys()) {
     if (file === ownBefore && file === ownAfter) {
       const oldText = await showFile(cwd, mergeBase, file)
