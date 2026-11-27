@@ -8,7 +8,7 @@ import { LabsInputs } from './components/LabsInputs'
 import { ModeTabBar } from './components/ModeTabBar'
 import { UpgradePath } from './components/UpgradePath'
 import { WorkshopInputs } from './components/WorkshopInputs'
-import { useLocalStorageState } from './hooks/useLocalStorageState'
+import { clearStoredValue, useLocalStorageState } from './hooks/useLocalStorageState'
 import { STORAGE_KEYS } from './storageKeys'
 
 // "Labs" sits alongside Input/Path rather than as a third ModeTabBar entry
@@ -62,12 +62,12 @@ function App() {
   }, [themePreference])
 
   const handleClearAllLevels = () => {
-    window.localStorage.removeItem(STORAGE_KEYS.workshopLevels)
-    window.localStorage.removeItem(STORAGE_KEYS.enhancementLevels)
-    window.localStorage.removeItem(STORAGE_KEYS.enhancementLabLevel)
-    window.localStorage.removeItem(STORAGE_KEYS.workshopUnlockedGroups)
-    window.localStorage.removeItem(STORAGE_KEYS.workshopDiscountLabs)
-    window.localStorage.removeItem(STORAGE_KEYS.enhancementDiscountLabs)
+    clearStoredValue(STORAGE_KEYS.workshopLevels)
+    clearStoredValue(STORAGE_KEYS.enhancementLevels)
+    clearStoredValue(STORAGE_KEYS.enhancementLabLevel)
+    clearStoredValue(STORAGE_KEYS.workshopUnlockedGroups)
+    clearStoredValue(STORAGE_KEYS.workshopDiscountLabs)
+    clearStoredValue(STORAGE_KEYS.enhancementDiscountLabs)
     setResetNonce((n) => n + 1)
   }
 

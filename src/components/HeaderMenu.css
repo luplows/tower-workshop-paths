@@ -175,3 +175,17 @@
   background: var(--danger);
   color: var(--bg);
 }
+
+.header-menu__share-result {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  max-width: 260px;
+}
+
+.header-menu__share-result input {
+  width: 100%;
+  box-sizing: border-box;
+}
