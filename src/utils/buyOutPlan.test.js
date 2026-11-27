@@ -89,7 +89,14 @@ describe('simulateBuyOut', () => {
 
   it('OQ-8/AC-3: a budget above everything maxes every upgrade, or lists it as unpriced', () => {
     const plan = simulateBuyOut({ budget: Number.MAX_VALUE, enhancementLabLevel: 1 })
-    expect(plan.endedBy).toBe('everything-bought')
+    // Everything the eHP strategy buys is bought; Enhancements outside it are
+    // left, and the ones the ranking reached are reported (OQ-149). Attack
+    // Enhancements past Damage + stay locked, as no Attack Enhancement is
+    // bought to cross their tree's threshold, so they are never candidates.
+    expect(plan.endedBy).toBe('eligible-bought')
+    const excludedNames = plan.excluded.map((entry) => entry.name)
+    expect(excludedNames).toEqual(expect.arrayContaining(['Cash Bonus', 'Damage']))
+    for (const name of excludedNames) expect(name in ENHANCEMENT_PRIORITY_RATIOS, name).toBe(false)
 
     const reached = {}
     for (const purchase of plan.purchases) {

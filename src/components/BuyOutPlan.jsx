@@ -127,7 +127,11 @@ export function BuyOutPlan() {
             {formatCoins(plan.remaining)}.{' '}
             {plan.endedBy === 'budget'
               ? 'The budget runs out before the next recommended purchase.'
-              : 'Everything priceable is bought.'}
+              : plan.endedBy === 'eligible-bought'
+                ? `Everything the eHP strategy buys is bought. Enhancements outside it are not bought, including ${plan.excluded
+                    .map((entry) => `${entry.name} +`)
+                    .join(', ')}.`
+                : 'Everything priceable is bought.'}
           </p>
 
           {plan.unpriced.length > 0 && (

@@ -144,7 +144,7 @@ describe('UpgradePath', () => {
       render(<UpgradePath />)
 
       expect(screen.queryByRole('list', { name: 'Recommended buy order' })).not.toBeInTheDocument()
-      expect(screen.getByText(/The eHP strategy doesn't buy Rend Armor \+\./)).toBeInTheDocument()
+      expect(screen.getByText(/Enhancements outside it are not recommended, including Rend Armor \+\./)).toBeInTheDocument()
       expect(
         screen.queryByText('Every Workshop upgrade and Enhancement with known cost data is maxed out.'),
       ).not.toBeInTheDocument()

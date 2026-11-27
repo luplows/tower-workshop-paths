@@ -32,4 +32,17 @@ describe('BuyOutPlan', () => {
     expect(purchases.getAllByRole('listitem').length).toBeGreaterThan(0)
     expect(summary.getAllByRole('listitem').length).toBeGreaterThan(0)
   })
+
+  it('OQ-149/AC-5: with everything eHP buys affordable, says Enhancements outside it are not bought', async () => {
+    window.localStorage.setItem('enhancementLabLevel', JSON.stringify(1))
+    const user = userEvent.setup()
+    render(<BuyOutPlan />)
+    await user.type(screen.getByLabelText('Lifetime coins'), `1${'0'.repeat(60)}`)
+    await user.type(screen.getByLabelText('Coins spent on Labs'), '0')
+    await user.click(screen.getByRole('button', { name: 'Plan buy-out' }))
+    expect(
+      screen.getByText(/Everything the eHP strategy buys is bought\. Enhancements outside it are not bought, including .*Damage \+/),
+    ).toBeInTheDocument()
+    expect(screen.queryByText(/Everything priceable is bought/)).not.toBeInTheDocument()
+  }, 120_000)
 })

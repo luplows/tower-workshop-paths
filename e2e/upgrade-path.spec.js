@@ -192,7 +192,7 @@ test('OQ-149/AC-2: when only an Enhancement outside the eHP set is left, Path sa
   await page.goto('/')
 
   await page.getByRole('tab', { name: 'Path', exact: true }).click()
-  await expect(page.getByText("The eHP strategy doesn't buy Rend Armor +.", { exact: false })).toBeVisible()
+  await expect(page.getByText('Enhancements outside it are not recommended, including Rend Armor +.', { exact: false })).toBeVisible()
   await expect(page.getByRole('list', { name: 'Recommended buy order' })).toHaveCount(0)
 })
 

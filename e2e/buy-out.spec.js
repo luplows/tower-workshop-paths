@@ -79,3 +79,20 @@ test('OQ-142/AC-6: short-form amounts plan a budget, and stay as typed after a r
   await expect(page.getByLabel('Lifetime coins')).toHaveValue('1.18q')
   await expect(page.getByLabel('Coins spent on Labs')).toHaveValue('66.5T')
 })
+
+test('OQ-149/AC-5: a budget above everything eHP buys says Enhancements outside it are not bought', async ({
+  page,
+}) => {
+  await page.goto('/')
+  await openRespec(page)
+
+  await page.getByLabel('Workshop Enhancements Lab').fill('1')
+  await page.getByLabel('Lifetime coins').fill(`1${'0'.repeat(60)}`)
+  await page.getByLabel('Coins spent on Labs').fill('0')
+  await page.getByRole('button', { name: 'Plan buy-out' }).click()
+
+  await expect(
+    page.getByText(/Everything the eHP strategy buys is bought\. Enhancements outside it are not bought, including .*Damage \+/),
+  ).toBeVisible()
+  await expect(page.getByText(/Everything priceable is bought/)).toHaveCount(0)
+})

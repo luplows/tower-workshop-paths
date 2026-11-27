@@ -44,11 +44,13 @@ const entryKey = (entry) => `${entry.source}:${entry.name}`
 
 /**
  * Simulates the buy-out from zero, with the Enhancements Lab at the level given
- * (0 or 1) throughout. Returns `{ purchases, unpriced, budget,
+ * (0 or 1) throughout. Returns `{ purchases, unpriced, excluded, budget,
  * spent, remaining, endedBy }`, `endedBy` being 'budget' (the next
- * recommended purchase costs more than what is left) or 'everything-bought'
- * (nothing priceable is left to buy). `purchases` are the buy order's own
- * rows; `unpriced` is everything it reported in `unknownCost` along the way.
+ * recommended purchase costs more than what is left), 'eligible-bought'
+ * (nothing the eHP strategy buys is left, but Enhancements outside it, listed
+ * in `excluded`, are not maxed: OQ-149) or 'everything-bought' (nothing
+ * priceable is left to buy). `purchases` are the buy order's own rows;
+ * `unpriced` is everything it reported in `unknownCost` along the way.
  */
 export function simulateBuyOut({
   budget,
@@ -64,9 +66,14 @@ export function simulateBuyOut({
   const unpricedByKey = new Map()
   let spent = 0
   let endedBy = 'everything-bought'
+  let excluded = []
 
   for (;;) {
-    const { ranked, unknownCost } = getPrioritizedNextUpgrades(
+    const {
+      ranked,
+      unknownCost,
+      excludedEnhancements = [],
+    } = getPrioritizedNextUpgrades(
       {
         workshopLevels,
         enhancementLevels,
@@ -99,7 +106,14 @@ export function simulateBuyOut({
         { rowCap: LAB_SKIP_ROW_CAP },
       ).ranked.find((entry) => entry.source === 'workshop' || entry.source === 'unlock')
     }
-    if (!next) break
+    if (!next) {
+      // The pass above scored every candidate before picking one, so
+      // `excludedEnhancements` is every Enhancement left only for being
+      // outside the eHP set.
+      excluded = excludedEnhancements
+      if (excluded.length > 0) endedBy = 'eligible-bought'
+      break
+    }
     if (next.cost > budget - spent) {
       endedBy = 'budget'
       break
@@ -117,7 +131,7 @@ export function simulateBuyOut({
   }
 
   const unpriced = [...unpricedByKey.values()].sort((a, b) => a.name.localeCompare(b.name))
-  return { purchases, unpriced, budget, spent, remaining: budget - spent, endedBy }
+  return { purchases, unpriced, excluded, budget, spent, remaining: budget - spent, endedBy }
 }
 
 /**

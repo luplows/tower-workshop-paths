@@ -116,8 +116,8 @@ export function UpgradePath() {
         // Not everything is maxed: what is left is outside the eHP set,
         // which the Path does not recommend (OQ-149).
         <p className="upgrade-path__empty">
-          Nothing left to recommend: every Workshop upgrade and eHP Enhancement with known cost data
-          is maxed out. The eHP strategy doesn't buy{' '}
+          Nothing left to recommend: the eHP strategy has nothing more to buy. Enhancements outside it
+          are not recommended, including{' '}
           {excludedEnhancements.map((entry) => `${entry.name} +`).join(', ')}.
         </p>
       ) : ranked.length === 0 ? (
