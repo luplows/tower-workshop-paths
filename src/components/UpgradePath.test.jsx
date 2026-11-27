@@ -130,6 +130,36 @@ describe('UpgradePath', () => {
     expect(rows[0]).toHaveTextContent('2.49M coins')
   })
 
+  describe('when only Enhancements outside the eHP set are left (OQ-149)', () => {
+    const store = (enhancementLevels) => {
+      window.localStorage.setItem('workshopLevels', JSON.stringify(maxedWorkshopLevels()))
+      window.localStorage.setItem('enhancementLevels', JSON.stringify(enhancementLevels))
+      window.localStorage.setItem('enhancementLabLevel', JSON.stringify(1))
+    }
+
+    it('OQ-149/AC-2: says what is left is outside the eHP set, not that everything is maxed', () => {
+      const enhancementLevels = maxedEnhancementLevels()
+      enhancementLevels['Rend Armor'] = 0
+      store(enhancementLevels)
+      render(<UpgradePath />)
+
+      expect(screen.queryByRole('list', { name: 'Recommended buy order' })).not.toBeInTheDocument()
+      expect(screen.getByText(/Enhancements outside it are not recommended, including Rend Armor \+\./)).toBeInTheDocument()
+      expect(
+        screen.queryByText('Every Workshop upgrade and Enhancement with known cost data is maxed out.'),
+      ).not.toBeInTheDocument()
+    })
+
+    it('OQ-149/AC-2: still says everything is maxed when it is', () => {
+      store(maxedEnhancementLevels())
+      render(<UpgradePath />)
+
+      expect(
+        screen.getByText('Every Workshop upgrade and Enhancement with known cost data is maxed out.'),
+      ).toBeInTheDocument()
+    })
+  })
+
   describe('Workshop discount Labs (OQ-4)', () => {
     it("shows a discounted cost for a Workshop row, using that tree's own discount Lab level", async () => {
       // Multishot Targets (Attack) costs 450 at level 0 undiscounted --
@@ -158,17 +188,17 @@ describe('UpgradePath', () => {
       // that lone Enhancement is unambiguously the only, first row -- same
       // isolation as the OQ-29 tests below.
       const enhancementLevels = maxedEnhancementLevels()
-      delete enhancementLevels['Recovery Package']
+      delete enhancementLevels.Health
       window.localStorage.setItem('workshopLevels', JSON.stringify(maxedWorkshopLevels()))
       window.localStorage.setItem('enhancementLevels', JSON.stringify(enhancementLevels))
       window.localStorage.setItem('enhancementLabLevel', JSON.stringify(1))
-      // "Recovery Package" is Utility -- a maxed Utility discount would
+      // "Health" is Defense -- a maxed Defense discount would
       // wrongly discount it if the Workshop/Enhancement boundary leaked.
-      window.localStorage.setItem('workshopDiscountLabs', JSON.stringify({ utility: 99 }))
+      window.localStorage.setItem('workshopDiscountLabs', JSON.stringify({ defense: 99 }))
       render(<UpgradePath />)
 
       const rows = screen.getAllByRole('listitem')
-      expect(rows[0]).toHaveTextContent('Recovery Package +')
+      expect(rows[0]).toHaveTextContent('Health +')
       expect(rows[0]).toHaveTextContent('5B coins')
     })
   })
@@ -178,7 +208,7 @@ describe('UpgradePath', () => {
       // Every Workshop upgrade maxed, every Enhancement maxed except one,
       // so that lone Enhancement is unambiguously the only, first row.
       const enhancementLevels = maxedEnhancementLevels()
-      delete enhancementLevels['Recovery Package']
+      delete enhancementLevels.Health
       window.localStorage.setItem('workshopLevels', JSON.stringify(maxedWorkshopLevels()))
       window.localStorage.setItem('enhancementLevels', JSON.stringify(enhancementLevels))
       window.localStorage.setItem('enhancementLabLevel', JSON.stringify(1))
@@ -186,22 +216,20 @@ describe('UpgradePath', () => {
       render(<UpgradePath />)
 
       const rows = screen.getAllByRole('listitem')
-      expect(rows[0]).toHaveTextContent('Recovery Package +')
+      expect(rows[0]).toHaveTextContent('Health +')
       expect(rows[0]).toHaveTextContent('5B coins')
       expect(rows[0]).toHaveTextContent('Lv 0 → 1')
 
       await user.click(
         within(rows[0]).getByRole('button', {
-          name: 'Buy 1 level of Recovery Package + for 5B coins',
+          name: 'Buy 1 level of Health + for 5B coins',
         }),
       )
 
-      expect(
-        JSON.parse(window.localStorage.getItem('enhancementLevels'))['Recovery Package'],
-      ).toBe(1)
-      expect(
-        JSON.parse(window.localStorage.getItem('workshopLevels'))['Recovery Package'],
-      ).toBeUndefined()
+      expect(JSON.parse(window.localStorage.getItem('enhancementLevels')).Health).toBe(1)
+      expect(JSON.parse(window.localStorage.getItem('workshopLevels')).Health).toBe(
+        maxedWorkshopLevels().Health,
+      )
     })
 
     it("doesn't mislabel a Workshop row even when an Enhancement shares its name", () => {

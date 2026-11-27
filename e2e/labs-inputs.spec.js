@@ -115,13 +115,13 @@ test('persists an entered Enhancement discount Lab level, independently per tree
 
 test('reflects an entered Enhancement discount Lab level in the Path list (OQ-37)', async ({ page }) => {
   // Every Workshop upgrade maxed, every Enhancement maxed except one
-  // (Recovery Package, Utility), so that lone Enhancement is unambiguously
+  // (Health, Defense), so that lone Enhancement is unambiguously
   // the only, first row -- same fixture shape as e2e/upgrade-path.spec.js's
-  // own OQ-29 test. Recovery Package costs 5B undiscounted at level 0 --
-  // 30% off at the Utility Enhancement discount Lab's max level (100).
+  // own OQ-29 test. Health costs 5B undiscounted at level 0 --
+  // 30% off at the Defense Enhancement discount Lab's max level (100).
   const workshopLevels = maxedLevels(WORKSHOP_CATEGORIES)
   const enhancementLevels = maxedLevels(ENHANCEMENT_CATEGORIES)
-  delete enhancementLevels['Recovery Package']
+  delete enhancementLevels.Health
 
   await page.addInitScript(
     ([workshop, enhancement]) => {
@@ -133,14 +133,14 @@ test('reflects an entered Enhancement discount Lab level in the Path list (OQ-37
   )
   await page.reload()
 
-  const utilityDiscount = page.getByLabel('Utility Enhancement Discount Lab', { exact: true })
-  await utilityDiscount.fill('100')
-  await utilityDiscount.blur()
+  const defenseDiscount = page.getByLabel('Defense Enhancement Discount Lab', { exact: true })
+  await defenseDiscount.fill('100')
+  await defenseDiscount.blur()
 
   await page.getByRole('tab', { name: 'Path', exact: true }).click()
 
   const list = page.getByRole('list', { name: 'Recommended buy order' })
   const firstRow = list.getByRole('listitem').first()
-  await expect(firstRow).toContainText('Recovery Package +')
+  await expect(firstRow).toContainText('Health +')
   await expect(firstRow).toContainText('3.5B coins')
 })
