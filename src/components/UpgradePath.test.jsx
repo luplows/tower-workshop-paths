@@ -130,6 +130,36 @@ describe('UpgradePath', () => {
     expect(rows[0]).toHaveTextContent('2.49M coins')
   })
 
+  describe('when only Enhancements outside the eHP set are left (OQ-149)', () => {
+    const store = (enhancementLevels) => {
+      window.localStorage.setItem('workshopLevels', JSON.stringify(maxedWorkshopLevels()))
+      window.localStorage.setItem('enhancementLevels', JSON.stringify(enhancementLevels))
+      window.localStorage.setItem('enhancementLabLevel', JSON.stringify(1))
+    }
+
+    it('OQ-149/AC-2: says what is left is outside the eHP set, not that everything is maxed', () => {
+      const enhancementLevels = maxedEnhancementLevels()
+      enhancementLevels['Rend Armor'] = 0
+      store(enhancementLevels)
+      render(<UpgradePath />)
+
+      expect(screen.queryByRole('list', { name: 'Recommended buy order' })).not.toBeInTheDocument()
+      expect(screen.getByText(/The eHP strategy doesn't buy Rend Armor \+\./)).toBeInTheDocument()
+      expect(
+        screen.queryByText('Every Workshop upgrade and Enhancement with known cost data is maxed out.'),
+      ).not.toBeInTheDocument()
+    })
+
+    it('OQ-149/AC-2: still says everything is maxed when it is', () => {
+      store(maxedEnhancementLevels())
+      render(<UpgradePath />)
+
+      expect(
+        screen.getByText('Every Workshop upgrade and Enhancement with known cost data is maxed out.'),
+      ).toBeInTheDocument()
+    })
+  })
+
   describe('Workshop discount Labs (OQ-4)', () => {
     it("shows a discounted cost for a Workshop row, using that tree's own discount Lab level", async () => {
       // Multishot Targets (Attack) costs 450 at level 0 undiscounted --

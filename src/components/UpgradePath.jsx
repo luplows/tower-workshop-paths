@@ -47,7 +47,7 @@ export function UpgradePath() {
     {},
   )
   const [pendingBuy, setPendingBuy] = useState(null)
-  const { ranked, unknownCost } = getPrioritizedNextUpgrades({
+  const { ranked, unknownCost, excludedEnhancements } = getPrioritizedNextUpgrades({
     workshopLevels,
     enhancementLevels,
     enhancementLabLevel,
@@ -112,7 +112,15 @@ export function UpgradePath() {
 
   return (
     <div className="upgrade-path">
-      {ranked.length === 0 ? (
+      {ranked.length === 0 && excludedEnhancements.length > 0 ? (
+        // Not everything is maxed: what is left is outside the eHP set,
+        // which the Path does not recommend (OQ-149).
+        <p className="upgrade-path__empty">
+          Nothing left to recommend: every Workshop upgrade and eHP Enhancement with known cost data
+          is maxed out. The eHP strategy doesn't buy{' '}
+          {excludedEnhancements.map((entry) => `${entry.name} +`).join(', ')}.
+        </p>
+      ) : ranked.length === 0 ? (
         <p className="upgrade-path__empty">
           Every Workshop upgrade and Enhancement with known cost data is maxed out.
         </p>

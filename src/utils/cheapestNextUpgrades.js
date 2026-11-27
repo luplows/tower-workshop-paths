@@ -575,6 +575,12 @@ const cursorRankIndex = (cursor) => {
  *   remaining candidate necessarily shares FALLBACK_RATIO in that case, so
  *   falls back to ranking by cost alone, which is equivalent for same-ratio
  *   items regardless of what a hypothetical anchor value would have been.
+ *
+ * Since OQ-149 an Enhancement the eHP set doesn't name is not ranked at all,
+ * except Cash Bonus as the Coin Bonus prerequisite above; FALLBACK_RATIO
+ * still applies to every Workshop upgrade, the Lab and unlock-group offers.
+ * Each Enhancement skipped that way is returned once in
+ * `excludedEnhancements`, alongside `ranked` and `unknownCost`.
  */
 export function getPrioritizedNextUpgrades(
   {
@@ -599,6 +605,10 @@ export function getPrioritizedNextUpgrades(
   const ranked = []
   const unknownCost = []
   const stuck = new Set()
+  // Enhancements left unbought only because they are outside the curated
+  // set (OQ-149), keyed like `cursors`, so the caller can tell "nothing left
+  // to buy" from "everything maxed".
+  const excluded = new Map()
 
   while (ranked.length < rowCap) {
     const { baseCost, criticalPathKey } = resolveBaseCost(
@@ -616,7 +626,18 @@ export function getPrioritizedNextUpgrades(
       // ordinary purchase. Its cursor stays in the map -- resolveBaseCost
       // reads Cash Bonus's live level -- but it only competes as the
       // Coin Bonus prerequisite (`criticalPathKey`).
-      if (key !== criticalPathKey && !isEligibleCursor(cursor)) continue
+      if (key !== criticalPathKey && !isEligibleCursor(cursor)) {
+        if (!excluded.has(key)) {
+          excluded.set(key, {
+            name: cursor.name,
+            source: cursor.source,
+            categoryId: cursor.categoryId,
+            categoryLabel: cursor.categoryLabel,
+            currentLevel: cursor.level,
+          })
+        }
+        continue
+      }
 
       const priced = nextBatchCost(cursor)
       if (!priced.priceable) {
@@ -677,6 +698,7 @@ export function getPrioritizedNextUpgrades(
   }
 
   unknownCost.sort((a, b) => a.name.localeCompare(b.name))
+  const excludedEnhancements = [...excluded.values()].sort((a, b) => a.name.localeCompare(b.name))
 
-  return { ranked, unknownCost }
+  return { ranked, unknownCost, excludedEnhancements }
 }

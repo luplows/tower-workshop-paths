@@ -119,9 +119,13 @@ describe('simulateBuyOut', () => {
 
   it('OQ-149/AC-5: the respec simulation buys no Enhancement outside the curated set, and no Lab', () => {
     const plan = simulateBuyOut({ budget: Number.MAX_VALUE, enhancementLabLevel: 1 })
-    const bought = new Set(plan.purchases.filter((p) => p.source === 'enhancement').map((p) => p.name))
-    expect(bought.has('Rend Armor')).toBe(false)
-    expect(bought.has('Health')).toBe(true)
+    const enhancementBuys = plan.purchases.filter((p) => p.source === 'enhancement')
+    const bought = new Set(enhancementBuys.map((p) => p.name))
+    // The simulation reaches Health at level 19 (48.3B), where Damage + (Attack,
+    // ungated, 5B at level 0) used to outrank it at FALLBACK_RATIO; see
+    // getPrioritizedNextUpgrades.test.js's OQ-149 AC-5 case for the scores.
+    expect(enhancementBuys.some((p) => p.name === 'Health' && p.currentLevel === 19)).toBe(true)
+    expect(bought.has('Damage')).toBe(false)
     for (const name of bought) {
       expect(name in ENHANCEMENT_PRIORITY_RATIOS || name === 'Cash Bonus', name).toBe(true)
     }

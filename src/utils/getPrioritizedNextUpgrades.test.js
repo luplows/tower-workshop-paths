@@ -2,6 +2,8 @@
 
 import { describe, expect, it } from 'vitest'
 import { ENHANCEMENT_CATEGORIES } from '../data/enhancementCategories'
+import { ENHANCEMENT_LEVELS } from '../data/enhancementLevels'
+import { ENHANCEMENT_PRIORITY_RATIOS, FALLBACK_RATIO } from '../data/enhancementPriority'
 import { WORKSHOP_CATEGORIES } from '../data/workshopCategories'
 import { WORKSHOP_UNLOCK_GROUPS } from '../data/workshopUnlockGroups'
 import { getPrioritizedNextUpgrades } from './cheapestNextUpgrades'
@@ -141,7 +143,7 @@ describe('getPrioritizedNextUpgrades (OQ-2)', () => {
       expect(rows(enh, {}, 1).map((e) => [e.source, e.name])).toEqual([['enhancement', 'Health']])
     })
 
-    it('AC-1/AC-5: omits a cheaper Enhancement outside the curated set (Rend Armor, 5.04B vs Health 6.25B... never listed)', () => {
+    it('AC-1: omits an Enhancement outside the curated set (Rend Armor, 5B at level 0; Health 5.04B at level 1)', () => {
       const enh = maxedEnhancementLevels()
       enh['Rend Armor'] = 0
       enh.Health = 1
@@ -150,10 +152,37 @@ describe('getPrioritizedNextUpgrades (OQ-2)', () => {
       expect(ranked.some((e) => e.name === 'Rend Armor')).toBe(false)
     })
 
-    it('AC-2: an excluded Enhancement with no eligible candidate left yields no rows', () => {
+    it('AC-2: an excluded Enhancement with no eligible candidate left yields no rows, and is reported as excluded', () => {
       const enh = maxedEnhancementLevels()
       enh['Rend Armor'] = 0
       expect(rows(enh)).toEqual([])
+      const { excludedEnhancements } = getPrioritizedNextUpgrades(
+        {
+          workshopLevels: maxedWorkshopLevels(),
+          unlockedGroups: allUnlockedGroups(),
+          enhancementLabLevel: 1,
+          enhancementLevels: enh,
+        },
+        { rowCap: 3 },
+      )
+      expect(excludedEnhancements).toEqual([expect.objectContaining({ name: 'Rend Armor', currentLevel: 0 })])
+    })
+
+    it('AC-5: excludes a cheap Attack Enhancement that used to outrank a more expensive eHP one', () => {
+      // Damage + (Attack, ungated) costs 5B at level 0 and used to compete at
+      // FALLBACK_RATIO (1/128). Health at level 19 costs 48.3B at ratio 1/16.
+      // score = ratio x base / cost, so Damage + scored higher:
+      // (1/128) / 5B > (1/16) / 48.3B. Strict eHP leaves only Health.
+      expect(ENHANCEMENT_LEVELS.Damage[0]).toBe(5_000_000_000)
+      expect(ENHANCEMENT_LEVELS.Health[19]).toBe(48_300_000_000)
+      expect(FALLBACK_RATIO / ENHANCEMENT_LEVELS.Damage[0]).toBeGreaterThan(
+        ENHANCEMENT_PRIORITY_RATIOS.Health / ENHANCEMENT_LEVELS.Health[19],
+      )
+      const enh = maxedEnhancementLevels()
+      enh.Damage = 0
+      enh.Health = 19
+      const ranked = rows(enh, {}, 1)
+      expect(ranked).toEqual([expect.objectContaining({ source: 'enhancement', name: 'Health', currentLevel: 19 })])
     })
 
     it('AC-3: still buys Cash Bonus as the Coin Bonus prerequisite while the gate is unmet', () => {

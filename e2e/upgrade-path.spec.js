@@ -148,8 +148,8 @@ test('shows and buys an Enhancement row as "{name} +", the game\'s own conventio
 test('OQ-149/AC-6: an Enhancement outside the curated eHP set stays on Input but is not recommended on Path', async ({
   page,
 }) => {
-  // Everything maxed except Rend Armor (Attack, 5.04B first level -- not in
-  // the curated set) and Health (Defense, curated, 5B first level).
+  // Everything maxed except Rend Armor (Attack, not in the curated set) and
+  // Health (Defense, curated), both at level 0, where each costs 5B.
   const workshopLevels = maxedLevels(WORKSHOP_CATEGORIES)
   const enhancementLevels = maxedLevels(ENHANCEMENT_CATEGORIES)
   delete enhancementLevels['Rend Armor']
@@ -172,6 +172,28 @@ test('OQ-149/AC-6: an Enhancement outside the curated eHP set stays on Input but
   const list = page.getByRole('list', { name: 'Recommended buy order' })
   await expect(list.getByRole('listitem').first()).toContainText('Health +')
   await expect(list.getByText('Rend Armor')).toHaveCount(0)
+})
+
+test('OQ-149/AC-2: when only an Enhancement outside the eHP set is left, Path says so rather than "maxed out"', async ({
+  page,
+}) => {
+  const workshopLevels = maxedLevels(WORKSHOP_CATEGORIES)
+  const enhancementLevels = maxedLevels(ENHANCEMENT_CATEGORIES)
+  delete enhancementLevels['Rend Armor']
+
+  await page.addInitScript(
+    ([workshop, enhancement]) => {
+      window.localStorage.setItem('workshopLevels', JSON.stringify(workshop))
+      window.localStorage.setItem('enhancementLevels', JSON.stringify(enhancement))
+      window.localStorage.setItem('enhancementLabLevel', JSON.stringify(1))
+    },
+    [workshopLevels, enhancementLevels],
+  )
+  await page.goto('/')
+
+  await page.getByRole('tab', { name: 'Path', exact: true }).click()
+  await expect(page.getByText("The eHP strategy doesn't buy Rend Armor +.", { exact: false })).toBeVisible()
+  await expect(page.getByRole('list', { name: 'Recommended buy order' })).toHaveCount(0)
 })
 
 test('shows the Workshop Enhancements Lab while locked, buying it unlocks Enhancements (OQ-31)', async ({
