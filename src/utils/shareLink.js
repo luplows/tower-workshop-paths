@@ -26,10 +26,14 @@ export class ShareLinkError extends Error {
  * Every tower-data key as this session holds it. A value whose write to
  * storage failed is taken from useLocalStorageState's unsaved values, so the
  * link carries what is on screen rather than the older stored value. Any
- * other key is read from storage. A key that is absent, unreadable or not
- * JSON is left out, as useLocalStorageState's own read treats it as not set.
+ * other key is read from storage, `window.localStorage` unless `storage` is
+ * given. A key that is absent, unreadable or not JSON is left out, as
+ * useLocalStorageState's own read treats it as not set. Reaching
+ * `window.localStorage` can itself throw (storage blocked by browser policy),
+ * so it is read inside the same guard, and the unsaved values still reach the
+ * link.
  */
-export function readCurrentTower(storage = window.localStorage, unsaved = unsavedValueFor) {
+export function readCurrentTower(storage, unsaved = unsavedValueFor) {
   const tower = {}
   for (const key of Object.values(TOWER_DATA_KEYS)) {
     const held = unsaved(key)
@@ -38,7 +42,7 @@ export function readCurrentTower(storage = window.localStorage, unsaved = unsave
       continue
     }
     try {
-      const stored = storage.getItem(key)
+      const stored = (storage ?? window.localStorage).getItem(key)
       if (stored !== null) tower[key] = JSON.parse(stored)
     } catch {
       // Unavailable or not JSON: treated as not set, as the app's own reads do.

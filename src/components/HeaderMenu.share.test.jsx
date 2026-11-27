@@ -105,4 +105,48 @@ describe('HeaderMenu share link (OQ-57)', () => {
       expect(decodeTower(payload).tower.workshopLevels.Damage).toBe(42)
     })
   })
+  describe('when storage is blocked entirely', () => {
+    const original = Object.getOwnPropertyDescriptor(window, 'localStorage')
+
+    afterEach(() => {
+      if (original) Object.defineProperty(window, 'localStorage', original)
+      else delete window.localStorage
+      clearStoredValue(TOWER_DATA_KEYS.workshopLevels)
+    })
+
+    it('OQ-57/AC-1 shares the levels on screen when reaching window.localStorage throws', async () => {
+      Object.defineProperty(window, 'localStorage', {
+        configurable: true,
+        get() {
+          throw new DOMException('The operation is insecure.', 'SecurityError')
+        },
+      })
+      const Levels = () => {
+        const [levels, setLevels] = useLocalStorageState(TOWER_DATA_KEYS.workshopLevels, {})
+        return (
+          <button type="button" onClick={() => setLevels({ Damage: 42 })}>
+            Damage {levels.Damage ?? 0}
+          </button>
+        )
+      }
+      const user = userEvent.setup()
+      const writeText = vi.fn().mockResolvedValue(undefined)
+      Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true })
+      render(
+        <>
+          <Levels />
+          <HeaderMenu onClearAllLevels={vi.fn()} />
+        </>,
+      )
+      await user.click(screen.getByText('Damage 0'))
+      expect(screen.getByText('Damage 42')).toBeInTheDocument()
+
+      await user.click(screen.getByRole('button', { name: 'More actions' }))
+      await user.click(screen.getByText('Copy share link'))
+      expect(await screen.findByRole('status')).toHaveTextContent('Share link copied')
+
+      const payload = new URL(writeText.mock.calls[0][0]).searchParams.get(SHARE_PARAM)
+      expect(decodeTower(payload).tower.workshopLevels.Damage).toBe(42)
+    })
+  })
 })
