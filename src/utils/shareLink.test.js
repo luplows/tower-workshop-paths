@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest'
 import { decodeTower, encodeTower } from './shareCodec'
 import { SHARE_ITEMS } from './shareItems'
-import { buildShareUrl, MAX_URL_LENGTH, readStoredTower, SHARE_PARAM, ShareLinkError } from './shareLink'
+import { buildShareUrl, MAX_URL_LENGTH, readCurrentTower, SHARE_PARAM, ShareLinkError } from './shareLink'
 import { TOWER_DATA_KEYS } from '../storageKeys'
 
 const where = { origin: 'https://luplows.github.io', basePath: '/tower-workshop-paths/' }
@@ -30,7 +30,7 @@ const seeded = () =>
 
 describe('share link', () => {
   it('OQ-57/AC-1 carries the encoded payload of every tower-data key, and nothing from interface settings', () => {
-    const stored = readStoredTower(seeded())
+    const stored = readCurrentTower(seeded())
     const url = new URL(buildShareUrl(stored, where))
     const decoded = decodeTower(url.searchParams.get(SHARE_PARAM))
     expect(decoded.tower.workshopLevels.Damage).toBe(12)
@@ -54,7 +54,7 @@ describe('share link', () => {
   it('OQ-57/AC-3 leaves stored state unchanged', () => {
     const storage = seeded()
     const before = JSON.stringify(storage.data)
-    buildShareUrl(readStoredTower(storage), where)
+    buildShareUrl(readCurrentTower(storage), where)
     expect(JSON.stringify(storage.data)).toBe(before)
     expect(storage.writes).toEqual([])
   })
@@ -75,5 +75,23 @@ describe('share link', () => {
 
   it('OQ-57/AC-4 refuses stored data the codec cannot carry', () => {
     expect(() => buildShareUrl({ workshopLevels: { Damage: 'many' } }, where)).toThrow(ShareLinkError)
+  })
+
+  it('OQ-57/AC-1 takes a value whose write to storage failed from the session, not from storage', () => {
+    const storage = seeded()
+    const unsaved = (key) => (key === 'workshopLevels' ? { value: { Damage: 42 } } : undefined)
+    const tower = readCurrentTower(storage, unsaved)
+    expect(tower.workshopLevels).toEqual({ Damage: 42 })
+    expect(tower.enhancementLabLevel).toBe(1)
+  })
+
+  it('OQ-57/AC-1 carries the session values when storage cannot be read at all', () => {
+    const unreadable = {
+      getItem: () => {
+        throw new Error('SecurityError')
+      },
+    }
+    const unsaved = (key) => (key === 'workshopLevels' ? { value: { Damage: 9 } } : undefined)
+    expect(readCurrentTower(unreadable, unsaved)).toEqual({ workshopLevels: { Damage: 9 } })
   })
 })

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { buildShareUrl, readStoredTower, ShareLinkError } from '../utils/shareLink'
+import { buildShareUrl, readCurrentTower, ShareLinkError } from '../utils/shareLink'
 import './HeaderMenu.css'
 
 const THEME_OPTIONS = [
@@ -41,7 +41,7 @@ export function HeaderMenu({ onClearAllLevels, themePreference, onThemeChange })
   const handleShareClick = async () => {
     let url
     try {
-      url = buildShareUrl(readStoredTower(), {
+      url = buildShareUrl(readCurrentTower(), {
         origin: window.location.origin,
         basePath: import.meta.env.BASE_URL,
       })

@@ -1,9 +1,10 @@
 import { encodeTower } from './shareCodec'
 import { TOWER_DATA_KEYS } from '../storageKeys'
+import { unsavedValueFor } from '../hooks/useLocalStorageState'
 
 /**
  * Share link producer (OQ-57): the current tower -> an absolute URL carrying
- * its encodeTower payload. Reads storage, never writes it.
+ * its encodeTower payload. Reads the current tower, never writes it.
  */
 
 /** The query parameter the payload travels in; OQ-58's viewer reads it back. */
@@ -21,10 +22,21 @@ export class ShareLinkError extends Error {
   }
 }
 
-/** Every tower-data key as stored; a key that is absent or unparseable is left out. */
-export function readStoredTower(storage = window.localStorage) {
+/**
+ * Every tower-data key as this session holds it. A value whose write to
+ * storage failed is taken from useLocalStorageState's unsaved values, so the
+ * link carries what is on screen rather than the older stored value. Any
+ * other key is read from storage. A key that is absent, unreadable or not
+ * JSON is left out, as useLocalStorageState's own read treats it as not set.
+ */
+export function readCurrentTower(storage = window.localStorage, unsaved = unsavedValueFor) {
   const tower = {}
   for (const key of Object.values(TOWER_DATA_KEYS)) {
+    const held = unsaved(key)
+    if (held !== undefined) {
+      tower[key] = held.value
+      continue
+    }
     try {
       const stored = storage.getItem(key)
       if (stored !== null) tower[key] = JSON.parse(stored)

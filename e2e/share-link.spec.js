@@ -12,7 +12,10 @@ test('OQ-57/AC-1 copies a link for the current tower and confirms it', async ({ 
 
   await expect(page.getByRole('status')).toContainText('Share link copied')
   const copied = await page.evaluate(() => navigator.clipboard.readText())
-  expect(copied).toMatch(/^https?:\/\/[^/]+\/(tower-workshop-paths\/)?\?tower=[\w-]+$/)
+  // The link is the page's own origin and base path, then the payload.
+  const pageBase = page.url().replace(/[?#].*$/, '')
+  expect(copied.startsWith(`${pageBase}?tower=`)).toBe(true)
+  expect(copied.slice(pageBase.length)).toMatch(/^\?tower=[\w-]+$/)
   // Generating the link does not touch the stored levels.
   await expect(damageInput).toHaveValue('42')
 })

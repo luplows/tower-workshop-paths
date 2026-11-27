@@ -1,7 +1,11 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { HeaderMenu } from './HeaderMenu'
+import { clearStoredValue, useLocalStorageState } from '../hooks/useLocalStorageState'
+import { decodeTower } from '../utils/shareCodec'
+import { SHARE_PARAM } from '../utils/shareLink'
+import { TOWER_DATA_KEYS } from '../storageKeys'
 
 // userEvent.setup() installs its own navigator.clipboard, so the stub goes in
 // after it.
@@ -60,5 +64,45 @@ describe('HeaderMenu share link (OQ-57)', () => {
     await openShare(undefined)
 
     expect(await screen.findByLabelText('Share link')).toBeInTheDocument()
+  })
+
+  describe('when storage cannot be written', () => {
+    afterEach(() => {
+      vi.restoreAllMocks()
+      clearStoredValue(TOWER_DATA_KEYS.workshopLevels)
+    })
+
+    it('OQ-57/AC-1 shares the levels on screen, not the older stored ones', async () => {
+      const Levels = () => {
+        const [levels, setLevels] = useLocalStorageState(TOWER_DATA_KEYS.workshopLevels, {})
+        return (
+          <button type="button" onClick={() => setLevels({ Damage: 42 })}>
+            Damage {levels.Damage}
+          </button>
+        )
+      }
+      const user = userEvent.setup()
+      const writeText = vi.fn().mockResolvedValue(undefined)
+      Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true })
+      render(
+        <>
+          <Levels />
+          <HeaderMenu onClearAllLevels={vi.fn()} />
+        </>,
+      )
+      vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+        throw new Error('QuotaExceededError')
+      })
+      await user.click(screen.getByText('Damage 7'))
+      expect(screen.getByText('Damage 42')).toBeInTheDocument()
+      expect(JSON.parse(window.localStorage.getItem(TOWER_DATA_KEYS.workshopLevels))).toEqual({ Damage: 7 })
+
+      await user.click(screen.getByRole('button', { name: 'More actions' }))
+      await user.click(screen.getByText('Copy share link'))
+      expect(await screen.findByRole('status')).toHaveTextContent('Share link copied')
+
+      const payload = new URL(writeText.mock.calls[0][0]).searchParams.get(SHARE_PARAM)
+      expect(decodeTower(payload).tower.workshopLevels.Damage).toBe(42)
+    })
   })
 })
