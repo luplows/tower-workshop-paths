@@ -2,6 +2,7 @@
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { spawnSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
@@ -246,6 +247,34 @@ describe('OQ-61/AC-5: acceptance-criterion numbering', () => {
     expect(violations.some((v) => v.rule === 'AC-5' && /not a well-formed/.test(v.message))).toBe(true)
   })
 
+  it('OQ-100/AC-1: rejects an AC-0 item, on its own line', () => {
+    const ac = ['- [ ] **AC-0** — zero.', '- [ ] **AC-1** — first.', '- [ ] **AC-2** — second.'].join('\n')
+    const source = storySource(undefined, { acceptanceCriteria: ac })
+    const violations = lintStory('OQ-9001-fixture.md', source, 'OQ').filter((v) => v.rule === 'AC-5')
+    const zeroLine = source.split('\n').findIndex((l) => l.includes('**AC-0**')) + 1
+    expect(violations).toHaveLength(1)
+    expect(violations[0].blocking).toBe(true)
+    expect(violations[0].line).toBe(zeroLine)
+  })
+
+  for (const marker of ['*', '+']) {
+    it(`OQ-100/AC-2: rejects a last AC written with a '${marker}' bullet, on that line`, () => {
+      const ac = ['- [ ] **AC-1** — first.', `${marker} [ ] **AC-2** — second.`].join('\n')
+      const source = storySource(undefined, { acceptanceCriteria: ac })
+      const violations = lintStory('OQ-9001-fixture.md', source, 'OQ').filter((v) => v.rule === 'AC-5')
+      const badLine = source.split('\n').findIndex((l) => l.startsWith(`${marker} [ ]`)) + 1
+      expect(violations).toHaveLength(1)
+      expect(violations[0].blocking).toBe(true)
+      expect(violations[0].line).toBe(badLine)
+    })
+  }
+
+  it('OQ-100/AC-2: an italic line starting with `*` and no space, and indented lines, are not list items', () => {
+    const ac = ['*Barebones: to be refined in a planning session.*', '- [ ] **AC-1** — first.', '  * indented sub-bullet', '  - indented sub-bullet'].join('\n')
+    const violations = lintStory('OQ-9001-fixture.md', storySource(undefined, { acceptanceCriteria: ac }), 'OQ')
+    expect(violations.some((v) => v.rule === 'AC-5')).toBe(false)
+  })
+
   it("stories/done/OQ-68, OQ-69 and OQ-70's real suffixed ids (AC-3b, AC-6b, AC-7b) pass", async () => {
     for (const filename of ['OQ-68-github-operations.md', 'OQ-69-reviewer-dispatch.md', 'OQ-70-coder-dispatch.md']) {
       const filePath = path.join(repoRoot, 'stories', 'done', filename)
@@ -382,5 +411,33 @@ describe('OQ-61: the real repository lints clean', () => {
     const violations = await lintAll(repoRoot)
     const blocking = violations.filter((v) => v.blocking !== false)
     expect(blocking, JSON.stringify(blocking, null, 2)).toEqual([])
+  })
+})
+
+describe('OQ-100/AC-3: node scripts/lint-stories.mjs run as a command', () => {
+  const script = path.join(here, 'lint-stories.mjs')
+  const run = (cwd) => spawnSync(process.execPath, [script], { cwd, encoding: 'utf8' })
+
+  it('exits 1 and prints a path:line: rule message line for a blocking violation', async () => {
+    const source = storySource(undefined, { acceptanceCriteria: '- [ ] **AC-1** — first.\n- [ ] **AC-3** — skips two.' })
+    await writeStory(path.join(tmpRoot, 'stories'), 'OQ-9001-fixture.md', source)
+    const result = run(tmpRoot)
+    expect(result.status).toBe(1)
+    expect(result.stderr).toMatch(/^stories\/OQ-9001-fixture\.md:\d+: AC-5 missing 'AC-2'/m)
+  })
+
+  it('exits 0 for a clean story', async () => {
+    await writeStory(path.join(tmpRoot, 'stories'), 'OQ-9001-fixture.md', storySource())
+    const result = run(tmpRoot)
+    expect(result.status).toBe(0)
+    expect(result.stderr).toBe('')
+  })
+
+  it('exits 0 and still prints the line for a non-blocking violation', async () => {
+    const source = storySource({ extraLines: ['mystery: 1'] })
+    await writeStory(path.join(tmpRoot, 'stories'), 'OQ-9001-fixture.md', source)
+    const result = run(tmpRoot)
+    expect(result.status).toBe(0)
+    expect(result.stderr).toMatch(/^stories\/OQ-9001-fixture\.md:\d+: AC-2 unknown frontmatter field 'mystery'/m)
   })
 })
